@@ -12,7 +12,10 @@ NAV = [('/features.html', 'Features'), ('/guide/', 'Guide'), ('/lights.html', 'L
        ('/pricing.html', 'Pricing'), ('/faq.html', 'FAQ')]
 
 
-def led(scene, caption, w=40, h=21, cls=''):
+def led(scene, caption, w=40, h=21, cls='', demo=False):
+    if demo:
+        return (f'<figure class="led demo {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
+                f'<figcaption>🔴 Live · {html.escape(caption)}</figcaption></figure>')
     PHOTOS.append((CUR[0], caption))
     return (f'<figure class="led {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
             f'<figcaption>📷 Placeholder · {html.escape(caption)}</figcaption></figure>')
@@ -87,6 +90,7 @@ FEATS = [
     ('🎬', 'Epic mode', 'Movie soundtracks get a slow swell and one giant climax instead of nonstop strobes.', '/guide/music.html#epic'),
     ('🎨', '29 looks, 150+ effects', 'Neon Party, Deep Space, Synthwave, Club Rig and more. Shuffle them or pin a favorite.', '/guide/looks.html'),
     ('🎃', 'Holidays & mini-movies', 'Halloween, Christmas, New Year and more, with full animated scenes for the big nights.', '/guide/holidays.html'),
+    ('🔥', 'Cozy fireplace', 'Just the fire, flickering like the real thing. 7 colors, Cozy or Roaring.', '/guide/fireplace.html'),
     ('🏟️', 'Scoreboard', 'Run the score at your kid\'s game, follow your team live, or watch F1 on the wall.', '/guide/scoreboard.html'),
     ('🔤', 'Text & logos', 'Party messages, names, your DJ logo. Scroll it, flash it on every drop.', '/guide/text-logos.html'),
     ('📺', 'Screen mirror', 'Put the game, a movie or a music video right on the lights.', '/guide/text-logos.html#mirror'),
@@ -143,6 +147,13 @@ home = f'''
       <p class="lead">Each holiday has its own button. Halloween Night and Christmas Eve play full animated stories, crisp pixel art made for LED curtains.</p>
       <a class="btn" href="/guide/holidays.html">See the holidays →</a></div>
     <div class="media">{pic('halloween-porch', 'LED curtain showing pixel jack-o-lanterns on a Halloween porch')}</div>
+  </div>
+  <div class="feat flip reveal">
+    <div><span class="eyebrow">New · Fireplace</span><h2>A fireplace on any wall</h2>
+      <p class="lead">No fireplace frame, no fake logs. Just tall, flickering flames across your whole wall, with a white-hot core and floating embers.</p>
+      <ul class="ticks"><li><b>7 colors:</b> Classic, Blue gas, Purple, Rainbow, Green, Pink and Ice.</li><li><b>Cozy</b> for a quiet night, <b>Roaring</b> for big flare-ups and spark bursts.</li><li><b>Dance</b> lets the flames swell with your music.</li></ul>
+      <a class="btn" href="/guide/fireplace.html">Fireplace guide →</a></div>
+    <div class="media">{pic('cozy-fireplace', 'LED curtain showing tall flickering flames behind a couple on a couch')}</div>
   </div>
 </div></section>
 
@@ -203,6 +214,10 @@ F2 = [
      'Holidays live in their own section, away from the normal shuffle. Tap one and the wall plays only that holiday until you stop it.',
      ['Halloween, Christmas, Thanksgiving, New Year, Valentine\'s, St. Patrick\'s, Birthday and Game Day.', '<b>Mini-movies:</b> Halloween Night and Christmas Eve play full animated stories.', 'Jack-o\'-lanterns, bats, ghosts, a haunted house, sleigh rides, fireworks, a ball drop and more.', 'Choose which holiday effects are in the rotation.'],
      '/guide/holidays.html', 'Holidays guide'),
+    ('@cozy-fireplace', 'LED curtain showing tall flickering flames behind a couple on a couch', 'Fireplace', 'Just the fire, no fireplace',
+     'Light a fire on your wall with one tap. GlowBop simulates real flames live, so the fire never loops and never looks the same twice.',
+     ['<b>7 colors:</b> Classic, Blue gas, Purple, Rainbow, Green, Pink and Ice.', '<b>Cozy:</b> tall, relaxing flames with the odd small flare.', '<b>Roaring:</b> wild flicker, big whooshes and bursts of sparks.', '<b>Dance:</b> the flames swell gently with the beat of your music.', 'One long fire across every curtain on the wall.'],
+     '/guide/fireplace.html', 'Fireplace guide'),
     ('@soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game', 'Scoreboard', 'Game Day, Live Fan and F1',
      'Turn the wall into a scoreboard. Keep score yourself from your phone, follow a real game, or watch a Grand Prix.',
      ['<b>Game Day:</b> 15 sports, clock that counts down or up, periods, timeouts, fouls, possession, undo.', '<b>Live Fan:</b> pick a league and team; scores update every 10 seconds and the wall celebrates in team colors.', '<b>F1:</b> running order, tyres, pit stops, fastest lap, DRS and rain.', '<b>Countdown timer:</b> a huge clock for halftime, a party or New Year.'],
@@ -243,6 +258,7 @@ G = [
     ('music', '🔊', 'Music show', 'How the show follows a song, Epic mode, sync and song lookup.'),
     ('looks', '🎨', 'Looks & effects', 'Looks, scenes, pinning, characters and transitions.'),
     ('holidays', '🎃', 'Holidays & mini-movies', 'Holiday buttons and the animated stories.'),
+    ('fireplace', '🔥', 'Fireplace', 'One-tap fire in 7 colors, cozy or roaring.'),
     ('scoreboard', '🏟️', 'Scoreboard', 'Game Day, Live Fan, F1 and the countdown clock.'),
     ('text-logos', '🔤', 'Text, logos & mirror', 'Messages, logos and mirroring your screen.'),
     ('groups', '🧩', 'Light groups', 'Run different shows on different lights.'),
@@ -397,6 +413,28 @@ guide('holidays', f'''
 {tip('<b>Trick-or-treat tip:</b> start Halloween at dusk, set Pace to Chill, and the mini-movie plays every few switches between the spooky effects.', 'pink')}
 ''', [('list', 'Holidays'), ('movies', 'Mini-movies'), ('choose', 'Choose effects')])
 
+guide('fireplace', f"""
+<p>Turn the whole wall into a fire with one tap. There's no fireplace frame and no logs, just the flames, simulated live so they never loop.</p>
+{pic('cozy-fireplace', 'LED curtain showing tall flickering flames behind a couple on a couch')}
+<h2 id="light">Light the fire</h2>
+<ol><li>On the phone remote, open the <b>🔥 Fireplace</b> card.</li>
+<li>Tap <span class="k">🔥 Light the fire</span>. The banner at the top turns orange and says <b>FIREPLACE</b>.</li>
+<li>To stop, tap <span class="k">💨 Put out the fire</span>, or <span class="k">Put out fire</span> in the banner.</li></ol>
+{led('fireplace', 'the same fire simulation the app runs, right in your browser', demo=True)}
+<h2 id="colors">7 colors</h2>
+<div class="toc"><span class="k">🔥 Classic</span> <span class="k">💙 Blue gas</span> <span class="k">💜 Purple</span> <span class="k">🌈 Rainbow</span> <span class="k">💚 Green</span> <span class="k">🩷 Pink</span> <span class="k">🤍 Ice</span></div>
+<p>Rainbow drifts slowly through every color across the wall and keeps a white-hot core. Green is great for Halloween and St. Patrick's, Pink for Valentine's, Ice for a ghostly winter look.</p>
+<h2 id="mode">Cozy or Roaring</h2>
+<ul><li><span class="k">🛋️ Cozy</span>: tall, relaxing flames that reach up the wall, with a small flare now and then.</li>
+<li><span class="k">🔥 Roaring</span>: fast, wild flicker with big whooshes of flame every few seconds and bursts of sparks.</li></ul>
+<h2 id="music">Calm or Dance</h2>
+<ul><li><span class="k">🕯️ Calm</span>: the fire ignores the music. Perfect for a quiet night.</li>
+<li><span class="k">💃 Dance</span>: the flames swell gently with the beat. Fire that grooves.</li></ul>
+<h2 id="wall">On a big wall</h2>
+<p>With several curtains, GlowBop builds one long bed of fire across all of them, like a modern linear fireplace. Stacked curtains get taller flames.</p>
+{tip('<b>Good to know:</b> the fireplace stays lit until you put it out. Turning on the scoreboard puts the fire out, and lighting the fire turns the scoreboard off. Text and logos still show on top of the flames.')}
+""", [('light', 'Light it'), ('colors', 'Colors'), ('mode', 'Cozy / Roaring'), ('music', 'Calm / Dance'), ('wall', 'Big walls')])
+
 SPORTS = 'Soccer, Football, Basketball, Baseball, Softball, Hockey, Lacrosse, Volleyball, Pickleball, Tennis, Rugby, Water polo, Cornhole, Other, plus a Countdown timer'
 guide('scoreboard', f'''
 <p>Open <b>🏟️ Scoreboard</b> on the remote and pick a mode: <span class="k">Game Day</span>, <span class="k">Live Fan</span> or <span class="k">🏎️ F1</span>. <span class="k">Off</span> returns to the light show.</p>
@@ -446,13 +484,18 @@ guide('text-logos', f'''
 <li>Pick a <b>Motion</b>: <span class="k">Glow</span>, <span class="k">Pulse</span> or <span class="k">Colour shift</span>.</li>
 <li>Tap <span class="k">Show logo</span>, or <span class="k">Text + logo</span> for both.</li></ol>
 <p>Great for DJs, bars, gyms and businesses. Save it and it's ready next time.</p>
+<h2 id="saved">Saved messages and logos</h2>
+<ul><li>Tap <span class="k">Save</span> under the text or the logo to keep it. It appears as a chip at the bottom of the card.</li>
+<li>Tap a saved chip to put it back on the wall.</li>
+<li>To delete one, tap the <span class="k">✕</span> next to it. It turns red and asks <b>Delete?</b>. Tap again to delete.</li>
+<li><span class="k">🗑️ Remove logo from the wall</span> clears the picture that's loaded right now (your saved copy stays).</li></ul>
 <h2 id="mirror">Screen mirror</h2>
 <p>Show the laptop screen on the lights: a game, a movie, a music video.</p>
 <ul><li><b>Style:</b> <span class="k">TV</span> (the picture), <span class="k">Beat</span> (the picture pulsing to the music), <span class="k">Glow</span> (soft ambient color).</li>
 <li><b>Area:</b> <span class="k">Smart fill</span> trims black bars so the video fills the wall; <span class="k">Center zoom</span> shows bigger shapes.</li></ul>
 {led('mirror', 'Video: mirroring a movie onto the curtains')}
 {tip('Mirror works best with the video playing full screen on the laptop.')}
-''', [('text', 'Text'), ('logo', 'Logo'), ('mirror', 'Screen mirror')])
+''', [('text', 'Text'), ('logo', 'Logo'), ('saved', 'Saved items'), ('mirror', 'Screen mirror')])
 
 guide('groups', f'''
 <p>By default all your lights are one wall running one show. <b>Groups</b> let you split them: one show on the curtains, another on the tree, for example.</p>
@@ -572,6 +615,7 @@ Q = [
     ('Can I play music from my phone?', 'GlowBop listens on the computer, so play the music on the computer and send it to your speakers. Bluetooth speakers work; use the Sync slider to line them up.'),
     ('Does it need a microphone or a dongle?', 'No. It listens to the computer\'s own sound, so room noise and talking don\'t throw it off.'),
     ('Do I need to install an app on my phone?', 'No. Scan the QR code and the remote opens in your phone\'s browser. Add it to your home screen for an app icon.'),
+    ('Can it just be a fireplace?', 'Yes. Tap 🔥 Light the fire and the whole wall becomes flickering flames, no fireplace frame or logs. Pick from 7 colors and Cozy or Roaring. See the <a href="/guide/fireplace.html">Fireplace guide</a>.'),
     ('Can I use it outside or at a game?', 'Yes. At home, use your Wi-Fi. At a field, connect the laptop to your phone\'s hotspot. Battery-powered curtains make this easy.'),
     ('How many curtains can I connect?', 'Up to 4 as one wall, side by side or stacked. You can also split lights into groups that each run their own show.'),
     ('Will it slow down my computer?', 'GlowBop is light. A normal laptop runs the show and music at the same time. Plug in for long parties.'),

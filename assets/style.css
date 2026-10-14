@@ -174,3 +174,6 @@ footer .fine{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 
 .hero-shot{transform:perspective(1200px) rotateY(-4deg);transition:transform .4s}
 .hero-shot:hover{transform:none}
 @media(max-width:900px){.hero-shot{transform:none}}
+
+.grid.g3>:last-child:nth-child(3n+1){grid-column:1/-1}
+.led.demo figcaption{top:10px;bottom:auto;right:auto;border-style:solid}

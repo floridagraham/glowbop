@@ -131,6 +131,37 @@
     rainbow(px, W, H, t) {
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) px[y * W + x] = hsl(x * 9 + y * 4 - t * 80, 100, 50 + 8 * Math.sin(t * 4 + x * .3));
     },
+    fireplace(px, W, H, t, o) {
+      // same idea as the app: heat rises at 2x resolution, random cooling tears it into tongues
+      const Hs = H * 2, Ws = W * 2;
+      if (!o.heat) { o.heat = new Float32Array(Hs * Ws); o.bed = new Float32Array(Ws).map(() => Math.random()); o.tex = new Float32Array(Hs * 3 * Ws).map(() => Math.random()); o.sc = 0;
+        for (let k = 0; k < 3; k++) for (let y = 0; y < Hs * 3; y++) for (let x = 0; x < Ws; x++) { const i = y * Ws + x; o.tex[i] = (o.tex[i] + o.tex[((y + 1) % (Hs * 3)) * Ws + x] + o.tex[((y + Hs * 3 - 1) % (Hs * 3)) * Ws + x]) / 3; } }
+      const h = o.heat, reach = 0.8 * Hs;
+      for (let step = 0, n = o.warm ? 3 : 90; step < n; step++) {
+        if (!o.bt || Math.random() < 0.15) o.bt = Float32Array.from({length: Ws}, () => Math.random());
+        for (let x = 0; x < Ws; x++) o.bed[x] += (o.bt[x] - o.bed[x]) * 0.05;
+        const kk = Math.max(3, (Ws / 10) | 0), sm = new Float32Array(Ws); let lo = 9, hi = -9;
+        for (let x = 0; x < Ws; x++) { let m = 0; for (let k = -kk; k <= kk; k++) m += o.bed[(x + k + Ws) % Ws]; sm[x] = m; lo = Math.min(lo, m); hi = Math.max(hi, m); }
+        for (let x = 0; x < Ws; x++) { const hot = (sm[x] - lo) / (hi - lo + 1e-9); h[(Hs - 1) * Ws + x] = Math.min(1.25, (0.58 + 0.55 * hot) * (0.85 + 0.3 * Math.random())); h[(Hs - 2) * Ws + x] = Math.max(h[(Hs - 2) * Ws + x] * 0.6, h[(Hs - 1) * Ws + x] * 0.97); }
+        o.sc = (o.sc + 0.9) % (Hs * 3); const s0 = o.sc | 0;
+        for (let y = 0; y < Hs - 2; y++) for (let x = 0; x < Ws; x++) {
+          const r = Math.random(), off = Math.round(r * 2.6 - 1.3), sx = (x - off + Ws) % Ws;
+          const tx = o.tex[((y + s0) % (Hs * 3)) * Ws + x], dec = r * r * r * (4.6 / reach) * (0.1 + 2.4 * tx * tx);
+          h[y * Ws + x] = Math.max(0, h[(y + 1) * Ws + sx] - dec);
+        }
+      }
+      o.warm = true;
+      const stops = [[0, 0, 0, 0], [.16, 51, 0, 0], [.34, 178, 18, 0], [.52, 255, 77, 0], [.7, 255, 148, 13], [.84, 255, 209, 77], [.94, 255, 242, 178], [1, 255, 255, 235]];
+      const flick = 0.9 + 0.06 * Math.sin(t * 7.3) + 0.05 * Math.random();
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * 2 * Ws + x * 2; let v = (h[i] + h[i + 1] + h[i + Ws] + h[i + Ws + 1]) / 4;
+        v = Math.pow(Math.min(1, v * flick), 1.6); if (v < 0.03) continue;
+        let k = 1; while (k < stops.length - 1 && stops[k][0] < v) k++;
+        const A = stops[k - 1], B = stops[k], f = (v - A[0]) / (B[0] - A[0] || 1);
+        px[y * W + x] = [A[1] + (B[1] - A[1]) * f, A[2] + (B[2] - A[2]) * f, A[3] + (B[3] - A[3]) * f];
+      }
+      if (Math.random() < 0.08) { const x = (Math.random() * W) | 0, y = (H * (0.3 + 0.3 * Math.random())) | 0; px[y * W + x] = [255, 200, 90]; }
+    },
     sparkle(px, W, H, t) {
       for (let i = 0; i < W * H * 0.12; i++) { const k = (Math.random() * W * H) | 0; px[k] = hsl(180 + Math.random() * 160, 90, 40 + Math.random() * 40); }
     },
@@ -154,7 +185,7 @@
     if (ms - last > 45) { last = ms;
       walls.forEach(o => { if (!o.vis && o.drawn) return; o.drawn = true;
         const {c, g, W, H} = o, px = new Array(W * H).fill(null), t = ms / 1000 + o.off;
-        o.scene(px, W, H, t);
+        o.scene(px, W, H, t, o);
         g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height);
         const sx = c.width / W, sy = c.height / H, r = Math.min(sx, sy) * 0.38;
         for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
