@@ -18,6 +18,11 @@ def led(scene, caption, w=40, h=21, cls=''):
             f'<figcaption>📷 Placeholder · {html.escape(caption)}</figcaption></figure>')
 
 
+def pic(name, alt, cls=''):
+    return (f'<figure class="shot {cls}"><img src="/img/{name}.jpg" alt="{html.escape(alt)}" loading="lazy" width="1344" height="752">'
+            f'<span class="concept">Concept image</span></figure>')
+
+
 def page(path, title, desc, body, active=''):
     CUR[0] = path
     nav = ''.join(f'<li><a href="{h}"{" class=on" if h == active else ""}>{n}</a></li>' for h, n in NAV)
@@ -97,7 +102,7 @@ home = f'''
     <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="/features.html">See what it does →</a></div>
     <div class="stats"><div><b>150+</b>effects</div><div><b>29</b>looks</div><div><b>15</b>scoreboard sports</div><div><b>1–4</b>curtains</div></div>
   </div>
-  {led('beat', 'Hero video: both curtains going off to a dance track at night', 40, 21)}
+  {pic('pool-party', 'Two LED curtains glowing behind a pool party at night', 'hero-shot')}
 </div></header>
 
 <section class="alt"><div class="wrap">
@@ -124,20 +129,20 @@ home = f'''
       <p class="lead">Most light apps flash on every beat. GlowBop follows the whole song.</p>
       <ul class="ticks"><li><b>Build-ups</b> fill the wall slowly, getting brighter and busier.</li><li><b>Drops</b> hit with a burst, a new effect and a color change.</li><li><b>Quiet parts</b> go soft and flowing so the room can breathe.</li><li><b>Epic songs</b> get one big climax instead of strobes.</li></ul>
       <a class="btn" href="/guide/music.html">How the music show works →</a></div>
-    <div class="media">{led('drop', 'Video: slow build-up, then the drop hits on the wall')}</div>
+    <div class="media">{pic('dj-drop', 'A DJ with a wall of LED curtains bursting with light on the drop')}</div>
   </div>
   <div class="feat flip reveal">
     <div><span class="eyebrow">Game day</span><h2>A scoreboard as big as your wall</h2>
       <p class="lead">Keep score at the field, follow your team live, or watch Formula 1 running order with tyres and pit stops.</p>
       <ul class="ticks"><li><b>15 sports</b> plus a giant countdown clock.</li><li><b>Live scores</b> for pro and college leagues, with a celebration in team colors when they score.</li><li><b>F1 board</b> with fastest lap, tyres, pits and rain.</li></ul>
       <a class="btn" href="/guide/scoreboard.html">Scoreboard guide →</a></div>
-    <div class="media">{led('score', 'Photo: scoreboard on the curtains at a soccer game')}</div>
+    <div class="media">{pic('soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game')}</div>
   </div>
   <div class="feat reveal">
     <div><span class="eyebrow">Holidays</span><h2>Mini-movies for the big nights</h2>
       <p class="lead">Each holiday has its own button. Halloween Night and Christmas Eve play full animated stories, crisp pixel art made for LED curtains.</p>
       <a class="btn" href="/guide/holidays.html">See the holidays →</a></div>
-    <div class="media">{led('halloween', 'Video: Halloween Night mini-movie on the front porch')}</div>
+    <div class="media">{pic('halloween-porch', 'LED curtain showing pixel jack-o-lanterns on a Halloween porch')}</div>
   </div>
 </div></section>
 
@@ -179,14 +184,14 @@ def feat(i, scene, cap, eyebrow, title, lead, ticks, link, label):
     return f'''<div class="feat{flip} reveal" id="{slug(eyebrow)}">
 <div><span class="eyebrow">{eyebrow}</span><h2>{title}</h2><p class="lead">{lead}</p>
 <ul class="ticks">{''.join(f'<li>{t}</li>' for t in ticks)}</ul><a class="btn" href="{link}">{label} →</a></div>
-<div class="media">{led(scene, cap)}</div></div>'''
+<div class="media">{pic(scene[1:], cap) if scene.startswith('@') else led(scene, cap)}</div></div>'''
 
 F2 = [
-    ('beat', 'Video: party by the pool, wall reacting to the music', 'Music show', 'Hears the music, follows the song',
+    ('@pool-party', 'Two LED curtains glowing behind a pool party at night', 'Music show', 'Hears the music, follows the song',
      'GlowBop listens to the sound your computer is playing, so it works with any app: Spotify, YouTube, Apple Music, Serato, a playlist on a USB stick.',
      ['<b>Beat, bass and melody</b> each drive different parts of the show.', '<b>Build-ups and drops</b> get their own moves.', '<b>Pace</b> Chill, Normal or Hype, and <b>Sparkles</b> Off, Auto or Lots.', '<b>Sync slider</b> lines the lights up with Bluetooth speakers that run late.', '<b>Song memory</b> remembers how each song went the next time it plays.'],
      '/guide/music.html', 'Music show guide'),
-    ('tunnel', 'Video: epic movie soundtrack building to its climax', 'Epic mode', 'Made for movie music',
+    ('@galaxy-patio', 'Two LED curtains showing a deep-space galaxy on a patio', 'Epic mode', 'Made for movie music',
      'Cinematic songs don\'t have a "drop". They swell for minutes and peak once. GlowBop notices and switches to Epic mode on its own.',
      ['A slow, growing <b>swell</b> through the crescendo.', '<b>One big climax</b> at the real peak, not every loud moment.', 'No harsh strobes during the quiet, emotional parts.', 'Optional <b>song lookup</b> uses free genre data to spot soundtracks even faster.'],
      '/guide/music.html#epic', 'About Epic mode'),
@@ -194,15 +199,15 @@ F2 = [
      'A look is a mood: its colors plus a set of effects for calm, medium and loud parts. GlowBop shuffles through them as the music changes.',
      ['Neon Party, Deep Space, Synthwave, Warehouse Rave, Mainstage, Club Rig, Royal Gold and more.', '<b>3D Depth</b> tunnels, spinning cubes and disco spheres.', '<b>Dance Crew</b> pixel characters you can switch on or off.', '<b>Describe a scene</b> in words and GlowBop builds it.', '<b>Pin</b> an effect you love, or hit <b>Surprise me</b>.'],
      '/guide/looks.html', 'Looks guide'),
-    ('christmas', 'Video: Christmas Eve mini-movie on the house', 'Holidays', 'Every holiday gets its own button',
+    ('@christmas-eve', 'LED curtain showing a pixel Christmas tree in a window', 'Holidays', 'Every holiday gets its own button',
      'Holidays live in their own section, away from the normal shuffle. Tap one and the wall plays only that holiday until you stop it.',
      ['Halloween, Christmas, Thanksgiving, New Year, Valentine\'s, St. Patrick\'s, Birthday and Game Day.', '<b>Mini-movies:</b> Halloween Night and Christmas Eve play full animated stories.', 'Jack-o\'-lanterns, bats, ghosts, a haunted house, sleigh rides, fireworks, a ball drop and more.', 'Choose which holiday effects are in the rotation.'],
      '/guide/holidays.html', 'Holidays guide'),
-    ('score', 'Photo: kids\' soccer game with the score on the curtains', 'Scoreboard', 'Game Day, Live Fan and F1',
+    ('@soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game', 'Scoreboard', 'Game Day, Live Fan and F1',
      'Turn the wall into a scoreboard. Keep score yourself from your phone, follow a real game, or watch a Grand Prix.',
      ['<b>Game Day:</b> 15 sports, clock that counts down or up, periods, timeouts, fouls, possession, undo.', '<b>Live Fan:</b> pick a league and team; scores update every 10 seconds and the wall celebrates in team colors.', '<b>F1:</b> running order, tyres, pit stops, fastest lap, DRS and rain.', '<b>Countdown timer:</b> a huge clock for halftime, a party or New Year.'],
      '/guide/scoreboard.html', 'Scoreboard guide'),
-    ('f1', 'Photo: F1 live board during a race weekend', 'Formula 1', 'Race day on your wall',
+    ('@f1-party', 'LED curtain wall showing a race running order at an F1 watch party', 'Formula 1', 'Race day on your wall',
      'The F1 board shows the top of the field with team colors and tyre dots, then celebrates a new leader, pole position or a fastest lap.',
      ['Purple bar for the fastest lap, just like TV.', 'Pit stops get a soft flash, not a party.', 'Works for practice, qualifying and the race.'],
      '/guide/scoreboard.html#f1', 'F1 board guide'),
@@ -214,11 +219,11 @@ F2 = [
      'Mirror the laptop screen onto the wall: TV shows, music videos, games.',
      ['Styles: <b>TV</b>, <b>Beat</b> and <b>Glow</b>.', '<b>Smart fill</b> trims black bars so the video fills the wall.', '<b>Center zoom</b> for bigger, bolder shapes.'],
      '/guide/text-logos.html#mirror', 'Screen mirror guide'),
-    ('lineup', 'Photo: four curtains side by side as one wall', 'Multi-curtain', '1, 2, 3 or 4 curtains, one wall',
+    ('@dj-drop', 'Four LED curtains side by side as one wall behind a DJ', 'Multi-curtain', '1, 2, 3 or 4 curtains, one wall',
      'Hang curtains side by side or stack them. GlowBop treats them as one big screen and resizes every show to fit, keeping pixel art crisp.',
      ['A <b>line-up wizard</b> shows a number and arrow on each curtain so you can rotate, flip and order them.', '<b>Lock it in</b> so nothing moves by accident.', 'Run them as <b>one show</b> or split them into <b>groups</b> with their own shows.'],
      '/guide/lineup.html', 'Line-up guide'),
-    ('sparkle', 'Photo: phone remote in hand, wall in the background', 'Phone remote', 'Control it all from your phone',
+    ('@phone-remote', 'Phone remote in hand with LED curtains glowing behind', 'Phone remote', 'Control it all from your phone',
      'The GlowBop laptop app shows a QR code. Scan it on any phone on the same Wi-Fi and you get the full remote in the browser.',
      ['Live preview of every curtain right on your phone.', 'Add it to your home screen and it opens like an app.', 'Works at the field too, over your phone\'s hotspot.'],
      '/guide/getting-started.html#phone', 'Phone setup'),
@@ -385,8 +390,8 @@ guide('holidays', f'''
 </div>
 <h2 id="movies">Mini-movies</h2>
 <p>For the two biggest nights, GlowBop plays a short animated story in chapters, drawn as crisp pixel art made for LED curtains.</p>
-{led('halloween', 'Video: Halloween Night mini-movie from the street')}
-{led('christmas', 'Video: Christmas Eve mini-movie on the house')}
+{pic('halloween-porch', 'LED curtain showing pixel jack-o-lanterns on a Halloween porch')}
+{pic('christmas-eve', 'LED curtain showing a pixel Christmas tree in a window')}
 <h2 id="choose">Choose the effects</h2>
 <p>Inside each holiday you can toggle which effects are in the rotation, so you can keep the ones your family loves.</p>
 {tip('<b>Trick-or-treat tip:</b> start Halloween at dusk, set Pace to Chill, and the mini-movie plays every few switches between the spooky effects.', 'pink')}
@@ -395,7 +400,7 @@ guide('holidays', f'''
 SPORTS = 'Soccer, Football, Basketball, Baseball, Softball, Hockey, Lacrosse, Volleyball, Pickleball, Tennis, Rugby, Water polo, Cornhole, Other, plus a Countdown timer'
 guide('scoreboard', f'''
 <p>Open <b>🏟️ Scoreboard</b> on the remote and pick a mode: <span class="k">Game Day</span>, <span class="k">Live Fan</span> or <span class="k">🏎️ F1</span>. <span class="k">Off</span> returns to the light show.</p>
-{led('score', 'Photo: Game Day scoreboard at the field')}
+{pic('soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game')}
 <h2 id="gameday">Game Day: keep score yourself</h2>
 <ol><li>Choose a <b>Sport</b> from the dropdown: {SPORTS}.</li>
 <li>Open <b>⚙️ Game setup</b> to set minutes per period, number of periods, and <span class="k">⏳ Count down</span> or <span class="k">⏱️ Count up</span>. Tap <span class="k">Set up the game</span>.</li>
@@ -418,7 +423,7 @@ guide('scoreboard', f'''
 <li>During the game the score updates <b>every 10 seconds</b>. When your team scores, the wall celebrates in their colors.</li></ol>
 {tip('GlowBop uses public score feeds and has backups for the major leagues. If a feed is slow, the board catches up on the next update.', 'warn')}
 <h2 id="f1">F1 live board 🏎️</h2>
-{led('f1', 'Photo: F1 board during a Grand Prix')}
+{pic('f1-party', 'LED curtain wall showing a race running order at an F1 watch party')}
 <ul><li>Rows show position and driver code with a <b>team color tab</b>.</li>
 <li>A <b>tyre dot</b>: red soft, yellow medium, white hard.</li>
 <li>A gap bar, <b>purple</b> for the fastest lap, plus DRS and a rain indicator.</li>
@@ -503,7 +508,7 @@ lights = f'''<header class="pagehead"><div class="wrap center"><span class="eyeb
 <div><span class="eyebrow">Good to know</span><h2>Curtains are the sweet spot</h2>
 <ul class="ticks"><li>Curtains are a <b>grid of pixels</b>, so GlowBop can draw real pictures: pumpkins, scores, words.</li><li>More curtains = a <b>bigger screen</b>. Two side by side is a great start.</li><li>Outdoor-rated curtains handle pool decks and porches.</li></ul>
 <p class="dim">Have lights you want supported? Email <a href="mailto:{MAIL}">{MAIL}</a> with the brand and model. Requests decide what we test next.</p></div>
-<div class="media">{led('lineup', 'Photo: the test wall, 2 Twinkly curtains plus 2 TikTok curtains', 80, 21)}</div></div>
+<div class="media">{pic('galaxy-patio', 'Two LED curtains side by side on a patio')}</div></div>
 </div></section>{band()}'''
 page('/lights.html', 'Supported lights · GlowBop', 'GlowBop supports Twinkly curtains today. TikTok-style pixel curtains, light-only Christmas trees, WLED and Govee are in testing.', lights, '/lights.html')
 
@@ -584,6 +589,7 @@ page('/404.html', 'Page not found · GlowBop', 'This page is not here.', f'''<se
 
 # ---------- assets + photo list
 shutil.copytree(os.path.join(HERE, 'assets'), os.path.join(OUT, 'assets'), dirs_exist_ok=True)
+shutil.copytree(os.path.join(HERE, 'img'), os.path.join(OUT, 'img'), dirs_exist_ok=True)
 with open(os.path.join(OUT, 'PHOTOS.md'), 'w') as f:
     f.write('# Photo & video spots\n\nEach animated LED placeholder on the site is waiting for a real photo or clip. Send them over and they get swapped in.\n\n')
     for pth, cap in PHOTOS: f.write(f'- **{pth}**: {cap}\n')
