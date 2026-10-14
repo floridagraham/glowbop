@@ -134,8 +134,16 @@
     fireplace(px, W, H, t, o) {
       // same idea as the app: heat rises at 2x resolution, random cooling tears it into tongues
       const Hs = H * 2, Ws = W * 2;
-      if (!o.heat) { o.heat = new Float32Array(Hs * Ws); o.bed = new Float32Array(Ws).map(() => Math.random()); o.tex = new Float32Array(Hs * 3 * Ws).map(() => Math.random()); o.sc = 0;
-        for (let k = 0; k < 3; k++) for (let y = 0; y < Hs * 3; y++) for (let x = 0; x < Ws; x++) { const i = y * Ws + x; o.tex[i] = (o.tex[i] + o.tex[((y + 1) % (Hs * 3)) * Ws + x] + o.tex[((y + Hs * 3 - 1) % (Hs * 3)) * Ws + x]) / 3; } }
+      // endless gap texture: every row that scrolls out of view is replaced by a new one, so it never loops
+      const N = Hs * 3, gauss = () => Math.sqrt(-2 * Math.log(Math.random() + 1e-9)) * Math.cos(6.2832 * Math.random());
+      const nextRow = () => { let z = Float32Array.from({length: Ws}, gauss);
+        for (let p = 0; p < 2; p++) z = z.map((v, x) => (v + z[(x + 1) % Ws] + z[(x + Ws - 1) % Ws]) / 3);
+        let sd = 0; z.forEach(v => sd += v * v); sd = Math.sqrt(sd / Ws) + 1e-9;
+        const row = new Float32Array(Ws); for (let x = 0; x < Ws; x++) row[x] = 0.62 * o.last[x] + 0.785 * z[x] / sd; o.last = row; return row; };
+      if (!o.heat) { o.heat = new Float32Array(Hs * Ws); o.bed = new Float32Array(Ws).map(() => Math.random()); o.last = new Float32Array(Ws);
+        o.tex = []; for (let k = 0; k < N; k++) o.tex.push(nextRow()); o.sc = 0; o.prev = 0; o.wind = 0; o.windTo = 0; o.windAt = 0; }
+      if (t > o.windAt) { o.windTo = (Math.random() * 2 - 1) * 0.7; o.windAt = t + 10 + Math.random() * 20; }
+      o.wind += (o.windTo - o.wind) * 0.01;
       const h = o.heat, reach = 0.8 * Hs;
       for (let step = 0, n = o.warm ? 3 : 90; step < n; step++) {
         if (!o.bt || Math.random() < 0.15) o.bt = Float32Array.from({length: Ws}, () => Math.random());
@@ -143,10 +151,11 @@
         const kk = Math.max(3, (Ws / 10) | 0), sm = new Float32Array(Ws); let lo = 9, hi = -9;
         for (let x = 0; x < Ws; x++) { let m = 0; for (let k = -kk; k <= kk; k++) m += o.bed[(x + k + Ws) % Ws]; sm[x] = m; lo = Math.min(lo, m); hi = Math.max(hi, m); }
         for (let x = 0; x < Ws; x++) { const hot = (sm[x] - lo) / (hi - lo + 1e-9); h[(Hs - 1) * Ws + x] = Math.min(1.25, (0.58 + 0.55 * hot) * (0.85 + 0.3 * Math.random())); h[(Hs - 2) * Ws + x] = Math.max(h[(Hs - 2) * Ws + x] * 0.6, h[(Hs - 1) * Ws + x] * 0.97); }
-        o.sc = (o.sc + 0.9) % (Hs * 3); const s0 = o.sc | 0;
+        o.sc = (o.sc + 0.9) % N; const s0 = o.sc | 0;
+        while (o.prev !== s0) { o.tex[o.prev] = nextRow(); o.prev = (o.prev + 1) % N; }
         for (let y = 0; y < Hs - 2; y++) for (let x = 0; x < Ws; x++) {
-          const r = Math.random(), off = Math.round(r * 2.6 - 1.3), sx = (x - off + Ws) % Ws;
-          const tx = o.tex[((y + s0) % (Hs * 3)) * Ws + x], dec = r * r * r * (4.6 / reach) * (0.1 + 2.4 * tx * tx);
+          const r = Math.random(), off = Math.round(r * 2.6 - 1.3 + 0.55 * o.wind), sx = ((x - off) % Ws + Ws) % Ws;
+          const tx = Math.min(1, Math.max(0, 0.47 + 0.17 * o.tex[(y + s0) % N][x])), dec = r * r * r * (4.6 / reach) * (0.1 + 2.4 * tx * tx);
           h[y * Ws + x] = Math.max(0, h[(y + 1) * Ws + sx] - dec);
         }
       }
