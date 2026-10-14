@@ -203,6 +203,7 @@ home = f'''
   <div class="btns" style="justify-content:center"><a class="btn" href="/lights.html">Check your lights →</a></div>
 </div></section>
 
+<section class="tight"><div class="wrap"><a class="launchban reveal" href="{WAIT}"><img src="/img/launch-banner.jpg" alt="GlowBop launches October 31. Light up Halloween. Join the launch list." loading="lazy"></a></div></section>
 <section><div class="wrap">
   <div class="center reveal"><span class="eyebrow">Pricing</span><h2>Less than a coffee a month</h2>
   <p class="lead">$2.99 a month, $24.99 a year, or $59 once and it's yours. Every plan starts with a 7-day free trial.</p>
@@ -238,6 +239,14 @@ F2 = [
      'A look is a mood: its colors plus a set of effects for calm, medium and loud parts. GlowBop shuffles through them as the music changes.',
      ['Neon Party, Deep Space, Synthwave, Warehouse Rave, Mainstage, Club Rig, Royal Gold and more.', '<b>3D Depth</b> tunnels, spinning cubes and disco spheres.', '<b>Dance Crew</b> pixel characters you can switch on or off.', '<b>Describe a scene</b> in words and GlowBop builds it.', '<b>Pin</b> an effect you love, or hit <b>Surprise me</b>.'],
      '/guide/looks.html', 'Looks guide'),
+    ('@retro-arcade', 'Two LED curtains playing a self-running brick-breaker game in a game room', 'Retro Arcade', 'Games that play themselves',
+     'Brick breaker, snake, pong, alien parades and 8-bit fireworks, all playing themselves across your wall and speeding up with the music.',
+     ['<b>Breakout</b>: bricks burst into sparks.', '<b>Snake</b>: a rainbow snake hunts glowing food.', '<b>Pong</b>: the ball smashes on the beat.', '<b>Pixel fireworks</b> and <b>vector space rocks</b>.'],
+     '/gallery.html#new', 'See them in the gallery'),
+    ('@volcano-patio', 'LED curtains showing a pixel volcano erupting on a rainy patio', 'Wild Elements', 'Weather and nature, wired to the beat',
+     'A volcano that erupts on the drop, a tornado that wanders across the wall, rain on the window, a waterfall and the surface of the sun.',
+     ['<b>Volcano</b>: lava bombs fly on the drop.', '<b>Tornado</b>: debris spins faster as the song builds.', '<b>Rain on glass</b>, <b>Waterfall</b>, <b>Solar flare</b>.'],
+     '/gallery.html#new', 'See them in the gallery'),
     ('@christmas-eve', 'LED curtain showing a pixel Christmas tree in a window', 'Holidays', 'Every holiday gets its own button',
      'Holidays live in their own section, away from the normal shuffle. Tap one and the wall plays only that holiday until you stop it.',
      ['Halloween, Christmas, Thanksgiving, New Year, Valentine\'s, St. Patrick\'s, Birthday and Game Day.', '<b>Mini-movies:</b> Halloween Night and Christmas Eve play full animated stories.', 'Jack-o\'-lanterns, bats, ghosts, a haunted house, sleigh rides, fireworks, a ball drop and more.', 'Choose which holiday effects are in the rotation.'],
@@ -246,7 +255,7 @@ F2 = [
      'Light a fire on your wall with one tap. GlowBop simulates real flames live, so the fire never loops and never looks the same twice.',
      ['<b>7 colors:</b> Classic, Blue gas, Purple, Rainbow, Green, Pink and Ice.', '<b>Cozy:</b> tall, relaxing flames with the odd small flare.', '<b>Roaring:</b> wild flicker, big whooshes and bursts of sparks.', '<b>Dance:</b> the flames swell gently with the beat of your music.', 'One long fire across every curtain on the wall.'],
      '/guide/fireplace.html', 'Fireplace guide'),
-    ('@soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game', 'Scoreboard', 'Game Day, Live Fan and F1',
+    ('@tailgate-scoreboard', 'LED curtain scoreboard at a stadium tailgate', 'Scoreboard', 'Game Day, Live Fan and F1',
      'Turn the wall into a scoreboard. Keep score yourself from your phone, follow a real game, or watch a Grand Prix.',
      ['<b>Game Day:</b> 15 sports, clock that counts down or up, periods, timeouts, fouls, possession, undo.', '<b>Live Fan:</b> pick a league and team; scores update every 10 seconds and the wall celebrates in team colors.', '<b>F1:</b> running order, tyres, pit stops, fastest lap, DRS and rain.', '<b>Countdown timer:</b> a huge clock for halftime, a party or New Year.'],
      '/guide/scoreboard.html', 'Scoreboard guide'),
@@ -408,6 +417,7 @@ guide('looks', f'''
 <div class="toc">{''.join(f'<span class="k">{l}</span> ' for l in LOOKS)}</div>
 <p>Tap any look to jump to it. Tap <span class="k">Shuffle</span> to hand control back to GlowBop.</p>
 <h2 id="3d">3D, club, nature and retro looks</h2>
+{pic('3d-loft', 'LED curtain wall showing a 3D crystal and a 4D cube in a loft')}
 <ul><li><b>3D Depth:</b> tunnels, spinning cubes, disco spheres and black holes that look like they go deep into the wall.</li>
 <li><b>Club Rig:</b> moving-head beams, laser scans and strobe banks, like a real club ceiling.</li>
 <li><b>Dance Crew:</b> pixel characters that dance to the beat. Turn them on or off with <span class="k">Characters</span>.</li>
@@ -456,6 +466,7 @@ guide('fireplace', f"""
 {led('fireplace', 'the same fire simulation the app runs, right in your browser', demo=True)}
 <h2 id="colors">7 colors</h2>
 <div class="toc"><span class="k">🔥 Classic</span> <span class="k">💙 Blue gas</span> <span class="k">💜 Purple</span> <span class="k">🌈 Rainbow</span> <span class="k">💚 Green</span> <span class="k">🩷 Pink</span> <span class="k">🤍 Ice</span></div>
+{pic('purple-fire-party', 'Purple and pink fire on an LED curtain at a house party')}
 <p>Rainbow drifts slowly through every color across the wall and keeps a white-hot core. Green is great for Halloween and St. Patrick's, Pink for Valentine's, Ice for a ghostly winter look.</p>
 <div class="grid g2">{clip('fire-rainbow-cozy', 'Rainbow')}{clip('fire-blue-cozy', 'Blue gas')}{clip('fire-purple-roar', 'Purple, Roaring')}{clip('fire-ice-cozy', 'Ice')}</div>
 <h2 id="mode">Cozy or Roaring</h2>
@@ -521,6 +532,7 @@ guide('text-logos', f'''
 <li>Pick a <b>Motion</b>: <span class="k">Glow</span>, <span class="k">Pulse</span> or <span class="k">Colour shift</span>.</li>
 <li>Tap <span class="k">Show logo</span>, or <span class="k">Text + logo</span> for both.</li></ol>
 <p>Great for DJs, bars, gyms and businesses. Save it and it's ready next time.</p>
+{pic('dj-logo-wall', 'A DJ with a logo glowing across four LED curtains')}
 <h2 id="saved">Saved messages and logos</h2>
 <ul><li>Tap <span class="k">Save</span> under the text or the logo to keep it. It appears as a chip at the bottom of the card.</li>
 <li>Tap a saved chip to put it back on the wall.</li>

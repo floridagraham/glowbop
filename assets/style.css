@@ -192,3 +192,5 @@ footer .fine{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 
 .gal .led figcaption{display:none}
 .appshot{max-width:430px;margin-left:auto;margin-right:auto}
 .appshot img{aspect-ratio:auto}
+.launchban{display:block;border-radius:22px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -40px rgba(255,120,0,.55)}
+.launchban img{display:block;width:100%;height:auto}
