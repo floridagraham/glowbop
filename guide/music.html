@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music show · GlowBop Guide</title>
+<meta name="description" content="How the show follows a song, Epic mode, sync and song lookup.">
+<link rel="icon" href="/icon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:title" content="Music show · GlowBop Guide">
+<meta property="og:description" content="How the show follows a song, Epic mode, sync and song lookup.">
+<meta property="og:image" content="https://glowbop.com/icon.png">
+<meta name="theme-color" content="#07070b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="/"><img src="/icon.png" alt="">GlowBop</a>
+  <button class="burger" aria-label="Menu">☰</button>
+  <ul><li><a href="/features.html">Features</a></li><li><a href="/guide/" class=on>Guide</a></li><li><a href="/lights.html">Lights</a></li><li><a href="/compare.html">Compare</a></li><li><a href="/pricing.html">Pricing</a></li><li><a href="/faq.html">FAQ</a></li></ul>
+  <a class="btn primary small cta" href="/pricing.html">Try free for 7 days</a>
+</div></nav>
+<div class="wrap guide"><aside class="side"><h4>Guide</h4><a href="/guide/">📖 Overview</a><a href="/guide/getting-started.html">🚀 Getting started</a><a href="/guide/lineup.html">🧭 Line up your curtains</a><a href="/guide/music.html" class=on>🔊 Music show</a><a href="/guide/looks.html">🎨 Looks & effects</a><a href="/guide/holidays.html">🎃 Holidays & mini-movies</a><a href="/guide/scoreboard.html">🏟️ Scoreboard</a><a href="/guide/text-logos.html">🔤 Text, logos & mirror</a><a href="/guide/groups.html">🧩 Light groups</a><a href="/guide/troubleshooting.html">🛠️ Troubleshooting</a></aside><article class="doc"><span class="eyebrow">Guide</span><h1 style="font-size:clamp(32px,4.4vw,48px)">🔊 Music show</h1><p class="lead">How the show follows a song, Epic mode, sync and song lookup.</p><div class="toc"><a href="#how">How it works</a><a href="#controls">Controls</a><a href="#sync">Sync</a><a href="#epic">Epic mode</a><a href="#memory">Song memory</a><a href="#lookup">Song lookup</a></div>
+<h2 id="how">How the music show works</h2>
+<p>GlowBop listens to the sound coming out of your computer, the same sound you hear. It doesn't matter what app plays it: Spotify, YouTube, Apple Music, a DJ program, a video. Nothing to log into.</p>
+<ul><li><b>Kick and bass</b> push bursts, pulses and color hits.</li><li><b>Melody</b> moves the flowing parts.</li>
+<li><b>Song sections</b>: GlowBop tracks loudness over time to tell a verse from a build-up, a drop, or a breakdown.</li>
+<li><b>Drops</b> get a big move and usually a look change. A short gap between drops keeps it from feeling repetitive.</li></ul>
+<figure class="led "><canvas data-scene="drop" data-w="40" data-h="21" aria-label="Video: a dance song build-up and drop, side by side with the remote"></canvas><figcaption>📷 Placeholder · Video: a dance song build-up and drop, side by side with the remote</figcaption></figure>
+<h2 id="controls">Show controls</h2>
+<ul><li><b>Pace:</b> <span class="k">Chill</span> slow and dreamy, <span class="k">Normal</span>, <span class="k">Hype</span> fast changes for a dance floor.</li>
+<li><b>Sparkles:</b> <span class="k">Off</span>, <span class="k">Auto</span> (on the high notes), <span class="k">Lots</span>.</li>
+<li><b>Brightness</b> for the whole wall, and <b>Blend</b> for how smoothly effects cross-fade.</li>
+<li><span class="k">Next effect</span> skips ahead. <span class="k">Pin</span> keeps the current one going. <span class="k">Shuffle</span> lets GlowBop choose.</li></ul>
+<h2 id="sync">Sync with Bluetooth speakers</h2>
+<p>Bluetooth speakers play sound about 150 to 300 milliseconds late, so the lights can look early. Slide <b>Sync</b> to the right until a kick drum and its flash land together. GlowBop remembers the setting for each speaker.</p>
+<div class="tip "><b>Quick test:</b> play a song with a hard, simple kick drum and watch one curtain while you slide. When it feels "locked", stop.</div>
+<h2 id="epic">Epic mode 🎬</h2>
+<p>Movie and trailer music works differently from dance music: a long crescendo, then one huge peak. GlowBop spots these songs on its own and switches to Epic mode.</p>
+<ul><li>Through the build, the wall <b>swells</b>: more light, more motion, warmer color.</li>
+<li>Only the <b>real climax</b> gets the big moment, and it must top everything before it.</li>
+<li>Harsh strobes are left out of Epic songs.</li></ul>
+<figure class="led "><canvas data-scene="tunnel" data-w="40" data-h="21" aria-label="Video: an orchestral song reaching its climax on the wall"></canvas><figcaption>📷 Placeholder · Video: an orchestral song reaching its climax on the wall</figcaption></figure>
+<h2 id="memory">Song memory</h2>
+<p>The first time a song plays, GlowBop learns its shape. Next time, it already knows where the drops and the climax are and can set up for them.</p>
+<h2 id="lookup">Song lookup (optional)</h2>
+<p>When GlowBop knows a song's name, it can look up its genre, tempo and key. An "orchestral" song starts in Epic mode right away; "house" stays in dance mode. You need two free keys:</p>
+<ol><li><b>Last.fm</b> (genres): sign in at last.fm, go to <a href="https://www.last.fm/api/account/create" rel="noopener">last.fm/api/account/create</a>, fill in a name and description, and copy the <b>API key</b>.</li>
+<li><b>GetSongBPM</b> (tempo and key): request a key at <a href="https://getsongbpm.com/api" rel="noopener">getsongbpm.com/api</a> and click the activation link in your email.</li>
+<li>In GlowBop open <b>Light setup → 🔎 Song lookup</b>, paste each key, and tap <span class="k">Save</span>.</li></ol>
+<div class="tip ">Each song is looked up only once and saved on your computer. Your keys stay on your computer too.</div>
+<div class="pager"><a href="/guide/lineup.html"><small>← Previous</small>Line up your curtains</a><a class="next" href="/guide/looks.html"><small>Next →</small>Looks & effects</a></div></article></div>
+<footer><div class="wrap">
+  <div class="cols">
+    <div><a class="brand" href="/"><img src="/icon.png" alt="">GlowBop</a>
+      <p class="dim" style="margin-top:12px;font-size:15px;max-width:34ch">Your lights, dancing to your music. A light show app for LED curtains, made in Fort Myers, Florida.</p>
+      <a class="btn small" href="mailto:hello@glowbop.com?subject=GlowBop%20launch%20list&body=Hi!%20Add%20me%20to%20the%20GlowBop%20launch%20list.%0A%0AMy%20lights%3A%20">✉️ Join the launch list</a></div>
+    <div><h4>Product</h4><ul><li><a href="/features.html">Features</a></li><li><a href="/lights.html">Supported lights</a></li><li><a href="/compare.html">Compare</a></li><li><a href="/pricing.html">Pricing</a></li></ul></div>
+    <div><h4>Guide</h4><ul><li><a href="/guide/getting-started.html">Getting started</a></li><li><a href="/guide/music.html">Music show</a></li><li><a href="/guide/scoreboard.html">Scoreboard</a></li><li><a href="/guide/troubleshooting.html">Troubleshooting</a></li></ul></div>
+    <div><h4>Help</h4><ul><li><a href="/faq.html">FAQ</a></li><li><a href="mailto:hello@glowbop.com">hello@glowbop.com</a></li></ul></div>
+  </div>
+  <div class="fine"><span>© 2026 GlowBop. Twinkly, Govee and other brand names belong to their owners. GlowBop is not affiliated with them.</span>
+  <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
+</div></footer>
+<script src="/assets/site.js"></script>
+</body>
+</html>
