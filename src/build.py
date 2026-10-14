@@ -8,17 +8,35 @@ WAIT = f'mailto:{MAIL}?subject=GlowBop%20launch%20list&body=Hi!%20Add%20me%20to%
 PHOTOS = []
 CUR = ['']
 
-NAV = [('/features.html', 'Features'), ('/guide/', 'Guide'), ('/lights.html', 'Lights'), ('/compare.html', 'Compare'),
+NAV = [('/features.html', 'Features'), ('/gallery.html', 'Gallery'), ('/guide/', 'Guide'), ('/lights.html', 'Lights'), ('/compare.html', 'Compare'),
        ('/pricing.html', 'Pricing'), ('/faq.html', 'FAQ')]
 
 
-def led(scene, caption, w=40, h=21, cls='', demo=False):
+def led(scene, caption, w=40, h=21, cls='', demo=False, illus=False):
     if demo:
         return (f'<figure class="led demo {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
                 f'<figcaption>🔴 Live · {html.escape(caption)}</figcaption></figure>')
+    if illus:
+        return (f'<figure class="led {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
+                f'<figcaption>🎨 Illustration · {html.escape(caption)}</figcaption></figure>')
     PHOTOS.append((CUR[0], caption))
     return (f'<figure class="led {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
             f'<figcaption>📷 Placeholder · {html.escape(caption)}</figcaption></figure>')
+
+
+import json as _json
+CLIPS = _json.load(open(os.path.join(HERE, 'clips.json')))
+
+
+def clip(name, caption=None, cls=''):
+    m = CLIPS[name]; cap = caption or m['title']
+    return (f'<figure class="led real {cls}" style="aspect-ratio:{m['w']}/{m['h']}"><canvas data-clip="{name}" aria-label="{html.escape(cap)}"></canvas>'
+            f'<figcaption>🔴 Recorded from GlowBop · {html.escape(cap)}</figcaption></figure>')
+
+
+def shot(name, alt):
+    return (f'<figure class="shot appshot"><img src="/img/{name}.jpg" alt="{html.escape(alt)}" loading="lazy">'
+            f'<span class="concept">Real app screenshot</span></figure>')
 
 
 def pic(name, alt, cls=''):
@@ -28,6 +46,7 @@ def pic(name, alt, cls=''):
 
 def page(path, title, desc, body, active=''):
     CUR[0] = path
+    CLIPS_JS = _json.dumps({k: dict(w=v['w'], h=v['h'], n=v['n'], fps=v['fps'], title=v['title']) for k, v in CLIPS.items()}, separators=(',', ':'))
     nav = ''.join(f'<li><a href="{h}"{" class=on" if h == active else ""}>{n}</a></li>' for h, n in NAV)
     doc = f'''<!doctype html>
 <html lang="en">
@@ -49,7 +68,7 @@ def page(path, title, desc, body, active=''):
 </head>
 <body>
 <nav class="nav"><div class="wrap">
-  <a class="brand" href="/"><img src="/icon.png" alt="">GlowBop</a>
+  <a class="brand" href="/"><img class="gb-logo" src="/icon.png" alt="">GlowBop</a>
   <button class="burger" aria-label="Menu">☰</button>
   <ul>{nav}</ul>
   <a class="btn primary small cta" href="/pricing.html">Try free for 7 days</a>
@@ -57,16 +76,17 @@ def page(path, title, desc, body, active=''):
 {body}
 <footer><div class="wrap">
   <div class="cols">
-    <div><a class="brand" href="/"><img src="/icon.png" alt="">GlowBop</a>
+    <div><a class="brand" href="/"><img class="gb-logo" src="/icon.png" alt="">GlowBop</a>
       <p class="dim" style="margin-top:12px;font-size:15px;max-width:34ch">Your lights, dancing to your music. A light show app for LED curtains, made in Fort Myers, Florida.</p>
       <a class="btn small" href="{WAIT}">✉️ Join the launch list</a></div>
-    <div><h4>Product</h4><ul><li><a href="/features.html">Features</a></li><li><a href="/lights.html">Supported lights</a></li><li><a href="/compare.html">Compare</a></li><li><a href="/pricing.html">Pricing</a></li></ul></div>
+    <div><h4>Product</h4><ul><li><a href="/features.html">Features</a></li><li><a href="/gallery.html">Gallery</a></li><li><a href="/lights.html">Supported lights</a></li><li><a href="/compare.html">Compare</a></li><li><a href="/pricing.html">Pricing</a></li></ul></div>
     <div><h4>Guide</h4><ul><li><a href="/guide/getting-started.html">Getting started</a></li><li><a href="/guide/music.html">Music show</a></li><li><a href="/guide/scoreboard.html">Scoreboard</a></li><li><a href="/guide/troubleshooting.html">Troubleshooting</a></li></ul></div>
     <div><h4>Help</h4><ul><li><a href="/faq.html">FAQ</a></li><li><a href="mailto:{MAIL}">{MAIL}</a></li></ul></div>
   </div>
   <div class="fine"><span>© 2026 GlowBop. Twinkly, Govee and other brand names belong to their owners. GlowBop is not affiliated with them.</span>
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
+<script>window.GB_CLIPS={CLIPS_JS};</script>
 <script src="/assets/site.js"></script>
 </body>
 </html>
@@ -88,7 +108,7 @@ def band(title='Ready to light up the party?', text='Join the launch list and we
 FEATS = [
     ('🔊', 'Hears every beat', 'Listens to whatever your computer plays. Builds, drops and quiet parts all look different.', '/guide/music.html'),
     ('🎬', 'Epic mode', 'Movie soundtracks get a slow swell and one giant climax instead of nonstop strobes.', '/guide/music.html#epic'),
-    ('🎨', '29 looks, 150+ effects', 'Neon Party, Deep Space, Synthwave, Club Rig and more. Shuffle them or pin a favorite.', '/guide/looks.html'),
+    ('🎨', '32 looks, 200+ effects', 'Neon Party, Deep Space, Retro Arcade, Wild Elements and more. Shuffle them or pin a favorite.', '/guide/looks.html'),
     ('🎃', 'Holidays & mini-movies', 'Halloween, Christmas, New Year and more, with full animated scenes for the big nights.', '/guide/holidays.html'),
     ('🔥', 'Cozy fireplace', 'Just the fire, flickering like the real thing. 7 colors, Cozy or Roaring.', '/guide/fireplace.html'),
     ('🏟️', 'Scoreboard', 'Run the score at your kid\'s game, follow your team live, or watch F1 on the wall.', '/guide/scoreboard.html'),
@@ -104,10 +124,18 @@ home = f'''
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop. Holiday scenes, scoreboards, your logo, all from your phone.</p>
     <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="/features.html">See what it does →</a></div>
-    <div class="stats"><div><b>150+</b>effects</div><div><b>29</b>looks</div><div><b>15</b>scoreboard sports</div><div><b>1–4</b>curtains</div></div>
+    <div class="stats"><div><b>200+</b>effects</div><div><b>32</b>looks</div><div><b>15</b>scoreboard sports</div><div><b>1–4</b>curtains</div></div>
   </div>
   {pic('pool-party', 'Two LED curtains glowing behind a pool party at night', 'hero-shot')}
 </div></header>
+
+<section class="tight"><div class="wrap">
+  <div class="center reveal"><span class="eyebrow">🔴 Showreel</span><h2>This is really GlowBop</h2>
+  <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="look-neon-party,fx-crystalgem,holiday-halloween,look-club-rig,fire-rainbow-cozy,score-soccer,fx-volcano,look-deep-space,text-birthday,fx-alienparade,look-synthwave,fx-tesseract,holiday-christmas,look-mainstage,fx-pixelfireworks,fire-classic-roar,look-3d-depth,fx-laserweb,look-wild-elements,fx-snakegame" data-label="reelName" aria-label="GlowBop showreel"></canvas>
+  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Neon Party</b></figcaption></figure>
+  <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
+</div></section>
 
 <section class="alt"><div class="wrap">
   <div class="center reveal"><span class="eyebrow">How it works</span><h2>From box to light show in 5 minutes</h2>
@@ -195,7 +223,7 @@ def feat(i, scene, cap, eyebrow, title, lead, ticks, link, label):
     return f'''<div class="feat{flip} reveal" id="{slug(eyebrow)}">
 <div><span class="eyebrow">{eyebrow}</span><h2>{title}</h2><p class="lead">{lead}</p>
 <ul class="ticks">{''.join(f'<li>{t}</li>' for t in ticks)}</ul><a class="btn" href="{link}">{label} →</a></div>
-<div class="media">{pic(scene[1:], cap) if scene.startswith('@') else led(scene, cap)}</div></div>'''
+<div class="media">{pic(scene[1:], cap) if scene.startswith('@') else clip(scene[1:], cap) if scene.startswith('#') else led(scene, cap, illus=True)}</div></div>'''
 
 F2 = [
     ('@pool-party', 'Two LED curtains glowing behind a pool party at night', 'Music show', 'Hears the music, follows the song',
@@ -206,7 +234,7 @@ F2 = [
      'Cinematic songs don\'t have a "drop". They swell for minutes and peak once. GlowBop notices and switches to Epic mode on its own.',
      ['A slow, growing <b>swell</b> through the crescendo.', '<b>One big climax</b> at the real peak, not every loud moment.', 'No harsh strobes during the quiet, emotional parts.', 'Optional <b>song lookup</b> uses free genre data to spot soundtracks even faster.'],
      '/guide/music.html#epic', 'About Epic mode'),
-    ('rainbow', 'Photo: the looks menu on a phone next to the wall', 'Looks', '29 looks, 150+ effects',
+    ('#look-neon-party', 'Neon Party look', 'Looks', '32 looks, 200+ effects',
      'A look is a mood: its colors plus a set of effects for calm, medium and loud parts. GlowBop shuffles through them as the music changes.',
      ['Neon Party, Deep Space, Synthwave, Warehouse Rave, Mainstage, Club Rig, Royal Gold and more.', '<b>3D Depth</b> tunnels, spinning cubes and disco spheres.', '<b>Dance Crew</b> pixel characters you can switch on or off.', '<b>Describe a scene</b> in words and GlowBop builds it.', '<b>Pin</b> an effect you love, or hit <b>Surprise me</b>.'],
      '/guide/looks.html', 'Looks guide'),
@@ -226,11 +254,11 @@ F2 = [
      'The F1 board shows the top of the field with team colors and tyre dots, then celebrates a new leader, pole position or a fastest lap.',
      ['Purple bar for the fastest lap, just like TV.', 'Pit stops get a soft flash, not a party.', 'Works for practice, qualifying and the race.'],
      '/guide/scoreboard.html#f1', 'F1 board guide'),
-    ('text', 'Photo: "Happy Birthday" scrolling across the curtains', 'Text & logos', 'Your words, your logo',
+    ('#text-birthday', 'Happy Birthday scrolling over a live show', 'Text & logos', 'Your words, your logo',
      'Put a message or a logo on top of the show. Great for birthdays, DJ sets, and businesses.',
      ['Modes: <b>Scroll</b>, <b>Beat words</b>, <b>Still</b> and <b>On drop</b>.', 'Colors that follow the look, rainbow, or plain white.', 'Upload a logo (PNG) with Glow, Pulse or Color-shift motion.', 'Flash a word on every drop.'],
      '/guide/text-logos.html', 'Text & logo guide'),
-    ('mirror', 'Video: a movie playing on the laptop mirrored onto the curtains', 'Screen mirror', 'Your screen, on the lights',
+    ('mirror', 'screen mirror', 'Screen mirror', 'Your screen, on the lights',
      'Mirror the laptop screen onto the wall: TV shows, music videos, games.',
      ['Styles: <b>TV</b>, <b>Beat</b> and <b>Glow</b>.', '<b>Smart fill</b> trims black bars so the video fills the wall.', '<b>Center zoom</b> for bigger, bolder shapes.'],
      '/guide/text-logos.html#mirror', 'Screen mirror guide'),
@@ -249,7 +277,7 @@ features = f'''<header class="pagehead"><div class="wrap center"><span class="ey
 <section style="padding-top:20px"><div class="wrap">{''.join(feat(i, *f) for i, f in enumerate(F2))}</div></section>
 {band()}'''
 # make anchors match toc (feat ids come from the link)
-page('/features.html', 'Features · GlowBop', 'Music show with drop detection, Epic mode, 29 looks, holiday mini-movies, scoreboards, F1, text, logos, screen mirror and multi-curtain walls.', features, '/features.html')
+page('/features.html', 'Features · GlowBop', 'Music show with drop detection, Epic mode, 32 looks, holiday mini-movies, scoreboards, F1, text, logos, screen mirror and multi-curtain walls.', features, '/features.html')
 
 # ================================================================ GUIDE
 G = [
@@ -303,7 +331,7 @@ guide('getting-started', f'''
 <ol><li>Download GlowBop from your welcome email and run the installer.</li>
 <li>Open <b>GlowBop</b> from the Start menu or desktop shortcut.</li>
 <li>If Windows asks, <b>allow GlowBop on private networks</b>. That lets your phone and lights reach it.</li></ol>
-{led('sparkle', 'Screenshot: GlowBop open on the laptop, first launch')}
+{shot('app-top', 'The GlowBop app: live preview of every curtain, look, effect and beat')}
 <h2 id="find">3. Find your lights</h2>
 <ol><li>Open <b>Light setup</b> and tap <span class="k">Find my lights</span>. GlowBop searches your network.</li>
 <li>Each curtain it finds is added with its size. If one is missing, use <span class="k">Add by brand</span>.</li>
@@ -324,7 +352,7 @@ guide('getting-started', f'''
 
 guide('lineup', f'''
 <p>With more than one curtain, GlowBop needs to know three things: which way is up on each one, whether any are mirrored, and what order they hang in. The wizard makes it a one-minute job.</p>
-{led('lineup', 'Photo: four curtains showing 1-2-3-4 with arrows during the wizard', 80, 21)}
+{clip('lineup', 'the line-up wizard on four curtains')}
 <h2 id="wizard">Run the wizard</h2>
 <ol><li>Open <b>Light setup</b> and tap <span class="k">🧭 Line up my curtains</span>.</li>
 <li>Every curtain now shows a <b>big number and an UP arrow</b>.</li>
@@ -346,7 +374,7 @@ guide('music', f'''
 <ul><li><b>Kick and bass</b> push bursts, pulses and color hits.</li><li><b>Melody</b> moves the flowing parts.</li>
 <li><b>Song sections</b>: GlowBop tracks loudness over time to tell a verse from a build-up, a drop, or a breakdown.</li>
 <li><b>Drops</b> get a big move and usually a look change. A short gap between drops keeps it from feeling repetitive.</li></ul>
-{led('drop', 'Video: a dance song build-up and drop, side by side with the remote')}
+{clip('drop', 'a build-up and the drop, Neon Party look')}
 <h2 id="controls">Show controls</h2>
 <ul><li><b>Pace:</b> <span class="k">Chill</span> slow and dreamy, <span class="k">Normal</span>, <span class="k">Hype</span> fast changes for a dance floor.</li>
 <li><b>Sparkles:</b> <span class="k">Off</span>, <span class="k">Auto</span> (on the high notes), <span class="k">Lots</span>.</li>
@@ -360,7 +388,7 @@ guide('music', f'''
 <ul><li>Through the build, the wall <b>swells</b>: more light, more motion, warmer color.</li>
 <li>Only the <b>real climax</b> gets the big moment, and it must top everything before it.</li>
 <li>Harsh strobes are left out of Epic songs.</li></ul>
-{led('tunnel', 'Video: an orchestral song reaching its climax on the wall')}
+{clip('climax', 'the big moment, Deep Space look')}
 <h2 id="memory">Song memory</h2>
 <p>The first time a song plays, GlowBop learns its shape. Next time, it already knows where the drops and the climax are and can set up for them.</p>
 <h2 id="lookup">Song lookup (optional)</h2>
@@ -371,18 +399,22 @@ guide('music', f'''
 {tip('Each song is looked up only once and saved on your computer. Your keys stay on your computer too.')}
 ''', [('how', 'How it works'), ('controls', 'Controls'), ('sync', 'Sync'), ('epic', 'Epic mode'), ('memory', 'Song memory'), ('lookup', 'Song lookup')])
 
-LOOKS = ['Red Alert', 'Rainbow Riot', 'Emerald Ocean', 'Midnight Galaxy', 'Fairy Forest', 'Deep Sea', 'Neon Party', 'Ice Palace', 'Synthwave', 'Royal Gold', 'Toxic Rave', 'Lava Lounge', 'Blue Sky', 'Hyperspace', 'Digital Matrix', 'Psychedelic', 'Molten', 'Chaos', 'Wild Card', 'Studio 54', 'Liquid Dreams', 'Warehouse Rave', 'Neon Grid', 'Storm & Sea', 'Mainstage', 'Deep Space', 'Hypnotic', 'Club Rig', 'Dance Crew']
+LOOKS = ['Red Alert', 'Rainbow Riot', 'Emerald Ocean', 'Midnight Galaxy', 'Fairy Forest', 'Deep Sea', 'Neon Party', 'Ice Palace', 'Synthwave', 'Royal Gold', 'Toxic Rave', 'Lava Lounge', 'Blue Sky', 'Hyperspace', 'Digital Matrix', 'Psychedelic', 'Molten', 'Chaos', 'Wild Card', 'Studio 54', 'Liquid Dreams', 'Warehouse Rave', 'Neon Grid', 'Storm & Sea', 'Mainstage', 'Deep Space', 'Hypnotic', 'Club Rig', '3D Depth', 'Dance Crew', 'Retro Arcade', 'Wild Elements']
 guide('looks', f'''
 <h2 id="looks">What a look is</h2>
 <p>A look is a mood: a color palette plus a set of effects for calm, medium and loud moments. During a song GlowBop picks effects from the current look, and moves to a new look at drops or when the song changes.</p>
-{led('rainbow', 'Screenshot: the Looks list on the phone remote')}
-<h3>All 29 looks</h3>
+{shot('app-looks', 'The Looks list in the GlowBop app')}
+<h3>All 32 looks</h3>
 <div class="toc">{''.join(f'<span class="k">{l}</span> ' for l in LOOKS)}</div>
 <p>Tap any look to jump to it. Tap <span class="k">Shuffle</span> to hand control back to GlowBop.</p>
-<h2 id="3d">3D and club looks</h2>
+<h2 id="3d">3D, club, nature and retro looks</h2>
 <ul><li><b>3D Depth:</b> tunnels, spinning cubes, disco spheres and black holes that look like they go deep into the wall.</li>
 <li><b>Club Rig:</b> moving-head beams, laser scans and strobe banks, like a real club ceiling.</li>
-<li><b>Dance Crew:</b> pixel characters that dance to the beat. Turn them on or off with <span class="k">Characters</span>.</li></ul>
+<li><b>Dance Crew:</b> pixel characters that dance to the beat. Turn them on or off with <span class="k">Characters</span>.</li>
+<li><b>Retro Arcade:</b> self-playing pixel games: brick breaker, snake, pong, alien parades and 8-bit fireworks.</li>
+<li><b>Wild Elements:</b> rain on the window, a volcano that erupts on the drop, a tornado, a waterfall and the surface of the sun.</li></ul>
+<div class="grid g2">{clip('look-retro-arcade', 'Retro Arcade')}{clip('look-wild-elements', 'Wild Elements')}{clip('fx-tesseract', 'Tesseract, a 4D cube')}{clip('look-club-rig', 'Club Rig')}</div>
+<p><a href="/gallery.html">See all 32 looks and the newest effects in the gallery →</a></p>
 <h2 id="scenes">Quick scenes and Describe a scene</h2>
 <p><b>Quick scenes</b> are one-tap presets. <b>Describe a scene</b> lets you type what you want ("slow purple ocean with gold sparkles") and tap <span class="k">Play it</span>. GlowBop picks matching effects and colors from your words.</p>
 <h2 id="feature">Feature an effect</h2>
@@ -408,6 +440,7 @@ guide('holidays', f'''
 <p>For the two biggest nights, GlowBop plays a short animated story in chapters, drawn as crisp pixel art made for LED curtains.</p>
 {pic('halloween-porch', 'LED curtain showing pixel jack-o-lanterns on a Halloween porch')}
 {pic('christmas-eve', 'LED curtain showing a pixel Christmas tree in a window')}
+<div class="grid g2">{clip('holiday-halloween', 'Halloween Night')}{clip('holiday-christmas', 'Christmas Eve')}{clip('holiday-newyear', 'New Year')}{clip('holiday-valentine', 'Valentine\'s')}</div>
 <h2 id="choose">Choose the effects</h2>
 <p>Inside each holiday you can toggle which effects are in the rotation, so you can keep the ones your family loves.</p>
 {tip('<b>Trick-or-treat tip:</b> start Halloween at dusk, set Pace to Chill, and the mini-movie plays every few switches between the spooky effects.', 'pink')}
@@ -424,6 +457,7 @@ guide('fireplace', f"""
 <h2 id="colors">7 colors</h2>
 <div class="toc"><span class="k">🔥 Classic</span> <span class="k">💙 Blue gas</span> <span class="k">💜 Purple</span> <span class="k">🌈 Rainbow</span> <span class="k">💚 Green</span> <span class="k">🩷 Pink</span> <span class="k">🤍 Ice</span></div>
 <p>Rainbow drifts slowly through every color across the wall and keeps a white-hot core. Green is great for Halloween and St. Patrick's, Pink for Valentine's, Ice for a ghostly winter look.</p>
+<div class="grid g2">{clip('fire-rainbow-cozy', 'Rainbow')}{clip('fire-blue-cozy', 'Blue gas')}{clip('fire-purple-roar', 'Purple, Roaring')}{clip('fire-ice-cozy', 'Ice')}</div>
 <h2 id="mode">Cozy or Roaring</h2>
 <ul><li><span class="k">🛋️ Cozy</span>: tall, relaxing flames that reach up the wall, with a small flare now and then.</li>
 <li><span class="k">🔥 Roaring</span>: fast, wild flicker with big whooshes of flame every few seconds and bursts of sparks.</li></ul>
@@ -440,6 +474,7 @@ guide('scoreboard', f'''
 <p>Open <b>🏟️ Scoreboard</b> on the remote and pick a mode: <span class="k">Game Day</span>, <span class="k">Live Fan</span> or <span class="k">🏎️ F1</span>. <span class="k">Off</span> returns to the light show.</p>
 {pic('soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game')}
 <h2 id="gameday">Game Day: keep score yourself</h2>
+{clip('score-soccer', 'a goal at the soccer game, real celebration')}
 <ol><li>Choose a <b>Sport</b> from the dropdown: {SPORTS}.</li>
 <li>Open <b>⚙️ Game setup</b> to set minutes per period, number of periods, and <span class="k">⏳ Count down</span> or <span class="k">⏱️ Count up</span>. Tap <span class="k">Set up the game</span>.</li>
 <li>Tap <span class="k">▶ Start</span> to run the clock. Nudge it with <span class="k">−1 min</span> <span class="k">−10 s</span> <span class="k">+10 s</span> <span class="k">+1 min</span>.</li>
@@ -461,6 +496,7 @@ guide('scoreboard', f'''
 <li>During the game the score updates <b>every 10 seconds</b>. When your team scores, the wall celebrates in their colors.</li></ol>
 {tip('GlowBop uses public score feeds and has backups for the major leagues. If a feed is slow, the board catches up on the next update.', 'warn')}
 <h2 id="f1">F1 live board 🏎️</h2>
+{clip('score-f1', 'the F1 board as the lead changes')}
 {pic('f1-party', 'LED curtain wall showing a race running order at an F1 watch party')}
 <ul><li>Rows show position and driver code with a <b>team color tab</b>.</li>
 <li>A <b>tyre dot</b>: red soft, yellow medium, white hard.</li>
@@ -468,6 +504,7 @@ guide('scoreboard', f'''
 <li>Celebrations for <b>NEW LEADER</b>, <b>POLE</b>, <b>TOP TIME</b> and <b>WINNER</b>. Pit stops get a soft flash.</li></ul>
 <p>Works during practice, qualifying and the race, whenever a session is live.</p>
 <h2 id="timer">Countdown timer</h2>
+{clip('score-timer', 'a one-minute countdown')}
 <p>Pick <b>Countdown timer only</b> as the sport for a giant clock across the whole wall: halftime, a party countdown, New Year's Eve.</p>
 ''', [('gameday', 'Game Day'), ('live', 'Live Fan'), ('f1', 'F1'), ('timer', 'Countdown')])
 
@@ -477,7 +514,7 @@ guide('text-logos', f'''
 <li>Pick a <b>Mode</b>: <span class="k">Scroll</span> (marquee), <span class="k">Beat words</span> (one word per beat), <span class="k">Still</span>, or <span class="k">On drop</span> (shows on each drop).</li>
 <li>Pick a <b>Color</b>: <span class="k">Look</span> (follows the show), <span class="k">Rainbow</span> or <span class="k">White</span>.</li>
 <li>Pick a <b>Layer</b>: <span class="k">Over the show</span> or <span class="k">Text only</span>. Set the speed, then tap <span class="k">Show text</span>.</li></ol>
-{led('text', 'Photo: birthday message scrolling at a party')}
+{clip('text-birthday', 'Happy Birthday scrolling over a live show')}
 {tip('<b>Flash a word on every drop</b>: type one big word like the birthday kid\'s name or "JUMP" and it hits the wall each time the beat drops.', 'pink')}
 <h2 id="logo">Your logo</h2>
 <ol><li>Under <b>Logo</b>, tap <span class="k">Choose a picture</span>. A PNG with a see-through or black background works best.</li>
@@ -493,7 +530,7 @@ guide('text-logos', f'''
 <p>Show the laptop screen on the lights: a game, a movie, a music video.</p>
 <ul><li><b>Style:</b> <span class="k">TV</span> (the picture), <span class="k">Beat</span> (the picture pulsing to the music), <span class="k">Glow</span> (soft ambient color).</li>
 <li><b>Area:</b> <span class="k">Smart fill</span> trims black bars so the video fills the wall; <span class="k">Center zoom</span> shows bigger shapes.</li></ul>
-{led('mirror', 'Video: mirroring a movie onto the curtains')}
+{led('mirror', 'screen mirror', illus=True)}
 {tip('Mirror works best with the video playing full screen on the laptop.')}
 ''', [('text', 'Text'), ('logo', 'Logo'), ('saved', 'Saved items'), ('mirror', 'Screen mirror')])
 
@@ -506,7 +543,7 @@ guide('groups', f'''
 <li>Tap <span class="k">Apply & restart lights</span>.</li></ol>
 <h2 id="control">Control a group</h2>
 <p>With two or more groups, a row of chips appears on the remote: <b>✨ All groups</b> plus one chip per group. Tap a chip and every button controls only that group. The live preview shows all groups side by side; tap one there to select it.</p>
-{led('lineup', 'Photo: two curtains in one group, a tree in another', 60, 21)}
+{clip('groups', 'a show on two curtains, a fireplace on the third')}
 ''', [('make', 'Make groups'), ('control', 'Control a group')])
 
 guide('troubleshooting', f'''
@@ -588,7 +625,7 @@ compare = f'''<header class="pagehead"><div class="wrap center"><span class="eye
 page('/compare.html', 'Compare · GlowBop', 'How GlowBop compares with the Twinkly app, Govee, Philips Hue Sync, Nanoleaf, LedFx and Light DJ Pro.', compare, '/compare.html')
 
 # ================================================================ PRICING
-EVERY = ['Music show with build-up & drop detection', 'Epic mode for movie music', 'All 29 looks and 150+ effects', 'Holidays & mini-movies', 'Scoreboard, Live Fan & F1', 'Text, logos & screen mirror', 'Up to 4 curtains as one wall', 'Phone remote', 'All updates']
+EVERY = ['Music show with build-up & drop detection', 'Epic mode for movie music', 'All 32 looks and 200+ effects', 'Holidays & mini-movies', 'Scoreboard, Live Fan & F1', 'Text, logos & screen mirror', 'Up to 4 curtains as one wall', 'Phone remote', 'All updates']
 plan = lambda name, price, per, note, best=False, tag='': f'''<div class="plan{' best' if best else ''} reveal">{f'<span class="tag">{tag}</span>' if tag else ''}<h3>{name}</h3>
 <div class="price">{price}<small> {per}</small></div><p class="dim" style="margin:6px 0 0">{note}</p>
 <ul class="ticks">{''.join(f'<li>{x}</li>' for x in EVERY)}</ul>
@@ -627,13 +664,36 @@ faq = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow
 <section style="padding-top:10px"><div class="wrap" style="max-width:820px">{''.join(f'<details class="reveal"><summary>{q}</summary><p>{a}</p></details>' for q, a in Q)}</div></section>{band()}'''
 page('/faq.html', 'FAQ · GlowBop', 'Answers about GlowBop: supported lights, music apps, phone remote, outdoor use, privacy and launch date.', faq, '/faq.html')
 
+# ================================================================ GALLERY
+def gal_section(title, sub, names, anchor):
+    tiles = ''.join(f'<div class="gtile reveal">{clip(n)}<h3>{html.escape(CLIPS[n]["title"])}</h3>'
+                    + (f'<p>{html.escape(CLIPS[n]["desc"])} look</p>' if CLIPS[n].get('desc') else '') + '</div>' for n in names)
+    return f'<section class="tight" id="{anchor}"><div class="wrap"><h2>{title}</h2><p class="lead">{sub}</p><div class="grid g3 gal" style="margin-top:22px">{tiles}</div></div></section>'
+
+
+_by = lambda g: [k for k, v in CLIPS.items() if v['group'] == g]
+GROUPS = [('Looks', '🎨 All 32 looks', 'Each look is a mood with its own colors and effects. These are 8-second slices with a drop halfway, exactly as the app plays them.', 'looks'),
+          ('New effects', '👾 The newest effects', '23 brand-new effects: 3D shapes, club rigs, wild weather and self-playing retro games.', 'new'),
+          ('Holidays', '🎃 Holidays', 'Every holiday has its own button. Halloween and Christmas play full mini-movies.', 'holidays'),
+          ('Fireplace', '🔥 Fireplace', 'Just the fire, simulated live so it never repeats. 7 colors, Cozy or Roaring.', 'fireplace'),
+          ('Scoreboard', '🏟️ Scoreboard', 'Game Day, the F1 live board and the giant countdown clock.', 'scoreboard'),
+          ('Text & logos', '🔤 Text & logos', 'Your words on top of the show.', 'text'),
+          ('Music', '💥 Big moments', 'A drop, and an epic climax.', 'music')]
+gal = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">🔴 Gallery</span><h1>Every pattern, <span class="grad">for real</span></h1>
+<p class="lead">Everything on this page was recorded straight from the GlowBop engine on a two-curtain wall (40 × 21 lights). What you see is what your lights do.</p>
+<div class="toc" style="justify-content:center">{''.join(f'<a href="#{a}">{t}</a>' for _, t, _, a in GROUPS)}</div></div></header>
+{''.join(gal_section(t, sub, _by(g), a) for g, t, sub, a in GROUPS if _by(g))}
+{band()}'''
+page('/gallery.html', 'Gallery · GlowBop', 'Real recordings of every GlowBop look, effect, holiday, fireplace and scoreboard, straight from the engine.', gal, '/gallery.html')
+
 # ================================================================ 404
 page('/404.html', 'Page not found · GlowBop', 'This page is not here.', f'''<section><div class="wrap center"><h1>4<span class="grad">0</span>4</h1><p class="lead">This page went dark.</p>
-<div style="max-width:520px;margin:20px auto">{led('sparkle', 'Lost in the sparkles')}</div><a class="btn primary" href="/">Back home</a></div></section>''')
+<div style="max-width:520px;margin:20px auto">{clip('sparkle', 'lost in the sparkles')}</div><a class="btn primary" href="/">Back home</a></div></section>''')
 
 # ---------- assets + photo list
 shutil.copytree(os.path.join(HERE, 'assets'), os.path.join(OUT, 'assets'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(HERE, 'img'), os.path.join(OUT, 'img'), dirs_exist_ok=True)
+shutil.copytree(os.path.join(HERE, 'clips'), os.path.join(OUT, 'clips'), dirs_exist_ok=True)
 with open(os.path.join(OUT, 'PHOTOS.md'), 'w') as f:
     f.write('# Photo & video spots\n\nEach animated LED placeholder on the site is waiting for a real photo or clip. Send them over and they get swapped in.\n\n')
     for pth, cap in PHOTOS: f.write(f'- **{pth}**: {cap}\n')

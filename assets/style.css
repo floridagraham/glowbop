@@ -181,3 +181,14 @@ footer .fine{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 
 @keyframes gbhue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
 .brand img{animation:gbhue 10s linear infinite}
 @media(prefers-reduced-motion:reduce){.brand img{animation:none}}
+
+.gb-tw{position:relative;display:inline-block;line-height:0;vertical-align:middle}
+.gb-tw i{position:absolute;width:13%;height:13%;margin:-6.5% 0 0 -6.5%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,#fff 0 35%,rgba(255,255,255,.55) 50%,rgba(255,255,255,0) 72%);animation:gbtw .65s ease-out forwards}
+@keyframes gbtw{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(.7)}}
+.led.real figcaption{border-style:solid;border-color:rgba(255,61,154,.45)}
+.led.reel{max-width:980px;margin-left:auto;margin-right:auto;box-shadow:0 30px 90px -40px rgba(155,61,255,.7)}
+.gtile h3{font-size:16px;margin:10px 2px 2px}.gtile p{margin:0 2px;color:var(--dim);font-size:13.5px}
+.gal .led figcaption{display:none}
+.appshot{max-width:430px;margin-left:auto;margin-right:auto}
+.appshot img{aspect-ratio:auto}

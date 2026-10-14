@@ -219,3 +219,74 @@
   requestAnimationFrame(frame);
   if (reduce) setTimeout(() => frame(1000), 50);
 })();
+
+// ✨ GlowBop logo twinkles: random LEDs of the Curtain Burst logo glint white for a moment
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const lit = []; for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) { const d = Math.hypot(c - 3, r - 3); if (d > 0.5 && d < 3.4) lit.push([r, c]); }
+  const pos = v => ((158 + v * 118) / 1024 * 100) + '%';
+  document.querySelectorAll('img.gb-logo').forEach(img => {
+    const w = document.createElement('span'); w.className = 'gb-tw';
+    img.parentNode.insertBefore(w, img); w.appendChild(img);
+    const tick = () => {
+      const n = 1 + (Math.random() < 0.6 ? 1 : 0);
+      for (let k = 0; k < n; k++) {
+        const [r, c] = lit[(Math.random() * lit.length) | 0], s = document.createElement('i');
+        s.style.left = pos(c); s.style.top = pos(r); w.appendChild(s); setTimeout(() => s.remove(), 650);
+      }
+      setTimeout(tick, 250 + Math.random() * 450);
+    };
+    tick();
+  });
+})();
+
+// 🎬 Real GlowBop recordings: each clip is a PNG strip (one pixel per LED, frames stacked top to bottom),
+// recorded from the actual GlowBop engine and drawn here as an LED wall. Loaded only when scrolled into view.
+(() => {
+  const cache = {};
+  function load(name) {
+    if (!cache[name]) cache[name] = new Promise(res => {
+      const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+        const g = c.getContext('2d'); g.drawImage(im, 0, 0); res(g.getImageData(0, 0, im.width, im.height)); };
+      im.onerror = () => res(null); im.src = '/clips/' + name + '.png'; });
+    return cache[name];
+  }
+  const players = [];
+  function size(p) { const r = p.c.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1); p.c.width = Math.max(1, r.width * d | 0); p.c.height = Math.max(1, r.height * d | 0); p.last = -1; }
+  function draw(p, data, w, h, f, fade) {
+    const g = p.c.getContext('2d'), sx = p.c.width / w, sy = p.c.height / h, r = Math.min(sx, sy) * 0.4, base = f * w * h * 4, px = data.data;
+    g.fillStyle = '#000'; g.fillRect(0, 0, p.c.width, p.c.height);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = base + (y * w + x) * 4, R = px[i] * fade, G = px[i + 1] * fade, B = px[i + 2] * fade, lit = R + G + B > 24;
+      g.fillStyle = lit ? `rgb(${R | 0},${G | 0},${B | 0})` : '#14141c';
+      g.beginPath(); g.arc(x * sx + sx / 2, y * sy + sy / 2, lit ? r : r * 0.78, 0, 6.283); g.fill();
+    }
+  }
+  document.querySelectorAll('canvas[data-clip], canvas[data-reel]').forEach(c => {
+    const list = (c.dataset.reel || c.dataset.clip).split(','), p = {c, list, k: 0, t0: performance.now(), vis: false, last: -1, label: c.dataset.label ? document.getElementById(c.dataset.label) : null};
+    players.push(p); size(p);
+    if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { p.vis = e.isIntersecting; if (p.vis) list.slice(0, 2).forEach(load); }), {rootMargin: '200px'}).observe(c);
+    else { p.vis = true; load(list[0]); }
+  });
+  addEventListener('resize', () => players.forEach(size));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  async function tick(now) {
+    for (const p of players) {
+      if (!p.vis) continue;
+      const name = p.list[p.k % p.list.length], meta = (window.GB_CLIPS || {})[name]; if (!meta) continue;
+      const data = await load(name); if (!data) continue;
+      const el = (now - p.t0) / 1000, fps = meta.fps || 15;
+      let f = Math.floor(el * fps), fade = 1;
+      if (p.list.length > 1) {                                        // showreel: one clip after another
+        const dur = meta.n / fps;
+        if (el >= dur) { p.k++; p.t0 = now; const nx = p.list[(p.k + 1) % p.list.length]; load(nx); if (p.label) { const m2 = (window.GB_CLIPS || {})[p.list[p.k % p.list.length]]; p.label.textContent = m2 ? m2.title : ''; } continue; }
+        fade = Math.min(1, el / 0.35, (dur - el) / 0.35);
+      } else f = f % meta.n;
+      f = Math.min(f, meta.n - 1);
+      if (f === p.last && fade === 1) continue; p.last = f;
+      draw(p, data, meta.w, meta.h, reduce ? 0 : f, Math.max(0, fade));
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
