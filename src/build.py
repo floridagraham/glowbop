@@ -172,7 +172,7 @@ home = f'''
   </div>
   <div class="feat reveal">
     <div><span class="eyebrow">Holidays</span><h2>Mini-movies for the big nights</h2>
-      <p class="lead">Each holiday has its own button. Halloween Night and Christmas Eve play full animated stories, crisp pixel art made for LED curtains.</p>
+      <p class="lead">Each holiday has its own button. Halloween, Thanksgiving, Christmas and New Year's Eve play full wide-screen stories that stretch across every curtain.</p>
       <a class="btn" href="/guide/holidays.html">See the holidays →</a></div>
     <div class="media">{pic('halloween-porch', 'LED curtain showing pixel jack-o-lanterns on a Halloween porch')}</div>
   </div>
@@ -249,7 +249,7 @@ F2 = [
      '/gallery.html#new', 'See them in the gallery'),
     ('@christmas-eve', 'LED curtain showing a pixel Christmas tree in a window', 'Holidays', 'Every holiday gets its own button',
      'Holidays live in their own section, away from the normal shuffle. Tap one and the wall plays only that holiday until you stop it.',
-     ['Halloween, Christmas, Thanksgiving, New Year, Valentine\'s, St. Patrick\'s, Birthday and Game Day.', '<b>Mini-movies:</b> Halloween Night and Christmas Eve play full animated stories.', 'Jack-o\'-lanterns, bats, ghosts, a haunted house, sleigh rides, fireworks, a ball drop and more.', 'Choose which holiday effects are in the rotation.'],
+     ['Halloween, Christmas, Thanksgiving, New Year, Valentine\'s, St. Patrick\'s, Birthday and Game Day.', '<b>Wide-screen mini-movies:</b> Halloween Night, Harvest Day, Christmas Eve and New Year Countdown.', 'Jack-o\'-lanterns, bats, ghosts, a haunted house, sleigh rides, fireworks, a ball drop and more.', 'Choose which holiday effects are in the rotation.'],
      '/guide/holidays.html', 'Holidays guide'),
     ('@cozy-fireplace', 'LED curtain showing tall flickering flames behind a couple on a couch', 'Fireplace', 'Just the fire, no fireplace',
      'Light a fire on your wall with one tap. GlowBop simulates real flames live, so the fire never loops and never looks the same twice.',
@@ -447,10 +447,14 @@ guide('holidays', f'''
 <div class="card"><div class="em">🏈</div><h3>Game Day</h3><p>Waving flags and team-color energy.</p></div>
 </div>
 <h2 id="movies">Mini-movies</h2>
-<p>For the two biggest nights, GlowBop plays a short animated story in chapters, drawn as crisp pixel art made for LED curtains.</p>
+<p>For the four biggest nights, GlowBop plays a short animated story in chapters, drawn as crisp pixel art. They're <b>wide-screen</b>: on 2, 3 or 4 curtains the scene stretches across the whole wall (the witch flies the full length, the sleigh crosses every curtain).</p>
+<ul><li><b>🎃 Halloween Night:</b> fog, a graveyard, a witch across the moon, haunted houses, bats, ghosts, screaming jack-o'-lanterns on the drop, a lightning storm.</li>
+<li><b>🦃 Harvest Day:</b> sunset on the farm, falling leaves, a strutting turkey, the harvest moon, dinner by candlelight, a whirlwind of leaves on the drop.</li>
+<li><b>🎄 Christmas Eve:</b> snow on the village, windows lighting up, a giant tree filling with ornaments, Santa's sleigh, presents bursting into fireworks.</li>
+<li><b>🎆 New Year Countdown:</b> the city skyline, confetti, a 10-to-1 countdown as the ball drops, fireworks at midnight, a champagne toast.</li></ul>
 {pic('halloween-porch', 'LED curtain showing pixel jack-o-lanterns on a Halloween porch')}
 {pic('christmas-eve', 'LED curtain showing a pixel Christmas tree in a window')}
-<div class="grid g2">{clip('holiday-halloween', 'Halloween Night')}{clip('holiday-christmas', 'Christmas Eve')}{clip('holiday-newyear', 'New Year')}{clip('holiday-valentine', 'Valentine\'s')}</div>
+<div class="grid g2">{clip('movie-halloweennight', 'Halloween Night: the witch crosses the moon')}{clip('movie-harvestday', 'Harvest Day: the turkey struts')}{clip('movie-christmaseve', 'Christmas Eve: the sleigh flies by')}{clip('movie-newyearcountdown', 'New Year Countdown: 10 to 1')}</div>
 <h2 id="choose">Choose the effects</h2>
 <p>Inside each holiday you can toggle which effects are in the rotation, so you can keep the ones your family loves.</p>
 {tip('<b>Trick-or-treat tip:</b> start Halloween at dusk, set Pace to Chill, and the mini-movie plays every few switches between the spooky effects.', 'pink')}
@@ -613,7 +617,7 @@ ROWS = [
     ('Extra hardware for music', [('<span class="y">None</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
     ('Scoreboard & live scores', [(Y, '15 sports, live, F1'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Text & logos on the lights', [(Y, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
-    ('Holiday mini-movies', [(Y, 'Halloween, Christmas'), (M, 'Effect library'), (M, 'Scene presets'), (M, 'Scene presets'), (N, ''), (N, ''), (N, '')]),
+    ('Holiday mini-movies', [(Y, '4 wide-screen movies'), (M, 'Effect library'), (M, 'Scene presets'), (M, 'Scene presets'), (N, ''), (N, ''), (N, '')]),
     ('Many curtains as one wall', [(Y, '1–4, side by side or stacked'), (M, 'Twinkly only'), (N, ''), (N, ''), (N, ''), (M, 'Virtual strips'), (N, '')]),
     ('Phone remote', [(Y, 'Any phone browser'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is a phone app')]),
     ('Runs on', [('Windows', ''), ('iOS, Android', ''), ('Windows, iOS, Android', ''), ('Windows, Mac', ''), ('Windows, Mac', ''), ('Win, Mac, Linux', ''), ('iPhone, iPad, Mac', '')]),
@@ -686,7 +690,7 @@ def gal_section(title, sub, names, anchor):
 _by = lambda g: [k for k, v in CLIPS.items() if v['group'] == g]
 GROUPS = [('Looks', '🎨 All 32 looks', 'Each look is a mood with its own colors and effects. These are 8-second slices with a drop halfway, exactly as the app plays them.', 'looks'),
           ('New effects', '👾 The newest effects', '23 brand-new effects: 3D shapes, club rigs, wild weather and self-playing retro games.', 'new'),
-          ('Holidays', '🎃 Holidays', 'Every holiday has its own button. Halloween and Christmas play full mini-movies.', 'holidays'),
+          ('Holidays', '🎃 Holidays', 'Every holiday has its own button. Four of them play full wide-screen mini-movies.', 'holidays'),
           ('Fireplace', '🔥 Fireplace', 'Just the fire, simulated live so it never repeats. 7 colors, Cozy or Roaring.', 'fireplace'),
           ('Scoreboard', '🏟️ Scoreboard', 'Game Day, the F1 live board and the giant countdown clock.', 'scoreboard'),
           ('Text & logos', '🔤 Text & logos', 'Your words on top of the show.', 'text'),
