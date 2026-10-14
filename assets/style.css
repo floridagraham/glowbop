@@ -177,3 +177,7 @@ footer .fine{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 
 
 .grid.g3>:last-child:nth-child(3n+1){grid-column:1/-1}
 .led.demo figcaption{top:10px;bottom:auto;right:auto;border-style:solid}
+/* 🌈 the GlowBop logo slowly cycles through colours */
+@keyframes gbhue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+.brand img{animation:gbhue 10s linear infinite}
+@media(prefers-reduced-motion:reduce){.brand img{animation:none}}
