@@ -290,3 +290,62 @@
   }
   requestAnimationFrame(tick);
 })();
+
+// 🕺 Live hero: the pool-party photo with its two curtains playing real GlowBop recordings.
+// Layers: the photo with the lights off, the LEDs (glow + bulbs + a rippling pool reflection), then the dancers in front.
+(() => {
+  const fig = document.querySelector('.livehero'); if (!fig) return;
+  const cv = fig.querySelector('canvas'), g = cv.getContext('2d'), W = 1344, H = 752; cv.width = W; cv.height = H;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;          // keep the still photo
+  const list = cv.dataset.hero.split(','), QUADS = [[[338, 72], [646, 90], [646, 413], [340, 413]], [[697, 100], [944, 117], [944, 410], [697, 412]]];
+  const CW = 20, CH = 21, WATER = 518;
+  const img = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = s; });
+  const clip = n => img('/clips/' + n + '.png').then(i => { if (!i) return null; const c = document.createElement('canvas'); c.width = i.width; c.height = i.height;
+    const x = c.getContext('2d'); x.drawImage(i, 0, 0); return x.getImageData(0, 0, i.width, i.height).data; });
+  // every bulb's spot in the photo (bilinear inside each curtain's outline)
+  const spots = [];
+  QUADS.forEach((q, ci) => { for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) {
+    const u = (x + 0.5) / CW, v = (y + 0.5) / CH, tx = q[0][0] + (q[1][0] - q[0][0]) * u, ty = q[0][1] + (q[1][1] - q[0][1]) * u, bx = q[3][0] + (q[2][0] - q[3][0]) * u, by = q[3][1] + (q[2][1] - q[3][1]) * u;
+    spots.push({px: tx + (bx - tx) * v, py: ty + (by - ty) * v, cx: ci * CW + x, cy: y}); } });
+  const bloom = document.createElement('canvas'); bloom.width = W / 6 | 0; bloom.height = H / 6 | 0; const bg = bloom.getContext('2d');
+  const halo = document.createElement('canvas'); halo.width = W / 16 | 0; halo.height = H / 16 | 0; const hg = halo.getContext('2d');
+  let plate, dancers, cur = null, k = 0, t0 = 0, vis = true;
+  new IntersectionObserver(es => es.forEach(e => vis = e.isIntersecting)).observe(fig);
+  async function start() {
+    [plate, dancers] = await Promise.all([img('/img/hero-plate.webp'), img('/img/hero-dancers.webp')]);
+    if (!plate || !dancers) return;
+    cur = await clip(list[0]); clip(list[1]); t0 = performance.now(); cv.classList.add('on'); requestAnimationFrame(tick);
+  }
+  const cache = {}; const get = n => cache[n] || (cache[n] = clip(n));
+  async function tick(now) {
+    requestAnimationFrame(tick); if (!vis) return;
+    const name = list[k % list.length], meta = (window.GB_CLIPS || {})[name]; const data = await get(name); if (!meta || !data) { k++; return; }
+    const fps = meta.fps || 15, dur = meta.n / fps, el = (now - t0) / 1000;
+    if (el >= dur) { k++; t0 = now; get(list[(k + 1) % list.length]); return; }
+    const f = Math.min(meta.n - 1, Math.floor(el * fps)), fade = Math.max(0, Math.min(1, el / 0.4, (dur - el) / 0.4)), base = f * meta.w * meta.h * 4, t = now / 1000;
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.drawImage(plate, 0, 0, W, H);
+    bg.clearRect(0, 0, bloom.width, bloom.height); hg.clearRect(0, 0, halo.width, halo.height);
+    g.globalCompositeOperation = 'lighter';
+    let sr = 0, sg = 0, sb = 0;
+    for (const s of spots) {
+      const i = base + (s.cy * meta.w + (s.cx % meta.w)) * 4, R = data[i] * fade, G = data[i + 1] * fade, B = data[i + 2] * fade, lum = R + G + B;
+      if (lum < 30) { g.fillStyle = 'rgba(90,90,130,.18)'; g.beginPath(); g.arc(s.px, s.py, 1.6, 0, 6.283); g.fill(); continue; }
+      sr += R; sg += G; sb += B;
+      const col = `rgb(${R | 0},${G | 0},${B | 0})`;
+      bg.fillStyle = col; bg.beginPath(); bg.arc(s.px / 6, s.py / 6, 1.5, 0, 6.283); bg.fill();
+      hg.fillStyle = col; hg.fillRect(s.px / 16 - 1, s.py / 16 - 1, 2, 2);
+      g.fillStyle = col; g.beginPath(); g.arc(s.px, s.py, 2.3, 0, 6.283); g.fill();
+      if (lum > 520) { g.fillStyle = `rgba(255,255,255,${Math.min(0.4, (lum - 520) / 600)})`; g.beginPath(); g.arc(s.px, s.py, 1, 0, 6.283); g.fill(); }
+      // reflection in the pool: stretched, rippling streaks
+      const ry = WATER + (420 - s.py) * 0.62, wob = Math.sin(t * 2.2 + ry * 0.09) * 3.5 + Math.sin(t * 1.3 + s.px * 0.05) * 2;
+      if (ry < H) { g.fillStyle = `rgba(${R | 0},${G | 0},${B | 0},.26)`; g.fillRect(s.px - 1.4 + wob, ry, 2.8, 6); }
+    }
+    g.globalAlpha = 0.6; g.drawImage(bloom, 0, 0, W, H);                       // soft glow round every bulb
+    g.globalAlpha = 0.3; g.drawImage(halo, 0, 0, W, H);                         // wide glow onto the pergola and plants
+    const n = spots.length || 1; g.globalAlpha = 0.1;                           // the whole yard picks up the wall's colour
+    const amb = g.createRadialGradient(640, 300, 40, 640, 300, 760); amb.addColorStop(0, `rgb(${sr / n * 2.2 | 0},${sg / n * 2.2 | 0},${sb / n * 2.2 | 0})`); amb.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = amb; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.drawImage(dancers, 300, 180, 690, 380);   // dancers in front of the lights
+  }
+  if ('IntersectionObserver' in window) start();
+})();
