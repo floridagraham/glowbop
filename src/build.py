@@ -1065,14 +1065,22 @@ def gal_section(title, sub, names, anchor):
 
 
 _by = lambda g: [k for k, v in CLIPS.items() if v['group'] == g]
-GROUPS = [('Big Wave', '🌊 Big Wave', 'The newest family of effects: waves that roll, a serpent that swims and an ocean swell.', 'wave'),
-          ('3D shapes', '🌐 3D shapes', 'Effects made for curtains wrapped around a cylinder, a box or a globe. Shown here unrolled, flat.', 'shapes'),
-          ('Live feeds', '📡 Live feeds', 'Countdown, weather, storm watch, golf, NASCAR and overhead, recorded with demo data.', 'live'),
+FIRST = ['fx-pixelfireworks', 'fx-tesseract', 'fx-laserweb', 'fx-crystalgem', 'fx-volcano', 'fx-solarflare', 'fx-atomorbit', 'fx-wiretorus', 'fx-tornado',
+         'look-3d-depth', 'look-club-rig', 'look-neon-party', 'look-deep-space', 'look-psychedelic', 'look-hyperspace', 'look-wild-elements', 'look-retro-arcade',
+         'look-mainstage', 'look-synthwave', 'look-warehouse-rave', 'look-rainbow-riot',
+         'movie-halloweennight', 'movie-christmaseve', 'movie-newyearcountdown', 'movie-harvestday',
+         'fire-rainbow-cozy', 'fire-purple-roar', 'fire-classic-roar', 'fire-blue-cozy',
+         'wave-serpent', 'wave-bigwave', 'shape-spinningglobe', 'shape-barberspin',
+         'score-baseball', 'score-football', 'score-f1', 'live-nascar', 'live-overhead', 'live-storm', 'live-weather']
+_by = lambda g: sorted([k for k, v in CLIPS.items() if v['group'] == g], key=lambda k: FIRST.index(k) if k in FIRST else 999)
+GROUPS = [('New effects', '👾 Showstoppers', 'The newest effects: 3D shapes, laser webs, pixel fireworks, wild weather and self-playing retro games.', 'new'),
           ('Looks', '🎨 All 34 looks', 'Each look is a mood with its own colors and effects. These are 8-second slices with a drop halfway, exactly as the app plays them.', 'looks'),
-          ('New effects', '👾 The newest effects', '23 brand-new effects: 3D shapes, club rigs, wild weather and self-playing retro games.', 'new'),
+          ('Big Wave', '🌊 Big Wave', 'The newest family of effects: waves that roll, a serpent that swims and an ocean swell.', 'wave'),
           ('Holidays', '🎃 Holidays', 'Every holiday has its own button. Four of them play full wide-screen mini-movies.', 'holidays'),
           ('Fireplace', '🔥 Fireplace', 'Just the fire, simulated live so it never repeats. 7 colors, Cozy or Roaring.', 'fireplace'),
+          ('3D shapes', '🌐 3D shapes', 'Effects made for curtains wrapped around a cylinder, a box or a globe. Shown here unrolled, flat.', 'shapes'),
           ('Scoreboard', '🏟️ Scoreboard', 'Game Day for every sport, Live Fan with live stats, the F1 board and the giant countdown clock.', 'scoreboard'),
+          ('Live feeds', '📡 Live feeds', 'Countdown, weather, storm watch, golf, NASCAR and overhead, recorded with demo data.', 'live'),
           ('Text & logos', '🔤 Text & logos', 'Your words on top of the show.', 'text'),
           ('Music', '💥 Big moments', 'A drop, and an epic climax.', 'music')]
 gal = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">🔴 Gallery</span><h1>Every pattern, <span class="grad">for real</span></h1>
