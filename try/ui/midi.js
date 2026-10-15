@@ -230,6 +230,11 @@
       return;
     }
     if (e.pointerType === 'mouse' || e.button > 0) return;
+    // long-press to learn only when a controller is plugged in, and never on keys that are meant to be held
+    // (Hold to build, override keys, fader hold keys): those use Learn mode or right-click instead
+    const st = (GB.status || {}).midi || {};
+    if (!(st.ports > 0)) return;
+    if (e.target.closest('#djBuild, .ov-key, .fd-hold, .fd [data-hold], [data-hold], #ilBig')) return;
     const id = GB.midiTargets.resolve(e.target); if (!id) return;
     lpXY = [e.clientX, e.clientY]; lpEl = e.target; clearTimeout(lpT);
     lpT = setTimeout(() => { lpT = 0; swallow = Date.now(); if (navigator.vibrate) try { navigator.vibrate(15); } catch (er) {} openLearn(id); }, 650);

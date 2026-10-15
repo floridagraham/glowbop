@@ -52,3 +52,22 @@
   const go = () => { build(); GB.on('status', paint); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
 })();
+
+/* ⛶ Full screen in the GlowBop desktop window (opens full screen): F11 toggles, Esc leaves it; a header key does both. */
+(() => {
+  let fs = true;
+  const api = () => window.pywebview && window.pywebview.api && window.pywebview.api.toggle_fullscreen;
+  const toggle = () => { if (api()) { window.pywebview.api.toggle_fullscreen(); fs = !fs; paint(); }
+    else if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); };
+  const paint = () => { const b = document.getElementById('qkFs'); if (b) b.title = fs ? 'Leave full screen (Esc)' : 'Full screen (F11)'; };
+  document.addEventListener('keydown', e => {
+    if (e.key === 'F11') { e.preventDefault(); toggle(); }
+    else if (e.key === 'Escape' && api() && fs && !document.querySelector('.sheet.show, dialog[open], #gbIntro')) toggle();
+  });
+  const add = () => { const box = document.getElementById('qk'); if (!box || document.getElementById('qkFs')) return;
+    if (!api() && !(document.fullscreenEnabled && !matchMedia('(max-width: 900px)').matches)) return;   // desktop window or a browser that can do it
+    const b = document.createElement('button'); b.className = 'btn sm'; b.id = 'qkFs'; b.setAttribute('aria-label', 'Full screen'); b.style.setProperty('--c', 'var(--cyan)');
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M3 3h7v2H5v5H3zm11 0h7v7h-2V5h-5zM3 14h2v5h5v2H3zm16 0h2v7h-7v-2h5z"/></svg>';
+    b.onclick = toggle; box.insertBefore(b, box.firstChild); paint(); };
+  setTimeout(add, 500); setTimeout(add, 2500);
+})();
