@@ -993,7 +993,7 @@ ROWS = [
     ('Controls Twinkly lights', [(Y, ''), (Y, ''), (N, 'Govee only'), (N, 'Hue only'), (N, 'Nanoleaf only'), (N, 'WLED / ESP'), (N, 'Hue, LIFX, Nanoleaf')]),
     ('Extra hardware for music', [('<span class="y">None needed, start right now</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
     ('Many curtains as one wall', [(Y, '1–8: side by side, stacked or a grid'), (M, 'Twinkly only'), (N, ''), (N, ''), (N, ''), (M, 'Virtual strips'), (N, '')]),
-    ('Phone remote', [(Y, 'Any phone browser'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is a phone app')]),
+    ('Phone & iPad remote', [(Y, 'Any phone or iPad browser, nothing to install. Turns sideways into a big console on iPad'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is an iPhone / iPad app')]),
     ('Runs on', [('Windows', ''), ('iOS, Android', ''), ('Windows, iOS, Android', ''), ('Windows, Mac', ''), ('Windows, Mac', ''), ('Win, Mac, Linux', ''), ('iPhone, iPad, Mac', '')]),
     ('Price', [('<b>$5.99/mo</b>, $59/yr or $379 once', 'Founder lifetime $129 at launch'), ('Free app; dongle extra', ''), ('Free app; sync box extra', ''), ('Free app; sync box extra', ''), ('See their site', ''), ('Free, open source', ''), ('Paid app', '')]),
 ]
