@@ -999,7 +999,8 @@ page('/compare.html', 'Compare · GlowBop', 'How GlowBop compares with the Twink
 SELLING = False          # flip to True on launch day: Buy buttons go live (Polar checkout links below)
 BUY = {'Monthly': 'https://buy.polar.sh/polar_cl_kVipnhlW4bHB8eL4tKAOXYm5t4Q9nH8pxN0XO4AJUn4',
        'Yearly': 'https://buy.polar.sh/polar_cl_IC4mJM92skvYXkaHAqOsyTWVK6XxQV1CUUW1F2JkwOB',
-       'Lifetime': 'https://buy.polar.sh/polar_cl_ryFBIVebhizIWoE5fhSk6KYkibhBiNnVY9avz2d2YtI'}
+       'Lifetime': 'https://buy.polar.sh/polar_cl_zLuZrLVyFIje9ESIusnRrWcSwUL8Iqlpr3gL73T2pNn',      # $379
+       'Founder': 'https://buy.polar.sh/polar_cl_ryFBIVebhizIWoE5fhSk6KYkibhBiNnVY9avz2d2YtI'}      # $129 launch deal (private product)
 PORTAL = 'https://polar.sh/glowbop/portal'
 EVERY = ['Music show with build-up & drop detection', 'DJ mode with hit pads, build & drop', 'All 34 looks and 200+ effects', 'Arcade games, holidays & mini-movies', 'Fireplace in every style', 'Sports: 44 live leagues, golf, racing, tennis, UFC, F1', 'Live feeds: countdowns, weather, storm watch', 'Text, logos & screen mirror', 'Up to 8 curtains, grid walls & 3D shapes', 'Console for phone, iPad & laptop', 'All updates']
 plan = lambda name, price, per, note, best=False, tag='': f'''<div class="plan{' best' if best else ''} reveal">{f'<span class="tag">{tag}</span>' if tag else ''}<h3>{name}</h3>
@@ -1010,7 +1011,7 @@ pricing = f'''<header class="pagehead"><div class="wrap center"><span class="eye
 <p class="lead">Every plan includes everything. Start with a <b>7-day free trial</b>, cancel anytime.</p>
 <span class="pill">🎃 Launching this Halloween. Join the list and we'll email you on day one.</span></div></header>
 <section style="padding-top:10px"><div class="wrap">
-<div class="founder reveal"><span class="tag">🎃 Founder launch deal</span><h3>Lifetime for <b>$129</b> <s>$379</s></h3><p>During launch week, or for the first 100 buyers, whichever comes first. Pay once, keep GlowBop and every update forever.</p></div>
+<div class="founder reveal"><span class="tag">🎃 Founder launch deal</span><h3>Lifetime for <b>$129</b> <s>$379</s></h3><p>During launch week, or for the first 100 buyers, whichever comes first. Pay once, keep GlowBop and every update forever.</p>{f'<a class="btn primary" href="{BUY["Founder"]}">🎃 Grab the Founder deal</a>' if SELLING else ''}</div>
 <div class="plans">{plan('Monthly', '$5.99', '/ month', 'Perfect for a party season.')}{plan('Yearly', '$49', '/ year', 'About $4.08 a month. Save 32%.', True, 'Best value')}{plan('Lifetime', '$379', 'once', 'Pay once, keep it forever. Founders pay $129 at launch.')}</div>
 <p class="center dim" style="margin-top:22px;font-size:15px">Payments are handled securely by Polar. Prices in USD.</p>
 <div style="max-width:780px;margin:50px auto 0"><h2 class="center">Pricing questions</h2>
