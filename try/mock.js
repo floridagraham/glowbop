@@ -391,7 +391,7 @@
       signed_in: false, account: null, queue: M.queue.slice(lo, lo + 60).map((x, i) => Object.assign({}, x, {i: lo + i})), total: M.queue.length, crossfade: M.crossfade, party: M.party,
       sleep_left: M.sleep_at ? Math.max(0, Math.round(M.sleep_at - wall())) : null, family: t && t.look ? [t.look] : [], family_how: 'auto', source_id: 'demo'}; }
   let ytNote = 0;
-  const ytToast = () => { if (wall() - ytNote > 20) { ytNote = wall(); setTimeout(() => toast('🎵 In the demo, YouTube shows pretend songs. On the laptop it is the real YouTube Music'), 900); } };
+  const ytToast = () => { if (wall() - ytNote > 20) { ytNote = wall(); setTimeout(() => toast('🎵 In the demo, YouTube shows pretend songs'), 500); } };
   function fakeSongs(q, n) { const w = String(q || 'Glow').replace(/\b\w/g, c => c.toUpperCase()).slice(0, 28);
     return [`${w} (Demo Mix)`, `${w} All Night`, `Lights Up for ${w}`, `${w} (Club Edit)`, `Neon ${w}`, `${w} Forever`].slice(0, n || 6).map((tt, i) =>
       ({id: 'q' + slug(w) + i, title: tt, artist: pickOne(['The Glow Ups', 'Pixel Hearts', 'DJ Lumen', 'Aurora Club']), dur: 170 + i * 13, artist_id: 'artist' + (i % 4)})); }

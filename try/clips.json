@@ -659,11 +659,11 @@
 "score-f1": {
 "w": 40,
 "h": 21,
-"n": 135,
+"n": 195,
 "fps": 15,
-"title": "F1 live board",
+"title": "F1: new leader",
 "group": "Scoreboard",
-"desc": ""
+"desc": "DRS attack, overtake, NEW LEADER, fastest lap"
 },
 "score-timer": {
 "w": 40,
@@ -1015,5 +1015,41 @@
 "title": "Campfire \u00b7 Team colors",
 "group": "Fireplace",
 "desc": ""
+},
+"look-3d-object": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "3D Object",
+"group": "Looks",
+"desc": ""
+},
+"look-big-wave": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Big Wave",
+"group": "Looks",
+"desc": ""
+},
+"f1-safety": {
+"w": 40,
+"h": 21,
+"n": 180,
+"fps": 15,
+"title": "F1: safety car in the rain",
+"group": "Scoreboard",
+"desc": "Safety car, rain, a pit stop, green flag"
+},
+"f1-win": {
+"w": 40,
+"h": 21,
+"n": 150,
+"fps": 15,
+"title": "F1: chequered flag",
+"group": "Scoreboard",
+"desc": "WINNER in team colours"
 }
 }

@@ -86,6 +86,7 @@
 
   // ------------------------------------------------------------------ 2. LEVELS
   let brightT = null, blendT = null, delayT = null;
+  const delayTxt = v => v > 0 ? '+' + v + ' ms' : v < 0 ? '−' + (-v) + ' ms early' : '0 ms';
   const touched = {};                  // slider id -> last time the user moved it (status won't fight the finger)
   const busy = id => Date.now() - (touched[id] || 0) < 1500;
   const blendTxt = v => '×' + (v / 10).toFixed(1);
@@ -96,8 +97,8 @@
       <div class="levels">
         <label class="lv" style="--c:var(--cyan)"><span>${GB.svg('bright')}Brightness</span><input type="range" id="shBright" min="5" max="100" value="100"><b id="shBrightV">100%</b></label>
         <label class="lv" style="--c:var(--lav)"><span>${GB.svg('anim')}Blend</span><input type="range" id="shBlend" min="2" max="40" value="10"><b id="shBlendV">${blendTxt(10)}</b></label>
-        <label class="lv" style="--c:var(--peri)"><span>${GB.svg('bt')}Sync delay</span><input type="range" id="shDelay" min="0" max="600" step="10" value="0"><b id="shDelayV">0 ms</b></label>
-        <p class="note" id="shDelayNote">Lights early? Slide right to delay them (Bluetooth speakers run ~150-300 ms behind). Saved per speaker.</p>
+        <label class="lv" style="--c:var(--peri)"><span>${GB.svg('bt')}Sync delay</span><input type="range" id="shDelay" min="-400" max="600" step="10" value="0"><b id="shDelayV">0 ms</b></label>
+        <p class="note" id="shDelayNote">Lights <b>early</b>? Slide right to hold them back (Bluetooth speakers run ~150-300 ms behind). Lights <b>late</b>? Slide left and GlowBop fires the beats early. Saved per speaker.</p>
         <div class="sh-segrow" style="--c:var(--gold)"><span>${GB.svg('sparkle')}Sparkles</span>
           <div class="seg" id="shSpark"><button class="btn" data-sp="off">Off</button><button class="btn" data-sp="auto">Auto</button><button class="btn" data-sp="lots">Lots</button></div></div>
         <div class="sh-segrow" style="--c:var(--pink)"><span>${GB.svg('anim')}Pace</span>
@@ -108,8 +109,9 @@
       clearTimeout(brightT); brightT = setTimeout(() => GB.control({brightness: +e.target.value}), 120); };
     $('shBlend').oninput = e => { touched.shBlend = Date.now(); $('shBlendV').textContent = blendTxt(+e.target.value);
       clearTimeout(blendT); blendT = setTimeout(() => GB.control({blend: e.target.value / 10}), 200); };
-    $('shDelay').oninput = e => { touched.shDelay = Date.now(); $('shDelayV').textContent = e.target.value + ' ms';
-      clearTimeout(delayT); delayT = setTimeout(async () => { if (await GB.control({delay: +e.target.value})) GB.toast('🔵 Lights delayed ' + e.target.value + ' ms for this speaker'); }, 300); };
+    $('shDelay').oninput = e => { touched.shDelay = Date.now(); const v = +e.target.value; $('shDelayV').textContent = delayTxt(v);
+      clearTimeout(delayT); delayT = setTimeout(async () => { if (await GB.control({delay: v}))
+        GB.toast(v > 0 ? '🔵 Lights held back ' + v + ' ms for this speaker' : v < 0 ? '⏩ Beats fire ' + (-v) + ' ms early for this speaker' : '🔵 No sync delay for this speaker'); }, 300); };
     el.querySelectorAll('[data-sp]').forEach(x => x.onclick = async () => {
       if (await GB.control({sparkles: x.dataset.sp})) { GB.toast('✨ Sparkles: ' + x.textContent); markSeg('[data-sp]', 'sp', x.dataset.sp); } });
     el.querySelectorAll('[data-pace]').forEach(x => x.onclick = async () => {
@@ -332,7 +334,7 @@
     if ($('shBright')) {
       if (!busy('shBright') && s.brightness != null) { $('shBright').value = s.brightness; GB.paintRange($('shBright')); $('shBrightV').textContent = s.brightness + '%'; }
       if (!busy('shBlend') && s.blend != null) { $('shBlend').value = Math.round(s.blend * 10); GB.paintRange($('shBlend')); $('shBlendV').textContent = blendTxt(+$('shBlend').value); }
-      if (!busy('shDelay') && s.delay != null) { $('shDelay').value = s.delay; GB.paintRange($('shDelay')); $('shDelayV').textContent = s.delay + ' ms' + (s.delay_auto && s.delay ? ' auto' : ''); }
+      if (!busy('shDelay') && s.delay != null) { $('shDelay').value = s.delay; GB.paintRange($('shDelay')); $('shDelayV').textContent = delayTxt(s.delay) + (s.delay_auto && s.delay ? ' auto' : ''); }
       markSeg('[data-sp]', 'sp', s.sparkles || 'auto');
       markSeg('[data-pace]', 'pace', s.pace || 'normal');
     }

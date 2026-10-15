@@ -12,11 +12,12 @@
 #demoBar .dm-x { flex:0 0 auto; appearance:none; border:0; background:transparent; color:#ffb23d; font:700 18px/1 system-ui, sans-serif;
   width:36px; height:36px; border-radius:50%; cursor:pointer; padding:0; }
 #demoBar .dm-x:hover { background:#ffffff14; }
+#demoBar .dm-s { display:none; }
 @media (max-width: 560px) {
-  #demoBar { flex-wrap:wrap; gap:4px 8px; font-size:13px; letter-spacing:.3px; padding:5px 4px 6px 0; }
-  #demoBar .dm-tag { font-size:13px; padding:0 9px 0 12px; border-top-left-radius:14px; }
-  #demoBar .dm-t { flex:1 1 calc(100% - 120px); }
-  #demoBar .dm-go { order:3; margin-left:auto; padding:5px 10px; font-size:13px; }
-  #demoBar .dm-x { order:2; width:32px; height:32px; }
+  #demoBar { gap:6px; font-size:12.5px; letter-spacing:.2px; min-height:46px; padding:4px 2px 4px 0; }
+  #demoBar .dm-tag { font-size:12px; letter-spacing:2px; padding:0 8px 0 11px; margin:-4px 0; border-top-left-radius:14px; }
+  #demoBar .dm-l { display:none; } #demoBar .dm-s { display:inline; }
+  #demoBar .dm-go { padding:7px 9px; font-size:13px; }
+  #demoBar .dm-x { width:30px; height:30px; font-size:15px; }
 }
 body.wallfull #demoBar { display:none; }

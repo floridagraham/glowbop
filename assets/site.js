@@ -636,3 +636,66 @@
   }
   pick(T.find(t => t.dj) || T[0]); requestAnimationFrame(tick);
 })();
+
+// 📱 Phones and iPads: the whole first screen is a glowing LED wall playing GlowBop's biggest looks, with the
+// headline on top. Real recordings, stretched onto a wall the shape of the screen, pulsing on the beat, with a
+// white-hot flash every time a new look drops in.
+(() => {
+  const hero = document.querySelector('header.hero'), src = document.querySelector('.livehero canvas[data-hero]');
+  if (!hero || !src || !matchMedia('(max-width: 900px)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // the brightest, fullest looks (they fill the whole screen with colour), most spectacular first
+  const list = ['look-hypnotic', 'look-rainbow-riot', 'shape-barberspin', 'look-studio-54', 'look-liquid-dreams', 'wave-twinwaves', 'look-warehouse-rave', 'fire-bonfire',
+    'look-3d-depth', 'shape-spinningglobe', 'look-dance-crew', 'fx-waterfall', 'look-psychedelic', 'look-toxic-rave', 'fire-purple-roar', 'look-wild-card', 'fx-solarflare',
+    'look-deep-space', 'look-molten'].filter(n => (window.GB_CLIPS || {})[n]);
+  if (!list.length) return;
+  const GAM = new Float32Array(256); for (let i = 0; i < 256; i++) GAM[i] = 255 * Math.pow(i / 255, .72);
+  const box = document.createElement('div'); box.className = 'hero-bg'; box.setAttribute('aria-hidden', 'true');
+  const gl = document.createElement('canvas'), cv = document.createElement('canvas'); gl.className = 'glow'; box.append(gl, cv); hero.prepend(box);
+  const g = cv.getContext('2d'), gg = gl.getContext('2d');
+  const load = n => new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+    const x = c.getContext('2d'); x.drawImage(im, 0, 0); res(x.getImageData(0, 0, im.width, im.height)); }; im.onerror = () => res(null); im.src = '/clips/' + n + '.png'; });
+  const cache = {}, get = n => cache[n] || (cache[n] = load(n));
+  let cols, rows, cell, W, H, gImg, k = 0, t0 = performance.now(), vis = true, flash = 0, last = performance.now();
+  function size() {
+    const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
+    W = Math.max(1, r.width * d | 0); H = Math.max(1, r.height * d | 0); cv.width = W; cv.height = H;
+    cols = r.width < 600 ? 22 : 32; cell = W / cols; rows = Math.ceil(H / cell);
+    gl.width = cols; gl.height = rows; gImg = gg.createImageData(cols, rows);
+  }
+  size(); addEventListener('resize', () => setTimeout(size, 150));
+  new IntersectionObserver(es => es.forEach(e => vis = e.isIntersecting)).observe(box);
+  get(list[0]); get(list[1]);
+  const BEAT = 60 / 124;
+  async function tick(now) {
+    requestAnimationFrame(tick); const dt = Math.min(.1, (now - last) / 1000); last = now; if (!vis || document.hidden) return;
+    const name = list[k % list.length], m = (window.GB_CLIPS || {})[name], data = await get(name); if (!m || !data) { k++; return; }
+    const el = (now - t0) / 1000, dur = m.n / (m.fps || 15);
+    if (el >= dur) { k++; t0 = now; flash = 1; get(list[(k + 1) % list.length]); return; }
+    const fp = el * (m.fps || 15), f0 = Math.floor(fp) % m.n, f1 = (f0 + 1) % m.n, fr = fp - Math.floor(fp), px = data.data, w = m.w, h = m.h;
+    const ph = (now / 1000 / BEAT) % 1, pulse = 0.92 + 0.35 * Math.exp(-ph * 5), fade = Math.min(1, el / .35, (dur - el) / .35) * .85 + .15;
+    const kk = pulse * fade, fl = flash * 255, gd = gImg.data;
+    g.clearRect(0, 0, W, H); const rad = cell * .42;
+    g.fillStyle = 'rgba(40,32,58,.5)'; g.beginPath();
+    const lit = [];
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const u = (x + .5) / cols * w - .5, v = (y + .5) / rows * h - .5, x0 = Math.max(0, Math.floor(u)), y0 = Math.max(0, Math.floor(v)), x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1);
+      const ax = Math.min(1, Math.max(0, u - x0)), ay = Math.min(1, Math.max(0, v - y0)), c = [0, 0, 0];
+      for (let ch = 0; ch < 3; ch++) {
+        const s = fb => { const b = fb * w * h * 4, p = (yy, xx) => px[b + (yy * w + xx) * 4 + ch];
+          return (p(y0, x0) * (1 - ax) + p(y0, x1) * ax) * (1 - ay) + (p(y1, x0) * (1 - ax) + p(y1, x1) * ax) * ay; };
+        c[ch] = Math.max(GAM[Math.min(255, (s(f0) * (1 - fr) + s(f1) * fr) * kk) | 0], fl);
+      }
+      const j = (y * cols + x) * 4; gd[j] = c[0]; gd[j + 1] = c[1]; gd[j + 2] = c[2]; gd[j + 3] = 255;
+      const cx = x * cell + cell / 2, cy = y * cell + cell / 2;
+      if (c[0] + c[1] + c[2] < 30) { g.moveTo(cx + rad * .5, cy); g.arc(cx, cy, rad * .5, 0, 6.283); } else lit.push(cx, cy, c[0] | 0, c[1] | 0, c[2] | 0);
+    }
+    g.fill();
+    for (let i = 0; i < lit.length; i += 5) {
+      const R = lit[i + 2], G = lit[i + 3], B = lit[i + 4];
+      g.fillStyle = `rgb(${R},${G},${B})`; g.beginPath(); g.arc(lit[i], lit[i + 1], rad, 0, 6.283); g.fill();
+      if (R + G + B > 420) { const mx = Math.max(R, G, B) || 1, q = 255 / mx * .72; g.fillStyle = `rgba(${R * q + 71 | 0},${G * q + 71 | 0},${B * q + 71 | 0},.8)`; g.beginPath(); g.arc(lit[i], lit[i + 1], rad * .55, 0, 6.283); g.fill(); }
+    }
+    gg.putImageData(gImg, 0, 0); flash *= Math.pow(.004, dt);
+  }
+  requestAnimationFrame(tick);
+})();
