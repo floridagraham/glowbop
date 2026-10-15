@@ -74,7 +74,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=12">
+<link rel="stylesheet" href="/assets/console.css?v=13">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -983,7 +983,12 @@ ROWS = [
     ('Epic mode for movie music', [(Y, 'Soundtracks and slow songs swell instead of strobing'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('DJ mode', [(Y, 'Hit pads, hold-to-build drops, cue the next look, tap tempo, crowd lines'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Bluetooth speaker sync', [(Y, 'Lights early or late? Nudge them either way, saved per speaker'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('3D shapes', [(Y, 'Wrap curtains around a cylinder, globe or box; effects made for 3D'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Describe a scene', [(Y, 'Type "sunset over the ocean, then fireworks" and it builds the show'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('DJ controller support', [(Y, 'Plug in a USB or Bluetooth DJ controller and map its buttons to the pads'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Built-in music player', [(Y, 'Party mode, sleep timer, crossfade'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('#', '🎛️ Way beyond music', 'One console runs the party, game day and the holidays.'),
+    ('A different show per curtain group', [(Y, 'Fireplace on one wall, the game on another'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Scoreboard & live scores', [(Y, '44 live leagues, F1, golf, racing, tennis, UFC'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Arcade games & fireplace', [(Y, '8 self-playing games, 9 fire styles in 9 colors'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Text & logos on the lights', [(Y, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
@@ -994,6 +999,7 @@ ROWS = [
     ('Extra hardware for music', [('<span class="y">None needed, start right now</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
     ('Many curtains as one wall', [(Y, '1–8: side by side, stacked or a grid'), (M, 'Twinkly only'), (N, ''), (N, ''), (N, ''), (M, 'Virtual strips'), (N, '')]),
     ('Phone & iPad remote', [(Y, 'Any phone or iPad browser, nothing to install. Turns sideways into a big console on iPad'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is an iPhone / iPad app')]),
+    ('Try the full app before buying', [(Y, 'Right in your browser at glowbop.com/try'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Runs on', [('<b>Windows PC + iPhone, iPad, Android, Mac</b>', 'The show runs on your PC. Control it from any phone, tablet or computer browser'), ('iOS, Android', ''), ('Windows, iOS, Android', ''), ('Windows, Mac', ''), ('Windows, Mac', ''), ('Win, Mac, Linux', ''), ('iPhone, iPad, Mac', '')]),
     ('Price', [('<b>$5.99/mo</b>, $59/yr or $379 once', 'Founder lifetime $129 at launch'), ('Free app; dongle extra', ''), ('Free app; sync box extra', ''), ('Free app; sync box extra', ''), ('See their site', ''), ('Free, open source', ''), ('Paid app', '')]),
 ]

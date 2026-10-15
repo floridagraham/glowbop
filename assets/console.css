@@ -341,13 +341,15 @@ table.cmp tr.grp span{font-size:14px;color:var(--lav)}
   -webkit-background-clip:text;background-clip:text;color:transparent;animation:usflowx 4s linear infinite}
 .plan.best .tag,.founder .tag{background:linear-gradient(90deg,var(--amber),var(--pink));color:#000;box-shadow:0 0 16px rgba(255,61,154,.8)}
 
-/* 2. LED chase: little lights run round the main buttons */
-.btn.primary,.btn.chase{position:relative;isolation:isolate}
-.btn.primary::after,.btn.chase::after{content:"";position:absolute;inset:-3px;border-radius:999px;padding:2px;pointer-events:none;
-  background:repeating-conic-gradient(from var(--gbA),#fff 0 5deg,transparent 5deg 15deg,var(--cyan) 15deg 20deg,transparent 20deg 30deg,var(--amber) 30deg 35deg,transparent 35deg 45deg);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
-  animation:gbspin 6s linear infinite;filter:drop-shadow(0 0 4px rgba(255,255,255,.8))}
-.btn.chase{background:#0d0b16;color:#fff;border:0}
+/* 2. glint: a quick flash of light sweeps across the main buttons every few seconds */
+@keyframes gbglint{0%,72%{transform:translateX(-160%) skewX(-22deg)}88%,100%{transform:translateX(260%) skewX(-22deg)}}
+.btn.primary,.btn.chase{position:relative;overflow:hidden;isolation:isolate}
+.btn.primary::after,.btn.chase::after{content:"";position:absolute;top:-10%;bottom:-10%;left:0;width:42%;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15) 30%,rgba(255,255,255,.85) 50%,rgba(255,255,255,.15) 70%,transparent);
+  animation:gbglint 4.5s ease-in-out infinite;mix-blend-mode:screen}
+.btn.chase{background:#0d0b16;color:#fff;border:0;box-shadow:inset 0 0 0 2px rgba(51,214,255,.6),0 0 22px -6px rgba(51,214,255,.7)}
+.btn.chase::after{animation-delay:1.2s}
+@media(prefers-reduced-motion:reduce){.btn.primary::after,.btn.chase::after{animation:none;opacity:0}}
 
 /* 4. LED ticker strip: dot-matrix letters scrolling like a real wall */
 @keyframes tickrun{to{transform:translateX(-50%)}}
