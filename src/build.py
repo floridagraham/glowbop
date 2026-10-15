@@ -90,7 +90,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=4">
-<link rel="stylesheet" href="/assets/console.css?v=21">
+<link rel="stylesheet" href="/assets/console.css?v=22">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -143,6 +143,14 @@ TICK_ITEMS = ['300+ EFFECTS', '44 LIVE LEAGUES', 'DJ MODE', 'SONG SHOWS', 'SEES 
 def ticker():
     run = ''.join(f'<span>{t}</span><i>★</i>' for t in TICK_ITEMS)
     return f'<div class="ledtick" aria-label="{html.escape(" · ".join(TICK_ITEMS))}"><div class="ledtick-run" aria-hidden="true">{run}{run}</div></div>'
+
+WORKS = ('<div class="works reveal"><span class="wk">Works with</span>'
+         '<a class="wb ok" href="/lights.html">Twinkly curtains <i>supported</i></a>'
+         '<a class="wb" href="/lights.html">WLED <i>testing</i></a>'
+         '<a class="wb" href="/lights.html">Govee <i>testing</i></a>'
+         '<a class="wb" href="/lights.html">DayBetter <i>testing</i></a>'
+         '<a class="wb" href="/lights.html">Bluetooth pixel curtains <i>testing</i></a>'
+         '<a class="wb more" href="/lights.html#soon">More on the way →</a></div>')
 
 FEATS = [
     ('🧠', 'Hears the whole song', 'Not just the beat: it sees the drop coming, remembers your songs, counts the bars and reads the mood. The most advanced music brain for LED lights.', '/guide/music.html'),
@@ -218,6 +226,7 @@ home = f'''
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop.</p>
     <p class="lead" style="margin-top:-6px"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install.</p>
+    {WORKS}
     <div class="btns"><a class="btn primary herotry" href="#tryLive">🎛️ Play the live demo ↓</a><a class="btn" href="{WAIT}">✉️ Join the launch list</a></div>
     <div class="stats"><div><b>300+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
@@ -1295,10 +1304,21 @@ L = [
     ('soon', 'Coming soon', 'Light-only Christmas trees', 'Metal-frame cone trees made of addressable lights (Hello Fairy app).'),
     ('soon', 'Planned', 'More Bluetooth brands', 'Many low-cost Bluetooth strip brands share a few controllers. Tell us yours and we will add it.'),
 ]
+ROAD = [
+    ('DJ and stage lights (DMX)', 'Moving heads, par cans, wash lights, strobes, pixel bars, DJ lasers and fog machines, through a USB DMX adapter or an Art-Net / sACN box.'),
+    ('Holiday pixel controllers', 'Falcon, Kulp and ESPixelStick controllers used by big holiday light shows, plus your xLights layouts.'),
+    ('Philips Hue', 'Hue bulbs, strips and gradient bars through the Hue Bridge, in fast entertainment mode.'),
+    ('Nanoleaf and LIFX', 'Nanoleaf panels and LIFX bulbs and strips on your Wi-Fi.'),
+    ('More smart strips', 'Popular Wi-Fi and Bluetooth strip controllers, smart bulbs and TV light bars.'),
+    ('Your gaming setup', 'RGB keyboards, mice and PC lights dancing along with the room.'),
+]
 lights = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Supported lights</span><h1>Will it work with <span class="grad">my lights?</span></h1>
 <p class="lead">Here is exactly where things stand. We only mark a light "Supported" after we have run it ourselves.</p></div></header>
 <section style="padding-top:10px"><div class="wrap">
 <div class="grid g3">{''.join(f'<div class="card reveal"><span class="badge {k}">{b}</span><h3 style="margin-top:12px">{n}</h3><p>{d}</p></div>' for k, b, n, d in L)}</div>
+<h2 id="soon" class="center" style="margin-top:56px">On the way</h2>
+<p class="center dim" style="max-width:720px;margin:6px auto 20px">Lights we are planning next. None of these work yet; we will move each one up to "testing" when it does.</p>
+<div class="grid g3">{''.join(f'<div class="card reveal"><span class="badge soon">Planned</span><h3 style="margin-top:12px">{n}</h3><p>{d}</p></div>' for n, d in ROAD)}</div>
 <div class="feat reveal" style="margin-top:30px">
 <div><span class="eyebrow">Good to know</span><h2>Curtains are the sweet spot</h2>
 <ul class="ticks"><li>Curtains are a <b>grid of pixels</b>, so GlowBop can draw real pictures: pumpkins, scores, words.</li><li>More curtains = a <b>bigger screen</b>. Two side by side is a great start.</li><li>Outdoor-rated curtains handle pool decks and porches.</li></ul>
@@ -1558,6 +1578,7 @@ pro = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow
 <p class="lead">Autoloops, cue lists with GO, Song Shows, faders, zones and your MIDI controller, on consumer LED lights instead of DMX stage fixtures. It listens to the audio, so it works with Spotify, YouTube, Serato, rekordbox or VirtualDJ, no plugin needed. Run the whole show from a phone or iPad.</p>
 <div class="price" style="margin:14px 0 4px;font-size:28px"><b>$8.99</b><small> / month</small> · <b>$89</b><small> / year</small> · <b>$449</b><small> lifetime</small></div>
 <div class="btns" style="justify-content:center"><a class="btn primary" href="{PRO_BUY}">{PRO_BTN}</a><a class="btn" href="/try/#autoloops">🕹️ Try it in the demo</a><a class="btn" href="/pricing.html#pro">Pro DJ pricing</a></div>
+<div style="display:flex;justify-content:center">{WORKS}</div>
 <div class="toc" style="justify-content:center;margin-top:20px">{''.join(f'<a href="#{t[0]}">{t[1]}</a>' for t in TOOLS)}<a href="#clock">MIDI clock</a><a href="#vdj">VirtualDJ</a><a href="#test">Test my controller</a><a href="#vs">Home vs Pro</a><a href="#faq">FAQ</a></div></div></header>
 <section class="tight" style="padding-top:0"><div class="wrap"><div class="band reveal" style="padding:22px">
 <span class="eyebrow">Speaks your language</span><div class="toc" style="justify-content:center;margin-top:10px">{''.join(f'<span class="k">{w}</span> ' for w in SPEAKS)}</div>
