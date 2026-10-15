@@ -1,4 +1,4 @@
-/* 🎚️ Fader board (DJ page, GlowBop Pro DJ): six live faders that sit on top of whatever is playing.
+/* 🎚️ Fader board (LIVE BOARD page, GlowBop Pro DJ): six live faders that sit on top of whatever is playing.
    Talks to GET/POST /api/faders (faders.py on the laptop) and follows /api/status (faders) so every phone, iPad and the
    laptop show the same positions. Drag anywhere on a fader (relative, so a stray touch never jumps the lights); every
    finger drives its own fader, so two fingers move two faders at once. Double-tap a fader to reset it. The key under each
@@ -9,7 +9,7 @@
   const ZONES = ['1 BEAT', '1/2', '1/4', '1/8'];
   const hueOf = v => (Math.max(1, v) - 1) / 99 * 0.92 * 360;                // same wheel as faders.py (stops at pink)
   const FADERS = [
-    {k: 'master', label: 'MASTER', name: 'Master brightness', c: 'var(--gold)', def: 100, fl: ['dark', 'BLACKOUT', 'Hold for blackout'],
+    {k: 'master', label: 'Master', name: 'Master brightness', c: 'var(--gold)', def: 100, fl: ['dark', 'BLACKOUT', 'Hold for blackout'],
      fmt: v => Math.round(v) + '%'},
     {k: 'speed', label: 'SPEED', name: 'Animation speed', c: 'var(--cyan)', def: 1, fl: ['ffwd', '2X', 'Hold for double time'],
      fmt: v => (v < 1 ? v.toFixed(2) : v.toFixed(1)) + '×',
@@ -178,11 +178,11 @@
     r.classList.toggle('up', !!up.length);
     const b = $('fdReset'); if (b) b.disabled = !up.length;
   }
-  GB.panel('dj', 11, el => {                                   // 🔒 Pro tools sit below the Home DJ panels
+  GB.panel('board', 10, el => {                                // 🎚️ LIVE BOARD, first: the faders, then hit pads, then the loop banks
     el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)'); el.id = 'fdPanel';
     el.innerHTML = `<div class="ph"><span>Fader board</span><span class="r" id="fdR">ALL AT DEFAULT</span></div>
       <div class="fd-board" id="fdBoard"></div>
-      <div class="fd-foot"><p class="note">Drag a fader up or down (two fingers move two at once). Double-tap one to reset it. Hold the key under a fader for blackout, double time, full strobe, rainbow, full white or freeze.</p>
+      <div class="fd-foot"><p class="note">Drag a fader up or down (two fingers move two at once). Double-tap one to reset it. Hold the flash key under a fader for blackout, double time, full strobe, rainbow, full white or freeze.</p>
         <button class="btn sm" id="fdReset" style="--c:var(--cyan)">${GB.svg('reset')}<span>Reset all</span></button></div>`;
     const host = el.querySelector('#fdBoard'); FADERS.forEach(f => build(f, host));
     $('fdReset').onclick = async () => {
@@ -191,7 +191,7 @@
       if (await fpost({reset: true})) { GB.sfx('ok'); GB.toast('↺ Faders back to normal'); }
     };
     paintHead();
-    GB.proGate(el, 'Fader board', {pitch: 'Six live faders that ride on top of any show: master, speed, a strobe locked to the beat, a colour wheel, white and trails. Two fingers, two faders, with a hold key under each one.'});
+    GB.proGate(el, 'Fader board', {pitch: 'Six live faders that ride on top of any show: Master, speed, a strobe locked to the beat, a colour wheel, white and trails. Two fingers, two faders, with a flash key under each one.'});
   });
 
   // ------------------------------------------------------------------ follow the engine (other phones move the faders too)
@@ -206,6 +206,6 @@
     paintHead();
   }
   GB.on('status', s => sync(s.faders));
-  GB.on('page', async id => { if (id !== 'dj' || GB.pro === false) return; try { sync(await GB.get('/api/faders')); } catch (e) {} });
+  GB.on('page', async id => { if (id !== 'board' || GB.pro === false) return; try { sync(await GB.get('/api/faders')); } catch (e) {} });
   GB.faders = {state: FD, list: FADERS, queue};
 })();

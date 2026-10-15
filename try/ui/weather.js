@@ -93,7 +93,7 @@
       <div class="sub">Named storms</div><div class="list" id="stSt"></div>
       <button class="btn ghost sm" id="stTest">Test alert</button>
       <p class="note" id="stUp"></p><p class="note wx-err" id="stErr" hidden></p>
-      <p class="note">Not an official warning system. Always follow NWS alerts and local officials.</p>`;
+      <p class="note">Not an official warning system. Always follow official alerts and local officials.</p>`;
     el.querySelectorAll('#stSw [data-on]').forEach(b => b.onclick = async () => {
       const on = b.dataset.on === '1';
       if (await GB.feed({feed: 'storm', on})) { GB.toast(on ? '⛈️ Storm watch is on' : 'Storm watch is off'); GB.feedsRefresh(); }
@@ -115,7 +115,6 @@
       $('stAl')._k = ak;
       $('stAl').innerHTML = !f.has_loc ? '<div class="st-none">Set your location above first.</div>'
         : !on ? '<div class="st-none">Turn storm watch on to check for alerts.</div>'
-        : !f.us ? '<div class="st-none">Weather alerts work for US locations.</div>'
         : !al.length ? '<div class="st-none">✅ No alerts for your area right now.</div>'
         : al.map(a => `<div class="item st-al" style="--stc:${LV[a.level] || 'var(--amber)'}"><div class="tx"><b>${esc(a.event)}</b><small>${esc(a.headline)}</small>${a.expires ? `<small>Until ${esc(when(a.expires))}</small>` : ''}</div></div>`).join('');
     }

@@ -10,6 +10,7 @@
   const toast = m => GB.toast(m);
   const get = p => GB.get(p);
   const post = (p, b) => GB.post(p, b);
+  const STY_NAME = {epic: 'Epic', dance: 'Dance', chill: 'Chill', jazz: 'Jazz', flow: 'Flow', rock: 'Rock', hiphop: 'Hip-hop', latin: 'Latin', country: 'Country', kids: 'Kids', christmas: 'Christmas', halloween: 'Halloween'};   // 🎼 Auto's detected style chip
 
   GB.css(`
   .mu-card { --c:var(--violet); }
@@ -26,7 +27,7 @@
   .mu-sty > span { font:calc(12px * var(--fs, 1))/1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
   .mu-sty .seg { flex:1; min-width:0; } .mu-sty .btn { min-height:34px; padding:4px 6px; font-size:calc(13px * var(--fs, 1)); --c:var(--gold); }
   .mu-sty .btn { gap:4px; } .mu-sty .btn .ic { width:15px; height:15px; }
-  @media (max-width: 699px) { .mu-sty .btn { flex-direction:column; gap:2px; padding:4px 2px; } .mu-sty .btn .ic { width:16px; height:16px; } }
+  @media (max-width: 699px) { .mu-sty { gap:6px; } .mu-sty > span { flex-basis:100%; } .mu-sty .seg { flex-basis:100%; } .mu-sty .btn { flex-direction:column; gap:2px; padding:4px 2px; font-size:calc(12px * var(--fs, 1)); letter-spacing:.5px; } .mu-sty .btn .ic { width:16px; height:16px; } }
   .mu-np { display:flex; align-items:center; gap:14px; min-width:0; }
   .mu-art { width:88px; height:88px; flex:0 0 auto; border-radius:0 16px 0 16px; overflow:hidden; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(135deg, color-mix(in srgb, var(--pink) 35%, #000), color-mix(in srgb, var(--cyan) 30%, #000)); box-shadow:0 0 0 2px var(--violet), 0 0 22px color-mix(in srgb, var(--violet) 45%, transparent); }
@@ -131,7 +132,7 @@
       </div>
       <div class="mu-fam" id="muFam"></div>
       <div class="mu-sty" id="muSty" hidden><span>Light style</span><div class="seg">
-        <button class="btn" data-sty="auto">Auto</button><button class="btn" data-sty="epic">${GB.svg('movie')}<span>Epic</span></button><button class="btn" data-sty="dance">${GB.svg('disco')}<span>Dance</span></button><button class="btn" data-sty="chill">${GB.svg('moon')}<span>Chill</span></button></div></div>
+        <button class="btn" data-sty="auto">Auto</button><button class="btn" data-sty="epic">${GB.svg('movie')}<span>Epic</span></button><button class="btn" data-sty="dance">${GB.svg('disco')}<span>Dance</span></button><button class="btn" data-sty="chill">${GB.svg('moon')}<span>Chill</span></button><button class="btn" data-sty="jazz">${GB.svg('sax')}<span>Jazz</span></button></div></div>
       <div class="seg mu-opt">
         <button class="btn" id="muSleep" style="--c:var(--lav)"></button>
         <button class="btn" id="muParty" style="--c:var(--orange)"></button>
@@ -156,6 +157,13 @@
       </div>`;
     wire();
     mounted = true;
+  });
+  // 📺 the YouTube browser (a music source) sits lower on MUSIC, under Show control and Levels, so the first screen on a phone
+  // is now playing, play/skip, volume, light style, power and brightness. Same elements, same ids: only moved.
+  GB.panel('music', 40, el => {
+    el.classList.add('box', 'mu-card', 'mu-src'); el.id = 'muSrcPanel'; el.style.setProperty('--c', 'var(--red)');
+    el.innerHTML = '<div class="ph"><span>Music source</span><span class="r">YOUTUBE THROUGH GLOWBOP</span></div>';
+    ['muYtOpen', 'muYt'].forEach(id => { const n = $(id); if (n) el.appendChild(n); });
   });
 
   // ------------------------------------------------------------- wiring
@@ -283,14 +291,16 @@
     $('muMute').style.setProperty('--c', 'var(--red)');
     // light style for this song + the look family
     const sty = si && si.title && title && title.toLowerCase().includes(String(si.title).toLowerCase().slice(0, 12))
-      ? [(si.genres || []).slice(0, 2).join(', '), si.bpm ? Math.round(si.bpm) + ' bpm' : ''].filter(Boolean).join(' · ') + (si.style ? ' → ' + ({epic: 'epic', dance: 'dance', chill: 'chill'}[si.style] || si.style) + ' lights' : '') : '';
+      ? [(si.genres || []).slice(0, 2).join(', '), si.bpm ? Math.round(si.bpm) + ' bpm' : ''].filter(Boolean).join(' · ') + (si.style ? ' → ' + (STY_NAME[si.style] || si.style).toLowerCase() + ' lights' : '') : '';
     const fam = mine && ms.family && ms.family.length ? ms.family.map(esc).join(' · ') : '';
     $('muFam').innerHTML = sty ? svg('bulb') + ' ' + esc(sty) + (fam ? ` · <b>${fam}</b>` : '')
       : fam ? `${svg('palette')} Lights: <b>${fam}</b> ${ms.family_how === 'auto' ? '(auto)' : ''}` : '';
     const showSty = !!(si && si.title && sty !== undefined && title && title.toLowerCase().includes(String(si.title).toLowerCase().slice(0, 12)));
     $('muSty').hidden = !showSty;
     if (showSty) { const cur = si.by_you ? (si.style || 'auto') : 'auto';
-      document.querySelectorAll('#muSty [data-sty]').forEach(b => { b.classList.toggle('on', b.dataset.sty === cur); b.title = b.dataset.sty === 'auto' ? 'Let GlowBop decide' + (si.style && !si.by_you ? ' (now: ' + si.style + ')' : '') : ''; }); }
+      document.querySelectorAll('#muSty [data-sty]').forEach(b => { b.classList.toggle('on', b.dataset.sty === cur); b.title = b.dataset.sty === 'auto' ? 'Let GlowBop decide' + (si.style && !si.by_you ? ' (now: ' + si.style + ')' : '') : '';
+        if (b.dataset.sty === 'auto') { const lb = b.querySelector('span') || b;   // only the label: keep any icon
+          lb.textContent = si.style && !['epic', 'dance', 'chill', 'jazz'].includes(cur) ? 'Auto · ' + (STY_NAME[si.style] || si.style) : 'Auto'; } }); }
     const party = !!ms.party;
     $('muParty').innerHTML = svg('fire') + '<span>' + (party ? 'Party: on' : 'Party mode') + '</span>'; $('muParty').classList.toggle('on', party);
     $('muSleep').innerHTML = svg('moon') + '<span>' + (ms.sleep_left ? 'Sleep ' + Math.ceil(ms.sleep_left / 60) + 'm' : 'Sleep timer') + '</span>'; $('muSleep').classList.toggle('on', !!ms.sleep_left);

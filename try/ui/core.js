@@ -59,25 +59,56 @@
     if (ov.active || (ov.interlude && ov.interlude.on)) jobs.push(GB.post('/api/override', {release: true, interlude: false}));   // 🚨🎙️ overrides off, interlude over
     const lp = s.loops || {};
     if ((lp.running || []).length || lp.rec) jobs.push(GB.post('/api/loops', {stop_all: true}));                     // 🔁 loops stop
+    const pd = s.prodj || {};
+    if (pd.pro && (pd.loop || pd.pending)) jobs.push(GB.post('/api/autoloops', {release: true}));                       // 🔁 the held Autoloop / Scene lets go
+    if (pd.pro && pd.blackout > 0) jobs.push(GB.post('/api/cues', {blackout: false}));                                  // 🎬 a cue blackout lifts
     await Promise.all(jobs);
     GB.sfx('ok'); GB.toast('🎵 Back to the music show');
     if (GB.feedsRefresh) GB.feedsRefresh(100);
   };
   GB.release = async () => { if (await GB.control({release: true, lock_effect: null})) GB.toast('🌊 Flowing with the music again'); };
 
-  // ------------------------------------------------------------- 🎛️ Pro DJ: Song Shows, Fader board, Override keys, Loop banks
-  // GB.pro: true / false (null until /api/license answers). GB.proGate(panelEl, feature, opts) swaps a Pro-only panel for an
-  // upgrade card on Home DJ installs and shows a small PRO chip on Pro ones. opts: {pitch, chip:false, preview:true (keep the
-  // panel's content visible, dimmed and read-only, under the card)}. GB.on('pro', fn) follows changes.
+  // ------------------------------------------------------------- 🎛️ Pro DJ: Song Shows, Autoloops, Scenes, Cues, Tempo toolbox, Fader board, Zones, Palettes, Pad Recorder, Override keys, Interlude
+  // GB.pro: true / false (null until /api/license answers). The rail's PRO section shows SHOWS, LIVE BOARD and OVERRIDE on a Pro
+  // install and a single gold PRO tour key on a Home one (paintRailPro), so a Home user never lands on a locked control.
+  // GB.proGate(panelEl, feature, opts) stays as a safety net on the Pro panels: an upgrade card if one is ever reached on Home.
+  // opts: {pitch, chip:false, preview:true}. GB.on('pro', fn) follows changes.
   GB.pro = null; GB.buyPro = 'https://glowbop.com/pricing.html#pro';
-  GB.setPro = (v, lic) => { if (lic && lic.buy_pro) GB.buyPro = lic.buy_pro; v = v !== false; if (GB.pro === v) return; GB.pro = v; document.body.classList.toggle('not-pro', !v); paintRailPro(); GB.emit('pro', v); };
+  GB.setPro = (v, lic) => { if (lic && lic.buy_pro) GB.buyPro = lic.buy_pro; v = v !== false; if (GB.pro === v) return; GB.pro = v; document.body.classList.toggle('not-pro', !v); document.body.classList.add('pro-known'); paintRailPro(); GB.emit('pro', v); };
   GB.loadPro = async () => { try { const r = await GB.get('/api/license'); GB.setPro(r.pro !== false, r); } catch (e) {} };
-  const PRO_LIST = ['Song Shows', 'Fader board', 'Override keys', 'Interlude', 'Loop banks'];
+  // the Pro tools, the tab each lives on, and the pitch the upgrade card and the PRO tour both use
+  const PRO_FEATURES = GB.PRO_FEATURES = [
+    {name: 'Autoloops', ic: 'loop', c: '#ff9f5a', page: 'autoloops', tab: 'LOOPS & CUES', prev: 'autoloops',
+      pitch: '32 ready-made, beat-synced looks in four banks (Club, Chill / Flow, Big Room, Color). Tap a pad and it drops in on the next bar and holds until you change it, or let it auto-advance every few bars.'},
+    {name: 'Scenes', ic: 'save', c: '#ffc27a', page: 'autoloops', tab: 'LOOPS & CUES', prev: 'scenes',
+      pitch: 'Save the wall exactly as it looks right now (look, effect, colours, faders) and bring it back later with a smooth fade. Your own bank of go-to moments.'},
+    {name: 'Cues', ic: 'lists', c: '#7dffb2', page: 'cues', tab: 'LOOPS & CUES', prev: 'cues',
+      pitch: 'Plan an event as a list of cues (Grand Entrance, First Dance, Cake, Last Song) and run it with one big GO key, with crossfades between cues and the space bar on a laptop.'},
+    {name: 'Tempo toolbox', ic: 'note', c: '#ff9f5a', page: 'autoloops', tab: 'LOOPS & CUES', prev: 'tempo',
+      pitch: 'Fine-tune the BPM, double or halve it, nudge the beat earlier or later and lock it, so every flash lands exactly on the kick. Auto Ambient goes calm by itself when the music stops.'},
+    {name: 'Song Shows', ic: 'movie', c: 'var(--orchid)', page: 'shows', tab: 'SHOWS', prev: 'shows',
+      pitch: 'Build a light show for a song once and it plays the same way, right on the beat, every time that song comes on. Look through the timelines below to see how they work.'},
+    {name: 'Fader board', ic: 'faders', c: 'var(--cyan)', page: 'board', tab: 'LIVE BOARD', prev: 'faders',
+      pitch: 'Six live faders that ride on top of any show: Master, speed, a strobe locked to the beat, a colour wheel, white and trails. Two fingers, two faders, with a flash key under each one.'},
+    {name: 'Palettes', ic: 'palette', c: 'var(--pink)', page: 'board', tab: 'LIVE BOARD', prev: 'palettes',
+      pitch: 'Pick a colour palette (or make your own from the colour wheel) and every look, Autoloop and auto show switches to those colours until you clear it. Perfect for wedding or brand colours.'},
+    {name: 'Zones', ic: 'corner', c: '#4de8c8', page: 'ops', tab: 'OVERRIDE + LIVE BOARD', prev: 'zones',
+      pitch: 'Split the wall into zones (left, right, top, bottom, center, odd / even, each curtain). Aim the override keys at one zone and ride each zone with its own fader.'},
+    {name: 'Pad Recorder', ic: 'loop', c: 'var(--lime)', page: 'board', tab: 'LIVE BOARD', prev: 'loops',
+      pitch: 'A sampler for your lights: record a phrase of hit pads (1 to 8 bars), then fire it back on the beat, looping over any song. Four banks, built-in starter loops and a step editor.'},
+    {name: 'Override keys', ic: 'ovr', c: 'var(--red)', page: 'ops', tab: 'OVERRIDE', prev: 'override',
+      pitch: 'Big panic buttons that take over the whole wall in one touch: blackout, full white, strobe, house lights, your colours, a disco ball drop and an audience sweep. Flash or latch, with smooth fades and laptop shortcuts.'},
+    {name: 'Interlude', ic: 'mic', c: 'var(--lav)', page: 'ops', tab: 'OVERRIDE', prev: 'interlude',
+      pitch: 'Ambient mode for talking breaks, speeches and band changeovers: one tap and the wall drifts into a calm, tasteful glow that ignores the mic, then fades back into the show (with a flash or a drop if you like). Can start by itself when the music stops.'},
+  ];
+  const PRO_LIST = PRO_FEATURES.map(f => f.name);
+  const firstLine = t => (String(t).match(/^.*?[.!?](?=\s|$)/) || [t])[0];
   GB.proGate = (el, feature, opts) => {
     opts = opts || {};
+    const pf = PRO_FEATURES.find(f => f.name === feature);
     const card = document.createElement('div'); card.className = 'pro-card'; card.hidden = true;
     card.innerHTML = `<div class="pro-top"><span class="pro-badge">${GB.svg('lock')}Pro DJ</span><b>${GB.esc(feature)}</b></div>
-      <p class="note">${opts.pitch || GB.esc(feature) + ' is part of GlowBop Pro DJ.'}</p>
+      <p class="note">${opts.pitch || (pf && pf.pitch) || GB.esc(feature) + ' is part of GlowBop Pro DJ.'}</p>
       <ul class="pro-list">${PRO_LIST.map(f => `<li class="${f === feature ? 'me' : ''}">${GB.esc(f)}</li>`).join('')}</ul>
       <button class="btn c wide pro-buy" style="--c:var(--orchid)">${GB.svg('star')}<span>Upgrade to Pro DJ</span></button>
       <details class="pro-key"><summary>I have a Pro DJ key</summary>
@@ -108,17 +139,32 @@
     GB.on('pro', paint); paint();
     return {card, paint};
   };
+  // which keys this license gets: Pro tabs on Pro, the PRO tour on Home, neither until /api/license answers.
+  // If the license flips while you're on a page that no longer fits, you move to its counterpart (tour <-> SHOWS).
+  const fits = pg => !pg || (pg.pro ? GB.pro !== false : pg.home ? GB.pro !== true : true);
   function paintRailPro() {
     document.querySelectorAll('#rail button[data-p]').forEach(b => {
-      const pg = PAGES.find(p => p.id === b.dataset.p); if (!pg || !pg.pro) return;
-      let i = b.querySelector('.rail-lock');
-      if (GB.pro !== false) { if (i) i.remove(); return; }                  // Pro: no badge clutter
-      if (!i) { i = document.createElement('i'); i.className = 'rail-lock'; i.innerHTML = GB.svg('lock'); i.setAttribute('aria-label', 'Pro DJ'); b.appendChild(i); }
+      const pg = PAGES.find(p => p.id === b.dataset.p); if (!pg) return;
+      if (pg.pro) b.hidden = GB.pro !== true; else if (pg.home) b.hidden = GB.pro !== false;
     });
+    const sep = document.querySelector('#rail .rail-sep[data-g=pro]'); if (sep) sep.hidden = GB.pro === null;
+    const cur = PAGES.find(p => p.id === GB.page);
+    if (cur && !fits(cur) && document.body.dataset.page) GB.go(cur.pro ? 'pro' : 'shows');
   }
 
   // ------------------------------------------------------------- icons (24x24 paths)
   const ICON = GB.ICON = {
+    rocket: '!M12 1.5c3.4 2.7 5 6.5 5 11V16H7v-3.5c0-4.5 1.6-8.3 5-11zm0 5.3a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM7 11.8l-3.2 4V20L7 17.6zm10 0l3.2 4V20L17 17.6zM9.4 17h5.2L12 23z',
+    plane: 'M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z',
+    quake: 'M1 11h4.4l2.2-5.6 3.5 11.9 3.2-14.6 3.4 11.6 1.3-3.3H23v2h-2.6l-2.6 6.4-2.9-9.9-3.3 15.1-3.7-12.8L6.8 13H1z',
+    aurora: 'M2.5 21h19v2h-19zM4 19.2c.4-6.2 1.7-11.4 4.6-16.7.7 6-.1 11.6-2.3 16.7zm5.6 0c.4-5.3 2-9.9 5.2-14.9.4 5.4-.6 10.3-3 14.9zm5.7 0c.6-4.1 2.4-7.4 5.5-10.7.1 4.1-1.2 7.7-3.4 10.7z',
+    volcano: 'M1.5 22l6.6-11.5h2.6l1.3 2.3 1.3-2.3h2.6L22.5 22zM9.6 8.6C8.2 8 7.6 6.3 8.4 5c-1-.9-.7-2.6.6-3 .9-.3 1.8 0 2.3.7.8-1 2.4-1.2 3.4-.3 1 .9 1 2.4.1 3.3 1.2.6 1.6 2.1.9 3.2-.7 1-2 1.3-3 .7-.8.6-2 .4-2.6-.4-.2 0-.4-.1-.5-.6z',
+    sweep: 'M14 2h4.5v20H14zM2 5.5h9v2.2H2zm2.5 5.4H11v2.2H4.5zM2 16.3h9v2.2H2z',
+    shockwave: '!M12 9a3 3 0 110 6 3 3 0 010-6zM12 1.5a10.5 10.5 0 110 21 10.5 10.5 0 010-21zm0 2.4a8.1 8.1 0 100 16.2 8.1 8.1 0 000-16.2z',
+    colorbomb: 'M10.5 7.5a7.25 7.25 0 110 14.5 7.25 7.25 0 010-14.5zM14.3 6.6l2.1-2.1 2.1 2.1-2.1 2.1zM19.5 .8l.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8z',
+    lightning: 'M14.5 1L6 12.5h4.6L7.5 23 18 9.5h-4.8L16.5 1zM19 12.5l-2.6 4.2h2l-1.2 4.3 4.3-5.8h-2l1.3-2.7z',
+    count321: '!M5 2h14a3 3 0 013 3v14a3 3 0 01-3 3H5a3 3 0 01-3-3V5a3 3 0 013-3zm3.5 4.5v2.2h5.2l-3 3.1v1.9h1.6c1.2 0 1.9.6 1.9 1.4s-.7 1.4-1.9 1.4H8.5v2.2h4.2c2.6 0 4.3-1.5 4.3-3.6 0-1.6-1-2.8-2.6-3.3l2.6-2.7V6.5z',
+    heart: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
     play: 'M8 5v14l11-7z', pause: 'M6 19h4V5H6v14zm8-14v14h4V5h-4z', next: 'M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z', prev: 'M6 6h2v12H6zm3.5 6l8.5 6V6z',
     shuffle: 'M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z',
     like: 'M9 21h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.58 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2zM9 9l4.34-4.34L12 10h9v2l-3 7H9V9zM1 9h4v12H1z',
@@ -207,6 +253,8 @@
     laptop: 'M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z',
     image: 'M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z',
     home: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',
+    sax: 'M2.4 4.4L3.9 2.3l6.6 4.5-1.6 2.1zM7.4 6.9l3.8-1.7 4.3 12.6-4 1.4zM11.6 17c.2 6.6 10.2 6.6 10.2-.6v-5.2h1.6V7.5h-8.6v3.7h2.4V17c0 2.3-2.8 2.3-2.9 0zM13.4 8.6a1.3 1.3 0 110 2.6 1.3 1.3 0 010-2.6zm1.2 3.8a1.3 1.3 0 110 2.6 1.3 1.3 0 010-2.6z',
+    eyeOff: 'M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z',
   };
   GB.svg = (n, extra) => { let d = ICON[n] || '', a = '';
     if (d[0] === '~') { d = d.slice(1); a = ' transform="matrix(-1 0 0 1 24 0)"'; } else if (d[0] === '!') { d = d.slice(1); a = ' fill-rule="evenodd"'; }
@@ -252,27 +300,35 @@
   }, true);
 
   // ------------------------------------------------------------- pages + rail
-  // the rail, by importance: PERFORM (what you reach for mid-song), VISUALS (everyday looks, most used first), SYSTEM (lights + app)
+  // the rail, by how often you reach for it: PERFORM (the home screen + playing by hand), VISUALS (everyday looks, most used
+  // first), PRO (the Pro DJ tools, or one gold tour key on Home), SYSTEM (lights + app, mostly one-time setup) at the bottom.
   const PAGES = GB.PAGES = [
     {id: 'music', label: 'MUSIC', c: 'var(--pink)', big: 2, g: 'perform'},
     {id: 'dj', label: 'DJ', c: 'var(--red)', g: 'perform'},
-    {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'perform'},
-    {id: 'ops', label: 'OVERRIDE', c: '#e9e6ff', pro: true, g: 'perform'},
     {id: 'looks', label: 'LOOKS', c: 'var(--amber)', g: 'visuals'},
-    {id: 'scenes', label: 'SCENES', c: 'var(--lav)', g: 'visuals'},
-    {id: 'fire', label: 'FIRE', c: 'var(--orange)', g: 'visuals'},
-    {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},
-    {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
-    {id: 'score', label: 'SPORTS', c: 'var(--violet)', g: 'visuals'},
+    {id: 'scenes', label: 'SCENES', c: 'var(--lav)', g: 'visuals'},            // 🔥 the fireplace lives here now
     {id: 'feeds', label: 'LIVE', c: 'var(--green)', g: 'visuals'},
+    {id: 'score', label: 'SPORTS', c: 'var(--violet)', g: 'visuals'},          // team scores + golf, racing, tennis, UFC boards
     {id: 'text', label: 'TEXT', c: 'var(--gold)', g: 'visuals'},
+    {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},         // moves up next to LOOKS when a holiday is close (seasonRail)
+    {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
+    {id: 'autoloops', label: 'LOOPS & CUES', c: '#ff9f5a', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
+    {id: 'cues', label: 'CUES', c: '#7dffb2', pro: true, g: 'pro', rail: 'autoloops'},   // 🎬 cue lists + GO (cues.js): shares the LOOPS & CUES key (a switch on top), so the phone rail still fits
+    {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'pro'},
+    {id: 'board', label: 'LIVE BOARD', c: '#4de8c8', pro: true, g: 'pro'},     // 🎚️🔁 Fader board + Loop banks
+    {id: 'ops', label: 'OVERRIDE', c: '#e9e6ff', pro: true, g: 'pro'},
+    {id: 'pro', label: 'PRO', c: 'var(--gold)', home: true, g: 'pro', ic: 'sparkle'},   // ✨ Home: the Pro DJ tour
     {id: 'lights', label: 'LIGHTS', c: 'var(--peri)', g: 'system'},
     {id: 'setup', label: 'SETUP', c: 'var(--dim)', g: 'system'},
   ];
-  const GROUPS = GB.RAIL_GROUPS = {perform: 'PERFORM', visuals: 'VISUALS', system: 'SYSTEM'};
-  // old or friendly links (#help, #sports, #light ...) land on the right page; values are [page, anchor]
+  const GROUPS = GB.RAIL_GROUPS = {perform: 'PERFORM', visuals: 'VISUALS', pro: 'PRO', system: 'SYSTEM'};
+  // old or friendly links (#help, #sports, #fire ...) land on the right page; values are [page, anchor]
   const PAGE_ALIAS = {help: ['setup', 'helpPanel'], light: ['lights'], devices: ['lights'], map: ['lights'], groups: ['lights', 'grpPanel'],
-    sports: ['score'], live: ['feeds'], override: ['ops'], license: ['setup']};
+    sports: ['score'], live: ['feeds'], override: ['ops'], license: ['setup', 'suLicKeyBox'],
+    fire: ['scenes', 'firePanel'], fireplace: ['scenes', 'firePanel'], mirror: ['scenes', 'mirrorPanel'],
+    golf: ['score'], nascar: ['score'], racing: ['score'], tennis: ['score'], ufc: ['score'],   // boards open from SPORTS > Live Fan
+    liveboard: ['board'], faders: ['board', 'fdPanel'], loops: ['board', 'lpPanel'], padrecorder: ['board', 'lpPanel'], palettes: ['board', 'palPanel'],
+    autoloop: ['autoloops'], tempo: ['autoloops', 'alTempo'], myscenes: ['autoloops', 'alPanel'], cue: ['cues'], go: ['cues'], zones: ['ops', 'znPanel'], interlude: ['ops', 'ilPanel'], upgrade: ['pro'], tour: ['pro']};
   const panels = {};                        // pageId -> [{order, fn}]
   GB.panel = (page, order, fn) => { (panels[page] = panels[page] || []).push({order, fn}); };
   GB.page = 'music';
@@ -281,9 +337,12 @@
     if (!PAGES.some(p => p.id === id)) {                     // not a page: an alias, or a panel id (#lightsPanel) whose page we find
       const al = Object.prototype.hasOwnProperty.call(PAGE_ALIAS, id) ? PAGE_ALIAS[id] : null, pg = al ? null : pageOf(id);
       if (al) { id = al[0]; anchor = anchor || al[1]; } else if (pg) { anchor = anchor || id; id = pg; } else id = 'music';
-    } else if (anchor) { const pg = pageOf(anchor); if (pg && pg !== id) id = pg; }   // a panel that moved pages (e.g. light setup -> LIGHTS)
+    } else if (anchor) { const pg = pageOf(anchor); if (pg && pg !== id) id = pg; }   // a panel that moved pages (faders: DJ -> LIVE BOARD)
+    const want = PAGES.find(p => p.id === id);
+    if (!fits(want)) { id = want.pro ? 'pro' : 'shows'; anchor = null; }   // Home -> the PRO tour, Pro -> SHOWS
     GB.page = id; store.set('gb_page', id);
-    document.querySelectorAll('#rail button[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === id));
+    const rk = (PAGES.find(p => p.id === id) || {}).rail || id;          // a page that shares a rail key (CUES -> LOOPS & CUES) lights that key
+    document.querySelectorAll('#rail button[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === rk));
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p.id === 'pg-' + id));
     const pg = PAGES.find(p => p.id === id); document.documentElement.style.setProperty('--pagec', pg.c);
     if (history.replaceState) history.replaceState(null, '', '#' + id);
@@ -292,24 +351,96 @@
     if (anchor && $(anchor)) setTimeout(() => $(anchor).scrollIntoView({behavior: 'smooth', block: 'start'}), 60);
     else if (innerWidth < 1000 || innerHeight > innerWidth) window.scrollTo(0, 0);
   };
+  function mount(p, pg) {
+    (panels[p.id] || []).sort((a, b) => a.order - b.order).forEach(({fn}) => {
+      const el = document.createElement('div'); el.className = 'panel'; pg.appendChild(el);
+      try { fn(el); } catch (e) { console.error('panel ' + p.id, e); el.innerHTML = '<p class="note">This part could not load.</p>'; }
+    });
+  }
   function buildPages() {
     const rail = $('rail'), host = $('pages');
     PAGES.forEach((p, i) => {
       if (i && p.g !== PAGES[i - 1].g) {                          // a quiet labelled gap between the PERFORM / VISUALS / SYSTEM groups
         const sep = document.createElement('div'); sep.className = 'rail-sep'; sep.dataset.g = p.g; sep.setAttribute('aria-hidden', 'true');
-        sep.innerHTML = '<span>' + GROUPS[p.g] + '</span>'; rail.appendChild(sep);
+        sep.innerHTML = (p.g === 'pro' ? GB.svg('star') : '') + '<span>' + GROUPS[p.g] + '</span>'; rail.appendChild(sep);
+        if (p.g === 'pro') sep.hidden = true;
       }
-      const b = document.createElement('button'); b.dataset.p = p.id; b.dataset.g = p.g; b.textContent = p.label; b.style.setProperty('--c', p.c);
-      b.onclick = () => GB.go(p.id); rail.appendChild(b);          // (MUSIC's bigger key: app.css, #rail button[data-p=music])
       const pg = document.createElement('section'); pg.className = 'page'; pg.id = 'pg-' + p.id; pg.setAttribute('aria-label', p.label); pg.style.setProperty('--c', p.c);
-      host.appendChild(pg);
-      (panels[p.id] || []).sort((a, b) => a.order - b.order).forEach(({fn}) => {
-        const el = document.createElement('div'); el.className = 'panel'; pg.appendChild(el);
-        try { fn(el); } catch (e) { console.error('panel ' + p.id, e); el.innerHTML = '<p class="note">This part could not load.</p>'; }
-      });
+      if (p.rail) { host.appendChild(pg); mount(p, pg); return; }                // no key of its own: reached from its sibling page's switch
+      const b = document.createElement('button'); b.dataset.p = p.id; b.dataset.g = p.g; b.style.setProperty('--c', p.c);
+      b.innerHTML = '<span class="rl">' + GB.esc(p.label) + '</span>' + (p.ic ? GB.svg(p.ic) : ''); b.setAttribute('aria-label', p.home ? 'Pro DJ: see what it adds' : p.label);
+      if (p.pro || p.home) b.hidden = true;                          // shown once the license is known (paintRailPro)
+      b.onclick = () => GB.go(p.id); rail.appendChild(b);          // (MUSIC's bigger key: app.css, #rail button[data-p=music])
+      host.appendChild(pg); mount(p, pg);
     });
     const tail = document.createElement('div'); tail.className = 'tail'; rail.appendChild(tail);
   }
+
+  // 🎃 seasonal: when one of your holidays is on or within 10 days, HOLIDAY moves up next to LOOKS (back to its spot after)
+  function seasonRail(cat) {
+    const rail = $('rail'), hb = rail && rail.querySelector('button[data-p=holiday]'), looks = rail && rail.querySelector('button[data-p=looks]');
+    const home = rail && rail.querySelector('button[data-p=games]'); if (!hb || !looks || !home) return;
+    const c = cat && cat.holiday_cal, info = (c && !c.error && c.info) || {};
+    const near = ((c && c.mine) || []).some(k => info[k] && (info[k].now || (info[k].days >= 0 && info[k].days <= 10)));
+    if (near) { if (looks.nextElementSibling !== hb) rail.insertBefore(hb, looks.nextElementSibling); hb.classList.add('soon'); }
+    else { if (home.previousElementSibling !== hb) rail.insertBefore(hb, home); hb.classList.remove('soon'); }
+  }
+
+  // ------------------------------------------------------------- ✨ PRO tour (Home DJ only): what Pro adds, one tap to upgrade
+  const PREVIEW = {                                                // tiny drawings, no images: a hint of each tool
+    shows: () => '<div class="pt-tl">' + [['var(--amber)', [[4, 30], [38, 26], [70, 26]]], ['var(--pink)', [[12, 10], [44, 8], [76, 12]]], ['var(--cyan)', [[0, 56], [60, 40]]]]
+      .map(([c, bs]) => '<i>' + bs.map(([l, w]) => `<b style="left:${l}%;width:${w}%;background:${c}"></b>`).join('') + '</i>').join('') + '<u></u></div>',
+    faders: () => '<div class="pt-fd">' + [[70, 'var(--gold)'], [45, 'var(--cyan)'], [20, '#fff'], [60, 'var(--pink)'], [35, '#fff'], [52, 'var(--violet)']]
+      .map(([v, c]) => `<i><b style="bottom:${v}%;background:${c}"></b></i>`).join('') + '</div>',
+    loops: () => '<div class="pt-lp">' + ['var(--pink)', 'var(--cyan)', 'var(--lime)', 'var(--amber)'].map((c, i) => `<i style="--bc:${c}"${i === 1 ? ' class="on"' : ''}></i>`).join('')
+      + ['var(--pink)', 'var(--cyan)', 'var(--lime)', 'var(--amber)'].map((c, i) => `<i style="--bc:${c}"${i === 2 ? ' class="on"' : ''}></i>`).join('') + '</div>',
+    override: () => '<div class="pt-ov">' + ['#000', '#fff', '#f4f2ff', 'var(--gold)', 'var(--red)', 'var(--cyan)', 'var(--orchid)', 'var(--green)']
+      .map(c => `<i style="background:${c}"></i>`).join('') + '</div>',
+    interlude: () => '<div class="pt-il"><span>BE RIGHT BACK</span></div>',
+    autoloops: () => '<div class="pt-lp">' + ['#ff3d9a', '#33d6ff', '#c3ff4d', '#ff9f5a', '#9b3dff', '#ffd21a', '#4de8c8', '#ff6b6b'].map((c, i) => `<i style="--bc:${c}"${i === 5 ? ' class="on"' : ''}></i>`).join('') + '</div>',
+    scenes: () => '<div class="pt-sc">' + [['#ff1aa8', '#00e5ff', '#7a1aff'], ['#ffc400', '#ffffff', '#ff8a00'], ['#1aff5a', '#00995c', '#d9ff1a']].map((cs, i) => `<i${i === 1 ? ' class="on"' : ''}>${cs.map(c => `<b style="background:${c}"></b>`).join('')}</i>`).join('') + '</div>',
+    cues: () => '<div class="pt-cu"><span><b>3</b>FIRST DANCE</span><span><b>4</b>CAKE</span><u>GO</u></div>',
+    tempo: () => '<div class="pt-tp"><span>128.0</span><small>BPM · LOCK</small><i></i><i class="on"></i><i></i><i></i></div>',
+    zones: () => '<div class="pt-zn"><i class="on"></i><i></i><i></i><i class="on"></i></div>',
+    palettes: () => '<div class="pt-pl">' + ['#ff1aa8', '#00e5ff', '#7a1aff', '#00ff66', '#ffc400'].map(c => `<i style="background:${c}"></i>`).join('') + '</div>',
+  };
+  GB.proKey = () => {                                               // "I have a Pro key": SETUP's license box, opened and ready
+    GB.go('setup', 'suLicKeyBox');
+    setTimeout(() => { const d = $('suLicKeyBox'), i = $('suLicKey'); if (d) d.open = true; if (i) try { i.focus({preventScroll: true}); } catch (e) { i.focus(); } }, 120);
+  };
+  GB.panel('pro', 10, el => {
+    el.classList.add('box', 'pt-hero'); el.style.setProperty('--c', 'var(--gold)'); el.id = 'proTour';
+    el.innerHTML = `<div class="ph"><span>GlowBop Pro DJ</span><span class="r">FOR EVENTS</span></div>
+      <h2 class="pt-h">Play your lights like an instrument</h2>
+      <p class="note">Everything you have now stays. Pro DJ adds a full lighting desk for parties, DJ sets and events, in four new tabs: LOOPS & CUES, SHOWS, LIVE BOARD and OVERRIDE.</p>
+      <div class="pt-cta"><button class="btn c lg pt-buy" style="--c:var(--gold)">${GB.svg('star')}<span>Upgrade to Pro</span></button>
+        <button class="pt-key" type="button">I have a Pro key</button></div>`;
+    el.querySelector('.pt-buy').onclick = () => window.open(GB.buyPro, '_blank', 'noopener');
+    el.querySelector('.pt-key').onclick = GB.proKey;
+  });
+  GB.panel('pro', 20, el => {
+    el.classList.add('pt-feats');
+    GB.css(`.pt-sc { height:100%; display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; } .pt-sc i { display:flex; border-radius:4px; overflow:hidden; border:1px solid #3a3456; } .pt-sc i b { flex:1; }
+      .pt-sc i.on { box-shadow:0 0 0 2px #fff, 0 0 10px #ffc27a; }
+      .pt-cu { height:100%; display:grid; grid-template-columns:1fr 1fr auto; gap:5px; align-items:stretch; } .pt-cu span { display:flex; align-items:center; gap:5px; padding:0 6px; border-radius:4px; background:#14111f; font:600 10px var(--cond); letter-spacing:1px; color:var(--dim); white-space:nowrap; overflow:hidden; }
+      .pt-cu span b { color:#7dffb2; font:11px var(--mono); } .pt-cu span:first-child { box-shadow:inset 3px 0 0 #7dffb2; color:#fff; }
+      .pt-cu u { text-decoration:none; display:grid; place-items:center; padding:0 12px; border-radius:0 10px 0 10px; background:#7dffb2; color:#000; font:800 15px var(--cond); letter-spacing:3px; }
+      .pt-tp { height:100%; display:flex; align-items:center; gap:6px; } .pt-tp span { font:24px/1 var(--mono); color:#ff9f5a; } .pt-tp small { font:600 9px var(--cond); letter-spacing:1px; color:var(--dim); margin-right:auto; }
+      .pt-tp i { width:14px; height:7px; border-radius:3px; background:#1d1930; } .pt-tp i.on { background:#ff9f5a; box-shadow:0 0 8px #ff9f5a; }
+      .pt-zn { height:100%; display:grid; grid-template-columns:repeat(4, 1fr); gap:3px; } .pt-zn i { border-radius:3px; background:#14111f; } .pt-zn i.on { background:#4de8c8; box-shadow:0 0 10px #4de8c8; }
+      .pt-pl { height:100%; display:flex; border-radius:6px; overflow:hidden; } .pt-pl i { flex:1; }`);
+    el.innerHTML = PRO_FEATURES.map(f => `<div class="pt-f" style="--c:${f.c}">
+        <span class="pt-ic">${GB.svg(f.ic)}</span>
+        <div class="pt-tx"><b>${GB.esc(f.name)}</b><small>in ${GB.esc(f.tab)}</small><p>${GB.esc(firstLine(f.pitch))}</p></div>
+        <div class="pt-prev" aria-hidden="true">${PREVIEW[f.prev]()}</div></div>`).join('');
+  });
+  GB.panel('pro', 30, el => {
+    el.classList.add('pt-foot');
+    el.innerHTML = `<button class="btn c wide pt-buy" style="--c:var(--gold)">${GB.svg('star')}<span>Upgrade to Pro</span></button>
+      <p class="note">Already bought it? <button class="pt-key" type="button">Enter your Pro key</button> in SETUP. It replaces the Home key on this computer.</p>`;
+    el.querySelector('.pt-buy').onclick = () => window.open(GB.buyPro, '_blank', 'noopener');
+    el.querySelector('.pt-key').onclick = GB.proKey;
+  });
 
   // ------------------------------------------------------------- 🖼️ the live wall (every group side by side at its true shape)
   const DEVCOL = GB.DEVCOL = ['#ff3d9a', '#33d6ff', '#3ce08a', '#ffc04d', '#c58bff', '#ff7a3d'];
@@ -360,16 +491,16 @@
     PV = blocks; if (!blocks.length) return;
     if (blocks.length === 1 && blocks[0].shape) {
       const dpr = Math.min(2, window.devicePixelRatio || 1), box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
-      const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && GB.page !== 'music';
-      return draw3D(blocks[0], cssW, FULL ? innerHeight - 40 : compact ? Math.max(150, innerHeight * 0.26) : Math.max(240, Math.min(620, innerHeight * (wide ? 0.46 : 0.5))), dpr);
+      const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
+      return draw3D(blocks[0], cssW, FULL ? innerHeight - 40 : compact ? Math.max(GB.page === 'music' ? 120 : 150, innerHeight * (GB.page === 'music' ? 0.16 : 0.26)) : Math.max(240, Math.min(620, innerHeight * (wide ? 0.46 : 0.5))), dpr);
     }
     const many = blocks.length > 1, dpr = Math.min(2, window.devicePixelRatio || 1);
     const gap = 2, totW = blocks.reduce((a, b) => a + b.w, 0) + gap * (blocks.length - 1), maxH = Math.max(...blocks.map(b => b.h));
     const anyDev = blocks.some(b => (b.devices || []).length > 1);
     const box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
     const lab = (many ? 18 : 0) + (anyDev ? 16 : 0);
-    const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && GB.page !== 'music';
-    const maxCssH = FULL ? innerHeight - 40 : compact ? Math.max(130, innerHeight * 0.24) : Math.max(220, Math.min(620, innerHeight * (wide ? 0.44 : 0.5)));
+    const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
+    const maxCssH = FULL ? innerHeight - 40 : compact ? Math.max(GB.page === 'music' ? 110 : 130, innerHeight * (GB.page === 'music' ? 0.15 : 0.24)) : Math.max(220, Math.min(620, innerHeight * (wide ? 0.44 : 0.5)));
     const st = Math.min(cssW / totW, (maxCssH - lab) / maxH);
     const cssH = Math.round(lab + maxH * st), drawW = totW * st, ox0 = (cssW - drawW) / 2;
     cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
@@ -444,6 +575,9 @@
     if (s.scene) return {c: 'var(--lav)', t: 'Scene: ' + s.scene.name, sub: `part ${s.scene.segment} of ${s.scene.segments}`, btn: 'Stop', act: async () => { if (await GB.post('/api/scene/stop', {})) GB.toast('🎵 Back to the music show'); }};
     const so = s.show || {};
     if (so.active) return {c: 'var(--orchid)', ic: 'movie', t: 'Song Show: ' + (so.title || 'this song'), sub: (so.pos != null ? GB.fmt(so.pos) + (so.dur ? ' / ' + GB.fmt(so.dur) : '') : 'on the beat') + (so.next ? ' · next: ' + (so.next.what || so.next.lane) + ' ' + GB.fmt(so.next.t) : ''), btn: 1};
+    const pd = s.prodj || {};
+    if (pd.pro && pd.blackout > 0.5) return {c: 'var(--red)', ic: 'lists', t: 'Cue: Blackout', sub: 'from the cue list · GO for the next cue', btn: 1};
+    if (pd.pro && pd.loop) return {c: '#ff9f5a', ic: 'loop', t: (pd.loop.kind === 'scene' ? 'Scene: ' : 'Autoloop: ') + pd.loop.name, sub: (pd.opts && pd.opts.mode === 'advance' && pd.loop.kind === 'loop' ? 'auto-advance every ' + pd.opts.bars + ' bars' : 'held until you change it') + (pd.palette ? ' · palette on' : ''), btn: 'Release', act: async () => { if (await GB.post('/api/autoloops', {release: true})) GB.toast('🎵 Back to the auto show'); }};
     if (s.locked) return {c: 'var(--amber)', t: 'Locked: ' + s.locked, sub: 'the show keeps this effect until you release it', btn: 'Release', act: GB.release};
     if (s.held_look) return {c: 'var(--amber)', t: (s.pinned ? 'Pinned look: ' : 'Look for this song: ') + s.held_look, sub: s.pinned ? 'stays until you release it' : 'shuffle resumes on the next song', btn: 'Release', act: GB.release};
     return {c: 'var(--green)', t: 'Music show · listening', sub: ((s.feeds && (s.feeds.watching || []).length) ? '📡 ' + s.feeds.watching.join(' + ') + ' · ' : '') + (s.shuffle ? 'shuffle on · ' : '') + (s.listening ? 'hearing ' + s.listening.replace(' [Loopback]', '') : 'reacts to whatever is playing')};
@@ -471,7 +605,7 @@
       if (s.pro !== undefined) GB.setPro(s.pro);
       const fd = s.faders || {}, fc = $('mFad'), nUp = (fd.away || []).length + (fd.flash || []).length;
       if (fc) { fc.hidden = !(fd.active && GB.pro !== false); if (!fc.hidden) {
-        fc.innerHTML = GB.svg('faders') + '<span class="w">FADERS</span><b>' + ((fd.flash || []).length ? 'HOLD' : nUp) + '</b>';
+        fc.innerHTML = GB.svg('faders') + '<span class="w">FADERS</span><b>' + ((fd.flash || []).length ? 'FLASH' : nUp) + '</b>';
         fc.setAttribute('aria-label', 'Fader board: ' + (fd.away || []).join(', ') + ' away from default. Open it.'); fc.title = 'Faders away from default: ' + (fd.away || []).join(', '); } }
       const ov = s.override || {}, oc = $('mOvr');                   // 🚨 OVERRIDE ACTIVE: one tap releases them all
       if (oc) { oc.hidden = !(ov.active && GB.pro !== false); if (!oc.hidden) {
@@ -564,7 +698,7 @@
     $('wMap').onclick = () => GB.go('lights');                     // 💡 the LIGHTS page: find, group, arrange and map your lights
     $('mBtn').onclick = () => ($('mBtn').dataset.il && modeAct) ? modeAct() : GB.backToMusic();
     if ($('mOvr')) $('mOvr').onclick = async () => { if (GB.overrideRelease) return GB.overrideRelease(); if (await GB.post('/api/override', {release: true})) GB.toast('✅ Overrides released'); };
-    if ($('mFad')) $('mFad').onclick = () => GB.go('dj', 'fdPanel');
+    if ($('mFad')) $('mFad').onclick = () => GB.go('board', 'fdPanel');
     document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && FULL) GB.setFull(false); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && FULL) GB.setFull(false); });
     let rz = null; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (PV.length) drawSetup(PV); }, 80); });
@@ -574,6 +708,7 @@
     const want = (location.hash || '').slice(1) || store.get('gb_page', 'music');
     GB.go(want);
     document.querySelectorAll('input[type=range]').forEach(GB.paintRange);
+    paintRailPro(); GB.on('catalog', seasonRail);
     loadCatalog(); statusLoop(); frameLoop(); GB.loadPro(); GB.on('license', r => GB.setPro(r && r.pro, r));
     let uiv = null;                                               // 🔄 app files updated on the laptop? reload (unless you're typing)
     const verCheck = async () => { try { const v = (await GB.get('/api/uiver')).v;

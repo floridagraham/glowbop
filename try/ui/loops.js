@@ -1,4 +1,4 @@
-/* 🔁 Loop banks (DJ page, GlowBop Pro DJ): a sampler for light. Talks to GET/POST /api/loops (loops.py on the laptop).
+/* 🔁 Pad Recorder, was "Loop banks" (LIVE BOARD page, GlowBop Pro DJ): a sampler for light. Talks to GET/POST /api/loops (loops.py on the laptop).
    4 banks (A-D, the columns) x 4 slots. Tap a slot: it starts on the next bar and loops on the beat. Tap again: it stops at
    the end of the bar (or at once: the STOP setting, or Shift+click on the laptop). One slot per bank plays at a time.
    RECORD: tap Record, pick the length, tap a slot. It starts on the next bar, catches your hit pads (right above) on the
@@ -9,7 +9,9 @@
   'use strict';
   const {$, esc} = GB;
   const HITS = [['drop', 'burst', 'Drop', 'var(--pink)'], ['strobe', 'bolt', 'Strobe', '#ffffff'], ['flash', 'sun', 'Flash', 'var(--gold)'],     // icons: GB.svg names
-                ['fire', 'fire', 'Fire', 'var(--orange)'], ['confetti', 'confetti', 'Confetti', 'var(--lav)'], ['blackout', 'dark', 'Blackout', 'var(--peri)']];
+                ['fire', 'fire', 'Fire', 'var(--orange)'], ['confetti', 'confetti', 'Confetti', 'var(--lav)'], ['blackout', 'dark', 'Blackout', 'var(--peri)'],
+                ['sweep', 'sweep', 'Sweep', '#b6ff3d'], ['shockwave', 'shockwave', 'Shockwave', 'var(--violet)'], ['colorbomb', 'colorbomb', 'Color bomb', 'var(--amber)'],
+                ['lightning', 'lightning', 'Lightning', '#8fb4ff'], ['countdown', 'count321', '3-2-1', 'var(--orchid)'], ['heartbeat', 'heart', 'Heartbeat', 'var(--red)']];
   const BANKC = {A: 'var(--pink)', B: 'var(--cyan)', C: 'var(--lime)', D: 'var(--amber)'};
   const LANE_EM = {look: 'palette', color: 'rainbow', text: 'text', effect: 'sparkle'};
   let L = null, base = {pos: 0, bpm: 120, t: 0}, recMode = false, editMode = false, raf = 0, pollT = null, lpPro = true;
@@ -124,9 +126,9 @@
   const heardNow = () => { if (!L) return 0; const dt = Math.min(2, (performance.now() - base.t) / 1000); return base.pos + dt * base.bpm / 60 - (L.delay_beats || 0); };
 
   // ------------------------------------------------------------------ the panel
-  GB.panel('dj', 75, el => {                                   // 🔒 Pro: under the fader board
+  GB.panel('board', 30, el => {                                // 🔁 LIVE BOARD: under the fader board and the hit pads
     el.classList.add('box'); el.id = 'lpPanel';
-    el.innerHTML = `<div class="ph"><span>Loop banks</span><span class="r" id="lpR">NOTHING PLAYING</span></div>
+    el.innerHTML = `<div class="ph"><span>Pad Recorder</span><span class="r" id="lpR">NOTHING PLAYING</span></div>
       <div class="lp-top"><button class="btn sm" id="lpStop" disabled><span>${GB.svg('stop')}Stop all</span></button><button class="btn sm" id="lpRec" style="--c:var(--red)">${GB.svg('dot')}<span>Record</span></button>
         <span class="grow"></span><div class="lp-bars" id="lpBars" hidden></div><button class="btn sm" id="lpEdit" style="--c:var(--lav)">${GB.svg('edit')}<span>Edit</span></button></div>
       <div class="lp-beat"><div class="lp-dots" id="lpDots"><i class="d1"></i><i></i><i></i><i></i></div><span class="lp-pos" id="lpPos">BAR 1 · 1</span></div>
@@ -147,7 +149,7 @@
     $('lpBars').querySelectorAll('.btn').forEach(b => b.onclick = () => { GB.store.set('gb_lp_bars', b.dataset.v); paintTop(); GB.sfx('tap'); });
     el.querySelectorAll('#lpStopMode .btn').forEach(b => b.onclick = () => lpost({settings: {stop: b.dataset.v}}).then(r => r && GB.toast(b.dataset.v === 'now' ? 'A tap stops a loop at once' : 'A tap stops a loop at the end of the bar')));
     el.querySelectorAll('#lpQuant .btn').forEach(b => b.onclick = () => lpost({settings: {quant: +b.dataset.v}}).then(r => r && GB.sfx('tap')));
-    GB.proGate(el, 'Loop banks', {pitch: 'A sampler for your lights: record a phrase of hit pads (1 to 8 bars), then fire it back on the beat, looping over any song. Four banks, built-in starter loops and a step editor.'});
+    GB.proGate(el, 'Pad Recorder', {pitch: 'A sampler for your lights: record a phrase of hit pads (1 to 8 bars), then fire it back on the beat, looping over any song. Four banks, built-in starter loops and a step editor.'});
   });
 
   function paintTop() {
@@ -221,8 +223,8 @@
     document.querySelectorAll('#lpDots i').forEach((d, i) => d.classList.toggle('on', i === bt));
     const pos = $('lpPos'); if (pos) pos.textContent = 'BAR ' + (Math.floor(P / 4) + 1) + ' · ' + (bt + 1) + (L.src === 'tap' ? ' · TAP' : L.live ? '' : ' · FREE');
   }
-  function loop() { raf = 0; if (GB.page !== 'dj' || document.hidden || !L) return; paint(); raf = requestAnimationFrame(loop); }
-  const kick = () => { if (!raf && GB.page === 'dj') raf = requestAnimationFrame(loop); };
+  function loop() { raf = 0; if (GB.page !== 'board' || document.hidden || !L) return; paint(); raf = requestAnimationFrame(loop); }
+  const kick = () => { if (!raf && GB.page === 'board') raf = requestAnimationFrame(loop); };
 
   function paintHead() {
     if (!L) return;
@@ -245,10 +247,10 @@
   }
   async function poll() {
     clearTimeout(pollT);
-    if (GB.page === 'dj' && GB.pro !== false && !document.hidden) { try { sync(await GB.get('/api/loops?lite=1')); } catch (e) {} }
-    pollT = setTimeout(poll, GB.page === 'dj' ? 450 : 1500);
+    if (GB.page === 'board' && GB.pro !== false && !document.hidden) { try { sync(await GB.get('/api/loops?lite=1')); } catch (e) {} }
+    pollT = setTimeout(poll, GB.page === 'board' ? 450 : 1500);
   }
-  GB.on('page', id => { if (id === 'dj') { poll(); kick(); } });
+  GB.on('page', id => { if (id === 'board') { poll(); kick(); } });
   GB.on('ready', poll);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { poll(); kick(); } });
 

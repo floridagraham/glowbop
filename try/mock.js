@@ -14,6 +14,8 @@
   const now = () => performance.now() / 1000;
   const wall = () => Date.now() / 1000;
   const toast = m => { try { window.GB && GB.toast(m); } catch (e) {} };
+  // the demo is a Pro DJ install; /try/?home=1 shows it as Home DJ instead (the rail then has the gold PRO tour key)
+  const PRO = !/[?&]home=1\b/.test(location.search);
   // things that need the laptop: answer with an error (the console shows it the usual way), then a friendly note on top
   const LAPTOP = what => { setTimeout(() => toast('💻 In the demo, ' + what + ' needs the GlowBop laptop app'), 60);
     return {status: 200, json: {error: 'In the demo, ' + what + ' needs the GlowBop laptop app'}}; };
@@ -50,8 +52,12 @@
     MatrixRain: 'look-digital-matrix', LiquidMelt: 'look-liquid-dreams', OceanWaves: 'look-storm-sea', Thunderstorm: 'look-storm-sea',
     PlanetRise: 'look-deep-space', SpiralHypnosis: 'look-hypnotic', Shockwave: 'look-neon-party', FireworkShow: 'fx-pixelfireworks', Fireworks: 'fx-pixelfireworks',
     Waves: 'wave-bigwave', BigWave: 'wave-bigwave', Eyeball: 'look-hypnotic'};
+  // the newest looks (calm pack, genres, flow) have no recording yet: a recording close in mood stands in for them
+  const LOOK_STAND = {'Cinematic': 'look-deep-space', 'Concert Hall': 'look-royal-gold', 'Jazz Club': 'look-lava-lounge', 'Moonlit': 'look-midnight-galaxy',
+    'Rock Arena': 'look-red-alert', 'Velvet Bounce': 'look-studio-54', 'Tropicana': 'look-rainbow-riot', 'Golden Porch': 'look-royal-gold', 'Toy Box': 'look-retro-arcade',
+    'Trip': 'look-psychedelic', 'Silk': 'look-liquid-dreams'};
   function lookClip(look, k) { const set = LOOK_SET[look]; if (set) return set[(k || 0) % set.length];
-    const c = 'look-' + slug(look); return has(c) ? c : 'look-neon-party'; }
+    const c = 'look-' + slug(look); return has(c) ? c : has(LOOK_STAND[look]) ? LOOK_STAND[look] : 'look-neon-party'; }
   function effectClip(e) {
     if (!e) return null; const l = String(e).toLowerCase();
     for (const p of ['fx-', 'wave-', 'shape-']) if (has(p + l)) return p + l;
@@ -71,7 +77,7 @@
   };
   const bump = k => { S.act[k] = wall(); };
   let BPM = 124, beatPos = 0, lastClock = now(), forceSec = null, songLook = 0;
-  function clock() { const t = now(); beatPos += (t - lastClock) * (DJ.tap_bpm || BPM) / 60; lastClock = t; return beatPos; }
+  function clock() { const t = now(); beatPos += (t - lastClock) * pdTempoBpm() / 60; lastClock = t; return beatPos; }   // 🎛️ the Tempo toolbox can lock / scale it
   const SECS = ['groove', 'build', 'drop', 'break'];
   function sectionInfo() {
     clock(); const b = songPos() * BPM / 60, bars = {chill: 16, normal: 8, hype: 4}[S.pace] || 8, k = Math.floor(b / 4 / bars);   // the playing song's own bars
@@ -132,8 +138,52 @@
   }
 
   // ======================================================================= 🎧 DJ mode (same engine as the website's demo console)
-  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null};
-  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null}); }
+  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null, pfx: []};
+  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, pfx: []}); }
+  // 🎛️ the six one-shot pads (padfx.py): sweep, shockwave, color bomb, lightning, 3-2-1, heartbeat. Short overlays in the look's colours.
+  const PAD_FX = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat'];
+  const PAD_SECS = {sweep: .9, shockwave: 1.1, colorbomb: 1.2, lightning: .8, countdown: 2.4, heartbeat: 1.8};
+  function boltPath() {                                             // a jagged bolt from the top down, with one fork
+    const pts = []; let x = 8 + R() * (W - 16), fork = null;
+    for (let y = 0; y < H; y++) { x = clamp(x + (R() - .5) * 3.2, 1, W - 2); pts.push([x, y]); if (y === 6 + (R() * 5 | 0)) fork = {x, y}; }
+    const f = []; if (fork) { let fx = fork.x, dir = R() < .5 ? -1 : 1; for (let y = fork.y; y < Math.min(H, fork.y + 9); y++) { fx += dir * (.6 + R() * .9); f.push([fx, y]); } }
+    return pts.concat(f);
+  }
+  function padStart(k) {
+    const cols = lookCols(S.look).map(c => { const m = Math.max(...c); return m > 10 ? c.map(v => v * 255 / m) : [255, 255, 255]; });
+    DJ.pfx.push({k, t0: now(), cols, dir: R() < .5 ? 1 : -1, bolt: k === 'lightning' ? boltPath() : null, c: pickOne(cols)});
+    if (DJ.pfx.length > 6) DJ.pfx.shift();
+  }
+  function padDraw(buf, t) {
+    DJ.pfx = DJ.pfx.filter(p => t - p.t0 < PAD_SECS[p.k]);
+    DJ.pfx.forEach(p => {
+      const el = t - p.t0, u = el / PAD_SECS[p.k], c = p.c;
+      if (p.k === 'sweep') {                                        // a bright bar wipes across the wall
+        const x0 = p.dir > 0 ? -4 + u * (W + 8) : W + 4 - u * (W + 8);
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const d = Math.abs(x - x0); if (d < 4) { const cc = d < 1 ? [255, 255, 255] : palAt(p.cols, y / H + u * .5), k = 1 - d / 4, i = (y * W + x) * 3;
+          for (let ch = 0; ch < 3; ch++) buf[i + ch] = buf[i + ch] * (1 - k) + cc[ch] * k; } }
+      } else if (p.k === 'shockwave') {                             // a ring blasts out from the middle
+        const r = u * 26, w = 2.2;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const d = Math.abs(Math.hypot(x - (W - 1) / 2, (y - (H - 1) / 2) * 1.15) - r); if (d < w) put(buf, x, y, c, (1 - d / w) * (1 - u * .6)); }
+      } else if (p.k === 'colorbomb') {                             // a flood of colour from the centre, then it fades
+        const r = Math.min(1, u * 3) * 28, f = u < .35 ? 1 : 1 - (u - .35) / .65;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const d = Math.hypot(x - (W - 1) / 2, (y - (H - 1) / 2) * 1.15); if (d < r) { const i = (y * W + x) * 3, cc = palAt(p.cols, d / 28 + el * .3);
+          for (let ch = 0; ch < 3; ch++) buf[i + ch] = buf[i + ch] * (1 - f) + cc[ch] * f; } }
+      } else if (p.k === 'lightning') {                             // a white bolt that flickers twice, with a dim flash behind it
+        const on = u < .12 || (u > .25 && u < .4) || (u > .5 && u < .58);
+        if (on) { for (let i = 0; i < buf.length; i++) buf[i] = buf[i] * .35 + 40; p.bolt.forEach(([x, y]) => { put(buf, x, y, [255, 255, 255]); put(buf, x + 1, y, [170, 190, 255], .6); put(buf, x - 1, y, [170, 190, 255], .6); }); }
+      } else if (p.k === 'countdown') {                             // 3, 2, 1 in big digits, one per beat-ish, then a burst
+        const n = 3 - Math.floor(u * 3.6);
+        for (let i = 0; i < buf.length; i++) buf[i] *= .25;
+        if (n >= 1) { const k = 3, tx = String(n), pop = 1 - ((u * 3.6) % 1) * .5; tiny(buf, tx, Math.round((W - tinyW(tx, k)) / 2), Math.round((H - 5 * k) / 2), c.map(v => v * pop), k); }
+        else for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const d = Math.hypot(x - (W - 1) / 2, y - (H - 1) / 2); if (d < (u - .83) * 160) put(buf, x, y, [255, 255, 255], .8); }
+      } else if (p.k === 'heartbeat') {                             // a heart that thumps twice (lub-dub) and glows
+        const f = (u * 2) % 1, env = Math.max(Math.exp(-f * 9), f >= .3 ? .75 * Math.exp(-(f - .3) * 9) : 0), hs = 6.5 + 2.2 * env;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const X = (x - (W - 1) / 2) / hs, Y = -(y - (H - 1) / 2) / hs + .15, v = (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3;
+          if (v < 0) put(buf, x, y, [255, 40 + 60 * env, 90 + 40 * env], .55 + .45 * env); }
+      }
+    });
+  }
   function djFire(a, beats, cue) {
     const P = DJ.parts;
     if (a === 'drop') {
@@ -144,6 +194,7 @@
       else if (!cue) { const c = pickOne(SPECTACLE); S.feature = {clip: c, name: titleOf(c), until: now() + 24}; }
     }
     if (a === 'flash') DJ.flash = 1;
+    if (PAD_FX.includes(a)) padStart(a);
     if (a === 'strobe') DJ.strobe = Math.max(DJ.strobe, now() + (beats || 4) * 60 / (DJ.tap_bpm || BPM));
     if (a === 'fire') { for (let i = 0; i < 90; i++) { const an = -Math.PI / 2 + (R() - .5) * 1.6, sp = 10 + R() * 20; P.push({x: W / 2 + (R() - .5) * 6, y: H - 1, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 9, c: pickOne([[255, 90, 0], [255, 190, 30], [255, 40, 0], [255, 240, 160]])}); }
       DJ.rings.push({x: W / 2, y: H - 1, r: 0, c: [255, 120, 0]}); }
@@ -208,6 +259,7 @@
     DJ.rings = DJ.rings.filter(r => r.r < 30);
     for (const q of DJ.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= .97; q.vy = q.vy * .97 + q.g * dt; q.l -= dt * .9; if (q.l > 0) put(buf, q.x, q.y, q.c, Math.min(1, q.l * 1.4)); }
     DJ.parts = DJ.parts.filter(q => q.l > 0);
+    if (DJ.pfx.length) padDraw(buf, t);
     if (DJ.word) {                                                  // big scrolling words over a dimmed show
       const el = t - DJ.word.t0, dur = 2.8; if (el > dur) DJ.word = null;
       else { const m = textMask(DJ.word.w, H), x0 = Math.round(W - (el / dur) * (W + m.w)), y0 = Math.max(0, ((H - m.h) / 2) | 0), hh = el / .7;
@@ -411,9 +463,22 @@
       if ('fav' in b) { f.fav = b.fav; f.fav_name = b.fav_name || ''; (f.rows || []).forEach(r => { const id = r.id || r.key; r.fav = !!b.fav && (id === b.fav || (r.a && r.a.name === b.fav_name) || (r.b && r.b.name === b.fav_name)); }); }
       if (b.test_cele) { FD.cele = now() + 4; DJ.queue.push('confetti'); }
     }
+    if (NEW_FEEDS.includes(k)) {                                    // 🌍 quakes, aurora, launches, moon, globe, volcano, fires (+ world warnings)
+      const SKIP = ['feed', 'on', 'mode', 'g', 'show', 'test', 'test_kp', 'test_flare', 'test_phases', 'dismiss', 'mag', 'map_key'];
+      Object.keys(b).forEach(x => { if (!SKIP.includes(x) && x in f) f[x] = b[x]; });
+      if ('map_key' in b) { const key = String(b.map_key || '').replace(/[^a-z0-9]/gi, '').slice(0, 64); f.has_key = !!key; f.key_hint = key ? '…' + key.slice(-4) : '';
+        f.credit = key ? 'NASA FIRMS' : f.credit; setTimeout(() => toast(key ? '🔑 Saved. In the demo nothing is sent to NASA: the app fetches live hotspots with your key' : 'Key removed'), 300); }
+      if (b.test || b.test_kp || b.test_flare || b.test_phases) { b.on = true; curClip = null; }        // a preview: the recording starts over on the wall
+      if (f.kind === 'takeover' && (b.on || b.mode === k) && !feedNoted[k]) { feedNoted[k] = 1;
+        setTimeout(() => toast('📡 ' + f.title + ': a preview recorded from the app. Live data runs in the GlowBop app.'), 700); }
+      if (k === 'worldwx' && ('on' in b)) f.running = !!b.on;
+    }
     if (f.kind === 'takeover') { if (b.on === false) { if (s.mode === k) s.mode = 'off'; } else if (b.on || b.mode === k) { s.mode = k; bump('feed'); } }
   }
-  const FEED_CLIP = {countdown: 'live-countdown', weather: 'live-weather', overhead: 'live-overhead', golf: 'live-golf', nascar: 'live-nascar'};
+  const NEW_FEEDS = ['quakes', 'aurora', 'launches', 'moon', 'globe', 'volcano', 'fires', 'worldwx'], feedNoted = {};
+  const FEED_CLIP = {countdown: 'live-countdown', weather: 'live-weather', overhead: 'live-overhead', golf: 'live-golf', nascar: 'live-nascar',
+    // the newer feeds: recorded from the app's own preview modes (make_feedclips.py)
+    quakes: 'live-quakes', aurora: 'live-aurora', launches: 'live-launches', moon: 'live-moon', globe: 'live-globe', volcano: 'live-volcano', fires: 'live-fires'};
   function boardText(k) {                                           // tennis / UFC have no recording: a scrolling ticker of the sample board
     const f = FD.s.feeds[k], rows = f.rows || [];
     if (k === 'tennis') return rows.filter(r => r.state !== 'pre').map(r => `${r.a.short} ${r.a.sets.replace(/ /g, '-')}  ${r.b.short} ${r.b.sets.replace(/ /g, '-')}`).join('   ·   ');
@@ -423,7 +488,15 @@
   // ======================================================================= 🎵 music: GlowBop's own player, playing pretend songs
   const SONGS = [['Neon Summer (Demo Mix)', 'The Glow Ups', 224, 'Neon Party', 124], ['Midnight Circuit', 'Pixel Hearts', 201, 'Synthwave', 118], ['Bass Lanterns', 'DJ Lumen', 238, 'Warehouse Rave', 128],
     ['Velvet Laser', 'Aurora Club', 212, 'Club Rig', 122], ['Starlight Freeway', 'Synth Coast', 196, 'Deep Space', 110], ['Heatwave Hands Up', 'Bop Machine', 187, 'Mainstage', 128],
-    ['Ocean Drive Lights', 'Miami Pulse', 205, 'Big Wave', 120], ['After Hours Arcade', 'Retro Pilots', 179, 'Retro Arcade', 126]];
+    ['Ocean Drive Lights', 'Miami Pulse', 205, 'Big Wave', 120], ['After Hours Arcade', 'Retro Pilots', 179, 'Retro Arcade', 126],
+    ['Garage Thunder', 'The Volume Knobs', 199, 'Rock Arena', 132], ['Silk Horizon', 'Lumen Drift', 252, 'Silk', 122], ['Blue Note Lanterns', 'Velvet Quartet', 241, 'Jazz Club', 96],
+    ['Porch Light Saturday', 'Hank Glowfield', 187, 'Golden Porch', 104]];
+  // 🎼 what song lookup would say about each pretend song: genres + the light style Auto picks (songinfo.py styles)
+  const SONG_INFO = {'Garage Thunder': [['rock', 'alternative rock'], 'rock'], 'Silk Horizon': [['melodic bass', 'chillstep'], 'flow'], 'Blue Note Lanterns': [['jazz', 'smooth jazz'], 'jazz'],
+    'Porch Light Saturday': [['country', 'americana'], 'country'], 'Starlight Freeway': [['synthwave', 'chill'], 'chill'], 'Ocean Drive Lights': [['tropical house', 'latin'], 'latin']};
+  const STY_PICK = {};                                              // 🙋 light styles picked on the MUSIC page (per artist, like the app)
+  function songInfoNow() { const t = M.queue[M.idx]; if (!t) return null; const si = SONG_INFO[t.title] || [['dance', 'electronic'], 'dance'], mine = STY_PICK[t.artist];
+    return Object.assign({title: t.title, artist: t.artist, genres: si[0], bpm: BPM, key: 'A minor', style: mine || si[1]}, mine ? {by_you: 'artist'} : {}); }
   const track = (x, i) => ({id: 'demo' + i, title: x[0], artist: x[1], dur: x[2], artist_id: 'artist' + i, look: x[3], bpm: x[4]});
   const M = {queue: SONGS.map(track), idx: 0, pos: 37, playing: true, volume: 70, party: false, sleep_at: 0, crossfade: 6, source: 'Demo mix', recent: []};
   function songChanged() {
@@ -480,7 +553,7 @@
 
   // ======================================================================= 🎛️ Pro DJ: the demo is a Pro DJ install (fader board, override keys, loops, Song Shows)
   const HOLD = 1.2;                                                 // momentary keys let go by themselves this long after their last refresh
-  const curBpm = () => DJ.tap_bpm || BPM;
+  const curBpm = () => pdTempoBpm();
   const bad = m => { const e = new Error(m); e.bad = true; return e; };
   const num = (x, d) => { const v = Number(x); return isFinite(v) ? v : d; };
   const mix = (a, b, k) => a + (b - a) * k;
@@ -501,7 +574,7 @@
     while (d > 1 && 60 / Math.max(40, bpm) / d < 3 / 40) d >>= 1; return d; }
   function fadersInfo() {
     const v = FA.v, away = fAway(), fl = FFLASH.filter(fHeld);
-    return {values: Object.assign({}, v), defaults: Object.assign({}, FDEF), away, pro: true, active: !!(away.length || fl.length), flash: fl, rev: FA.rev,
+    return {values: Object.assign({}, v), defaults: Object.assign({}, FDEF), away, pro: PRO, active: !!(away.length || fl.length), flash: fl, rev: FA.rev,
       strobe_rate: v.strobe > 0 ? {1: '1 BEAT', 2: '1/2 BEAT', 4: '1/4 BEAT', 8: '1/8 BEAT'}[strobeDiv(v.strobe, curBpm())] : null,
       color_hex: v.color > 0 ? '#' + hueRGB(colorHue(v.color)).map(c => HEX[Math.round(c * 255)]).join('') : null};
   }
@@ -547,7 +620,7 @@
   const ovOnIds = () => OV.keys.filter(k => OV.latched.has(k.id) || (OV.held[k.id] || 0) > wall()).map(k => k.id);
   function ovInfo() {
     const on = ovOnIds();
-    return {pro: true, keys: OV.keys.map(k => Object.assign({}, k, {on: on.includes(k.id), latched: OV.latched.has(k.id)})), on, latched: on.filter(i => OV.latched.has(i)),
+    return {pro: PRO, keys: OV.keys.map(k => Object.assign({}, k, {on: on.includes(k.id), latched: OV.latched.has(k.id)})), on, latched: on.filter(i => OV.latched.has(i)),
       active: !!on.length, priority: PRIO, hold: HOLD, fades: FADES, rev: OV.rev,
       interlude: Object.assign({}, OV.il, {on: OV.ilOn, auto_started: OV.ilAuto, since: OV.ilSince, level: Math.round(OV.ilLv * 100) / 100, looks: IL_LOOKS})};
   }
@@ -679,9 +752,10 @@
     const order = OV.keys.slice().sort((a, b) => (PRIO.indexOf(b.kind) - PRIO.indexOf(a.kind)) || (OV.keys.indexOf(b) - OV.keys.indexOf(a)));
     const heldCol = OV.keys.find(k => k.kind === 'color' && (OV.lv[k.id] || 0) > 0.5);
     const onT = OV.onT || (OV.onT = {});
+    const zm = PD.target && PD.target !== 'all' ? zoneMask(PD.target) : null;    // 🎯 aimed at one zone (Override target)
     order.forEach(k => { const lv = OV.lv[k.id] || 0; if (lv <= 0) { delete onT[k.id]; return; } if (onT[k.id] == null) onT[k.id] = t;
       const pic = keyPic(k, t, heldCol), sc = k.kind === 'black' ? 0 : ['white', 'strobe'].includes(k.kind) ? bri : bri * mm;
-      for (let i = 0; i < out.length; i++) out[i] = out[i] * (1 - lv) + pic[i] * sc * lv; });
+      for (let i = 0; i < out.length; i++) { const L = zm ? lv * zm[(i / 3) | 0] : lv; out[i] = out[i] * (1 - L) + pic[i] * sc * L; } });
   }
 
   // ----------------------------------------------------------------------- 🎬🔁 cues shared by Song Shows and loops: look / effect / colour lock / words / blackout
@@ -709,7 +783,7 @@
 
   // ----------------------------------------------------------------------- 🔁 loop banks (loops.py): beat-locked phrases of DJ moves
   const SLOT_IDS = [].concat(...'ABCD'.split('').map(b => [1, 2, 3, 4].map(i => b + i)));
-  const LBARS = [1, 2, 4, 8], QUANTS = [0.25, 0.125], HIT_TYPES = ['drop', 'strobe', 'flash', 'fire', 'confetti', 'blackout'], SPAN_LANES = ['look', 'color', 'text', 'effect'];
+  const LBARS = [1, 2, 4, 8], QUANTS = [0.25, 0.125], HIT_TYPES = ['drop', 'strobe', 'flash', 'fire', 'confetti', 'blackout', 'sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat'], SPAN_LANES = ['look', 'color', 'text', 'effect'];
   function cleanEvent(e, Lb) {
     if (!e || typeof e !== 'object') return null;
     const lane = e.lane || 'hit'; if (lane !== 'hit' && !SPAN_LANES.includes(lane)) return null;
@@ -858,7 +932,7 @@
   }
   function loopsInfo(full) {
     const P = clock(), rr = LP.rec, st = sid => (LP.run[sid] || {}).state;
-    return {pro: true, ok: !OV.ilOn, why: OV.ilOn ? 'paused for the interlude' : '', bpm: Math.round(curBpm() * 100) / 100, pos: Math.round(P * 1e4) / 1e4,
+    return {pro: PRO, ok: !OV.ilOn, why: OV.ilOn ? 'paused for the interlude' : '', bpm: Math.round(curBpm() * 100) / 100, pos: Math.round(P * 1e4) / 1e4,
       bar: Math.floor(P / 4) + 1, beat: Math.floor(P % 4) + 1, src: DJ.tap_bpm ? 'tap' : M.playing ? 'music' : 'free', live: !!M.playing || !!DJ.tap_bpm, delay_beats: 0,
       settings: Object.assign({}, LP.settings), running: SLOT_IDS.filter(s => ['playing', 'stopping'].includes(st(s))), queued: SLOT_IDS.filter(s => st(s) === 'queued'),
       slots: SLOT_IDS.map(sid => { const s = LP.slots[sid], r = LP.run[sid] || {};
@@ -868,7 +942,7 @@
       banks: ['A', 'B', 'C', 'D'], per_bank: 4, bars: LBARS, quants: QUANTS, hits: HIT_TYPES, fired: LP.fired, rev: LP.rev};
   }
   function loopsBrief() { const run = SLOT_IDS.filter(s => LP.run[s]);
-    return {pro: true, running: run, names: run.map(s => LP.slots[s].name || s), rec: LP.rec ? {id: LP.rec.id, state: LP.rec.state} : null, paused: OV.ilOn && !!run.length, rev: LP.rev}; }
+    return {pro: PRO, running: run, names: run.map(s => LP.slots[s].name || s), rec: LP.rec ? {id: LP.rec.id, state: LP.rec.state} : null, paused: OV.ilOn && !!run.length, rev: LP.rev}; }
 
   // ----------------------------------------------------------------------- 🎬 Song Shows (songshow.py): a timeline per song, driving the wall while it plays
   const SH = {on: true, rec: false, shows: {}, rev: {}, skip: null, key: null, prev: null, fired: new Set(), act: {}, due: [], mult: 1, ok: false, why: 'starting', layer: {}, known: {}};
@@ -1008,7 +1082,7 @@
       if (up.length) { const n = up.reduce((a, b) => b.t < a.t ? b : a); next = {t: n.t, lane: n.lane, what: n.hit || n.look || n.effect || n.text || ''}; } }
     return {on: SH.on, rec: SH.rec, key, title: cur ? cur.title : null, artist: cur ? cur.artist : null, pos: pos == null ? null : Math.round(pos * 100) / 100, src: cur ? 'player' : 'none', exact: !!cur,
       playing: !!(cur && M.playing), dur: cur ? cur.dur : null, has: !!(show.items && show.items.length), enabled: SH.shows[key] ? show.enabled !== false : false, active: SH.ok, why: SH.why,
-      items: (show.items || []).length, rev: SH.rev[key] || 0, next, look: (SH.act.look || {}).look || null, bright: SH.ok ? Math.round(SH.mult * 100) : null, pro: true};
+      items: (show.items || []).length, rev: SH.rev[key] || 0, next, look: (SH.act.look || {}).look || null, bright: SH.ok ? Math.round(SH.mult * 100) : null, pro: PRO};
   }
   function shList() {
     const out = {};
@@ -1059,6 +1133,278 @@
       shSave(k, cleanShow(k, {items: d.items, enabled: true, title: f.title, artist: f.artist, draft: d.meta}, null)); });
   }
 
+  // ----------------------------------------------------------------------- 🎛️ Pro DJ (prodj.py): Autoloops, Scenes, Cues, Tempo toolbox, Zones, Palettes
+  // Same payloads as the app (GET /api/autoloops | scenes | cues | tempo | zones | palettes | prodj, the POSTs echo them with ok: true).
+  const PD = {prog: null, pending: null, fade: 1, bars: 0, opts: {mode: 'repeat', bars: 8, snap: false, bank: 'A'}, beat: {}, rev: 0, lastBar: null,
+    tmode: 'auto', tmult: 1, toff: 0, tbpm: 120, speech: false, target: 'all', subs: {}, palettes: [], pal: null, bo: 0, boTo: 0, boRate: 2,
+    scenes: [], lists: [], list: null, pos: {}, lastCue: null};
+  const PDL = () => ENG.prodj;
+  const pdNearest = (v, opts) => opts.reduce((a, x) => Math.abs(x - v) < Math.abs(a - v) ? x : a, opts[0]);
+  const pdName = (s, n, d) => (String(s || '').split(/\s+/).filter(Boolean).join(' ').slice(0, n)) || d;
+  const pdId = p => p + Math.random().toString(16).slice(2, 10);
+  function pdPresets() { return PDL().presets.map(p => Object.assign({}, p, {beat: PD.beat[p.id] != null ? PD.beat[p.id] : p.beat_default})); }
+  const pdPreset = id => pdPresets().find(p => p.id === id) || null;
+  const pdAllPal = () => PDL().palettes.map(p => Object.assign({}, p, {builtin: true})).concat(PD.palettes.map(p => Object.assign({}, p, {builtin: false})));
+  const sceneProg = s => Object.assign({}, s, {kind: 'scene'});
+  function pdSeed() {                                               // the demo comes with two saved scenes and a wedding cue list to play with
+    const lc = n => ((ENG.look_colors || {})[n] || ['#ffc400', '#ffffff', '#ff8a00']).slice(0, 5);
+    PD.scenes = [{id: 's_demo1', name: 'Golden hour', look: 'Royal Gold', fx: ['SunshineWave'], pal: ['#ffc400', '#ffffff', '#ff8a00'], speed: 0.8, transform: 'none', trail: 0.6, sparkle: 0.2, beat: 1, faders: null, ovr: null, t: Math.round(wall()) - 86400},
+      {id: 's_demo2', name: 'Party blast', look: 'Neon Party', fx: ['Shockwave'], pal: lc('Neon Party'), speed: 1.1, transform: 'none', trail: 0.4, sparkle: 0.4, beat: 1, faders: null, ovr: null, t: Math.round(wall()) - 3600}];
+    const c = (type, ref, fade, note) => Object.assign({id: pdId('c_'), type, fade, note}, ref ? {ref} : {});
+    PD.lists = [{id: 'l_demo', name: 'Wedding reception', cues: [c('loop', 'C8', 2, 'Grand entrance'), c('loop', 'B6', 4, 'First dance'), c('scene', 's_demo1', 1, 'Cake cutting'),
+      c('loop', 'A1', 0.5, 'Dance floor opens'), c('scene', 's_demo2', 0.5, 'Last song'), c('auto', null, 2, 'Back to the auto show')]}, {id: 'l_demo2', name: 'My event', cues: []}];
+    PD.list = 'l_demo';
+  }
+  // ---- status
+  function pdTempoBpm() { return PD.tmode === 'lock' ? PD.tbpm : (DJ.tap_bpm || BPM) * PD.tmult; }
+  const pdTempo = () => ({mode: PD.tmode, locked: PD.tmode === 'lock', mult: PD.tmult, off_ms: Math.round(PD.toff * 60000 / Math.max(40, pdTempoBpm())),
+    bpm: Math.round(pdTempoBpm() * 10) / 10, speech: PD.speech, speechy: false, ambient: OV.il.auto || 0});
+  const pdL = id => { const L = PD.lists.find(l => l.id === (id || PD.list)); if (!L) throw bad('cue list not found'); return L; };
+  function cueLabel(c) {
+    if (c.type === 'scene') { const s = PD.scenes.find(x => x.id === c.ref); return s ? s.name : 'Missing scene'; }
+    if (c.type === 'loop') { const p = PDL().presets.find(x => x.id === c.ref); return p ? p.name : 'Missing Autoloop'; }
+    return {blackout: 'Blackout', interlude: 'Interlude', auto: 'Back to Auto'}[c.type] || c.type;
+  }
+  function cueState() {
+    const L = PD.lists.find(l => l.id === PD.list); if (!L) return null; const pos = PD.pos[L.id] == null ? -1 : PD.pos[L.id], cs = L.cues;
+    const brief = i => i >= 0 && i < cs.length ? Object.assign({i}, ...['id', 'type', 'ref', 'fade', 'note'].map(k => ({[k]: cs[i][k] == null ? null : cs[i][k]})), {label: cueLabel(cs[i])}) : null;
+    return {list: L.id, name: L.name, pos, n: cs.length, cur: brief(pos), next: brief(pos + 1)};
+  }
+  function pdBrief() {
+    const P = PD.prog, pn = PD.pending;
+    return {pro: PRO, rev: PD.rev, loop: P ? {id: P.id, name: P.name, kind: P.kind, bank: P.bank || null} : null, pending: pn ? {id: pn.P.id, name: pn.P.name} : null,
+      opts: Object.assign({}, PD.opts), bars: Math.max(0, PD.bars), tempo: pdTempo(), zones: {target: PD.target, subs: Object.assign({}, PD.subs)},
+      palette: PD.pal, blackout: Math.round(PD.bo * 100) / 100, cue: cueState()};
+  }
+  // ---- programs (an Autoloop or a Scene holds the wall)
+  function pdCommit(P, fade) {
+    PD.prog = P; PD.fade = +fade || 0; PD.bars = 0; PD.pending = null; PD.progT = now();
+    if (P && P.faders) { FA.v = Object.assign({}, FA.v, P.faders); FA.rev++; }
+    if (P) { S.feature = null; S.locked = null; } PD.rev++;
+  }
+  function pdSet(P, fade, snap) { if (!snap && P) PD.pending = {P, fade: +fade || 0}; else pdCommit(P, fade); }
+  function pdStep(d) {
+    const cur = (PD.pending ? PD.pending.P : PD.prog) || {};
+    if (cur.kind === 'scene' && PD.scenes.length) { const ids = PD.scenes.map(s => s.id), i = ids.indexOf(cur.id); return sceneProg(PD.scenes[((i + d) % ids.length + ids.length) % ids.length]); }
+    const bank = cur.bank || (PD.opts.bank !== 'MY' ? PD.opts.bank : 'A'), ids = PDL().presets.filter(p => p.bank === bank).map(p => p.id), i = ids.indexOf(cur.id);
+    return pdPreset(ids[((i + d) % ids.length + ids.length) % ids.length]);
+  }
+  function loopCmd(b) {
+    const ch = [];
+    if (b.opts && typeof b.opts === 'object') { const o = b.opts;
+      if ('mode' in o) { if (!['repeat', 'advance'].includes(o.mode)) throw bad('mode: repeat or advance'); PD.opts.mode = o.mode; }
+      if ('bars' in o) { const v = parseInt(o.bars, 10); if (!PDL().adv_bars.includes(v)) throw bad('bars: 4, 8, 16 or 32'); PD.opts.bars = v; }
+      if ('snap' in o) PD.opts.snap = !!o.snap;
+      if ('bank' in o) { if (!['A', 'B', 'C', 'D', 'MY'].includes(o.bank)) throw bad('bank: A, B, C, D or MY'); PD.opts.bank = o.bank; }
+      ch.push('opts'); }
+    if (b.beat && typeof b.beat === 'object') { const pid = b.beat.pad, m = Number(b.beat.mult == null ? 1 : b.beat.mult);
+      if (!pdPreset(pid)) throw bad('beat.pad: A1 to D8'); if (!PDL().beat_mults.includes(m)) throw bad('beat.mult: 0.25, 0.5, 1, 2 or 4');
+      PD.beat[pid] = m; ch.push('beat:' + pid); if (PD.prog && PD.prog.id === pid) PD.prog = Object.assign({}, PD.prog, {beat: m}); }
+    const snap = 'snap' in b ? !!b.snap : PD.opts.snap, fade = num(b.fade, snap ? 0.5 : 1);
+    if (b.pad) { const P = pdPreset(b.pad); if (!P) throw bad('pad: A1 to D8'); pdSet(P, fade, snap); ch.push('pad:' + P.id); clearTakeovers(); }
+    if (b.next || b.prev) { const P = pdStep(b.next ? 1 : -1); if (P) { pdSet(P, fade, snap); ch.push((b.next ? 'next:' : 'prev:') + P.id); } }
+    if (b.release) { PD.pending = null; pdCommit(null, fade); ch.push('release'); }
+    if (b.cancel) { PD.pending = null; ch.push('cancel'); }
+    if (!ch.length) throw bad('send pad, next, prev, release, cancel, opts or beat');
+    PD.rev++; return ch;
+  }
+  function capture(name) {
+    const fx = S.feature && S.feature.name && CAT.effects[S.feature.name] ? S.feature.name : CAT.effects[S.effect] ? S.effect : 'Plasma', P = PD.prog || {};
+    return {id: pdId('s_'), name: pdName(name, 24, 'Scene ' + (PD.scenes.length + 1)), look: P.look || S.look, fx: P.fx ? P.fx.slice(0, 2) : [fx],
+      pal: (P.pal || (ENG.look_colors || {})[S.look] || []).slice(0, 5), speed: num(P.speed, 1), transform: 'none', trail: 0.4, sparkle: 0.2, beat: num(P.beat, 1),
+      faders: Object.assign({}, FA.v), ovr: Object.fromEntries(OV.keys.filter(k => k.color).map(k => [k.id, k.color])), t: Math.round(wall())};
+  }
+  function sceneCmd(b) {
+    const ch = [];
+    if ('save' in b) { const s = b.save && typeof b.save === 'object' ? b.save : {}; if (PD.scenes.length >= 64) throw bad('64 scenes is the most: delete one first');
+      const sc = capture(s.name); PD.scenes.push(sc); ch.push('save:' + sc.id); }
+    if (b.recall) { const s = PD.scenes.find(x => x.id === b.recall); if (!s) throw bad('recall: a scene id');
+      pdSet(sceneProg(s), pdNearest(num(b.fade, 1), PDL().fades), true); PD.boTo = 0; if (OV.ilOn) { ilSet(false, false); OV.rev++; } clearTakeovers(); ch.push('recall:' + s.id); }
+    if (b.rename) { const s = PD.scenes.find(x => x.id === b.rename); if (!s) throw bad('rename: a scene id'); s.name = pdName(b.name, 24, s.name); ch.push('rename'); }
+    if (b.move) { const ids = PD.scenes.map(x => x.id); if (!ids.includes(b.move)) throw bad('move: a scene id');
+      const s = PD.scenes.splice(ids.indexOf(b.move), 1)[0]; PD.scenes.splice(clamp(parseInt(b.to, 10) || 0, 0, PD.scenes.length), 0, s); ch.push('move'); }
+    if (b.delete) { const n = PD.scenes.length; PD.scenes = PD.scenes.filter(x => x.id !== b.delete); if (PD.scenes.length === n) throw bad('delete: a scene id'); ch.push('delete'); }
+    if (!ch.length) throw bad('send save, recall, rename, move or delete');
+    PD.rev++; return ch;
+  }
+  function cleanCue(c, old) {
+    c = Object.assign({}, c || {}); const out = Object.assign({}, old || {});
+    if ('type' in c || !old) { if (!PDL().cue_types.includes(c.type)) throw bad('type: ' + PDL().cue_types.join(', ')); out.type = c.type; }
+    if (['scene', 'loop'].includes(out.type)) { const ref = 'ref' in c ? c.ref : out.ref;
+      if (out.type === 'loop' && !pdPreset(ref)) throw bad('ref: an Autoloop pad (A1 to D8)');
+      if (out.type === 'scene' && !PD.scenes.some(s => s.id === ref)) throw bad('ref: a scene id');
+      out.ref = ref; } else delete out.ref;
+    if ('fade' in c || !old) out.fade = pdNearest(num(c.fade, 1), PDL().fades);
+    if ('note' in c || !old) out.note = pdName(c.note, 40, '');
+    if (!out.id) out.id = pdId('c_');
+    return out;
+  }
+  function fireCue(c) {
+    const f = num(c.fade, 1); PD.lastCue = Object.assign({}, c, {t: wall()}); PD.boRate = f > 0 ? 1 / f : 1e9;
+    if (c.type === 'blackout') { PD.boTo = 1; if (OV.ilOn) { ilSet(false, false); OV.rev++; } return; }
+    PD.boTo = 0;
+    if (c.type === 'interlude') { ilSet(true, false); OV.rev++; return; }
+    if (OV.ilOn) { ilSet(false, false); OV.rev++; }
+    if (c.type === 'auto') { pdCommit(null, f); return; }
+    if (c.type === 'loop') { const P = pdPreset(c.ref); if (P) pdSet(P, f, true); }
+    else if (c.type === 'scene') { const s = PD.scenes.find(x => x.id === c.ref); if (s) pdSet(sceneProg(s), f, true); }
+    clearTakeovers();
+  }
+  function cueCmd(b) {
+    const ch = []; let fire = null;
+    if (b.new_list != null) { const nm = pdName(b.new_list && typeof b.new_list === 'object' ? b.new_list.name : b.new_list, 28, 'Event ' + (PD.lists.length + 1));
+      if (PD.lists.length >= 32) throw bad('32 cue lists is the most'); const L = {id: pdId('l_').slice(0, 8), name: nm, cues: []}; PD.lists.push(L); PD.list = L.id; ch.push('new_list'); }
+    if (b.list) { pdL(b.list); PD.list = b.list; ch.push('list'); }
+    if (b.rename_list) { const L = pdL(b.rename_list); L.name = pdName(b.name, 28, L.name); ch.push('rename_list'); }
+    if (b.delete_list) { pdL(b.delete_list); if (PD.lists.length <= 1) throw bad('keep at least one cue list');
+      PD.lists = PD.lists.filter(l => l.id !== b.delete_list); if (PD.list === b.delete_list) PD.list = PD.lists[0].id; ch.push('delete_list'); }
+    const L = pdL();
+    if (b.add && typeof b.add === 'object') { const c = cleanCue(b.add); if (L.cues.length >= 200) throw bad('200 cues is the most');
+      const at = b.at == null ? L.cues.length : clamp(parseInt(b.at, 10) || 0, 0, L.cues.length); L.cues.splice(at, 0, c); ch.push('add:' + c.id); }
+    if (b.update && typeof b.update === 'object') { const i = L.cues.findIndex(c => c.id === b.update.id); if (i < 0) throw bad('update.id: a cue id');
+      L.cues[i] = cleanCue(b.update, L.cues[i]); ch.push('update'); }
+    if (b.remove) { const i = L.cues.findIndex(c => c.id === b.remove); if (i < 0) throw bad('remove: a cue id'); L.cues.splice(i, 1);
+      const p = PD.pos[L.id] == null ? -1 : PD.pos[L.id]; if (i <= p) PD.pos[L.id] = p - 1; ch.push('remove'); }
+    if (b.move) { const ids = L.cues.map(c => c.id); if (!ids.includes(b.move)) throw bad('move: a cue id');
+      const c = L.cues.splice(ids.indexOf(b.move), 1)[0]; L.cues.splice(clamp(parseInt(b.to, 10) || 0, 0, L.cues.length), 0, c); ch.push('move'); }
+    let pos = PD.pos[L.id] == null ? -1 : PD.pos[L.id];
+    if (b.go) { if (pos + 1 >= L.cues.length) throw bad('end of the cue list'); pos++; fire = L.cues[pos]; ch.push('go'); }
+    if (b.back) { if (pos <= 0) throw bad('already at the first cue'); pos--; fire = L.cues[pos]; ch.push('back'); }
+    if (b.jump != null) { const j = parseInt(b.jump, 10); if (!(j >= 0 && j < L.cues.length)) throw bad('jump: a cue number'); pos = j; fire = L.cues[pos]; ch.push('jump'); }
+    if (b.reset) { pos = -1; ch.push('reset'); }
+    if (b.blackout != null) { PD.boTo = b.blackout ? 1 : 0; PD.boRate = 1 / Math.max(0.05, num(b.fade, 0.5)); ch.push('blackout'); }
+    PD.pos[L.id] = pos;
+    if (fire) fireCue(fire);
+    if (!ch.length) throw bad('send go, back, jump, reset, blackout, add, update, remove, move, list, new_list, rename_list or delete_list');
+    PD.rev++; return ch;
+  }
+  function tempoCmd(b) {
+    const ch = [], cur = pdTempoBpm();
+    if (b.reset) { PD.tmode = 'auto'; PD.tmult = 1; PD.toff = 0; ch.push('reset'); }
+    if ('lock' in b) { const on = b.lock === 'toggle' ? PD.tmode !== 'lock' : !!b.lock;
+      if (on && PD.tmode !== 'lock') { PD.tmode = 'lock'; PD.tbpm = Math.round(cur * 100) / 100; } else if (!on) { PD.tmode = 'auto'; PD.tmult = 1; } ch.push('lock:' + (on ? 'on' : 'off')); }
+    if (b.adjust != null) { const d = Number(b.adjust); if (!isFinite(d) || Math.abs(d) > 20) throw bad('adjust: -20 to 20 BPM');
+      if (PD.tmode !== 'lock') { PD.tmode = 'lock'; PD.tbpm = cur; } PD.tbpm = Math.round(clamp(PD.tbpm + d, 40, 220) * 100) / 100; ch.push('adjust'); }
+    if (b.set != null) { const v = Number(b.set); if (!(v >= 40 && v <= 220)) throw bad('set: 40 to 220 BPM'); PD.tmode = 'lock'; PD.tbpm = Math.round(v * 100) / 100; ch.push('set'); }
+    [['double', 2], ['half', 0.5]].forEach(([k, m]) => { if (!b[k]) return;
+      if (PD.tmode === 'lock') { const nb = PD.tbpm * m; if (nb >= 40 && nb <= 220) PD.tbpm = Math.round(nb * 100) / 100; } else PD.tmult = clamp(PD.tmult * m, 0.25, 4); ch.push(k); });
+    if (b.nudge) { const ms = num(b.ms, 15) * (Number(b.nudge) > 0 ? 1 : -1), d = ms / 1000 * cur / 60; PD.toff -= d; beatPos -= d; ch.push('nudge'); }
+    if (b.ambient && typeof b.ambient === 'object') { const a = b.ambient; if ('speech' in a) PD.speech = !!a.speech; if ('secs' in a) ilApply({auto: a.secs}); OV.rev++; ch.push('ambient'); }
+    if (!ch.length) throw bad('send adjust, set, double, half, nudge, lock, reset or ambient');
+    PD.rev++; return ch;
+  }
+  // ---- zones: the wall's built-in areas plus each curtain (on the real app, every named string of a drawn layout too)
+  const pdZones = () => PDL().zones.map(z => Object.assign({}, z)).concat(DEVS.map(d => ({id: 'c:' + d.id, name: d.name.slice(0, 16), group: 'g1'})));
+  const ZM = {};
+  function zoneMask(id) {
+    if (ZM[id]) return ZM[id]; const m = new Float32Array(N), dev = id.startsWith('c:') ? DEVS.find(d => 'c:' + d.id === id) : null;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let on = true;
+      if (dev) on = x >= dev.x0 && x < dev.x0 + 20;
+      else if (id === 'left') on = x < W / 2; else if (id === 'right') on = x >= W / 2; else if (id === 'top') on = y < H / 2; else if (id === 'bottom') on = y >= H / 2;
+      else if (id === 'center') on = x >= W / 4 && x < W * 3 / 4 && y >= H / 4 && y < H * 3 / 4; else if (id === 'odd') on = x % 2 === 1; else if (id === 'even') on = x % 2 === 0;
+      m[y * W + x] = on ? 1 : 0; }
+    return (ZM[id] = m);
+  }
+  function zoneCmd(b) {
+    const ch = [], ids = new Set(pdZones().map(z => z.id));
+    if ('target' in b) { if (!ids.has(b.target)) throw bad('target: ' + [...ids].sort().join(', ')); PD.target = b.target; ch.push('target'); }
+    if (b.sub && typeof b.sub === 'object') { Object.entries(b.sub).forEach(([z, v]) => { if (!ids.has(z)) throw bad('sub: a zone id'); v = Number(v); if (!isFinite(v)) throw bad('sub: 0 to 100');
+      v = clamp(v, 0, 100); if (v >= 100) delete PD.subs[z]; else PD.subs[z] = Math.round(v * 10) / 10; }); ch.push('sub'); }
+    if (b.reset_subs) { PD.subs = {}; ch.push('reset_subs'); }
+    if (!ch.length) throw bad('send target, sub or reset_subs');
+    PD.rev++; return ch;
+  }
+  function paletteCmd(b) {
+    const ch = [];
+    if (b.use) { if (!pdAllPal().some(p => p.id === b.use)) throw bad('use: a palette id'); PD.pal = b.use; ch.push('use'); }
+    if (b.clear) { PD.pal = null; ch.push('clear'); }
+    if (b.save && typeof b.save === 'object') { const cols = (b.save.colors || []).map(normHex); if (cols.length < 3 || cols.length > 5) throw bad('colors: 3 to 5 colours');
+      if (PD.palettes.length >= 24) throw bad('24 palettes is the most');
+      const p = {id: pdId('u_').slice(0, 8), name: pdName(b.save.name, 20, 'My palette ' + (PD.palettes.length + 1)), colors: cols}; PD.palettes.push(p); ch.push('save:' + p.id);
+      if (b.save.use !== false) PD.pal = p.id; }
+    if (b.delete) { const n = PD.palettes.length; PD.palettes = PD.palettes.filter(p => p.id !== b.delete); if (PD.palettes.length === n) throw bad('delete: one of your palettes');
+      if (PD.pal === b.delete) PD.pal = null; ch.push('delete'); }
+    if (b.rename) { const p = PD.palettes.find(x => x.id === b.rename); if (!p) throw bad('rename: one of your palettes'); p.name = pdName(b.name, 20, p.name); ch.push('rename'); }
+    if (!ch.length) throw bad('send use, clear, save, delete or rename');
+    PD.rev++; return ch;
+  }
+  function pdControls() {
+    const c = PDL().presets.map(p => ({id: 'autoloop.' + p.id, kind: 'button', name: p.name}));
+    [['cue.blackout', 'toggle'], ['autoloop.next', 'button'], ['autoloop.prev', 'button'], ['autoloop.release', 'button'], ['autoloop.snap', 'toggle'], ['autoloop.advance', 'toggle'],
+      ['cue.go', 'button'], ['cue.back', 'button'], ['cue.reset', 'button'], ['tempo.lock', 'toggle'], ['tempo.double', 'button'], ['tempo.half', 'button'],
+      ['tempo.bpm+0.1', 'button'], ['tempo.bpm-0.1', 'button'], ['tempo.bpm+1', 'button'], ['tempo.bpm-1', 'button'], ['tempo.nudge+', 'button'], ['tempo.nudge-', 'button'],
+      ['tempo.reset', 'button'], ['palette.clear', 'button']].forEach(([id, kind]) => c.push({id, kind}));
+    pdAllPal().forEach(p => c.push({id: 'palette.' + p.id, kind: 'button', name: p.name}));
+    PD.scenes.forEach(s => c.push({id: 'scene.' + s.id, kind: 'button', name: s.name}));
+    pdZones().forEach(z => { c.push({id: 'zone.' + z.id, kind: 'button', name: z.name}); c.push({id: 'sub.' + z.id, kind: 'fader', name: z.name, range: [0, 100]}); });
+    return c;
+  }
+  function pdControl(cid, value) {                                  // one control by id, like a MIDI button or fader would
+    cid = String(cid || '');
+    if (cid.startsWith('autoloop.')) { const k = cid.slice(9);
+      if (['next', 'prev', 'release'].includes(k)) return ['autoloops', loopCmd({[k]: true})];
+      if (k === 'snap') return ['autoloops', loopCmd({opts: {snap: value == null ? !PD.opts.snap : !!value}})];
+      if (k === 'advance') { const on = value == null ? PD.opts.mode !== 'advance' : !!value; return ['autoloops', loopCmd({opts: {mode: on ? 'advance' : 'repeat'}})]; }
+      return ['autoloops', loopCmd({pad: k})]; }
+    if (cid === 'cue.blackout') return ['cues', cueCmd({blackout: value == null ? PD.boTo < 0.5 : !!value})];
+    if (cid.startsWith('cue.')) return ['cues', cueCmd({[cid.slice(4)]: true})];
+    if (cid.startsWith('tempo.')) { const k = cid.slice(6);
+      if (k.startsWith('bpm')) return ['tempo', tempoCmd({adjust: Number(k.slice(3))})];
+      if (k === 'lock') return ['tempo', tempoCmd({lock: value == null ? 'toggle' : !!value})];
+      if (k.startsWith('nudge')) return ['tempo', tempoCmd({nudge: k.endsWith('+') ? 1 : -1})];
+      return ['tempo', tempoCmd({[k]: true})]; }
+    if (cid === 'palette.clear') return ['palettes', paletteCmd({clear: true})];
+    if (cid.startsWith('palette.')) return ['palettes', paletteCmd({use: cid.slice(8)})];
+    if (cid.startsWith('scene.')) return ['scenes', sceneCmd({recall: cid.slice(6)})];
+    if (cid.startsWith('zone.')) return ['zones', zoneCmd({target: cid.slice(5)})];
+    if (cid.startsWith('sub.')) { let v = num(value, 100); if (v <= 1) v *= 100; return ['zones', zoneCmd({sub: {[cid.slice(4)]: v}})]; }
+    throw bad('control: an id from GET /api/prodj');
+  }
+  function pdInfo(what) {
+    const b = pdBrief(), L = PDL();
+    if (what === 'autoloops') return Object.assign(b, {banks: L.banks, presets: pdPresets(), scenes: PD.scenes, beat_mults: L.beat_mults, adv_bars: L.adv_bars, fades: L.fades});
+    if (what === 'scenes') return Object.assign(b, {scenes: PD.scenes, fades: L.fades});
+    if (what === 'cues') return Object.assign(b, {lists: PD.lists.map(l => ({id: l.id, name: l.name, n: l.cues.length})), active: PD.list,
+      cues: pdL().cues.map(c => Object.assign({}, c, {label: cueLabel(c)})), types: L.cue_types, fades: L.fades,
+      scenes: PD.scenes.map(s => ({id: s.id, name: s.name})), loops: L.presets.map(p => ({id: p.id, name: p.name}))});
+    if (what === 'tempo') return Object.assign(b, {nudge_ms: 15});
+    if (what === 'zones') return Object.assign(b, {list: pdZones()});
+    if (what === 'palettes') return Object.assign(b, {palettes: pdAllPal()});
+    return Object.assign(b, {controls: pdControls()});
+  }
+  function pdPost(what, body) {
+    let ch;
+    if (what === 'autoloops') ch = loopCmd(body); else if (what === 'scenes') ch = sceneCmd(body); else if (what === 'cues') ch = cueCmd(body);
+    else if (what === 'tempo') ch = tempoCmd(body); else if (what === 'zones') ch = zoneCmd(body); else if (what === 'palettes') ch = paletteCmd(body);
+    else if (what === 'prodj') [what, ch] = pdControl(body.control, body.value);
+    return Object.assign(pdInfo(what), {ok: true, changed: ch});
+  }
+  function pdTick(dt) {                                             // next-bar pads, Advance mode, the cue blackout fade
+    const bar = Math.floor(beatPos / 4);
+    if (PD.lastBar != null && bar !== PD.lastBar) {
+      if (PD.pending) pdCommit(PD.pending.P, PD.pending.fade);
+      else if (PD.prog) { PD.bars++; if (PD.opts.mode === 'advance' && PD.prog.kind === 'loop' && PD.bars >= PD.opts.bars) { const P = pdStep(1); if (P) pdCommit(P, 1); } }
+    }
+    PD.lastBar = bar;
+    if (PD.bo !== PD.boTo) PD.bo = PD.boTo > PD.bo ? Math.min(PD.boTo, PD.bo + dt * PD.boRate) : Math.max(PD.boTo, PD.bo - dt * PD.boRate);
+  }
+  function pdPalCols() {                                            // the colours that repaint the wall: a picked palette wins, then the Autoloop / Scene's own
+    if (PD.pal) { const p = pdAllPal().find(x => x.id === PD.pal); if (p) return p.colors.map(hexRGB); }
+    const P = PD.prog; if (P && P.pal && (P.own_pal || P.kind === 'scene')) return P.pal.map(hexRGB);
+    return null;
+  }
+  function pdPaint(buf) {                                           // palette repaint (keeps the show's shapes and brightness)
+    const cols = pdPalCols(); if (!cols || !cols.length) return;
+    const tt = now() * 0.05;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, l = lum3(buf, i) / 255; if (l <= 0.01) continue;
+      const c = palAt(cols, x / W * 0.8 + y / H * 0.2 + tt + l * 0.15);
+      for (let ch = 0; ch < 3; ch++) buf[i + ch] = c[ch] * l * 0.92 + buf[i + ch] * 0.08; }
+  }
+  function pdFinish(buf) {                                          // zone faders, then the cue blackout
+    Object.entries(PD.subs).forEach(([z, v]) => { const m = zoneMask(z), k = v / 100; for (let j = 0; j < N; j++) if (m[j]) { buf[j * 3] *= k; buf[j * 3 + 1] *= k; buf[j * 3 + 2] *= k; } });
+    if (PD.bo > 0) for (let i = 0; i < buf.length; i++) buf[i] *= 1 - PD.bo;
+  }
+
   // ======================================================================= what is on the wall right now
   function source(t, si) {
     if (!S.power) return {kind: 'black', label: 'Lights off'};
@@ -1081,9 +1427,10 @@
       if (exact && has(exact)) return {clip: exact, label: lab, fire: 1};
       return {clip: fp.style === 'fireplace' ? 'fire-classic-' + fp.mode : 'fire-' + fp.style, recolor: fp.style === 'spirit' && fp.color === 'classic' ? null : fp.color, speed: fp.mode === 'roar' && fp.style !== 'fireplace' ? 1.5 : 1, label: lab, fire: 1}; }
     if (k === 'holiday') { const h = CAT.holidays[S.holiday], MOV = {halloween: 'movie-halloweennight', christmas: 'movie-christmaseve', newyear: 'movie-newyearcountdown', thanksgiving: 'movie-harvestday'};
-      const set = ['holiday-' + S.holiday].concat(MOV[S.holiday] ? [MOV[S.holiday]] : []), c = set[si.k % set.length];
+      const own = 'holiday-' + S.holiday, set = (has(own) ? [own] : [HOL_STAND[S.holiday] || 'fx-pixelfireworks']).concat(MOV[S.holiday] ? [MOV[S.holiday]] : []), c = set[si.k % set.length];
       const fx = (S.holFx && S.holFx.length ? S.holFx : h.fx.map(f => f.name)); return {clip: c, label: fx[si.k % fx.length], holiday: h}; }
     if (k === 'scene') { const sc = S.scene, seg = sc.segs[sc.i] || {}; return {clip: sc.clips[sc.i] || 'look-neon-party', label: sc.effects[sc.i] || sc.name}; }
+    if (PD.prog && PRO) { const P = PD.prog; return {clip: effectClip((P.fx || [])[0]) || lookClip(P.look, 0), label: P.name, speed: num(P.speed, 1)}; }   // 🔁 an Autoloop or a Scene holds the wall
     if (S.locked) return {clip: effectClip(S.locked) || lookClip(S.look, S.lookK), label: S.locked};
     if (S.feature && (S.feature.until === 0 || S.feature.until > t)) return {clip: S.feature.clip || lookClip(S.look, S.lookK), label: S.feature.name, vary: S.feature.vary};
     if (S.cameo > t) return {kind: 'eye', label: 'Eyeball'};
@@ -1119,7 +1466,7 @@
       for (let x = 0; x < W; x++) { put(buf, x, 0, src.color.map(v => v * .6)); put(buf, x, H - 1, src.color.map(v => v * .6)); }
       stamp(buf, m, x0, ((H - m.h) / 2) | 0, () => [255, 255, 255]); }
     else if (src.kind === 'eye') eye(buf, VT);
-    if (!busy) { cueColor(buf, SH.act); cueColor(buf, LP.act); }    // 🎬🔁 colour lock
+    if (!busy) { pdPaint(buf); cueColor(buf, SH.act); cueColor(buf, LP.act); }    // 🎨 palette, then 🎬🔁 colour lock
     if (src.holiday && HOL_NAME.text && (t % 14) < 4.2) {         // 🎂 the birthday name / 🏈 team name flies across now and then
       const m = textMask(HOL_NAME.text, H), el = (t % 14) / 4.2; stamp(buf, m, Math.round(W - el * (W + m.w)), ((H - m.h) / 2) | 0, (x) => HOL_NAME.cols[x < W / 2 ? 0 : 1], .3); }
     if (S.power) textOverlay(buf, t, si);
@@ -1130,6 +1477,7 @@
     if (!busy) { cueText(buf, SH.act, t); cueText(buf, LP.act, t); if (SH.act.blackout || LP.act.blackout) buf.fill(0); }
     fadersLook(buf, t, busy);                                       // 🎚️ trails, colour, white, strobe
     if (SH.ok && !busy && SH.mult !== 1) for (let i = 0; i < buf.length; i++) buf[i] *= SH.mult;   // 🎬 the show's brightness curve
+    if (!busy) pdFinish(buf);                                       // 🎛️ zone faders + cue blackout
     if (OV.ilLv > 0 && S.power) { const pic = ilPic(t), k = OV.ilLv * OV.ilLv * (3 - 2 * OV.ilLv); for (let i = 0; i < buf.length; i++) buf[i] = buf[i] * (1 - k) + pic[i] * k; }
     if (FD.alert) { if (FD.alert.until < t) FD.alert = null; else { const c = clipNow('live-storm'); if (c) { const f = Math.floor(t * c.fps) % c.n, base = f * c.w * c.h * 4;
       for (let i = 0; i < N; i++) { const j = base + i * 4; buf[i * 3] = c.px[j]; buf[i * 3 + 1] = c.px[j + 1]; buf[i * 3 + 2] = c.px[j + 2]; } } } }
@@ -1160,6 +1508,25 @@
       const d = Math.hypot(x - lx, (y - ly) * 1.1); put(buf, x, y, d < 2 ? [0, 0, 0] : d < 5 ? hue(.52 + d * .02, .8, 1) : [235, 235, 245]); }
   }
   const HOL_NAME = {text: '', cols: [[255, 255, 255], [255, 255, 255]]};
+  // 🌍 the worldwide holidays have no recording in the demo yet: a recording close in spirit stands in (and a note says so once)
+  const HOL_STAND = {australiaday: 'fx-pixelfireworks', bastille: 'fx-pixelfireworks', canadaday: 'fx-pixelfireworks', lunarnewyear: 'fx-pixelfireworks', bonfire: 'fire-bonfire',
+    carnival: 'look-rainbow-riot', dayofthedead: 'fire-spirit', diwali: 'fire-candles', hanukkah: 'fire-candles', easter: 'look-fairy-forest', eid: 'look-midnight-galaxy',
+    holi: 'fx-paintsplash', kingsday: 'look-royal-gold', mothersday: 'holiday-valentine'};
+  const holNoted = {};
+  // 🌍 holiday calendar (holcal.py snapshot in engine.json): worldwide + what changes per country; dates count down from today
+  const HC = {over: 'auto'};
+  function holCal() {
+    const HCS = ENG.holcal; if (!HCS) return {error: 'no calendar'};
+    const base = HCS.base, auto = HC.over === 'auto', code = auto ? 'US' : HC.over, per = HCS.per[code], info = {};
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const day = iso => new Date(iso + 'T00:00:00'), iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    Object.entries(base.info).forEach(([k, v]) => { const d = info[k] = Object.assign({}, v, (per && per.info[k]) || {}); if (!d.date) return;
+      let s0 = day(d.start), e0 = day(d.end), m0 = day(d.date);
+      while (e0 < today) [s0, e0, m0] = [s0, e0, m0].map(x => new Date(x.getFullYear() + 1, x.getMonth(), x.getDate()));   // past this year: about a year on
+      Object.assign(d, {start: iso(s0), end: iso(e0), date: iso(m0), days: Math.round((m0 - today) / 864e5), now: s0 <= today && today <= e0}); });
+    return Object.assign({}, base, {country: code, country_name: per ? per.name : 'Worldwide', source: auto ? 'location' : 'pick', south: per ? !!per.south : false,
+      override: HC.over, mine: per ? per.mine : base.mine, info});
+  }
 
   // ======================================================================= the clock that keeps things moving
   let FIRE = null, lastTick = now();
@@ -1172,7 +1539,7 @@
       if (R() < .5) { const side = R() < .6 ? 'home' : 'away', p = {football: pickOne([3, 7]), basketball: pickOne([2, 3]), baseball: 1}[s.leagues_sport[s.league]] || 1; s.live[side].score += p; DJ.queue.push('confetti'); } }
     if (S.scene) { const sc = S.scene, seg = sc.segs[sc.i] || {}; if (t - sc.t0 > Math.min(30, +seg.seconds || 30)) { sc.i = (sc.i + 1) % sc.segs.length; sc.t0 = t; } }
     if (S.feature && S.feature.until && S.feature.until < t) S.feature = null;
-    lpTick();
+    lpTick(); pdTick(dt);
   }
 
   // ======================================================================= status (what /api/status returns)
@@ -1181,10 +1548,10 @@
     const lvl = S.power ? clamp(lastLevel * 2.2 * (.65 + .35 * beat) + R() * .08, 0, 1) : 0;
     const fp = Object.assign({}, ENG.fire, FIRE), fd = FD.s, w = Object.values(fd.feeds).filter(f => f.kind === 'watch' && f.enabled).map(f => f.title);
     const sc = S.scene ? {name: S.scene.name, segment: S.scene.i + 1, segments: S.scene.segs.length, effects: [S.scene.effects[S.scene.i]]} : null;
-    return {bpm: DJ.tap_bpm || BPM, section: si.name, look: S.look, faders: fadersInfo(), override: ovInfo(), loops: loopsBrief(), show: shInfo(), holiday: S.holiday, mirror: null, part: PARTS[si.name] + ' ' + (1 + (si.k >> 2) % 3),
+    return {bpm: Math.round(pdTempoBpm() * 10) / 10, section: si.name, prodj: pdBrief(), midi: ENG.midi.brief, cameos: S.cameos, look: S.look, faders: fadersInfo(), override: ovInfo(), loops: loopsBrief(), show: shInfo(), holiday: S.holiday, mirror: null, part: PARTS[si.name] + ' ' + (1 + (si.k >> 2) % 3),
       effect: src.label || S.effect, energy: si.name === 'drop' ? .86 : si.name === 'break' ? .32 : .58, transform: 'none', trail: .4, sparkle: .2,
-      brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, pro: true, scoreboard: !!SB.s.on, fireplace: fp,
-      feeds: {mode: fd.mode, title: fd.mode !== 'off' ? fd.feeds[fd.mode].title : '', watching: w, alert: FD.alert ? FD.alert.event : ''}, dj: djInfo(),
+      brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, pro: PRO, scoreboard: !!SB.s.on, fireplace: fp,
+      feeds: {mode: fd.mode, title: fd.mode !== 'off' ? fd.feeds[fd.mode].title : '', watching: w, alert: FD.alert ? FD.alert.event : '', flash: '', full_moon: false}, dj: djInfo(),
       shuffle: S.shuffle, characters: S.characters, held_look: S.held, pinned: S.pinned, calm: si.name === 'break' ? .6 : .2, grand: si.name === 'drop' ? .8 : .3,
       level: Math.round(lvl * 100) / 100, sparkles: S.sparkles, pace: S.pace, scene: sc, text: TX.s.show,
       groups: [{id: 'g1', name: 'Main', w: W, h: H, lights: 2, look: S.look, effect: src.label || S.effect, power: S.power, text: TX.s.show}],
@@ -1205,7 +1572,8 @@
     }
     if ('delay' in b) S.delay = clamp(+b.delay || 0, 0, 1000);
     if ('power' in b) S.power = !!b.power;
-    if ('brightness' in b) S.brightness = clamp(Math.round(+b.brightness), 5, 100);
+    if ('brightness' in b) S.brightness = clamp(Math.round(+b.brightness), 0, 100);
+    if ('cameos' in b) S.cameos = !!b.cameos;                      // 👁️ the Eyeball switch (LOOKS > Show control)
     if ('blend' in b) S.blend = +b.blend || 1;
     if ('sparkles' in b) S.sparkles = b.sparkles;
     if ('pace' in b) S.pace = b.pace;
@@ -1223,15 +1591,48 @@
     if ('holiday' in b) {
       const h = b.holiday;
       if (!h) S.holiday = null;
+      else if ('country' in h) { const v = String(h.country || 'auto'); HC.over = v === 'auto' || ENG.holcal.per[v.toUpperCase()] ? (v === 'auto' ? 'auto' : v.toUpperCase()) : 'auto'; }
       else { S.holFx = h.fx; const meta = CAT.holidays[h.key]; if (meta) meta.prefs = {fx: h.fx, name: h.name, team: h.team};
         const nm = String(h.name || '').trim().toUpperCase();
         HOL_NAME.text = nm ? (h.key === 'birthday' ? 'HAPPY BIRTHDAY ' + nm : h.key === 'gameday' ? 'GO ' + nm : nm) : '';
         HOL_NAME.cols = h.team ? h.team.map(c => c.map(v => v * 255)) : [[255, 255, 255], [255, 204, 102]];
-        if (h.on) { S.holiday = h.key; bump('holiday'); } }
+        if (h.on) { S.holiday = h.key; bump('holiday');
+          if (!has('holiday-' + h.key) && !holNoted[h.key]) { holNoted[h.key] = 1; const nm = (CAT.holidays[h.key] || {}).name || h.key;
+            setTimeout(() => toast('🎁 ' + nm + ': the demo plays a stand-in recording. The real show runs in the GlowBop app.'), 900); } } }
     }
     return {json: {ok: true, queued: b}};
   }
   function clearTakeovers() { /* a look / effect pick from the console also ends a running scene, like the engine */ S.scene = null; }
+
+  // ======================================================================= 🎛️ controllers (midihub.py snapshot): nothing plugged in, layouts and learn still answer
+  const MIDI = {maps: [], settings: null};
+  function midiFull() {
+    const f = JSON.parse(JSON.stringify(ENG.midi.full));
+    f.backend = Object.assign(f.backend, {engine: true, kind: 'demo', reason: ''});      // like a laptop with nothing plugged in yet
+    f.mappings = MIDI.maps.slice(); f.pro = PRO; if (MIDI.settings) f.settings = Object.assign(f.settings, MIDI.settings);
+    return f;
+  }
+  function midiPost(b) {
+    const ch = [];
+    if (b.settings && typeof b.settings === 'object') { MIDI.settings = Object.assign(MIDI.settings || {}, b.settings); ch.push('settings'); }
+    if (b.template) { setTimeout(() => toast('🎛️ In the demo no controller is plugged in. On the app, the layout maps every pad and lights its LEDs'), 300); ch.push('template'); }
+    if (b.learn) { setTimeout(() => toast('💻 In the demo, DJ controllers need the GlowBop laptop app'), 200); ch.push('learn'); }
+    if (b.map && typeof b.map === 'object') ch.push('map');
+    if ('clear' in b || 'unmap' in b) { MIDI.maps = []; ch.push('clear'); }
+    return {json: {ok: true, changed: ch, midi: ENG.midi.brief}};
+  }
+  // ======================================================================= ✏️ Draw your layout (layoutmap.py): the editor works, the drawing stays in this tab
+  const LAY = {doc: {v: 1, stage: [1000, 600], photo: false, grid: 50, items: []}, photo: null, testing: false,
+    zones() { return (this.doc.items || []).filter(i => i.name).map(i => ({name: i.name, group: 'g1', shape: i.tpl || i.kind})); },
+    save(b) { const d = b.doc && typeof b.doc === 'object' ? b.doc : {}; this.doc = {v: 1, stage: d.stage || [1000, 600], photo: !!d.photo, grid: d.grid || 50, items: (d.items || []).slice(0, 200)};
+      const per = {}; this.doc.items.forEach(i => { if (!i.dev) return; per[i.dev] = (per[i.dev] || 0) + Math.max(0, parseInt(i.count, 10) || 0); });
+      setTimeout(() => toast('✏️ Saved in the demo. On the app the show restarts with your layout'), 2600);
+      return {ok: true, devices: DEVS.filter(d => per[d.id]).map(d => ({id: d.id, name: d.name, total: 420, shown: Math.min(420, per[d.id]), hidden: Math.max(0, 420 - per[d.id])})), zones: this.zones(), restart: false}; }};
+  function layoutInfo() {
+    return {doc: Object.assign({}, LAY.doc), zones: LAY.zones(), shapes: [], canvas: {g1: [W, H]}, testing: LAY.testing, mapping: false,
+      devices: DEVS.map(d => ({id: d.id, name: d.name, type: 'twinkly', n: 420, enabled: DEV_ON[d.id] !== false, connected: true, drawn: false,
+        shape: {kind: 'grid', w: 20, h: H, pts: Array.from({length: 420}, (_, i) => { const c = Math.floor(i / H), r = c % 2 ? H - 1 - (i % H) : i % H; return [Math.round(c / 19 * 1e4) / 1e4, Math.round(r / (H - 1) * 1e4) / 1e4]; })}}))};
+  }
 
   // ======================================================================= the router
   async function handle(method, path, q, b) {
@@ -1241,17 +1642,17 @@
     if (method === 'GET') {
       switch (path) {
         case '/api/status': return {json: status()};
-        case '/api/catalog': return {json: CAT};
+        case '/api/catalog': return {json: Object.assign({}, CAT, {holiday_cal: holCal()})};
         case '/api/frames': return {json: {groups: [{id: 'g1', name: 'Main', w: W, h: H, gw: W, gh: H, shape: null, rgb: paint(),
           devices: DEVS.map(d => ({id: d.id, name: d.name, x0: d.x0, x1: d.x0 + 19, y0: 0, y1: H - 1}))}]}};
         case '/api/frame': { const rgb = paint(); return {json: {w: W, h: H, rgb: rgb.match(/.{6}/g)}}; }
         case '/api/uiver': return {json: {v: 1}};
-        case '/api/license': return {json: {licensed: true, owner: false, pro: true, plan: 'pro', key: 'GLOWBOP-DEMO', message: '', buy: '/pricing.html', buy_pro: '/pricing.html#pro'}};
+        case '/api/license': return {json: {licensed: true, owner: false, pro: PRO, plan: PRO ? 'pro' : 'home', key: PRO ? 'GBPRO-DEMO' : 'GLOWBOP-DEMO', message: '', buy: '/pricing.html', buy_pro: '/pricing.html#pro'}};
         case '/api/link': return {json: {link: 'http://192.168.0.42:8787'}};
         case '/api/lights': return {json: lightsInfo()};
         case '/api/music': return {json: musicState()};
         case '/api/media': return {json: {available: false, title: null}};
-        case '/api/songinfo': { const t = M.queue[M.idx]; return {json: {keys: {lastfm: true, getsongbpm: true}, current: t ? {title: t.title, artist: t.artist, genres: ['synthwave', 'dance', 'electronic'], bpm: BPM, key: 'A minor', style: 'dance'} : null}}; }
+        case '/api/songinfo': return {json: {keys: {lastfm: true, getsongbpm: true}, current: songInfoNow()}};
         case '/api/text': return {json: {state: Object.assign({}, TX.s), presets: TX.presets.map(p => Object.assign({}, p, {logo: undefined}))}};
         case '/api/score': return {json: scoreInfo()};
         case '/api/score/teams': { const lg = q.get('league') || 'nfl', ts = TEAMS[lg];
@@ -1274,10 +1675,34 @@
         case '/api/music/recent': return {json: {played_here: M.recent, youtube: []}};
         case '/api/music/library': return {json: {signed_in: false, signin_ok: false, account: null, playlists: [], favorites: FAVS}};
         case '/api/music/family': return {json: {family: [], how: 'auto', auto: [pickOne(Object.keys(CAT.looks))], looks: Object.keys(CAT.looks)}};
+        case '/api/autoloops': case '/api/scenes': case '/api/cues': case '/api/tempo': case '/api/zones': case '/api/palettes': case '/api/prodj':
+          return {json: pdInfo(path.slice(5))};
+        case '/api/midi': return {json: midiFull()};
+        case '/api/midi/monitor': return {json: Object.assign({}, ENG.midi.monitor, {seq: 0, items: []})};
+        case '/api/midi/capture': return {json: {text: ''}};
+        case '/api/layout': return {json: layoutInfo()};
+        case '/api/layout/zones': return {json: {zones: LAY.zones(), shapes: []}};
       }
     } else {
       switch (path) {
         case '/api/control': return control(b);
+        case '/api/autoloops': case '/api/scenes': case '/api/cues': case '/api/tempo': case '/api/zones': case '/api/palettes': case '/api/prodj':
+          return pro(() => pdPost(path.slice(5), b));
+        case '/api/songinfo': { const t = M.queue[M.idx]; if (!t) return {status: 409, json: {error: 'no song is playing'}};
+          const st = String(b.style || 'auto'); if (st === 'auto') delete STY_PICK[t.artist]; else STY_PICK[t.artist] = st;
+          return {json: {ok: true, current: songInfoNow()}}; }
+        case '/api/midi': return midiPost(b);
+        case '/api/midi/relay': return ok({out: []});
+        case '/api/midi/report': setTimeout(() => toast('Demo: nothing was sent. On the GlowBop app the test goes straight to support'), 2600); return ok({sent: true, ticket: 'GB-DEMO'});
+        case '/api/layout/save': return {json: LAY.save(b)};
+        case '/api/layout/photo': LAY.photo = b.data || null; LAY.doc.photo = !!b.data;
+          if (b.data) setTimeout(() => toast('📷 In the demo the photo stays in this browser tab'), 1800); return ok({photo: !!b.data});
+        case '/api/layout/test': if (b.off) { LAY.testing = false; return ok(); }
+          LAY.testing = true; LINEUP.on = true; LINEUP.until = now() + 8; setTimeout(() => { LINEUP.on = false; }, 8000);
+          return ok({steps: Math.max(1, (LAY.doc.items || []).filter(i => !b.item || i.id === b.item).length)});
+        case '/api/layout/preview': return ok({items: []});
+        case '/api/map2/level': case '/api/map2/start': case '/api/map2/show': case '/api/map2/finish': return LAPTOP('camera mapping');
+        case '/api/map2/cancel': return ok();
         case '/api/faders': return pro(() => Object.assign(fadersInfo(), {ok: true, changed: fadersSet(b)}));
         case '/api/override': return pro(() => { const ch = ovSet(b); return Object.assign(ovInfo(), {ok: true, changed: ch}); });
         case '/api/loops': return pro(() => { const ch = loopsSet(b); return Object.assign(loopsInfo(true), {ok: true, changed: ch}); });
@@ -1364,7 +1789,11 @@
   try { if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia = () => { setTimeout(() => toast('💻 In the demo, camera mapping needs the GlowBop laptop app'), 80);
     return Promise.reject(new Error('needs the GlowBop laptop app')); }; } catch (e) {}
   try { if (navigator.requestMIDIAccess) navigator.requestMIDIAccess = () => { setTimeout(() => toast('💻 In the demo, DJ controllers need the GlowBop laptop app'), 80);
-    return Promise.resolve({inputs: new Map(), onstatechange: null}); }; } catch (e) {}
+    return Promise.resolve({inputs: new Map(), outputs: new Map(), onstatechange: null}); }; } catch (e) {}
+  // ✏️ the layout editor draws its photo from /api/layout/photo: in the demo the photo lives in this tab (a data: URL) instead
+  try { const ih = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    Object.defineProperty(Element.prototype, 'innerHTML', {configurable: true, enumerable: ih.enumerable, get() { return ih.get.call(this); },
+      set(v) { if (typeof v === 'string' && v.indexOf('/api/layout/photo') >= 0) v = v.replace(/\/api\/layout\/photo\?t=\d+/g, LAY.photo || 'data:,'); ih.set.call(this, v); }}); } catch (e) {}
 
   // the phone-link QR code and other app images live on the laptop: the demo shows its own little picture instead of a broken image
   try { const d = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
@@ -1375,6 +1804,7 @@
       set(v) { if (/^\/api\/qr\.svg/.test(String(v))) v = QR; else if (/^\/api\//.test(String(v))) v = ''; d.set.call(this, v); }}); } catch (e) {}
 
   window.__demoWall = () => ({clip: lastSrc.clip || lastSrc.kind || '', label: lastSrc.label || ''});   // handy for tests
+  window.__demoPads = () => DJ.pfx.map(p => p.k);                                                       // one-shot pads on the wall right now (tests)
 
   // ======================================================================= start
   function boot() {
@@ -1386,7 +1816,7 @@
     TX.presets = [{name: 'HAPPY BIRTHDAY JACK', kind: 'text', text: 'HAPPY BIRTHDAY JACK *', mode: 'scroll', color: 'rainbow'}, {name: 'LETS DANCE', kind: 'text', text: 'LETS DANCE', mode: 'beat', color: 'look'}];
     FD.s = JSON.parse(JSON.stringify(FEEDS0));
     S.effect = pickOne(CAT.looks[S.look].mid);
-    BPM = songBpm(M.queue[M.idx]); M.posAt = now(); showsSeed();
+    BPM = songBpm(M.queue[M.idx]); M.posAt = now(); showsSeed(); pdSeed(); S.cameos = true;
     ['look-neon-party', 'live-storm'].forEach(loadClip);
     setInterval(tick, 250);
     log('pretend engine running: ' + Object.keys(CLIPS).length + ' recorded clips, ' + Object.keys(CAT.looks).length + ' looks');

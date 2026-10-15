@@ -1,12 +1,17 @@
 /* 🎧 DJ page: play the lights by hand. Talks to POST /api/dj (dj.py on the laptop).
    Hit pads land on the next beat. Build: hold to wind up, let go to drop. Cue: the next look comes in on the next drop.
-   Tap tempo, crowd lines, and a USB / Bluetooth DJ controller (Web MIDI, laptop browser) that can play any pad. */
+   Tap tempo, crowd lines, and a DJ controller card (controllers are read by the engine: midi.js + midihub.py). */
 (function () {
   'use strict';
   const {$, esc} = GB;
   const dj = b => GB.post('/api/dj', GB.withGroup(b));
   const PADS = [['drop', 'burst', 'Drop', 'var(--pink)'], ['strobe', 'bolt', 'Strobe', 'var(--cyan)'], ['flash', 'sun', 'Flash', 'var(--gold)'],
-                ['fire', 'fire', 'Fire burst', 'var(--orange)'], ['confetti', 'confetti', 'Confetti', 'var(--lav)'], ['blackout', 'dark', 'Blackout', 'var(--peri)']];
+                ['fire', 'fire', 'Fire burst', 'var(--orange)'], ['confetti', 'confetti', 'Confetti', 'var(--lav)'], ['blackout', 'dark', 'Blackout', 'var(--peri)'],
+                // one-shots drawn by padfx.py. Icons: the ICON[...] name if core.js has it, else the closest existing one
+                ['sweep', ['sweep', 'wind'], 'Sweep', 'var(--lime, #b6ff3d)'], ['shockwave', ['shockwave', 'album'], 'Shockwave', 'var(--violet)'],
+                ['colorbomb', ['colorbomb', 'palette'], 'Color bomb', 'var(--amber)'], ['lightning', ['lightning', 'bolt'], 'Lightning', '#8fb4ff'],
+                ['countdown', ['count321', 'recent'], '3-2-1', 'var(--orchid)'], ['heartbeat', ['heart', 'star'], 'Heartbeat', 'var(--red)']]
+    .map(p => { const ic = Array.isArray(p[1]) ? (p[1].find(n => (GB.ICON || {})[n]) || p[1][p[1].length - 1]) : p[1]; return [p[0], ic, p[2], p[3]]; });
   // crisp skip icons (iOS turns ◀ ▶ into emoji triangles): double chevrons in the coloured circle, a swatch for looks, a sparkle for effects
   const svg = (body, sw) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 2.4}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
   const SK = {
@@ -17,7 +22,7 @@
   };
   const LINES = ['HANDS UP', 'JUMP', 'MAKE SOME NOISE', "LET'S GO", 'ONE MORE', 'PUT YOUR LIGHTS UP', 'DROP IT', 'SING IT'];
   GB.css(`
-  .dj-pads { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+  .dj-pads { grid-template-columns:repeat(3, minmax(0, 1fr)); }   /* 12 pads: 3 across on a phone, 4 on a tablet, 6 on a wide screen */
   .dj-pads .tile { min-height:92px; font-size:calc(16px * var(--fs, 1)); }
   .dj-pads .tile .em { font-size:calc(32px * var(--fs, 1)); }
   /* 🎨 every pad wears its own colour: tinted glass, glowing rim, coloured label; a hit floods it solid */
@@ -38,7 +43,10 @@
   .dj-pads .tile { min-width:0; padding:10px 4px; letter-spacing:.5px; }
   .dj-pads .tile .nm { display:block; max-width:100%; overflow-wrap:anywhere; hyphens:manual; }
   #djPadsPanel { container-type:inline-size; }
-  @container (min-width: 640px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
+  @container (min-width: 500px) { .dj-pads { grid-template-columns:repeat(4, minmax(0, 1fr)); } }
+  @container (min-width: 900px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
+  @container (max-width: 420px) { .dj-pads { grid-auto-rows:1fr; } .dj-pads .tile { min-height:80px; padding:8px 3px; letter-spacing:0; font-size:min(calc(14.5px * var(--fs, 1)), 5.2cqi); }
+    .dj-pads .tile .nm { overflow-wrap:normal; word-break:keep-all; } .dj-pads .tile .em { font-size:calc(28px * var(--fs, 1)); } }
   .dj-skip { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; margin-top:10px; }
   .dj-skip .btn { min-height:58px; padding:6px 4px; font-size:calc(14px * var(--fs, 1)); letter-spacing:1px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; line-height:1.1; touch-action:manipulation;
     color:color-mix(in srgb, var(--c) 50%, #fff); border:2px solid color-mix(in srgb, var(--c) 70%, transparent); border-radius:22px 22px 22px 22px;
@@ -62,7 +70,7 @@
   const snap = () => GB.store.get('gb_dj_snap', '0') === '1';
   async function hit(k, src) {
     const st = (GB.status || {}).dj || {};
-    const b = document.querySelector(`#djPads [data-k="${k}"]`); if (b) { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); }
+    document.querySelectorAll(`.dj-pads [data-k="${k}"]`).forEach(b => { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); });
     if (k === 'blackout') { const on = !st.blackout; if (await dj({hit: 'blackout', on})) GB.toast(on ? '⬛ Blackout (tap again to bring it back)' : '💡 Lights back'); }
     else { GB.sfx('on'); if (await dj({hit: k, snap: snap()}) && src !== 'midi' && snap()) GB.toast(PADS.find(p => p[0] === k)[2] + ' on the next beat'); }
   }
@@ -90,14 +98,25 @@
         : 'Instant: pads fire the moment you touch them. Turn on Snap to beat to land every hit on the next beat. Blackout holds the wall dark until you tap it again.'; };
     el.querySelector('#djSnap').onclick = () => { GB.store.set('gb_dj_snap', snap() ? '0' : '1'); paintSnap(); GB.sfx('tap'); GB.toast(snap() ? '🥁 Snap to beat on' : '⚡ Instant hits'); };
     paintSnap();
+    buildPads(el.querySelector('#djPads'));
+  });
+  function buildPads(box) {
     PADS.forEach(([k, em, name, c]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.k = k; b.style.setProperty('--c', c);
       b.innerHTML = `<span class="em">${GB.svg(em)}</span><span class="nm">${name}</span>`;
       b.style.touchAction = 'manipulation';
       b.addEventListener('pointerdown', e => { if (learn || e.button > 0) return; e.preventDefault(); b._pd = Date.now(); hit(k); });  // fire on touch-down
       b.onclick = () => { if (learn || Date.now() - (b._pd || 0) < 800) return; hit(k); };            // keyboard / fallback
-      el.querySelector('#djPads').appendChild(b);
+      box.appendChild(b);
     });
+  }
+  // 🎚️🔁 LIVE BOARD (Pro): the same hit pads, compact, between the faders and the loop banks, so a loop can be recorded right there
+  GB.css(`#djPadsBoard { container-type:inline-size; } #djPadsBoard .dj-pads .tile { min-height:64px; } #djPadsBoard .dj-pads .tile .em { font-size:calc(22px * var(--fs, 1)); }
+  @container (min-width: 500px) { #djPadsBoard .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }`);
+  GB.panel('board', 20, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--red)'); el.id = 'djPadsBoard';
+    el.innerHTML = `<div class="ph"><span>Hit pads</span><span class="r">SAME PADS AS DJ</span></div><div class="tiles dj-pads"></div>`;
+    buildPads(el.querySelector('.dj-pads'));
   });
 
   // ------------------------------------------------------------------ build + tap tempo
@@ -222,53 +241,20 @@
     $('djSayGo').onclick = go; $('djSay').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
   });
 
-  // ------------------------------------------------------------------ DJ controller (Web MIDI: Chrome / Edge on the laptop)
+  // ------------------------------------------------------------------ DJ controller: the engine reads it (midi.js / midihub.py, SETUP > Controllers & Sync)
   GB.panel('dj', 60, el => {
-    el.classList.add('box'); el.style.setProperty('--c', 'var(--violet)');
-    const can = !!navigator.requestMIDIAccess;
-    el.innerHTML = `<div class="ph"><span>DJ controller</span><span class="r" id="djMidiR">${can ? 'NOT CONNECTED' : 'LAPTOP ONLY'}</span></div>
-      <p class="note">${can ? 'Plug in a USB DJ controller or MIDI pad, tap Connect, then teach each pad: tap a pad name here, then hit the button on your controller.'
-        : 'Controllers work in Chrome or Edge on the laptop (open GlowBop there). Phones and iPads can\'t talk to them.'}</p>
-      ${can ? `<button class="btn c wide" id="djMidiGo" style="--c:var(--violet)">Connect a controller</button>
-      <div class="list dj-midi" id="djMap"></div>` : ''}`;
-    if (!can) return;
-    const MAP = JSON.parse(GB.store.get('gb_dj_midi', '{}') || '{}');    // "status:note" -> pad
-    const ACTS = [...PADS.map(p => [p[0], GB.svg(p[1]) + ' ' + GB.esc(p[2])]), ['build', GB.svg('faders') + ' Build (hold)'], ['tap', GB.svg('drum') + ' Tap tempo']];
-    function drawMap() {
-      const box = $('djMap'); box.innerHTML = '';
-      ACTS.forEach(([k, label]) => {
-        const keyFor = Object.keys(MAP).find(x => MAP[x] === k);
-        const it = document.createElement('div'); it.className = 'item'; it.innerHTML = `<div class="tx"><b>${label}</b><small>${learn === k ? 'Hit a button on your controller…' : keyFor ? 'Button ' + esc(keyFor.split(':')[1]) : 'Not set: tap to teach'}</small></div>`;
-        it.onclick = () => { learn = learn === k ? null : k; drawMap(); };
-        box.appendChild(it);
-      });
-    }
-    function onMsg(m) {
-      const [st, note, vel] = m.data; const kind = st & 0xf0; if (kind !== 0x90 && kind !== 0x80 && kind !== 0xb0) return;
-      const id = (kind === 0xb0 ? 'cc' : 'n') + ':' + note, down = (kind === 0x90 || kind === 0xb0) && vel > 0;
-      if (learn && down) { Object.keys(MAP).forEach(x => { if (MAP[x] === learn) delete MAP[x]; }); MAP[id] = learn; GB.store.set('gb_dj_midi', JSON.stringify(MAP)); GB.toast('🎛️ Learned'); learn = null; drawMap(); return; }
-      const act = MAP[id]; if (!act) return;
-      if (act === 'build') dj(down ? {build: true, style: buildStyle()} : {build: false});
-      else if (act === 'tap') { if (down) dj({tap: true}); }
-      else if (down) hit(act, 'midi');
-    }
-    $('djMidiGo').onclick = async () => {
-      try {
-        const acc = await navigator.requestMIDIAccess();
-        const ins = [...acc.inputs.values()]; ins.forEach(i => i.onmidimessage = onMsg);
-        acc.onstatechange = () => [...acc.inputs.values()].forEach(i => i.onmidimessage = onMsg);
-        $('djMidiR').textContent = ins.length ? ins.map(i => i.name).join(', ').toUpperCase().slice(0, 40) : 'NO CONTROLLER FOUND';
-        GB.toast(ins.length ? '🎛️ Controller connected' : 'No controller found. Is it plugged in?');
-      } catch (e) { GB.toast('⚠️ The browser blocked the controller'); }
-    };
-    drawMap();
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--violet)'); el.id = 'djMidiCard';
+    el.innerHTML = `<div class="ph"><span>DJ controller</span><span class="r" id="djMidiR">NOT CONNECTED</span></div>
+      <p class="note">Plug a USB controller into the laptop. GlowBop finds it, offers a ready-made layout, and you can long-press (or right-click) any pad here to teach it a button.</p>
+      <button class="btn c wide" id="djMidiGo" style="--c:var(--violet)">${GB.svg('dj')}<span>Controllers &amp; Sync</span></button>`;
+    el.querySelector('#djMidiGo').onclick = () => GB.go('setup', 'miPanel');
   });
 
   // ------------------------------------------------------------------ live state
   GB.on('status', s => {
     const d = s.dj || {};
     const r = $('djNow'); if (r) r.textContent = d.blackout ? 'BLACKOUT' : d.strobing ? 'STROBING' : (d.queued || []).length ? 'FIRING…' : 'ON THE NEXT BEAT';
-    document.querySelectorAll('#djPads .tile').forEach(b => b.classList.toggle('on', b.dataset.k === 'blackout' && !!d.blackout));
+    document.querySelectorAll('.dj-pads .tile').forEach(b => b.classList.toggle('on', b.dataset.k === 'blackout' && !!d.blackout));
     const c = $('djCue'); if (c) c.textContent = d.cue ? 'CUED: ' + d.cue.toUpperCase() : 'NOTHING CUED';
     document.querySelectorAll('#djLooks .chip').forEach(b => b.classList.toggle('on', b.dataset.v === d.cue));
     const bpm = $('djBpm'); if (bpm) bpm.textContent = d.tap_bpm ? d.tap_bpm + ' BPM' : (s.bpm ? Math.round(s.bpm) + ' BPM' : '–');

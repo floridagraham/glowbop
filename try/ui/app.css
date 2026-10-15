@@ -42,12 +42,26 @@ a { color:var(--cyan); }
 #rail button:active { filter:brightness(1.25); }
 /* 14 keys in 3 groups, sized from the screen height so the whole rail (down to SETUP) is on screen: a key never drops under
    44px (the touch minimum) and MUSIC stays the big one. The tail soaks up whatever height is left. */
-#rail { --rk:clamp(44px, calc((100dvh - 232px) / 14.5), 58px); gap:4px; }
+#rail { --rk:clamp(44px, calc((100dvh - 236px) / 14.5), 58px); gap:4px; }
 #rail button { min-height:0; flex:0 0 var(--rk); }
 #rail button[data-p=music] { flex-basis:calc(var(--rk) * 1.5); }
 #rail .tail { flex:1 0 16px; background:var(--peri); opacity:.55; border-bottom-left-radius:0; }
 #rail .rail-sep { flex:0 0 14px; display:flex; align-items:flex-end; justify-content:flex-end; padding:0 8px 0 0; margin-top:2px; overflow:hidden;
   font:700 9px/1 var(--cond); letter-spacing:1.5px; color:var(--label); opacity:.85; white-space:nowrap; pointer-events:none; }
+/* labels may wrap to two lines (LIVE BOARD on a phone); the text stays bottom-right like every key */
+#rail button .rl { display:block; text-align:right; white-space:normal; overflow-wrap:normal; line-height:.98; max-width:100%; }
+#rail button > .ic { width:1.05em; height:1.05em; margin-left:2px; flex:none; fill:currentColor; }
+/* ⭐ PRO: the section header reads gold and premium, a thin gold rule above it */
+#rail .rail-sep[data-g=pro] { flex-basis:18px; gap:3px; align-items:center; opacity:1; color:var(--gold); position:relative; padding-top:3px;
+  font-size:10px; letter-spacing:2px; text-shadow:0 0 8px color-mix(in srgb, var(--gold) 55%, transparent); }
+#rail .rail-sep[data-g=pro]::before { content:''; position:absolute; left:10px; right:0; top:0; height:2px; background:linear-gradient(90deg, transparent, var(--gold) 30%, #fff1c2 70%, var(--amber)); }
+#rail .rail-sep[data-g=pro] span { background:linear-gradient(90deg, #fff1c2, var(--gold) 45%, var(--amber)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+#rail .rail-sep[data-g=pro] .ic { width:10px; height:10px; fill:var(--gold); flex:none; }
+/* ✨ Home DJ: the one gold PRO key that opens the tour */
+#rail button[data-p=pro] { background:linear-gradient(160deg, #fff4cc 0%, var(--gold) 40%, var(--amber) 100%); opacity:.95; box-shadow:0 0 14px -4px var(--gold); }
+#rail button[data-p=pro].on { opacity:1; box-shadow:inset -6px 0 0 #fff, 0 0 18px -2px var(--gold); }
+/* 🎃 HOLIDAY moved up because one is close: a small dot says why */
+#rail button.soon::before { content:''; position:absolute; top:6px; left:7px; width:7px; height:7px; border-radius:50%; background:#000; opacity:.6; }
 
 #main { grid-area:main; min-width:0; padding:8px 10px 24px 10px; display:flex; flex-direction:column; gap:var(--gap); }
 #view { display:flex; flex-direction:column; gap:var(--gap); min-width:0; }
@@ -74,6 +88,7 @@ a { color:var(--cyan); }
   #rail { --rk:clamp(44px, calc((100dvh - 250px) / 14.5), 60px); gap:5px; }
   #rail button { font-size:calc(17px * min(var(--fs, 1), 1.08)); padding:0 12px 8px 0; }
   #rail .rail-sep { flex-basis:18px; font-size:11px; letter-spacing:2.5px; padding-right:12px; }
+  #rail .rail-sep[data-g=pro] { flex-basis:22px; font-size:12px; letter-spacing:3px; } #rail .rail-sep[data-g=pro] .ic { width:12px; height:12px; }
   #main { padding:12px 18px 28px; }
 }
 /* iPad landscape + the Windows window: wall on the left, page on the right */
@@ -273,3 +288,50 @@ body.wallfull #hd, body.wallfull #rail { z-index:0; }
   .mfad { position:absolute; top:-14px; right:14px; min-height:30px; padding:0 8px; background:#05040a; box-shadow:inset 0 0 0 2px var(--cyan), 0 0 12px -2px var(--cyan); z-index:2; }
 }
 .panel.pro-locked > .ph .r, .panel.pro-preview > .ph .r { visibility:hidden; }
+
+/* ---------------------------------------------------------------- ✨ PRO tour (Home DJ): what Pro DJ adds */
+.pt-hero { background:radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--gold) 20%, transparent) 0%, transparent 55%), radial-gradient(90% 120% at 0% 100%, color-mix(in srgb, var(--amber) 14%, transparent) 0%, transparent 60%), var(--panel); }
+.pt-h { margin:0; font:800 calc(26px * var(--fs, 1))/1.05 var(--cond); letter-spacing:1px; text-transform:uppercase;
+  background:linear-gradient(90deg, #fff4cc, var(--gold) 50%, var(--amber)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.pt-cta { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; }
+.pt-cta .pt-buy { flex:1 1 220px; }
+.pt-buy { background:linear-gradient(160deg, #fff4cc, var(--gold) 45%, var(--amber)) !important; color:#000 !important; box-shadow:0 0 22px -6px var(--gold); }
+.pt-key { appearance:none; background:none; border:0; padding:6px 2px; color:var(--gold); font:700 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; text-decoration:underline; text-underline-offset:3px; cursor:pointer; min-height:44px; }
+.pt-foot .note .pt-key { min-height:0; padding:0; font-size:inherit; text-transform:none; letter-spacing:0; font-family:inherit; }
+.pt-feats { display:grid; grid-template-columns:minmax(0, 1fr); gap:10px; container-type:inline-size; }
+@container (min-width: 640px) { .pt-feats .pt-f { grid-template-columns:auto minmax(0, 1fr) 150px; } }
+.pt-f { display:grid; grid-template-columns:auto minmax(0, 1fr); gap:6px 12px; align-items:start; padding:12px; background:var(--panel); border:1px solid var(--line); border-left:6px solid var(--c); border-radius:0 16px 0 16px; min-width:0; }
+.pt-ic { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; background:var(--c); color:#000; box-shadow:0 0 14px -2px var(--c); }
+.pt-ic .ic { width:24px; height:24px; fill:currentColor; }
+.pt-tx { min-width:0; } .pt-tx b { font:700 calc(18px * var(--fs, 1))/1.1 var(--cond); letter-spacing:1px; text-transform:uppercase; color:var(--c); }
+.pt-tx small { margin-left:8px; font:600 calc(11px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; color:var(--label); text-transform:uppercase; }
+.pt-tx p { margin:4px 0 0; color:var(--dim); font-size:calc(13px * var(--fs, 1)); line-height:1.4; }
+.pt-prev { grid-column:1 / -1; height:54px; border-radius:8px; background:#06050c; border:1px solid var(--line); padding:6px; overflow:hidden; }
+@container (min-width: 640px) { .pt-prev { grid-column:auto; align-self:center; } }
+.pt-tl { position:relative; height:100%; display:flex; flex-direction:column; gap:3px; } .pt-tl i { position:relative; flex:1; background:#14111f; border-radius:3px; }
+.pt-tl b { position:absolute; top:1px; bottom:1px; border-radius:3px; opacity:.9; } .pt-tl u { position:absolute; top:-2px; bottom:-2px; left:47%; width:2px; background:#fff; box-shadow:0 0 6px #fff; }
+.pt-fd { height:100%; display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; } .pt-fd i { position:relative; } .pt-fd i::before { content:''; position:absolute; left:calc(50% - 2px); width:4px; top:0; bottom:0; background:#1d1930; border-radius:2px; }
+.pt-fd b { position:absolute; left:15%; right:15%; height:7px; border-radius:2px; transform:translateY(50%); }
+.pt-lp { height:100%; display:grid; grid-template-columns:repeat(4, 1fr); grid-template-rows:1fr 1fr; gap:4px; }
+.pt-lp i { border-radius:4px; border:1px solid color-mix(in srgb, var(--bc) 60%, transparent); background:color-mix(in srgb, var(--bc) 18%, #0b0914); }
+.pt-lp i.on { background:var(--bc); box-shadow:0 0 10px var(--bc); }
+.pt-ov { height:100%; display:grid; grid-template-columns:repeat(4, 1fr); grid-template-rows:1fr 1fr; gap:4px; } .pt-ov i { border-radius:0 6px 0 6px; border:1px solid #3a3456; }
+.pt-il { height:100%; border-radius:6px; display:grid; place-items:center; background:radial-gradient(60% 90% at 50% 50%, color-mix(in srgb, var(--lav) 55%, #000), #0b0914); animation:ptBreathe 4s ease-in-out infinite; }
+.pt-il span { font:calc(13px * var(--fs, 1)) var(--mono); letter-spacing:2px; color:#fff; text-shadow:0 0 8px var(--lav); }
+@keyframes ptBreathe { 50% { filter:brightness(.6); } }
+@media (prefers-reduced-motion: reduce) { .pt-il { animation:none; } }
+
+/* ---------------------------------------------------------------- 📱 phone + iPad portrait: the page you tapped comes right after
+   the live wall and the mode bar; the readouts (tempo, section, look) drop under it, so MUSIC's controls are on the first screen */
+@media not all and (min-width: 1000px) and (min-aspect-ratio: 1/1) {
+  #main { flex-direction:column; }
+  #view { display:contents; }
+  #view > .panel:first-child { order:1; } #view > .modebar { order:2; } #pages { order:3; } #view > .reads-panel { order:4; }
+}
+@media (max-width: 699px) { #view > .panel:first-child > .seg > .btn { min-height:40px; font-size:calc(14px * var(--fs, 1)); } }
+@media (max-width: 699px) { #muCard .mu-art { width:72px; height:72px; } #muCard .mu-art .ic { width:32px; height:32px; } }
+/* phone: volume on one line (mute key, slider, %), the word VOLUME stays for screen readers */
+@media (max-width: 699px) {
+  #muCard .mu-volrow .lv { grid-template-columns:minmax(0, 1fr) auto; grid-template-areas:"s v"; }
+  #muCard .mu-volrow .lv > span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+}

@@ -90,7 +90,7 @@
 
   // =========================================================== 🖥️ SCREEN MIRROR
   let mirState = null, mirStyle = 'straight', mirArea = 'smart';
-  GB.panel('scenes', 30, el => {
+  GB.panel('scenes', 18, el => {                               // Screen mirror before Describe a scene: used far more often
     el.id = 'mirrorPanel';
     el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
     el.innerHTML = `
@@ -129,13 +129,36 @@
   }
 
   // =========================================================== 🎁 HOLIDAYS
-  let hOpen = null, hLive = null;
+  let hOpen = null, hLive = null, hMore = false;
+  GB.css(`
+  .md-hc { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin:4px 0 10px; min-width:0; }
+  .md-hc .md-hcl { font:600 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:1.2px; text-transform:uppercase; color:var(--label); }
+  .md-hc select { flex:1 1 180px; min-width:0; max-width:100%; }
+  .md-hc small { flex-basis:100%; color:var(--dim); font-size:calc(12px * var(--fs, 1)); }
+  .md-hmore { margin-top:10px; }
+  .md-hdate { margin:2px 0 10px; color:var(--dim); font-size:calc(13px * var(--fs, 1)); }
+  .md-hdate b { color:var(--text); font-family:var(--mono); font-weight:400; }
+  .md-hdate.now b { color:var(--cyan); }
+  `);
+  const hcal = () => (GB.catalog && GB.catalog.holiday_cal && !GB.catalog.holiday_cal.error) ? GB.catalog.holiday_cal : null;
+  const hInfo = k => { const c = hcal(); return (c && c.info && c.info[k]) || {}; };
+  const hName = k => hInfo(k).name || cat()[k].name;
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const fmtDay = iso => { const [y, m, d] = iso.split('-').map(Number), dt = new Date(y, m - 1, d); return DOW[dt.getDay()] + ' ' + MON[m - 1] + ' ' + d + (y !== new Date().getFullYear() ? ', ' + y : ''); };
+  async function hSetCountry(v) {
+    if (!await GB.control({holiday: {country: v}})) return;
+    for (let i = 0; i < 8; i++) {                                          // the engine applies it on its next frame: wait for the saved pick
+      await new Promise(r => setTimeout(r, 250));
+      try { const c = await GB.get('/api/catalog'); GB.catalog.holiday_cal = c.holiday_cal; if (c.holiday_cal && c.holiday_cal.override === (v === 'auto' ? 'auto' : v)) break; } catch (e) {}
+    }
+    const c = hcal(); GB.toast('🌍 Holidays for ' + ((c && c.country_name) || 'everywhere')); renderHolidays();
+  }
   const hex = c => '#' + c.map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('');
   const rgbOf = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16) / 255);
   const cat = () => GB.catalog && GB.catalog.holidays;
   function hState(k) {
     const h = cat()[k], p = h.prefs || {};
-    return {fx: p.fx || h.fx.map(f => f.name), name: p.name || '', team: p.team || [[1, 0.35, 0], [0, 0.55, 0.6]]};
+    return {fx: p.fx || hInfo(k).default_fx || h.fx.map(f => f.name), name: p.name || '', team: p.team || [[1, 0.35, 0], [0, 0.55, 0.6]]};
   }
   async function hSend(k, extra) {
     const st = hState(k), body = Object.assign({key: k, fx: st.fx, name: st.name}, cat()[k].team ? {team: st.team} : {}, extra);
@@ -147,33 +170,62 @@
     el.innerHTML = `
       <div class="ph"><span>Holidays</span><span class="r" id="mdHolLive">PICK ONE</span></div>
       <p class="note">Plays only that holiday's effects, cycling with the music, until you stop it. Tap a holiday to see its options.</p>
+      <div class="md-hc" id="mdHC" hidden><span class="md-hcl">Holidays for</span><select id="mdHCountry" aria-label="Whose holidays to show"></select><small id="mdHCNote"></small></div>
       <div class="tiles md-tiles" id="mdHGrid"><p class="note">Loading…</p></div>
+      <button class="btn sm md-hmore" id="mdHMore" hidden>More holidays from other countries</button>
+      <div class="tiles md-tiles" id="mdHGrid2" hidden></div>
       <div class="md-hp" id="mdHPanel" hidden></div>`;
   });
   function renderHolidays() {
     const g = $('mdHGrid'); if (!g || !cat()) return;
-    const H = cat();
-    g.innerHTML = '';
-    Object.entries(H).forEach(([k, h]) => {
+    const H = cat(), cal = hcal();
+    const mine = cal ? cal.mine.filter(k => H[k]) : Object.keys(H), others = Object.keys(H).filter(k => !mine.includes(k));
+    if (others.includes(hOpen) || others.includes(hLive)) hMore = true;
+    const tile = (k, h) => {
       const b = document.createElement('button'); b.className = 'tile' + (k === hOpen ? ' open' : '') + (k === hLive ? ' on' : '');
-      b.innerHTML = `<span class="em">${esc(h.emoji)}</span><span>${esc(h.name)}</span>` + (k === hLive ? '<span class="md-on">● ON</span>' : '');
+      b.innerHTML = `<span class="em">${esc(h.emoji)}</span><span>${esc(hName(k))}</span>` + (k === hLive ? '<span class="md-on">● ON</span>' : '');
       b.setAttribute('aria-pressed', k === hOpen ? 'true' : 'false');
       b.onclick = () => { hOpen = hOpen === k ? null : k; renderHolidays(); };
-      g.appendChild(b);
-    });
-    const lh = hLive && H[hLive]; $('mdHolLive').textContent = lh ? '● ' + lh.name.toUpperCase() + ' ON' : 'PICK ONE';
+      return b;
+    };
+    g.innerHTML = ''; mine.forEach(k => g.appendChild(tile(k, H[k])));
+    const g2 = $('mdHGrid2'), more = $('mdHMore');
+    more.hidden = !others.length; more.textContent = hMore ? 'Hide other countries' : 'More holidays from other countries';
+    more.onclick = () => { hMore = !hMore; renderHolidays(); };
+    g2.hidden = !hMore || !others.length; g2.innerHTML = ''; if (hMore) others.forEach(k => g2.appendChild(tile(k, H[k])));
+    const hc = $('mdHC'), sel = $('mdHCountry');
+    if (cal) {
+      hc.hidden = false;
+      const want = cal.override === 'auto' ? 'auto' : cal.country;
+      if (sel.dataset.v !== want || !sel.options.length) {
+        sel.innerHTML = `<option value="auto">Auto${cal.source && cal.source !== 'pick' ? ' (' + esc(cal.country_name) + ')' : ' (worldwide)'}</option>` +
+          cal.countries.map(([c, n]) => `<option value="${esc(c)}">${esc(n)}</option>`).join('');
+        sel.value = want; sel.dataset.v = want;
+        sel.onchange = () => hSetCountry(sel.value);
+      }
+      $('mdHCNote').textContent = cal.source === 'pick' ? 'Picked by you.' : cal.source ? 'From your home location (Live feeds settings).' :
+        'Set your home location in Live feeds, or pick a country, to see local holidays. Showing worldwide basics.';
+    } else hc.hidden = true;
+    const lh = hLive && H[hLive]; $('mdHolLive').textContent = lh ? '● ' + hName(hLive).toUpperCase() + ' ON' : 'PICK ONE';
     const pn = $('mdHPanel');
     if (!hOpen || !H[hOpen]) { pn.hidden = true; pn.innerHTML = ''; return; }
     const k = hOpen, h = H[k], st = hState(k), live = hLive === k;
     pn.hidden = false; pn.innerHTML = '';
     const hh = document.createElement('div'); hh.className = 'md-hh';
-    hh.innerHTML = `<span class="em">${esc(h.emoji)}</span><span>${esc(h.name)}</span>`; pn.appendChild(hh);
+    hh.innerHTML = `<span class="em">${esc(h.emoji)}</span><span>${esc(hName(k))}</span>`; pn.appendChild(hh);
+    const inf = hInfo(k);
+    if (inf.date) {
+      const dd = document.createElement('p'); dd.className = 'md-hdate' + (inf.now ? ' now' : '');
+      const ap = cal && cal.approx && cal.approx.includes(k) ? ' (date can vary by a day locally)' : '';
+      dd.innerHTML = inf.now ? `<b>On now</b>${esc(ap)}` : `Next: <b>${esc(fmtDay(inf.date))}</b>, in ${inf.days} day${inf.days === 1 ? '' : 's'}${esc(ap)}`;
+      pn.appendChild(dd);
+    }
     const go = document.createElement('button'); go.id = 'mdHGo';
     go.className = 'btn c wide md-big' + (live ? ' on' : ''); go.style.setProperty('--c', live ? 'var(--orange)' : 'var(--cyan)');
-    GB.lbl(go, live ? 'stop' : 'play', live ? 'Stop ' + h.name : 'Start ' + h.name);
+    GB.lbl(go, live ? 'stop' : 'play', live ? 'Stop ' + hName(k) : 'Start ' + hName(k));
     go.onclick = async () => {
       if (live) { if (await GB.control({holiday: null})) { GB.toast('🎵 Back to the music show'); hLive = null; renderHolidays(); } }
-      else if (await hSend(k, {on: true})) { GB.toast(h.emoji + ' ' + h.name + ' is on'); hLive = k; renderHolidays(); }
+      else if (await hSend(k, {on: true})) { GB.toast(h.emoji + ' ' + hName(k) + ' is on'); hLive = k; renderHolidays(); }
     };
     pn.appendChild(go);
     if (h.name_field) {
@@ -235,8 +287,8 @@
   .md-team label { flex:1 1 0; min-width:0; display:flex; align-items:center; gap:8px; font:600 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; color:var(--label); }
   .md-team input[type=color] { flex:1 1 auto; width:auto; min-width:0; }
   .md-team[hidden] { display:none; }`);
-  GB.panel('fire', 10, el => {
-    el.classList.add('box'); el.style.setProperty('--c', 'var(--orange)');
+  GB.panel('scenes', 5, el => {                                // 🔥 on SCENES, first, above Quick scenes (the old FIRE tab: #fire lands here)
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--orange)'); el.id = 'firePanel';
     el.innerHTML = `
       <div class="ph"><span>Fireplace</span><span class="r"><span class="md-live md-off" id="mdFLive">OUT</span></span></div>
       <p class="note">Fire on the wall, nine ways. Pick a style, a color, and how it moves with the music.</p>
@@ -304,9 +356,9 @@
     go.classList.toggle('on', on);
     document.querySelectorAll('#mdFSty [data-fs]').forEach(x => x.classList.toggle('on', x.dataset.fs === (f.style || 'fireplace')));
     document.querySelectorAll('#mdFCol [data-fc]').forEach(x => x.classList.toggle('on', x.dataset.fc === col));
-    document.querySelectorAll('#pg-fire [data-fd]').forEach(x => x.classList.toggle('on', x.dataset.fd === (f.dance ? '1' : '0')));
-    document.querySelectorAll('#pg-fire [data-fm]').forEach(x => x.classList.toggle('on', x.dataset.fm === (f.mode || 'cozy')));
-    document.querySelectorAll('#pg-fire [data-fb]').forEach(x => x.classList.toggle('on', x.dataset.fb === (f.beat ? '1' : '0')));
+    document.querySelectorAll('#firePanel [data-fd]').forEach(x => x.classList.toggle('on', x.dataset.fd === (f.dance ? '1' : '0')));
+    document.querySelectorAll('#firePanel [data-fm]').forEach(x => x.classList.toggle('on', x.dataset.fm === (f.mode || 'cozy')));
+    document.querySelectorAll('#firePanel [data-fb]').forEach(x => x.classList.toggle('on', x.dataset.fb === (f.beat ? '1' : '0')));
     const tm = $('mdFTeam'); tm.hidden = col !== 'team';
     [['mdFT1', f.team1], ['mdFT2', f.team2]].forEach(([id, v]) => { const i = $(id); if (v && /^#[0-9a-f]{6}$/i.test(v) && document.activeElement !== i && !fireTeamT) i.value = v; });
     const lv = $('mdFLive'); lv.textContent = on ? 'LIT' : 'OUT'; lv.classList.toggle('md-off', !on);
@@ -441,6 +493,7 @@
         ${tg('mdLgBg', 'Remove background', 'Finds a flat background (white or any solid color) and turns it off.')}
         ${tg('mdLgInside', 'Show inside the logo', 'The light show plays only inside the logo shape, with a soft glow round the edge.')}
         ${tg('mdLgSlide', 'Slideshow', 'While the logo is on the wall, rotates through every saved logo.')}
+        ${tg('mdLgSlBuilt', 'Include GlowBop logos', 'Adds the two built-in GlowBop logos to the rotation. Works with no saved logos.')}
         </div>
         <div class="seg md-pinks" id="mdLgEvery"><button class="btn" data-se="8bars">Every 8 bars</button><button class="btn" data-se="1min">1 min</button><button class="btn" data-se="5min">5 min</button></div>
         <p class="note" id="mdLgSlNote"></p>`)}`;
@@ -456,8 +509,10 @@
     $('mdLgInside').onclick = () => { const v = !(TX.state || {}).logo_inside; TX.state.logo_inside = v; renderText();
       sendText({logo_inside: v}, v ? '✨ The show plays inside your logo' : 'Logo drawn normally'); };
     $('mdLgSlide').onclick = () => { const s = TX.state || {}, v = !s.slideshow;
-      if (v && (s.logo_count || 0) < 2) GB.toast('Save 2 or more logos to rotate them');
+      if (v && slideN(s) < 2) GB.toast('Save 2 or more logos to rotate them, or include the GlowBop logos');
       s.slideshow = v; renderText(); sendText({slideshow: v}, v ? '🔁 Slideshow on (while the logo is on the wall)' : 'Slideshow off'); };
+    $('mdLgSlBuilt').onclick = () => { const s = TX.state || {}, v = s.slide_builtin === false;
+      s.slide_builtin = v; renderText(); sendText({slide_builtin: v}, v ? '✨ GlowBop logos are in the slideshow' : 'Slideshow: your saved logos only'); };
     $('mdLgPick').onclick = () => $('mdLgFile').click();
     $('mdLgFile').onchange = () => {
       const f = $('mdLgFile').files[0]; if (!f) return; const img = new Image();
@@ -829,6 +884,8 @@
   }
   /*/LGPROC*/
 
+  // 🖼️ how many logos the slideshow rotates: saved ones + the 2 built-in GlowBop logos (unless switched off)
+  const slideN = s => (s.logo_count || 0) + (s.slide_builtin === false ? 0 : 2);
   function renderText() {
     if (!$('mdWall')) return;
     const s = TX.state || {}, v = showing(), txOn = v === 'text' || v === 'both', lgOn = v === 'logo' || v === 'both';
@@ -847,11 +904,11 @@
     document.querySelectorAll('#pg-text [data-lm]').forEach(b => b.classList.toggle('on', b.dataset.lm === lgMode));
     $('mdLgMdNote').textContent = LM_NOTE[lgMode] || '';
     const setT = (id, on) => { const b = $(id); b.classList.toggle('on', !!on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); };
-    setT('mdLgBoost', lgOpt.boost); setT('mdLgBg', lgOpt.removeBg); setT('mdLgInside', s.logo_inside); setT('mdLgSlide', s.slideshow);
+    setT('mdLgBoost', lgOpt.boost); setT('mdLgBg', lgOpt.removeBg); setT('mdLgInside', s.logo_inside); setT('mdLgSlide', s.slideshow); setT('mdLgSlBuilt', s.slide_builtin !== false);
     document.querySelectorAll('#pg-text [data-se]').forEach(b => b.classList.toggle('on', b.dataset.se === (s.slide_every || '8bars')));
-    $('mdLgEvery').hidden = !s.slideshow;
-    const nl = s.logo_count || 0;
-    $('mdLgSlNote').textContent = s.slideshow ? (nl >= 2 ? `Rotating ${nl} saved logos while the logo is on the wall. Now: ${s.logo_name || '-'}` : `Only ${nl} saved logo${nl === 1 ? '' : 's'}. Save 2 or more to rotate (pick a picture, tap Save logo).`) : (nl ? `${nl} saved logo${nl === 1 ? '' : 's'}. Great for sponsors at a game or business.` : 'Save logos, then rotate them. Great for sponsors.');
+    $('mdLgEvery').hidden = !s.slideshow; $('mdLgSlBuilt').hidden = !s.slideshow;
+    const nl = s.logo_count || 0, bi = s.slide_builtin !== false, ns = slideN(s);
+    $('mdLgSlNote').textContent = s.slideshow ? (ns >= 2 ? `Rotating ${bi ? (nl ? nl + ' saved logo' + (nl === 1 ? '' : 's') + ' + 2 GlowBop logos' : 'the 2 GlowBop logos') : nl + ' saved logos'} while the logo is on the wall. Now: ${s.logo_name || '-'}` : `Only ${nl} saved logo${nl === 1 ? '' : 's'}. Save 2 or more to rotate (pick a picture, tap Save logo), or include the GlowBop logos.`) : (nl ? `${nl} saved logo${nl === 1 ? '' : 's'}. Great for sponsors at a game or business.` : 'Save logos, then rotate them. Great for sponsors.');
     $('mdTxSpeedV').textContent = ($('mdTxSpeed').value / 10).toFixed(1) + 'x';
     const pre = (TX.presets || []).slice().reverse();
     const chips = (box, kind, empty) => {

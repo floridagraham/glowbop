@@ -1,4 +1,4 @@
-/* ⛳🏁🎾🥊 Golf, NASCAR, tennis and UFC board panels (LIVE page): event + status, a top-10 table, tour / series and favorite pickers,
+/* ⛳🏁🎾🥊 Golf, NASCAR, tennis and UFC board panels (SPORTS page, after the team scoreboard; still takeover feeds via /api/feeds): event + status, a top-10 table, tour / series and favorite pickers,
    Show on the wall, and when it last updated. One builder makes both panels so they stay twins. */
 (function () {
   'use strict';
@@ -42,7 +42,7 @@
   function board(cfg) {
     const P = cfg.id;
     GB.panel('score', cfg.order, el => {          // ⛳🏁 lives on the SPORTS page
-      el.classList.add('box'); el.style.setProperty('--c', cfg.color);
+      el.classList.add('box'); el.style.setProperty('--c', cfg.color); el.id = P + 'Panel';   // #golf, #racing, #tennis, #ufc land here
       el.innerHTML = `<div class="ph"><span>${cfg.title}</span><span class="r" id="${P}R">OFF</span></div>
         <div class="bd-ev" id="${P}Ev">Loading…</div>
         <div class="bd-st" id="${P}St"></div>

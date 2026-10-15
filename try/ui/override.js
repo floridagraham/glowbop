@@ -126,9 +126,10 @@
   // ------------------------------------------------------------------ the key grid
   function keyHTML(k, i) {
     const dot = k.kind === 'color';
-    return `<span class="sc">${i + 1}</span><span class="md ${k.mode}">${k.mode === 'latch' ? 'LATCH' : 'HOLD'}</span>
-      <span class="em${dot ? ' dot' : ''}">${dot ? '' : GB.svg(ICON[k.kind] || 'dot')}</span><span class="lb">${esc(k.label)}</span>${k.fade ? `<span class="fdt">${FADE_NAME[k.fade] || k.fade + ' S'}</span>` : ''}`;
+    return `<span class="sc">${i + 1}</span><span class="md ${k.mode}">${k.mode === 'latch' ? 'LATCH' : 'FLASH'}</span>
+      <span class="em${dot ? ' dot' : ''}">${dot ? '' : GB.svg(ICON[k.kind] || 'dot')}</span><span class="lb">${esc(shown(k))}</span>${k.fade ? `<span class="fdt">${FADE_NAME[k.fade] || k.fade + ' S'}</span>` : ''}`;
   }
+  const shown = k => (k.kind === 'crowd' && k.label === 'CROWD') ? 'AUDIENCE' : k.label;   // 🎛️ Pro vocabulary (the engine keeps 'crowd')
   const KC = k => k.kind === 'black' ? '#000' : k.kind === 'white' ? '#ffffff' : k.kind === 'strobe' ? '#f4f2ff' : k.kind === 'logo' ? 'var(--gold)' : k.kind === 'disco' ? 'var(--orchid)' : k.kind === 'crowd' ? 'var(--cyan)' : (k.color || '#fff');
   function buildKeys() {
     const g = $('ovGrid'); if (!g) return;
@@ -136,7 +137,8 @@
     if (g._sig === sig) return paintKeys(); g._sig = sig; g.innerHTML = '';
     K.forEach((k, i) => {
       const b = document.createElement('button'); b.className = 'ov-key'; b.dataset.id = k.id; b.dataset.kind = k.kind; b.style.setProperty('--kc', KC(k));
-      b.setAttribute('aria-label', `${k.label}, ${k.mode === 'latch' ? 'tap on, tap off' : 'hold'}, key ${i + 1}`);
+      b.setAttribute('aria-label', `${shown(k)}, ${k.mode === 'latch' ? 'latch: tap on, tap off' : 'flash: on while held'}, key ${i + 1}`);
+      if (k.kind === 'crowd') b.title = 'Audience: bright beams sweep over the audience (the old CROWD key)';
       b.innerHTML = keyHTML(k, i);
       b.addEventListener('pointerdown', e => { if (e.button > 0) return; e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (er) {} press(k.id, e.pointerId); });
       const up = e => lift(k.id, e.pointerId);
@@ -153,7 +155,7 @@
       const k = keyOf(b.dataset.id); if (!k) return; const on = isOn(k);
       b.classList.toggle('on', on); b.classList.toggle('latched', on && k.mode === 'latch'); b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
-    const n = K.filter(isOn).length, r = $('ovR');
+    const n = K.filter(isOn).length, r = $('ovKeysR');
     if (r) { r.textContent = n ? n + ' ON' : 'NOTHING ON'; r.style.color = n ? 'var(--red)' : ''; }
     const rel = $('ovRelease'); if (rel) rel.disabled = !n;
   }
@@ -165,7 +167,7 @@
     let cfg = {mode: k.mode, fade: k.fade, color: k.color, label: k.label};
     s.innerHTML = `<div><div class="ph" style="--c:var(--lav)"><span>Key ${K.indexOf(k) + 1}: ${esc(k.label)}</span></div>
       <div class="sub">How it works</div>
-      <div class="row" data-g="mode"><button class="btn" data-v="hold">${GB.svg('hand')}<span>Hold</span></button><button class="btn" data-v="latch">${GB.svg('pin')}<span>Latch</span></button></div>
+      <div class="row" data-g="mode"><button class="btn" data-v="hold">${GB.svg('hand')}<span>Flash</span></button><button class="btn" data-v="latch">${GB.svg('pin')}<span>Latch</span></button></div>
       <p class="note" id="ovMNote"></p>
       <div class="sub">Fade in and out</div>
       <div class="row" data-g="fade"><button class="btn" data-v="0">Snap</button><button class="btn" data-v="0.25">0.25 s</button><button class="btn" data-v="1">1 s</button></div>
@@ -176,7 +178,7 @@
       s.querySelectorAll('[data-g] .btn').forEach(b => { const g = b.parentNode.dataset.g; b.classList.toggle('on', String(cfg[g]) === b.dataset.v); b.style.setProperty('--c', 'var(--lav)'); });
       s.querySelectorAll('.ov-sw').forEach(b => b.classList.toggle('on', (cfg.color || '').toLowerCase() === b.dataset.sw));
       if ($('ovCol') && cfg.color) $('ovCol').value = cfg.color;
-      s.querySelector('#ovMNote').textContent = cfg.mode === 'latch' ? 'Tap on, tap off. It stays on until you tap it again or hit Release all.' : 'On while your finger is down. Let go and the show comes back.';
+      s.querySelector('#ovMNote').textContent = cfg.mode === 'latch' ? 'Latch: tap on, tap off. It stays on until you tap it again or hit Release all.' : 'Flash: on while your finger is down. Let go and the show comes back.';
     };
     s.querySelectorAll('[data-g] .btn').forEach(b => b.onclick = () => { const g = b.parentNode.dataset.g; cfg[g] = g === 'fade' ? Number(b.dataset.v) : b.dataset.v; paint(); });
     s.querySelectorAll('.ov-sw').forEach(b => b.onclick = () => { cfg.color = b.dataset.sw; paint(); });
@@ -215,14 +217,14 @@
   // ------------------------------------------------------------------ panels
   GB.panel('ops', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--red)'); el.id = 'ovPanel';
-    el.innerHTML = `<div class="ph"><span>Override keys</span><span class="r" id="ovR">NOTHING ON</span></div>
+    el.innerHTML = `<div class="ph"><span>Override keys</span><span class="r" id="ovKeysR">NOTHING ON</span></div>
       <div class="ov-top"><button class="btn sm" id="ovRelease" disabled>${GB.svg('hand')}<span>Release all</span></button><span class="grow"></span><button class="btn sm" id="ovEdit" style="--c:var(--lav)">${GB.svg('edit')}<span>Edit keys</span></button></div>
       <div class="ov-grid" id="ovGrid"><p class="note">Loading keys…</p></div>
-      <p class="note" id="ovNote">Hold a key and it takes over the whole wall, whatever is playing. Let go and the show comes back. LATCH keys stay on until you tap them again. Several at once: BLACKOUT wins, then WHITE, STROBE, DISCO, HOUSE, the colours, CROWD. On the laptop, keys 1 to 8 work too (0 releases everything).</p>`;
+      <p class="note" id="ovNote">FLASH keys take over the wall while you hold them, whatever is playing. Let go and the show comes back. LATCH keys stay on until you tap them again. Several at once: BLACKOUT wins, then WHITE, STROBE, DISCO, HOUSE, the colours, AUDIENCE. Pick a zone above to aim them at part of the wall. On the laptop, keys 1 to 8 work too (0 releases everything).</p>`;
     $('ovRelease').onclick = releaseAll;
     $('ovEdit').onclick = () => { edit = !edit; $('ovEdit').classList.toggle('on', edit); GB.lbl($('ovEdit'), edit ? 'check' : 'edit', edit ? 'Done' : 'Edit keys'); $('ovGrid').classList.toggle('edit', edit);
       if (edit) GB.toast('✏️ Tap a key to change it'); };
-    GB.proGate(el, 'Override keys', {pitch: 'Big panic buttons that take over the whole wall in one touch: blackout, full white, strobe, house lights, your colours, a disco ball drop and a crowd sweep. Hold or latch, with smooth fades and laptop shortcuts.'});
+    GB.proGate(el, 'Override keys', {pitch: 'Big panic buttons that take over the whole wall in one touch: blackout, full white, strobe, house lights, your colours, a disco ball drop and an audience sweep. Flash or latch, with smooth fades and laptop shortcuts.'});
   });
 
   const IL_LOOKS = [['breathe', 'wind', 'Breathing'], ['text', 'text', 'Words'], ['glow', 'candle', 'Warm glow'], ['look', 'palette', 'A look, slowed']];
@@ -237,7 +239,7 @@
   const ilcfg = async b => { if (await opost({interlude_cfg: b})) GB.sfx('tap'); };
   GB.panel('ops', 20, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)'); el.id = 'ilPanel';
-    el.innerHTML = `<div class="ph"><span>Interlude</span><span class="r" id="ilR">OFF</span></div>
+    el.innerHTML = `<div class="ph"><span>Interlude · Ambient</span><span class="r" id="ilR">OFF</span></div>
       <button class="btn c wide" id="ilBig" style="--c:var(--lav)">${GB.svg('mic')}<span>Start interlude</span></button>
       <p class="il-state" id="ilState"></p>
       <div class="sub">Interlude look</div>
@@ -246,9 +248,9 @@
       <div class="il-row" id="ilLookRow" hidden><select id="ilLook" aria-label="Look for the interlude"></select></div>
       <div class="sub">Coming back</div>
       <div class="seg" id="ilRet">${RET.map(([v, n]) => `<button class="btn" data-v="${v}" style="--c:var(--lav)">${n}</button>`).join('')}</div>
-      <div class="sub">Auto-interlude when the music stops</div>
+      <div class="sub">Auto Ambient: start by itself when the music stops</div>
       <div class="seg" id="ilAuto">${AUTO.map(([v, n]) => `<button class="btn" data-v="${v}" style="--c:var(--lav)">${n}</button>`).join('')}</div>
-      <p class="note">For talking breaks, speeches and changeovers. The wall goes calm and stops following the music, so a mic or silence can't make it twitch. Song Show cues wait, then pick up where the song is. With auto on, silence starts an interlude and the music coming back ends it. Laptop: press I.</p>`;
+      <p class="note">For talking breaks, speeches and changeovers. The wall goes calm and stops following the music, so a mic or silence can't make it twitch. Song Show cues wait, then pick up where the song is. With Auto Ambient on, silence (or talking, if you turn on Speech counts on LOOPS &amp; CUES) starts an interlude and the music coming back ends it. Laptop: press I.</p>`;
     $('ilBig').onclick = toggleIL;
     el.querySelectorAll('#ilLooks .tile').forEach(b => b.onclick = () => ilcfg({look: b.dataset.v}));
     const setText = () => ilcfg({text: $('ilText').value.trim() || 'BE RIGHT BACK'}).then(() => GB.toast('🔤 Interlude words saved'));
@@ -256,7 +258,7 @@
     $('ilLook').onchange = () => ilcfg({look: 'look', look_name: $('ilLook').value});
     el.querySelectorAll('#ilRet .btn').forEach(b => b.onclick = () => ilcfg({ret: b.dataset.v}));
     el.querySelectorAll('#ilAuto .btn').forEach(b => b.onclick = () => ilcfg({auto: +b.dataset.v}));
-    GB.proGate(el, 'Interlude', {pitch: 'One tap for talking breaks, speeches and band changeovers: the wall drifts into a calm, tasteful glow that ignores the mic, then fades back into the show (with a flash or a drop if you like). Can start by itself when the music stops.'});
+    GB.proGate(el, 'Interlude', {pitch: 'Ambient mode, one tap for talking breaks, speeches and band changeovers: the wall drifts into a calm, tasteful glow that ignores the mic, then fades back into the show (with a flash or a drop if you like). Can start by itself when the music stops.'});
   });
   GB.on('catalog', cat => {
     const s = $('ilLook'); if (!s || !cat || !cat.looks) return;
@@ -266,7 +268,7 @@
   function paintIL() {
     if (!IL || !$('ilBig')) return;
     const b = $('ilBig'); b.classList.toggle('on', !!IL.on); GB.lbl(b, IL.on ? 'note' : 'mic', IL.on ? 'Back to the show' : 'Start interlude');
-    $('ilR').textContent = IL.on ? (IL.auto_started ? 'ON · MUSIC STOPPED' : 'ON') : (IL.auto ? 'AUTO AFTER ' + IL.auto + ' S' : 'OFF'); $('ilR').style.color = IL.on ? 'var(--lav)' : '';
+    $('ilR').textContent = IL.on ? (IL.auto_started ? 'ON · MUSIC STOPPED' : 'ON') : (IL.auto ? 'AUTO AMBIENT ' + IL.auto + ' S' : 'OFF'); $('ilR').style.color = IL.on ? 'var(--lav)' : '';
     $('ilState').textContent = IL.on ? 'The wall is in interlude' + (IL.since ? ' since ' + new Date(IL.since * 1000).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) : '') + '. Tap Back to the show when you are ready.' : '';
     $('ilState').hidden = !IL.on;
     document.querySelectorAll('#ilLooks .tile').forEach(t => t.classList.toggle('on', t.dataset.v === IL.look));

@@ -468,8 +468,8 @@
       if (r.licensed && !r.pro && !kb.dataset.seen) { kb.dataset.seen = '1'; kb.open = true; }
     } catch (e) {}
   }
-  GB.panel('setup', 20, el => {
-    el.classList.add('box'); el.style.setProperty('--c', 'var(--gold)');
+  GB.panel('setup', 59, el => {                                  // one-time: low on SETUP, just above Quit (#license and the PRO tour's key link scroll here)
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--gold)'); el.id = 'suLicPanel';
     el.innerHTML = `<div class="ph"><span>License</span></div>
       <p class="note su-now" id="suLicInfo" style="color:var(--text)">–</p>
       <details class="pro-key" id="suLicKeyBox" hidden><summary id="suLicKeySum">Enter a license key</summary>

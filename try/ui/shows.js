@@ -17,7 +17,9 @@
     {id: 'effect', label: 'FX', c: 'var(--lav)', hint: 'lock an effect'},
   ];
   const HITS = {drop: ['burst', 'Drop', 'var(--pink)'], strobe: ['bolt', 'Strobe', '#ffffff'], flash: ['sun', 'Flash', 'var(--gold)'],     // [GB.svg icon, name, colour]
-                fire: ['fire', 'Fire burst', 'var(--orange)'], confetti: ['confetti', 'Confetti', 'var(--lav)'], blackout: ['dark', 'Blackout', 'var(--peri)']};
+                fire: ['fire', 'Fire burst', 'var(--orange)'], confetti: ['confetti', 'Confetti', 'var(--lav)'], blackout: ['dark', 'Blackout', 'var(--peri)'],
+                sweep: ['sweep', 'Sweep', '#b6ff3d'], shockwave: ['shockwave', 'Shockwave', 'var(--violet)'], colorbomb: ['colorbomb', 'Color bomb', 'var(--amber)'],
+                lightning: ['lightning', 'Lightning', '#8fb4ff'], countdown: ['count321', '3-2-1', 'var(--orchid)'], heartbeat: ['heart', 'Heartbeat', 'var(--red)']};
   const SWATCH = ['#ff3d9a', '#ff2040', '#ff7a3d', '#ffcc33', '#b6ff3d', '#3ce08a', '#33d6ff', '#3d6bff', '#9b3dff', '#e45cff', '#ffffff', '#ffb0d0'];
   const LINES = ['HANDS UP', 'JUMP', "LET'S GO", 'MAKE SOME NOISE', 'ONE MORE', 'SING IT', 'DROP IT', 'PUT YOUR LIGHTS UP'];
   const SECCOL = {intro: '#6677ff', quiet: '#6677ff', outro: '#6677ff', groove: '#9b3dff', breakdown: '#33d6ff', build: '#ffb23d', peak: '#ff3d9a', drop: '#ff3d9a', silence: '#2a2540'};

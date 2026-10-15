@@ -12,6 +12,12 @@
   .sh-pads .btn { position:relative; min-height:64px; align-items:flex-end; padding:0 12px 9px; font-size:calc(15px * var(--fs, 1)); line-height:1.05; border-radius:0 18px 0 18px; }
   .sh-pads .btn svg { position:absolute; left:12px; top:10px; margin:0; width:18px; height:18px; }
   .sh-pads .sh-power { grid-column:span 2; }
+  .mu-lights { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 2fr); gap:12px; align-items:center; }
+  .mu-lights .sh-power { min-height:48px; padding:0 12px; font-size:calc(15px * var(--fs, 1)); white-space:nowrap; gap:6px; }
+  .mu-lights .lv { grid-template-columns:auto minmax(0, 1fr) auto; grid-template-areas:"k s v"; }   /* one line: sun icon, slider, % */
+  .mu-lights .lv > span { font-size:0; letter-spacing:0; gap:0; } .mu-lights .lv > span .ic { width:22px; height:22px; margin:0; }
+  @media (max-width: 699px) { .mu-lights { grid-template-columns:minmax(0, .8fr) minmax(0, 1.4fr); gap:8px; } .mu-lights .sh-power { padding:0 8px; font-size:calc(14px * var(--fs, 1)); letter-spacing:.5px; } .mu-lights .lv { gap:4px 6px; } }
+  .mu-lights .sh-power.sh-dead { --c:var(--red) !important; background:#3a0f1c; color:#ffc2cf; box-shadow:inset 0 0 0 2px var(--red), 0 0 14px color-mix(in srgb, var(--red) 45%, transparent); }
   .sh-pads .btn.sh-off { background:var(--dark); color:var(--text); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--c) 45%, transparent); }
   .sh-pads .btn.sh-off svg { color:var(--c); }
   .sh-pads .btn.sh-dead { --c:var(--red) !important; background:#3a0f1c; color:#ffc2cf; box-shadow:inset 0 0 0 2px var(--red), 0 0 14px color-mix(in srgb, var(--red) 45%, transparent); }
@@ -32,7 +38,7 @@
   .sh-effs .sh-none { padding:16px 6px; }
   .sh-fx { display:flex; flex-wrap:wrap; gap:6px; }
   .sh-fx > .btn { flex:1 1 120px; }
-  .sh-fx > #shRelease { flex:3 1 220px; }
+  .sh-fx > #shRelease, .sh-fx > #shRelease0 { flex:3 1 220px; }
   .sh-tiles .tile { min-height:84px; font-size:calc(13px * var(--fs, 1)); }
   .sh-tiles .tile .em { font-size:calc(26px * var(--fs, 1)); }
   .sh-chips .chip { text-transform:capitalize; }
@@ -64,7 +70,7 @@
       <div class="pads sh-pads" id="shPads">
         <button class="btn c sh-power" id="shPower" style="--c:var(--cyan)"></button>
         <button class="btn c" id="shSkip" style="--c:var(--pink)"></button>
-        <button class="btn c" id="shEye" style="--c:var(--amber)"></button>
+        <button class="btn" id="shEye" style="--c:var(--amber)"></button>
         <button class="btn" id="shShuffle" style="--c:var(--lav)"></button>
         <button class="btn" id="shChars" style="--c:var(--orange)"></button>
         <button class="btn c" id="shSurprise" style="--c:var(--peri)"></button>
@@ -72,13 +78,13 @@
     const pads = $('shPads'), pb = pinButton(); pb.id = 'shPin'; pads.appendChild(pb);
     GB.lbl($('shPower'), 'power', 'Power on');
     GB.lbl($('shSkip'), 'next', 'Next effect');
-    GB.lbl($('shEye'), 'eye', 'Eyeball');
+    GB.lbl($('shEye'), 'eye', 'Eyeball on');
     GB.lbl($('shShuffle'), 'shuffle', 'Shuffle off');
     GB.lbl($('shChars'), 'artist', 'Characters off');
     GB.lbl($('shSurprise'), 'sparkle', 'Surprise me');
     $('shPower').onclick = () => GB.control({power: S().power === false});
     $('shSkip').onclick = async () => { if (await GB.control({skip: true})) GB.toast('⏭ Next'); };
-    $('shEye').onclick = async () => { if (await GB.control({cameo: true})) GB.toast('👁️ Watching you'); };
+    $('shEye').onclick = async () => { const on = S().cameos === false; if (await GB.control({cameos: on})) GB.toast(on ? '👁️ Eyeball on' : '🙈 Eyeball off'); };
     $('shChars').onclick = async () => { if (await GB.control({characters: !S().characters})) GB.toast(S().characters ? '🙅 Characters off' : '🕺 Characters on'); };
     $('shShuffle').onclick = async () => { if (await GB.control({shuffle: !S().shuffle})) GB.toast(S().shuffle ? '🎲 Shuffle off' : '🎲 Shuffle on'); };
     $('shSurprise').onclick = async () => { if (await GB.control({surprise: true})) GB.toast('✨ Surprise!'); };
@@ -105,6 +111,12 @@
           <div class="seg" id="shPace"><button class="btn" data-pace="chill">Chill</button><button class="btn" data-pace="normal">Normal</button><button class="btn" data-pace="hype">Hype</button></div></div>
       </div>`;
     el.querySelectorAll('input[type=range]').forEach(GB.paintRange);
+    // 💡 Power + Brightness ride in the Now playing card (right under Light style), so they're on a phone's first screen.
+    // Same buttons, same ids, only moved: everything below keeps driving them.
+    const card = $('muCard'), sty = $('muSty');
+    if (card) { const row = document.createElement('div'); row.className = 'mu-lights'; row.id = 'muLights';
+      row.appendChild($('shPower')); row.appendChild($('shBright').closest('.lv'));
+      card.insertBefore(row, sty ? sty.nextSibling : null); }
     $('shBright').oninput = e => { touched.shBright = Date.now(); $('shBrightV').textContent = e.target.value + '%';
       clearTimeout(brightT); brightT = setTimeout(() => GB.control({brightness: +e.target.value}), 120); };
     $('shBlend').oninput = e => { touched.shBlend = Date.now(); $('shBlendV').textContent = blendTxt(+e.target.value);
@@ -128,8 +140,12 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--amber)');
     el.innerHTML = `
       <div class="ph"><span>Looks</span><span class="r" id="shLookNow"></span></div>
+      <div class="sh-fx" id="shLkRow"><button class="btn c" id="shRelease0" style="--c:var(--cyan)"></button></div>
       <p class="note">A look is a color palette plus a set of effects. Tap one for this song, or turn on <b>Pin</b> to keep it.</p>
       <div class="chips" id="shLooks" style="--c:var(--amber)"><span class="note">Loading looks…</span></div>`;
+    // 📌 Pin / Let it flow first: the two controls you reach for before picking a look (same as under Feature an effect)
+    const pb = pinButton(); pb.id = 'shPin0'; $('shLkRow').insertBefore(pb, $('shRelease0'));
+    GB.lbl($('shRelease0'), 'unlock', 'Let the show flow again'); $('shRelease0').onclick = () => GB.release();
   });
   function renderLooks(cat) {
     const lk = $('shLooks'); if (!lk || !cat || !cat.looks) return; lk.innerHTML = '';
@@ -327,6 +343,7 @@
       const tog = (b, v, ic, name) => { b.classList.toggle('on', v); b.classList.toggle('c', v); b.classList.toggle('sh-off', !v); setLbl(b, ic, name + (v ? ' on' : ' off')); };
       tog($('shShuffle'), !!s.shuffle, 'shuffle', 'Shuffle');
       tog($('shChars'), !!s.characters, 'artist', 'Characters');
+      { const eo = s.cameos !== false; tog($('shEye'), eo, eo ? 'eye' : 'eyeOff', 'Eyeball'); }
       $('shState').textContent = !on ? 'LIGHTS OFF' : (s.locked ? 'LOCKED' : s.held_look ? (s.pinned ? 'PINNED' : 'HELD') : 'FLOWING');
       $('shState').style.color = on ? '' : 'var(--red)';
     }
