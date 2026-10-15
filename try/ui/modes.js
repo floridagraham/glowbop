@@ -57,6 +57,20 @@
   .md-lg canvas { flex:0 0 auto; width:96px; height:100px; background:#000; border-radius:0 14px 0 14px; border:2px solid var(--dark); }
   .md-lg > div { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
   #mdTxText { font:20px var(--mono); letter-spacing:1px; }
+  .md-ba { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+  .md-ba.one { grid-template-columns:minmax(0, 1fr); }
+  .md-ba figure { margin:0; min-width:0; background:#05040a; border:2px solid var(--dark); border-radius:0 14px 0 14px; padding:6px; display:flex; flex-direction:column; gap:4px; }
+  .md-ba figure[hidden] { display:none; }
+  .md-ba figure.sel { border-color:var(--pink); box-shadow:0 0 14px color-mix(in srgb, var(--pink) 35%, transparent); }
+  .md-ba figcaption { display:flex; justify-content:space-between; gap:6px; font:600 12px var(--cond); letter-spacing:1.5px; text-transform:uppercase; color:var(--label); min-width:0; }
+  .md-ba figcaption span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+  .md-ba .md-onw { font:600 10px var(--mono); font-style:normal; letter-spacing:1px; color:#000; background:var(--pink); border-radius:999px; padding:1px 7px; visibility:hidden; flex:0 0 auto; }
+  .md-ba figure.sel .md-onw { visibility:visible; }
+  .md-ba canvas { max-width:100%; display:block; margin:auto; }
+  .md-lgnote { color:var(--green); }
+  .md-lm.seg.wrap > .btn { flex:1 1 30%; padding:0 4px; }
+  @media (max-width: 480px) { .md-lm.seg.wrap > .btn { font-size:14px; letter-spacing:.5px; } }
+  #mdLgEvery[hidden] { display:none; }
   `);
 
   // =========================================================== 🖥️ SCREEN MIRROR
@@ -285,19 +299,27 @@
 
   // =========================================================== 🔤 TEXT & LOGO
   let TX = {state: {}, presets: []}, txMode = 'scroll', txColor = 'look', txLayer = 'over', lgMode = 'still', lgPixels = null, txLive = null;
-  const LG_HINT = 'PNG with a see-through or black background works best.';
+  let lgSrc = null, lgRes = null, lgRz = null, lgOpt = {boost: true, removeBg: true};
+  try { Object.assign(lgOpt, JSON.parse(localStorage.getItem('gb_logo_opts') || '{}')); } catch (e) {}
+  const LG_HINT = 'Any picture works. A flat background is removed for you.';
+  const LM_TIP = {still: 'Logo glows with the beat', pulse: 'Logo punches on every kick', shimmer: 'Logo colors shift each bar',
+    sparks: '✨ Logo builds itself from sparks', wipe: 'Logo wipes in on the beat', drop: '💥 Logo blasts apart on every drop'};
+  const LM_NOTE = {still: 'Glows and breathes with the beat.', pulse: 'Punches bigger on every kick.', shimmer: 'Colors swing round the color wheel each bar.',
+    sparks: 'Builds itself from flying sparks each time it appears, then breathes.', wipe: 'Wipes in left to right on the beat, then holds.',
+    drop: 'Holds, then explodes into particles on every drop and flies back together.'};
   async function loadText() {
     try {
-      TX = await GB.get('/api/text' + (GB.gsel ? '?g=' + encodeURIComponent(GB.gsel) : ''));
+      TX = await GB.get('/api/text?px=1' + (GB.gsel ? '&g=' + encodeURIComponent(GB.gsel) : ''));
+      TX.state = TX.state || {};
       const s = TX.state || {};
       txMode = s.mode || 'scroll'; txColor = s.color || 'look'; txLayer = s.layer || 'over'; lgMode = s.logo_mode || 'still';
       if (s.text && !$('mdTxText').value) $('mdTxText').value = s.text;
       $('mdTxDrop').checked = !!s.drop_flash; if (s.drop_word) $('mdTxDropWord').value = s.drop_word;
       if (s.speed) { $('mdTxSpeed').value = Math.round(s.speed * 10); GB.paintRange($('mdTxSpeed')); }
       if (s.color && s.color.startsWith('#')) { $('mdTxColor').value = s.color; txColor = 'custom'; }
-      if (s.has_logo) $('mdLgName').textContent = '✅ ' + (s.logo_name || 'logo') + ' loaded';
-      else if (!lgPixels) $('mdLgName').textContent = LG_HINT;
-      renderText();
+      if (s.has_logo && !(lgRes && lgRes.name === s.logo_name)) $('mdLgName').textContent = '✅ ' + (s.logo_name || 'logo') + ' loaded';
+      else if (!s.has_logo && !lgPixels) $('mdLgName').textContent = LG_HINT;
+      renderText(); lgPaint();
     } catch (e) {}
   }
   const txColorVal = () => txColor === 'custom' ? $('mdTxColor').value : txColor;
@@ -343,15 +365,31 @@
 
   GB.panel('text', 20, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--pink)');
+    const tg = (id, t, s) => `<button class="md-fx" id="${id}" type="button" aria-pressed="false"><span class="t"><b>${t}</b><small>${s}</small></span><span class="sw"></span></button>`;
     el.innerHTML = `
       <div class="ph"><span>Logo</span><span class="r"><span class="md-live md-off" id="mdLgLive">HIDDEN</span></span></div>
-      <div class="md-lg"><canvas id="mdLgPrev" width="120" height="126" aria-label="Logo preview"></canvas>
+      <div class="md-lg"><canvas id="mdLgPrev" width="192" height="200" aria-label="Your picture"></canvas>
         <div><input type="file" id="mdLgFile" accept="image/*" hidden>
           <button class="btn c" id="mdLgPick" style="--c:var(--violet)">${GB.svg('add')}<span>Choose a picture</span></button>
           <p class="note" id="mdLgName">${LG_HINT}</p></div></div>
-      <p class="note">The picture shrinks to the wall's pixels right here on your phone.</p>
-      <div class="sub">Motion</div>
-      <div class="seg md-pinks"><button class="btn" data-lm="still">Glow</button><button class="btn" data-lm="pulse">Pulse</button><button class="btn" data-lm="shimmer">Color shift</button></div>
+      <div class="md-ba" id="mdLgBA">
+        <figure id="mdLgBeforeF"><figcaption><span>Before</span><i class="md-onw">ON WALL</i></figcaption><canvas id="mdLgBefore" aria-label="Before: plain shrink"></canvas></figure>
+        <figure id="mdLgAfterF"><figcaption><span id="mdLgAfterL">After</span><i class="md-onw">ON WALL</i></figcaption><canvas id="mdLgAfter" aria-label="How the logo looks on the wall"></canvas></figure>
+      </div>
+      <p class="note md-lgnote" id="mdLgNote" hidden></p>
+      <div class="md-fxl">
+        ${tg('mdLgBoost', 'Boost for LEDs', 'Punchier colors, lifts dark colors, thickens thin lines, turns near-black off.')}
+        ${tg('mdLgBg', 'Remove background', 'Finds a flat background (white or any solid color) and turns it off.')}
+      </div>
+      <div class="sub">Entrance &amp; motion</div>
+      <div class="seg wrap md-pinks md-lm"><button class="btn" data-lm="still">Glow</button><button class="btn" data-lm="pulse">Pulse</button><button class="btn" data-lm="shimmer">Color shift</button><button class="btn" data-lm="sparks">Sparks</button><button class="btn" data-lm="wipe">Wipe in</button><button class="btn" data-lm="drop">Drop blast</button></div>
+      <p class="note" id="mdLgMdNote"></p>
+      <div class="md-fxl">
+        ${tg('mdLgInside', 'Show inside the logo', 'The light show plays only inside the logo shape, with a soft glow round the edge.')}
+        ${tg('mdLgSlide', 'Slideshow', 'Rotates through every saved logo, with the entrance above.')}
+      </div>
+      <div class="seg md-pinks" id="mdLgEvery"><button class="btn" data-se="8bars">Every 8 bars</button><button class="btn" data-se="1min">1 min</button><button class="btn" data-se="5min">5 min</button></div>
+      <p class="note" id="mdLgSlNote"></p>
       <div class="pads">
         <button class="btn c" id="mdLgShow" style="--c:var(--pink)"></button>
         <button class="btn c" id="mdLgBoth" style="--c:var(--lav)">${GB.svg('shuffle')}<span>Logo + text</span></button>
@@ -359,30 +397,27 @@
         <button class="btn danger" id="mdLgRemove">${GB.svg('trash')}<span>Remove</span></button>
       </div>`;
     el.querySelectorAll('.md-pinks .btn').forEach(b => b.style.setProperty('--c', 'var(--pink)'));
-    el.querySelectorAll('[data-lm]').forEach(b => b.onclick = () => { lgMode = b.dataset.lm; renderText(); sendText({logo_mode: lgMode}); });
+    el.querySelectorAll('[data-lm]').forEach(b => b.onclick = () => { lgMode = b.dataset.lm; renderText(); sendText({logo_mode: lgMode}, (TX.state || {}).show === 'logo' ? LM_TIP[lgMode] : ''); });
+    el.querySelectorAll('[data-se]').forEach(b => b.onclick = () => { TX.state.slide_every = b.dataset.se; renderText(); sendText({slide_every: b.dataset.se}); });
+    const flip = k => { lgOpt[k] = !lgOpt[k]; try { localStorage.setItem('gb_logo_opts', JSON.stringify(lgOpt)); } catch (e) {}
+      if (lgSrc) { lgRun(); lgSend(false); } else renderText(); };
+    $('mdLgBoost').onclick = () => flip('boost');
+    $('mdLgBg').onclick = () => flip('removeBg');
+    $('mdLgInside').onclick = () => { const v = !(TX.state || {}).logo_inside; TX.state.logo_inside = v; renderText();
+      sendText({logo_inside: v}, v ? '✨ The show plays inside your logo' : 'Logo drawn normally'); };
+    $('mdLgSlide').onclick = () => { const s = TX.state || {}, v = !s.slideshow;
+      if (v && (s.logo_count || 0) < 2) GB.toast('Save 2 or more logos to rotate them');
+      s.slideshow = v; renderText(); sendText(Object.assign({slideshow: v}, v && s.has_logo && s.show !== 'logo' && s.show !== 'both' ? {show: 'logo'} : {}), v ? '🔁 Logo slideshow on' : 'Slideshow off'); };
     $('mdLgPick').onclick = () => $('mdLgFile').click();
     $('mdLgFile').onchange = () => {
       const f = $('mdLgFile').files[0]; if (!f) return; const img = new Image();
       img.onload = () => {
-        const gi = GB.grpInfo() || ((GB.status && GB.status.groups) || [])[0] || {w: 20, h: 21};
-        const W = gi.w || 20, H = gi.h || 21, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
-        g.fillStyle = '#000'; g.fillRect(0, 0, W, H); g.imageSmoothingQuality = 'high';
-        const sc = Math.min(W / img.width, H / img.height), w = img.width * sc, h = img.height * sc; g.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
-        const d = g.getImageData(0, 0, W, H).data, rgb = [];
-        for (let i = 0; i < W * H; i++) {
-          let r = d[i * 4], gg = d[i * 4 + 1], b = d[i * 4 + 2]; const mx = Math.max(r, gg, b);
-          if (mx > 40) { const k = Math.min(2.2, 255 / mx) * 0.85 + 0.15; r = Math.min(255, r * k); gg = Math.min(255, gg * k); b = Math.min(255, b * k); }   // LEDs look best bright
-          else { r = gg = b = 0; }
-          rgb.push(Math.round(r), Math.round(gg), Math.round(b));
-        }
-        lgPixels = rgb;
-        const pc = $('mdLgPrev'), pv = pc.getContext('2d'), st = Math.min(pc.width / W, pc.height / H);
-        pv.fillStyle = '#000'; pv.fillRect(0, 0, pc.width, pc.height);
-        const ox = (pc.width - W * st) / 2, oy = (pc.height - H * st) / 2;
-        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3; pv.fillStyle = `rgb(${rgb[i]},${rgb[i + 1]},${rgb[i + 2]})`; pv.beginPath(); pv.arc(ox + x * st + st / 2, oy + y * st + st / 2, st * 0.43, 0, 6.283); pv.fill(); }
-        const nm = f.name.replace(/\.[^.]+$/, '');
-        $('mdLgName').textContent = nm + ' is ready';
-        sendText({logo: {rgb, w: W, h: H, name: nm.slice(0, 40)}, logo_mode: lgMode, show: 'logo'}, '🖼️ Logo on the wall');
+        const sc = Math.min(1, 480 / Math.max(img.width, img.height)), w = Math.max(1, Math.round(img.width * sc)), h = Math.max(1, Math.round(img.height * sc));
+        const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+        g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, w, h);
+        lgSrc = {data: g.getImageData(0, 0, w, h).data, w, h, name: f.name.replace(/\.[^.]+$/, '').slice(0, 40)};
+        URL.revokeObjectURL(img.src);
+        lgRun(); lgSend(true);
       };
       img.onerror = () => GB.toast('⚠️ Could not read that picture');
       img.src = URL.createObjectURL(f);
@@ -394,9 +429,212 @@
     $('mdLgRemove').onclick = async () => { const s = TX.state || {};
       if (!s.has_logo && !lgPixels) return GB.toast('No logo loaded');
       const show = s.show === 'both' ? 'text' : (s.show === 'logo' ? 'off' : (s.show || 'off'));
-      if (await sendText({logo: null, show}, '🗑️ Logo removed')) { lgPixels = null; $('mdLgFile').value = ''; const c = $('mdLgPrev'); c.getContext('2d').clearRect(0, 0, c.width, c.height); $('mdLgName').textContent = LG_HINT; } };
+      if (await sendText({logo: null, show}, '🗑️ Logo removed')) { lgPixels = null; lgSrc = null; lgRes = null; $('mdLgFile').value = ''; const c = $('mdLgPrev'); c.getContext('2d').clearRect(0, 0, c.width, c.height); $('mdLgName').textContent = LG_HINT; lgPaint(); } };
     $('mdLgSave').onclick = () => { if (!(TX.state || {}).has_logo) return GB.toast('Choose a picture first'); sendText({preset_save: 'logo', name: (TX.state.logo_name || 'Logo')}, '💾 Logo saved'); };
+    window.addEventListener('resize', () => { clearTimeout(lgRz); lgRz = setTimeout(lgPaint, 150); });
+    lgPaint();
   });
+
+  // ---- logo helpers: process the picked picture, draw the LED previews, send it
+  function lgWall() { const gi = GB.grpInfo() || ((GB.status && GB.status.groups) || [])[0] || {w: 20, h: 21}; return [gi.w || 20, gi.h || 21]; }
+  function lgRun() {
+    if (!lgSrc) return;
+    const [W, H] = lgWall();
+    lgRes = lgProcess(lgSrc.data, lgSrc.w, lgSrc.h, W, H, lgOpt); lgRes.W = W; lgRes.H = H; lgRes.name = lgSrc.name;
+    lgPixels = (lgOpt.boost ? lgRes.boost : lgRes.plain).rgb;
+    const pc = $('mdLgPrev'), pv = pc.getContext('2d'), t = lgRes.thumb;           // the cleaned-up picture (checks = removed)
+    pv.clearRect(0, 0, pc.width, pc.height);
+    for (let y = 0; y < pc.height; y += 12) for (let x = 0; x < pc.width; x += 12) { pv.fillStyle = ((x + y) / 12) % 2 ? '#2a2638' : '#1b1826'; pv.fillRect(x, y, 12, 12); }
+    const tc = document.createElement('canvas'); tc.width = t.w; tc.height = t.h; tc.getContext('2d').putImageData(new ImageData(t.data, t.w, t.h), 0, 0);
+    const s = Math.min(pc.width / t.w, pc.height / t.h) * 0.92; pv.imageSmoothingQuality = 'high';
+    pv.drawImage(tc, (pc.width - t.w * s) / 2, (pc.height - t.h * s) / 2, t.w * s, t.h * s);
+    $('mdLgName').textContent = lgSrc.name + ' · ' + W + '×' + H + ' bulbs';
+    lgPaint();
+  }
+  function lgSend(show) {
+    if (!lgRes) return; const v = lgOpt.boost ? lgRes.boost : lgRes.plain;
+    const b = {logo: {rgb: v.rgb, a: v.a, w: lgRes.W, h: lgRes.H, name: lgRes.name}, logo_mode: lgMode};
+    if (show) b.show = (TX.state || {}).show === 'both' ? 'both' : 'logo';
+    sendText(b, show ? '🖼️ Logo on the wall' : (lgOpt.boost ? '⚡ Boost on' : 'Boost off') + ' · ' + (lgOpt.removeBg ? 'background removed' : 'background kept'));
+  }
+  function lgDraw(cv, rgb, W, H) {                                      // the bulbs as glowing dots, like the live wall preview
+    const box = cv.parentElement, bw = Math.max(60, (box.clientWidth || 162) - 12), st = Math.min(bw / W, 210 / H), cssW = Math.round(st * W), cssH = Math.round(st * H);
+    const dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
+    cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px'; const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.fillStyle = '#05040a'; g.fillRect(0, 0, cssW, cssH);
+    const r = st * 0.42;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3;
+      if (rgb && rgb[i] + rgb[i + 1] + rgb[i + 2] > 6) continue; g.fillStyle = '#16121f'; g.beginPath(); g.arc(x * st + st / 2, y * st + st / 2, r * 0.55, 0, 6.283); g.fill(); }
+    if (!rgb) return;
+    g.globalCompositeOperation = 'lighter';
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, R = rgb[i], G = rgb[i + 1], B = rgb[i + 2];
+      if (R + G + B <= 6) continue; const px = x * st + st / 2, py = y * st + st / 2, gr = g.createRadialGradient(px, py, 0, px, py, st * 1.15);
+      gr.addColorStop(0, `rgba(${R},${G},${B},0.42)`); gr.addColorStop(1, `rgba(${R},${G},${B},0)`); g.fillStyle = gr; g.fillRect(px - st * 1.2, py - st * 1.2, st * 2.4, st * 2.4); }
+    g.globalCompositeOperation = 'source-over';
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, R = rgb[i], G = rgb[i + 1], B = rgb[i + 2];
+      if (R + G + B <= 6) continue; const px = x * st + st / 2, py = y * st + st / 2;
+      g.fillStyle = `rgb(${R},${G},${B})`; g.beginPath(); g.arc(px, py, r, 0, 6.283); g.fill();
+      g.fillStyle = `rgba(255,255,255,${0.18 * Math.max(R, G, B) / 255})`; g.beginPath(); g.arc(px - r * 0.2, py - r * 0.25, r * 0.4, 0, 6.283); g.fill(); }
+  }
+  function lgPaint() {
+    if (!$('mdLgBA')) return;
+    const bf = $('mdLgBeforeF'), af = $('mdLgAfterF'), s = TX.state || {}, local = lgRes && (!s.logo_name || s.logo_name === lgRes.name);
+    $('mdLgPrev').style.display = lgRes ? '' : 'none';
+    if (local) {
+      bf.hidden = false; $('mdLgBA').classList.remove('one');
+      $('mdLgAfterL').textContent = 'After';
+      bf.classList.toggle('sel', !lgOpt.boost); af.classList.toggle('sel', !!lgOpt.boost);
+      lgDraw($('mdLgBefore'), lgRes.plain.rgb, lgRes.W, lgRes.H); lgDraw($('mdLgAfter'), lgRes.boost.rgb, lgRes.W, lgRes.H);
+      const n = $('mdLgNote'); n.hidden = !lgRes.notes.length; n.textContent = lgRes.notes.join(' ');
+    } else {
+      bf.hidden = true; $('mdLgBA').classList.add('one'); af.classList.add('sel');
+      $('mdLgAfterL').textContent = TX.logo ? (s.logo_name || 'On the wall') : 'On the wall';
+      const [W, H] = TX.logo ? [TX.logo.w, TX.logo.h] : lgWall();
+      lgDraw($('mdLgAfter'), TX.logo ? TX.logo.rgb : null, W, H);
+      $('mdLgNote').hidden = true;
+    }
+  }
+
+  /*LGPROC*/
+  // 🖼️ Logo -> LED pixels, all on the phone. Pure maths on RGBA bytes so it is testable anywhere.
+  // Returns {plain, boost} (each {rgb:[0-255 x3], a:[0-255]} at W x H), notes, and the cleaned-up source for the thumbnail.
+  function lgProcess(src, sw, sh, W, H, o) {
+    const N = sw * sh, px = new Float32Array(N * 4);
+    for (let i = 0; i < N * 4; i++) px[i] = src[i] / 255;
+    const notes = []; let removed = false, transparent = false;
+    const border = [];
+    for (let x = 0; x < sw; x++) border.push(x, (sh - 1) * sw + x);
+    for (let y = 1; y < sh - 1; y++) border.push(y * sw, y * sw + sw - 1);
+    let clear = 0; for (const i of border) if (px[i * 4 + 3] < 0.5) clear++;
+    if (clear > border.length * 0.3) { transparent = true; notes.push('Using the picture\'s see-through background.'); }
+    else if (o.removeBg) {                                              // flat background? (most of the border is one colour)
+      const buck = new Map(), key = i => ((src[i * 4] >> 4) << 8) | ((src[i * 4 + 1] >> 4) << 4) | (src[i * 4 + 2] >> 4);
+      for (const i of border) if (px[i * 4 + 3] >= 0.5) { const k = key(i); buck.set(k, (buck.get(k) || 0) + 1); }
+      let bk = -1, bn = 0; buck.forEach((n, k) => { if (n > bn) { bn = n; bk = k; } });
+      let br = 0, bg = 0, bb = 0, c = 0;
+      for (const i of border) if (px[i * 4 + 3] >= 0.5 && key(i) === bk) { br += px[i * 4]; bg += px[i * 4 + 1]; bb += px[i * 4 + 2]; c++; }
+      if (c) { br /= c; bg /= c; bb /= c; }
+      const tol = 0.2, dist = i => Math.hypot(px[i * 4] - br, px[i * 4 + 1] - bg, px[i * 4 + 2] - bb);
+      let near = 0, opq = 0; for (const i of border) if (px[i * 4 + 3] >= 0.5) { opq++; if (dist(i) < tol) near++; }
+      if (c && near >= opq * 0.6) {
+        const seen = new Uint8Array(N), st = [];
+        for (const i of border) if (px[i * 4 + 3] >= 0.5 && dist(i) < tol) { seen[i] = 1; st.push(i); }
+        while (st.length) {                                             // flood fill the background in from the edges
+          const i = st.pop(), x = i % sw, y = (i / sw) | 0;
+          if (x > 0 && !seen[i - 1] && dist(i - 1) < tol) { seen[i - 1] = 1; st.push(i - 1); }
+          if (x < sw - 1 && !seen[i + 1] && dist(i + 1) < tol) { seen[i + 1] = 1; st.push(i + 1); }
+          if (y > 0 && !seen[i - sw] && dist(i - sw) < tol) { seen[i - sw] = 1; st.push(i - sw); }
+          if (y < sh - 1 && !seen[i + sw] && dist(i + sw) < tol) { seen[i + sw] = 1; st.push(i + sw); }
+        }
+        let cnt = 0;
+        for (let i = 0; i < N; i++) if (seen[i] || dist(i) < tol * 0.5) { seen[i] = 1; px[i * 4 + 3] = 0; cnt++; }   // + the same colour inside letters (the hole in an O)
+        for (let i = 0; i < N; i++) {                                   // soften the cut edge
+          if (seen[i]) continue; const x = i % sw, y = (i / sw) | 0;
+          const nb = (x > 0 && seen[i - 1]) || (x < sw - 1 && seen[i + 1]) || (y > 0 && seen[i - sw]) || (y < sh - 1 && seen[i + sw]);
+          if (nb) { const d = dist(i); if (d < tol * 2) px[i * 4 + 3] *= Math.min(1, Math.max(0, (d - tol * 0.5) / (tol * 1.5))); }
+        }
+        removed = cnt > N * 0.02 && cnt < N * 0.995;
+        if (!removed) for (let i = 0; i < N; i++) px[i * 4 + 3] = src[i * 4 + 3] / 255;   // took everything (or nothing): undo
+        else {
+          const nm = br > 0.85 && bg > 0.85 && bb > 0.85 ? 'white' : br < 0.15 && bg < 0.15 && bb < 0.15 ? 'black' : 'solid ' + lgHex(br, bg, bb);
+          notes.push('Removed the ' + nm + ' background.');
+        }
+      } else notes.push('No flat background found, so the whole picture is used.');
+    }
+    if (removed || transparent) {                                       // a black logo on a cut-out background: light it up in white
+      let fg = 0, dark = 0;
+      for (let i = 0; i < N; i++) if (px[i * 4 + 3] > 0.5) { fg++; const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+        if (mx < 0.25 || (0.3 * r + 0.59 * g + 0.11 * b < 0.22 && mx - mn < 0.2)) dark++; }
+      if (fg && dark > fg * 0.6) {
+        for (let i = 0; i < N; i++) { const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+          if (mx < 0.35 && mx - mn < 0.15) { const v = 1 - mx * 0.6; px[i * 4] = px[i * 4 + 1] = px[i * 4 + 2] = v; } }
+        notes.push('Dark logo lit in white so the bulbs can show it.');
+      }
+    }
+    // crop to the logo itself so it fills the wall
+    let x0 = 0, y0 = 0, x1 = sw, y1 = sh;
+    if (removed || transparent) {
+      x0 = sw; y0 = sh; x1 = 0; y1 = 0;
+      for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) if (px[(y * sw + x) * 4 + 3] > 0.3) { if (x < x0) x0 = x; if (x >= x1) x1 = x + 1; if (y < y0) y0 = y; if (y >= y1) y1 = y + 1; }
+      if (x1 <= x0) { x0 = 0; y0 = 0; x1 = sw; y1 = sh; }
+    }
+    // resample into a fine grid (S x S samples per bulb), premultiplied, box-filtered
+    const S = 6, GW = W * S, GH = H * S, cw = x1 - x0, ch = y1 - y0, sc = Math.min(GW / cw, GH / ch);
+    const dw = cw * sc, dh = ch * sc, ox = (GW - dw) / 2, oy = (GH - dh) / 2, G = new Float32Array(GW * GH * 4);
+    for (let gy = 0; gy < GH; gy++) {
+      const sy0 = (gy - oy) / sc + y0, sy1 = (gy + 1 - oy) / sc + y0;
+      if (sy1 <= y0 || sy0 >= y1) continue;
+      for (let gx = 0; gx < GW; gx++) {
+        const sx0 = (gx - ox) / sc + x0, sx1 = (gx + 1 - ox) / sc + x0;
+        if (sx1 <= x0 || sx0 >= x1) continue;
+        let ya = Math.max(y0, Math.floor(sy0)), yb = Math.min(y1, Math.max(ya + 1, Math.ceil(sy1))), xa = Math.max(x0, Math.floor(sx0)), xb = Math.min(x1, Math.max(xa + 1, Math.ceil(sx1)));
+        if (yb <= ya) ya = yb - 1; if (xb <= xa) xa = xb - 1;
+        let r = 0, g = 0, b = 0, a = 0, n = 0;
+        for (let y = ya; y < yb; y++) for (let x = xa; x < xb; x++) { const i = (y * sw + x) * 4, al = px[i + 3]; r += px[i] * al; g += px[i + 1] * al; b += px[i + 2] * al; a += al; n++; }
+        const j = (gy * GW + gx) * 4; G[j] = r / n; G[j + 1] = g / n; G[j + 2] = b / n; G[j + 3] = a / n;
+      }
+    }
+    // thin lines? (most of the ink vanishes when shrunk by half a bulb) -> thicken them a little for the boosted version
+    const maxf = (A, ch_, r, fn) => {                                   // separable square max/min filter on one channel
+      const T = new Float32Array(GW * GH), O = new Float32Array(GW * GH);
+      for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { let m = A[(y * GW + x) * ch_]; for (let k = Math.max(0, x - r); k <= Math.min(GW - 1, x + r); k++) m = fn(m, A[(y * GW + k) * ch_]); T[y * GW + x] = m; }
+      for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { let m = T[y * GW + x]; for (let k = Math.max(0, y - r); k <= Math.min(GH - 1, y + r); k++) m = fn(m, T[k * GW + x]); O[y * GW + x] = m; }
+      return O;
+    };
+    const mask = new Float32Array(GW * GH); let fg = 0;
+    for (let i = 0; i < GW * GH; i++) { mask[i] = G[i * 4 + 3] > 0.5 && Math.max(G[i * 4], G[i * 4 + 1], G[i * 4 + 2]) > 0.08 ? 1 : 0; fg += mask[i]; }
+    const er = maxf(mask, 1, S >> 1, Math.min); let keep = 0; for (let i = 0; i < GW * GH; i++) keep += er[i];
+    const thin = fg > 0 && keep < fg * 0.3;
+    let GB2 = G;
+    if (thin && o.boost) {
+      const r = fg < GW * GH * 0.04 ? 3 : 2; GB2 = new Float32Array(GW * GH * 4);
+      const sel = new Float32Array(GW * GH);                            // dilate the bright detail: take the brightest neighbour's colour
+      for (let c = 0; c < 4; c++) { for (let i = 0; i < GW * GH; i++) sel[i] = G[i * 4 + c]; const D = maxf(sel, 1, r, Math.max); for (let i = 0; i < GW * GH; i++) GB2[i * 4 + c] = D[i]; }
+      notes.push('Thin lines thickened so they read on the bulbs.');
+    }
+    const cells = Gr => {                                               // average each bulb's S x S samples
+      const out = [];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        let r = 0, g = 0, b = 0, a = 0;
+        for (let yy = 0; yy < S; yy++) for (let xx = 0; xx < S; xx++) { const j = ((y * S + yy) * GW + x * S + xx) * 4; r += Gr[j]; g += Gr[j + 1]; b += Gr[j + 2]; a += Gr[j + 3]; }
+        const n = S * S; out.push(a > 1e-4 ? [r / a, g / a, b / a, a / n] : [0, 0, 0, 0]);
+      }
+      return out;
+    };
+    const finish = (cl, boost) => {
+      const rgb = [], al = [];
+      for (const [r0, g0, b0, A] of cl) {
+        let r = r0, g = g0, b = b0, af;
+        if (boost) {
+          af = Math.min(1, Math.max(0, (A - 0.12) / 0.38));
+          let [h, s, v] = lgHsv(r, g, b);
+          if (s > 0.2) { s = Math.min(1, s * 1.4 + 0.08); v = Math.max(v, 0.5 + 0.5 * v); }    // lift dark-but-coloured, punch the colour
+          else v = Math.min(1, Math.max(0, (v - 0.5) * 1.3 + 0.5));                           // greys: more contrast
+          [r, g, b] = lgRgb(h, s, v);
+          const mx = Math.max(r, g, b);
+          if (mx > 0.15) { const k = Math.min(2.2, 1 / mx) * 0.85 + 0.15; r = Math.min(1, r * k); g = Math.min(1, g * k); b = Math.min(1, b * k); }
+          if (Math.max(r, g, b) * af < 0.18) af = 0;                   // near-black: an off bulb
+        } else { af = Math.min(1, A); if (Math.max(r, g, b) * af < 0.05) af = 0; }
+        rgb.push(Math.round(r * af * 255), Math.round(g * af * 255), Math.round(b * af * 255)); al.push(Math.round(af * 255));
+      }
+      return {rgb, a: al};
+    };
+    const plainCells = cells(G);
+    const thumb = new Uint8ClampedArray(cw * ch * 4);                   // the cleaned-up picture, for the thumbnail
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) { const i = ((y + y0) * sw + x + x0) * 4, j = (y * cw + x) * 4; for (let c = 0; c < 4; c++) thumb[j + c] = Math.round(px[i + c] * 255); }
+    return {plain: finish(plainCells, false), boost: finish(GB2 === G ? plainCells : cells(GB2), true), notes, removed, transparent, thin, thumb: {data: thumb, w: cw, h: ch}};
+  }
+  function lgHex(r, g, b) { return '#' + [r, g, b].map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join(''); }
+  function lgHsv(r, g, b) {
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0;
+    if (d > 1e-6) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [(h / 6 + 1) % 1, mx > 0 ? d / mx : 0, mx];
+  }
+  function lgRgb(h, s, v) {
+    const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+    return [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][((i % 6) + 6) % 6];
+  }
+  /*/LGPROC*/
 
   function renderText() {
     if (!$('mdTxShow')) return;
@@ -415,6 +653,13 @@
     $('mdTxColor').classList.toggle('on', txColor === 'custom');
     document.querySelectorAll('#pg-text [data-tl]').forEach(b => b.classList.toggle('on', b.dataset.tl === txLayer));
     document.querySelectorAll('#pg-text [data-lm]').forEach(b => b.classList.toggle('on', b.dataset.lm === lgMode));
+    $('mdLgMdNote').textContent = LM_NOTE[lgMode] || '';
+    const setT = (id, on) => { const b = $(id); b.classList.toggle('on', !!on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+    setT('mdLgBoost', lgOpt.boost); setT('mdLgBg', lgOpt.removeBg); setT('mdLgInside', s.logo_inside); setT('mdLgSlide', s.slideshow);
+    document.querySelectorAll('#pg-text [data-se]').forEach(b => b.classList.toggle('on', b.dataset.se === (s.slide_every || '8bars')));
+    $('mdLgEvery').hidden = !s.slideshow;
+    const nl = s.logo_count || 0;
+    $('mdLgSlNote').textContent = s.slideshow ? (nl >= 2 ? `Rotating ${nl} saved logos. Now: ${s.logo_name || '-'}` : `Only ${nl} saved logo${nl === 1 ? '' : 's'}. Save 2 or more to rotate (pick a picture, tap Save).`) : (nl ? `${nl} saved logo${nl === 1 ? '' : 's'}. Great for sponsors at a game or business.` : 'Save logos below, then rotate them. Great for sponsors.');
     $('mdTxSpeedV').textContent = ($('mdTxSpeed').value / 10).toFixed(1) + 'x';
     const box = $('mdTxPresets'); box.innerHTML = '';
     const pre = TX.presets || [];
@@ -443,5 +688,7 @@
     renderFire();
     const hl = s.holiday || null;
     if (hl !== hLive) { hLive = hl; if (hl && !hOpen) hOpen = hl; renderHolidays(); }
+    const tn = s.text && s.text.logo_name;                              // the slideshow moved on: refresh the logo preview
+    if (tn !== undefined && TX.state && TX.state.logo_name !== undefined && tn !== TX.state.logo_name) { TX.state.logo_name = tn; loadText(); }
   });
 })();

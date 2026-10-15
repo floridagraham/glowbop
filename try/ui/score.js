@@ -74,15 +74,7 @@
     P.board = el; el.classList.add('box'); el.style.setProperty('--c', 'var(--violet)');
     el.innerHTML = `<div class="ph"><span>Scoreboard</span><span class="r" id="sbInfo">–</span></div>
       <div class="sb-led" id="sbLed"><span class="sb-tag" id="sbTag">OFF</span><div id="sbBoard"></div></div>
-      <div class="seg" id="sbMode">${MODES.map(([k, t, c]) => `<button class="btn" data-sbm="${k}" style="--c:${c}">${t}</button>`).join('')}</div>
-      <div class="seg wrap" id="sbBoards"><button class="btn" data-sbf="golf" style="--c:var(--green)">⛳ Golf</button><button class="btn" data-sbf="nascar" style="--c:var(--amber)">🏁 Racing</button><button class="btn" data-sbf="tennis" style="--c:var(--lav)">🎾 Tennis</button><button class="btn" data-sbf="ufc" style="--c:var(--red)">🥊 UFC</button></div>`;
-    el.querySelectorAll('[data-sbf]').forEach(b => b.onclick = async () => {        // leaderboards: same keys as their panels below
-      const k = b.dataset.sbf, on = GB.feedsState && GB.feedsState.mode === k;
-      if (await GB.feed(on ? {mode: 'off'} : {feed: k, on: true})) { GB.toast(on ? '🎵 Back to the music show' : ({golf: '⛳ Golf leaderboard on the wall', nascar: '🏁 Racing running order on the wall', tennis: '🎾 Tennis scores on the wall', ufc: '🥊 UFC fight card on the wall'})[k] || 'On the wall'); GB.feedsRefresh(150); refresh(300); }
-      const pn = [...document.querySelectorAll('#pg-score > .panel')].find(x => { const h = x.querySelector('.ph span'); return h && h.textContent.trim().toLowerCase() === ({golf: 'golf', nascar: 'racing', tennis: 'tennis', ufc: 'ufc'})[k]; });
-      if (pn && !on) setTimeout(() => pn.scrollIntoView({behavior: 'smooth', block: 'start'}), 250);
-    });
-    GB.on('feeds', st => el.querySelectorAll('[data-sbf]').forEach(b => b.classList.toggle('on', st.mode === b.dataset.sbf)));
+      <div class="seg" id="sbMode">${MODES.map(([k, t, c]) => `<button class="btn" data-sbm="${k}" style="--c:${c}">${t}</button>`).join('')}</div>`;
     el.querySelectorAll('[data-sbm]').forEach(b => b.onclick = async () => {
       const m = b.dataset.sbm; let ok;
       if (m === 'off') ok = await score({action: 'off'}); else if (m === 'game') ok = await score({action: 'game'});
@@ -190,8 +182,15 @@
       <button class="btn c lg wide" id="sbFollow" style="--c:var(--cyan)">Follow this team</button>
       <div class="read sm" style="--c:var(--cyan)"><span class="k">Status</span><span class="v" id="sbLiveSt" style="white-space:normal;font-size:16px">Pick a league and team.</span></div>
       <p class="note">Scores update every 10 seconds during the game. Every time your team scores, the wall celebrates in their colors.</p>`;
-    $('sbLg').onchange = () => { teamsFor = ''; loadTeams(); };
+    $('sbLg').onchange = () => { teamsFor = ''; loadTeams(); syncBoards(); };
     $('sbFollow').onclick = async () => {
+      const bk = boardKey();
+      if (bk) {                                                       // ⛳🏁🎾🥊 leaderboards: put that board on the wall
+        const on = GB.feedsState && GB.feedsState.mode === bk;
+        if (await GB.feed(on ? {mode: 'off'} : {feed: bk, on: true})) { GB.toast(on ? '🎵 Back to the music show' : BOARDS[bk][1]); GB.feedsRefresh(150); refresh(300); }
+        const pn = boardPanel(bk); if (pn && !on) setTimeout(() => pn.scrollIntoView({behavior: 'smooth', block: 'start'}), 250);
+        return;
+      }
       const t = $('sbTeam'); if (!t.value) return GB.toast('Pick a team');
       const nm = t.options[t.selectedIndex].text;
       if (await score({action: 'live', league: $('sbLg').value, team_id: t.value, team_name: nm})) { GB.toast('📺 Following ' + nm); refresh(300); }
@@ -264,9 +263,23 @@
       <p class="note">Updates every few seconds during a session and once a minute between sessions. The free timing feed can run a little behind TV.</p>`;
   });
 
+  // ------------------------------------------------------------------ golf, racing, tennis and UFC sit in the Live Fan list too
+  const BOARDS = {golf: ['⛳ Golf leaderboard', '⛳ Golf leaderboard on the wall', 'golf'], nascar: ['🏁 Racing: NASCAR & IndyCar', '🏁 Racing running order on the wall', 'racing'],
+                  tennis: ['🎾 Tennis: live matches', '🎾 Tennis scores on the wall', 'tennis'], ufc: ['🥊 UFC fight card', '🥊 UFC fight card on the wall', 'ufc']};
+  const boardKey = () => { const v = ($('sbLg') || {}).value || ''; return v.startsWith('board:') ? v.slice(6) : ''; };
+  const boardPanel = k => [...document.querySelectorAll('#pg-score > .panel')].find(x => { const h = x.querySelector('.ph span'); return h && h.textContent.trim().toLowerCase() === BOARDS[k][2]; });
+  function syncBoards() {
+    const bk = boardKey(), live = P.live && !P.live.hidden, fm = (GB.feedsState || {}).mode;
+    Object.keys(BOARDS).forEach(k => { const pn = boardPanel(k); if (pn) pn.hidden = !((live && bk === k) || fm === k); });
+    const tf = $('sbTeam') && $('sbTeam').closest('label'); if (tf) tf.hidden = !!bk;
+    const f = $('sbFollow'); if (f) f.textContent = bk ? ((fm === bk) ? 'Take it off the wall' : 'Put it on the wall') : 'Follow this team';
+    const st = $('sbLiveSt'); if (st && bk) st.textContent = fm === bk ? 'On the wall now. Settings are just below.' : 'Tap Put it on the wall. Settings are just below.';
+  }
+  GB.on('feeds', () => syncBoards());
+
   // ------------------------------------------------------------------ teams list for Live Fan
   async function loadTeams() {
-    const lg = $('sbLg').value, t = $('sbTeam'); if (!lg || teamsFor === lg) return; teamsFor = lg;
+    const lg = $('sbLg').value, t = $('sbTeam'); if (!lg || teamsFor === lg || lg.startsWith('board:')) return; teamsFor = lg;
     t.innerHTML = '<option value="">Loading teams…</option>';
     try {
       const r = await GB.get('/api/score/teams?league=' + encodeURIComponent(lg)); t.innerHTML = '';
@@ -348,14 +361,14 @@
     if (!SB || !SB.sports || !P.board) return;
     const sp = SB.sports[SB.sport] || {pts: [], per: 'P', periods: 4}, mode = SB.on ? SB.mode : 'off', act = document.activeElement;
     // board + mode
-    P.board.querySelectorAll('[data-sbm]').forEach(x => x.classList.toggle('on', x.dataset.sbm === mode));
+    const bOn = !!BOARDS[(GB.feedsState || {}).mode]; P.board.querySelectorAll('[data-sbm]').forEach(x => x.classList.toggle('on', bOn ? x.dataset.sbm === 'live' : x.dataset.sbm === mode));
     const led = $('sbLed'), tag = $('sbTag'), liveIn = mode === 'live' && SB.live && SB.live.state === 'in';
     led.classList.toggle('off', mode === 'off');
     tag.textContent = mode === 'off' ? 'OFF' : liveIn ? 'LIVE' : 'ON THE WALL'; tag.className = 'sb-tag' + (liveIn ? ' live' : mode !== 'off' ? ' on' : '');
     const html = boardHTML(mode === 'off' ? (SB.mode || 'game') : mode, sp);
     if ($('sbBoard')._h !== html) { $('sbBoard')._h = html; $('sbBoard').innerHTML = html; }
     $('sbInfo').textContent = mode === 'off' ? 'OFF' : mode === 'game' ? (ICON[SB.sport] || '🏆') + ' ' + (sp.name || '') : mode === 'live' ? (SB.leagues[SB.league] || '') : 'F1';
-    P.keys.hidden = P.setup.hidden = mode !== 'game'; P.live.hidden = mode !== 'live'; P.f1.hidden = mode !== 'f1';
+    P.keys.hidden = P.setup.hidden = mode !== 'game'; P.live.hidden = mode !== 'live' && !BOARDS[(GB.feedsState || {}).mode]; P.f1.hidden = mode !== 'f1'; syncBoards();
 
     // sport list + leagues (filled once)
     const sel = $('sbSport'); if (!sel.options.length) Object.entries(SB.sports).forEach(([k, v]) => sel.add(new Option((ICON[k] || '🏆') + '  ' + v.name, k)));
@@ -368,7 +381,9 @@
         if (g) { if (!made[g]) { made[g] = document.createElement('optgroup'); made[g].label = g; lg.appendChild(made[g]); } host = made[g]; }
         host.appendChild(new Option(v, k));
       });
-      lg.value = SB.league;
+      const og = document.createElement('optgroup'); og.label = 'Golf, racing, tennis & UFC'; lg.appendChild(og);
+      Object.entries(BOARDS).forEach(([k, v]) => og.appendChild(new Option(v[0], 'board:' + k)));
+      const fm = (GB.feedsState || {}).mode; lg.value = BOARDS[fm] ? 'board:' + fm : SB.league;
     }
 
     if (mode === 'game') {

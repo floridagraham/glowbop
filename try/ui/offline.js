@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   const GRACE = 5000;                              // how long without an answer before the screen shows
-  let shown = false, since = Date.now(), tries = 0, el = null, raf = 0;
+  let shown = false, since = Date.now(), tries = 0, el = null, raf = 0, shownAt = 0;
 
   GB.css(`
   #offScr { position:fixed; inset:0; z-index:900; background:radial-gradient(120% 80% at 50% 0%, #1a0f2e 0%, #000 70%);
@@ -42,10 +42,11 @@
         <li><b>✨</b><div>GlowBop open on the laptop?<small>Look for the GlowBop icon by the clock. If it's not there, start GlowBop.</small></div></li>
       </ul>
       <div class="look"><i></i><span id="offMsg">Looking for your laptop…</span></div>
-      <div class="row"><button class="btn c" id="offTry" style="--c:var(--cyan)">Try again now</button></div>
+      <div class="row"><button class="btn c" id="offTry" style="--c:var(--cyan)">Try again now</button><button class="btn c" id="offReload" style="--c:var(--lav)">Reload page</button></div>
     </div>`;
     document.body.appendChild(el);
     el.querySelector('#offTry').onclick = () => { tries++; check(true); GB.sfx && GB.sfx('tap'); };
+    el.querySelector('#offReload').onclick = () => location.reload();
   }
 
   // a sleepy little curtain: slow breathing waves of GlowBop colours, with a "z" drifting up now and then
@@ -77,9 +78,18 @@
     shown = on; if (!el) build();
     el.classList.toggle('show', on);
     cancelAnimationFrame(raf);
-    if (on) { tries = 0; raf = requestAnimationFrame(draw); }
-    else if (GB.toast) GB.toast('✨ Back online. Your lights are ready!');
+    if (on) { tries = 0; shownAt = Date.now(); raf = requestAnimationFrame(draw); }
+    else {
+      if (GB.toast) GB.toast('✨ Back online. Your lights are ready!');
+      if (Date.now() - shownAt > 20000) setTimeout(() => location.reload(), 900);   // long outage (laptop restarted): start fresh
+    }
   }
+  // 📱 iPad / iPhone woke up after a long nap: reload so the console reconnects cleanly instead of showing old state
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (hiddenAt && Date.now() - hiddenAt > 10 * 60 * 1000) location.reload(); else check(true);
+  });
 
   async function check(manual) {
     if (manual) { const m = document.getElementById('offMsg'); if (m) m.textContent = 'Knocking on the laptop’s door…'; }

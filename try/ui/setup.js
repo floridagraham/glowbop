@@ -501,6 +501,20 @@
     load();
   });
 
+  // =================================================================== 4b. FIX IT: restart GlowBop from any phone or iPad
+  GB.panel('setup', 45, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--amber)');
+    el.innerHTML = `<div class="ph"><span>Something not working?</span></div>
+      <p class="note" style="margin-top:0">Music won't play, a light dropped off, or a phone won't connect? Restart GlowBop right from here. It takes about 10 seconds and your song picks up where it left off.</p>
+      <div class="seg"><button class="btn c" id="suRestart" style="--c:var(--amber)">🔄 Restart GlowBop</button><button class="btn c" id="suReload" style="--c:var(--lav)">📱 Reload this screen</button></div>`;
+    let armed = 0;
+    $('suRestart').onclick = async () => {
+      if (Date.now() - armed > 4000) { armed = Date.now(); return GB.toast('Tap again to restart GlowBop'); }
+      armed = 0; if (await GB.post('/api/restart', {})) { GB.toast('🔄 Restarting GlowBop… back in a few seconds'); GB.sfx('on'); setTimeout(() => location.reload(), 9000); }
+    };
+    $('suReload').onclick = () => location.reload();
+  });
+
   // =================================================================== 5. HELP & FEEDBACK
   GB.panel('setup', 50, el => {
     el.id = 'helpPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--violet)');

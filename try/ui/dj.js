@@ -23,21 +23,30 @@
 
   // ------------------------------------------------------------------ hit pads
   let learn = null;                                             // pad waiting for a controller button
+  // ⚡ instant by default: a pad fires the moment your finger touches it. Snap to beat (switch) holds it for the next beat.
+  const snap = () => GB.store.get('gb_dj_snap', '0') === '1';
   async function hit(k, src) {
     const st = (GB.status || {}).dj || {};
-    if (k === 'blackout') { const on = !st.blackout; if (await dj({hit: 'blackout', on})) GB.toast(on ? '⬛ Blackout (tap again to bring it back)' : '💡 Lights back'); }
-    else if (await dj({hit: k})) { GB.sfx('on'); if (src !== 'midi') GB.toast(PADS.find(p => p[0] === k)[1] + ' on the next beat'); }
     const b = document.querySelector(`#djPads [data-k="${k}"]`); if (b) { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); }
+    if (k === 'blackout') { const on = !st.blackout; if (await dj({hit: 'blackout', on})) GB.toast(on ? '⬛ Blackout (tap again to bring it back)' : '💡 Lights back'); }
+    else { GB.sfx('on'); if (await dj({hit: k, snap: snap()}) && src !== 'midi' && snap()) GB.toast(PADS.find(p => p[0] === k)[1] + ' on the next beat'); }
   }
   GB.panel('dj', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--red)');
-    el.innerHTML = `<div class="ph"><span>Hit pads</span><span class="r" id="djNow">ON THE NEXT BEAT</span></div>
+    el.innerHTML = `<div class="ph"><span>Hit pads</span><button class="btn" id="djSnap" style="--c:var(--cyan);min-height:34px;padding:4px 14px;font-size:13px"></button></div>
       <div class="tiles dj-pads" id="djPads"></div>
-      <p class="note">Every pad lands on the next beat, so it's always on time. Blackout holds the wall dark until you tap it again.</p>`;
+      <p class="note" id="djSnapNote"></p>`;
+    const paintSnap = () => { const on = snap(); const s = el.querySelector('#djSnap'); s.classList.toggle('on', on); s.textContent = on ? '🥁 SNAP TO BEAT: ON' : '⚡ INSTANT';
+      el.querySelector('#djSnapNote').textContent = on ? 'Snap to beat: every pad waits for the next beat, so it always lands on time. Blackout holds the wall dark until you tap it again.'
+        : 'Instant: pads fire the moment you touch them. Turn on Snap to beat to land every hit on the next beat. Blackout holds the wall dark until you tap it again.'; };
+    el.querySelector('#djSnap').onclick = () => { GB.store.set('gb_dj_snap', snap() ? '0' : '1'); paintSnap(); GB.sfx('tap'); GB.toast(snap() ? '🥁 Snap to beat on' : '⚡ Instant hits'); };
+    paintSnap();
     PADS.forEach(([k, em, name, c]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.k = k; b.style.setProperty('--c', c);
       b.innerHTML = `<span class="em">${em}</span>${name}`;
-      b.onclick = () => { if (learn) return; hit(k); };
+      b.style.touchAction = 'manipulation';
+      b.addEventListener('pointerdown', e => { if (learn || e.button > 0) return; e.preventDefault(); b._pd = Date.now(); hit(k); });  // fire on touch-down
+      b.onclick = () => { if (learn || Date.now() - (b._pd || 0) < 800) return; hit(k); };            // keyboard / fallback
       el.querySelector('#djPads').appendChild(b);
     });
   });
@@ -50,7 +59,7 @@
       <p class="note">Hold it: the wall winds up, brighter and faster. Let go: it drops. Slide your finger off the key to cancel.</p>`;
     const b = $('djBuild'); let held = false;
     const start = e => { e.preventDefault(); if (held) return; held = true; b.classList.add('held'); b.textContent = 'BUILDING… LET GO TO DROP'; dj({build: true}); GB.sfx('nav'); };
-    const end = (cancel) => { if (!held) return; held = false; b.classList.remove('held'); b.textContent = 'HOLD TO BUILD'; dj({build: false, cancel: !!cancel}); if (!cancel) GB.sfx('ok'); };
+    const end = (cancel) => { if (!held) return; held = false; b.classList.remove('held'); b.textContent = 'HOLD TO BUILD'; dj({build: false, cancel: !!cancel, snap: snap()}); if (!cancel) GB.sfx('ok'); };
     b.addEventListener('pointerdown', start); b.addEventListener('pointerup', () => end(false));
     b.addEventListener('pointerleave', () => end(true)); b.addEventListener('pointercancel', () => end(true));
     b.addEventListener('contextmenu', e => e.preventDefault());
