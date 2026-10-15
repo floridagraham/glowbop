@@ -466,6 +466,16 @@ SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('s
         ('wave-serpent', 'Serpent'), ('fx-laserweb', 'Laser web'), ('fx-tesseract', 'Tesseract'), ('fx-volcano', 'Volcano'),
         ('look-synthwave', 'Synthwave'), ('live-nascar', 'NASCAR live'), ('score-baseball', 'Baseball live'), ('live-overhead', 'Planes overhead'),
         ('score-f1', 'F1 live timing'), ('score-soccer', 'Soccer: GOAL!'), ('score-basketball', 'Basketball live'), ('score-football', 'Football live')]
+PROSEC = '''<section id="pro-dj"><div class="wrap"><div class="center"><span class="eyebrow">GlowBop Pro DJ</span><h2>Play the lights like an <span class="grad">instrument</span></h2>
+<p class="lead">Everything above, plus the tools working DJs, clubs, churches and venues ask for.</p></div>
+<div class="grid g3" style="margin-top:30px">
+<div class="card reveal"><div class="em">🎬</div><h3>Song Shows</h3><p>A timeline for every song. Auto-draft writes a full show in one tap, then you drag, stretch and tweak looks, hits, colors, brightness, text and effects cue by cue. Or record your DJ pads live straight into the song.</p></div>
+<div class="card reveal"><div class="em">🎚️</div><h3>Fader board</h3><p>Master, speed, beat-locked strobe, color, white and trails on big touch faders. Two fingers move two faders at once on an iPad, with hold keys for blackout, full white, rainbow and freeze.</p></div>
+<div class="card reveal"><div class="em">⛔</div><h3>Override keys</h3><p>Nine big keys that take over the whole wall in any mode: blackout, white, strobe, house lights, color washes and a crowd sweep. Hold or latch, with fades and laptop shortcuts.</p></div>
+<div class="card reveal"><div class="em">☕</div><h3>Interlude mode</h3><p>Talking break or band change? One tap drifts the wall into a calm glow or a "be right back" message that ignores the mic, then fades the show back in on cue.</p></div>
+<div class="card reveal"><div class="em">🔁</div><h3>Loop banks</h3><p>Record a 1 to 8 bar phrase of light hits and fire it back locked to the beat, over any song. Starter loops included, with a step editor for fine tuning.</p></div>
+<div class="card reveal"><div class="em">🎛️</div><h3>Built for gigs</h3><p>Safe by design: held keys let go by themselves if the Wi-Fi drops, so the wall never gets stuck. From $14.99 a month or $599 once.</p><p><a class="btn primary small" href="/pricing.html#pro">See Pro DJ pricing</a></p></div>
+</div></div></section>'''
 features = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Features</span><h1>Everything <span class="grad">GlowBop</span> can do</h1>
 <p class="lead">A music light show, a holiday display, a scoreboard, live feeds and a sign, all run from one light-show console. Every section links to the step-by-step guide.</p></div></header>
 <section class="tight" style="padding-top:0"><div class="wrap">
@@ -475,6 +485,7 @@ features = f'''<header class="pagehead"><div class="wrap center"><span class="ey
   <div class="toc" style="justify-content:center;margin-top:26px">{''.join(f'<a href="#{slug(e)}">{e}</a>' for _, _, e, _, _, _, l, _ in F2)}</div>
 </div></section>
 <section style="padding-top:20px"><div class="wrap">{''.join(feat(i, *f) for i, f in enumerate(F2))}</div></section>
+{PROSEC}
 {band()}'''
 # make anchors match toc (feat ids come from the link)
 page('/features.html', 'Features · GlowBop', 'The GlowBop console, music show with drop detection, Big Wave, live feeds, 3D shapes, 34 looks, holiday mini-movies, scoreboards with live stats, F1, text, logos, screen mirror and walls of up to 8 curtains.', features, '/features.html')
