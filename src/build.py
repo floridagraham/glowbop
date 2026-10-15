@@ -178,7 +178,7 @@ home = f'''
     <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="#try" style="--c:var(--cyan)">🎛️ Try the console</a></div>
     <div class="stats"><div><b>200+</b>effects</div><div><b>34</b>looks</div><div><b>6</b>live feeds</div><div><b>1–8</b>curtains</div></div>
   </div>
-  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="fx-pixelfireworks,look-3d-depth,fire-rainbow-cozy,fx-tesseract,look-club-rig,fx-laserweb,look-neon-party,wave-serpent,look-deep-space,fire-classic-roar,look-wild-elements,look-mainstage,look-synthwave,wave-bigwave" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
+  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
 </div></header>
 
 <section class="tight" id="try"><div class="wrap">
