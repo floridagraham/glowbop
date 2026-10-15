@@ -360,3 +360,7 @@ table.cmp tr.grp.pro th{background:linear-gradient(90deg,rgba(192,132,252,.32),r
 @media (prefers-reduced-motion:reduce){.btn.herotry{animation:none}}
 .tryframe.ready .tf-play{display:none}
 #tryLive{scroll-margin-top:90px}
+
+.herologo{display:block;width:min(560px,82vw);height:auto;margin:0 0 18px -6px;filter:drop-shadow(0 6px 30px rgba(0,0,0,.55))}
+.ftlogo{display:block;line-height:0}.ftlogo img{width:min(300px,70vw);height:auto;margin-left:-6px}
+@media (max-width:700px){.herologo{background:radial-gradient(ellipse at center,rgba(7,6,13,.85),rgba(7,6,13,.55) 70%,rgba(7,6,13,0));padding:10px 14px;margin-left:-14px;border-radius:24px}}

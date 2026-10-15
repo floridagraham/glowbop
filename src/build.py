@@ -90,7 +90,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=4">
-<link rel="stylesheet" href="/assets/console.css?v=18">
+<link rel="stylesheet" href="/assets/console.css?v=20">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -109,7 +109,7 @@ def page(path, title, desc, body, active=''):
 <footer><div class="wrap">
   <div class="con-ft" aria-hidden="true"><div class="elbow"></div><div class="bars"><i></i><i style="--c:var(--amber);width:36px"></i><span class="grow" style="--c:var(--violet)">GLOWBOP · YOUR LIGHTS, DANCING TO YOUR MUSIC</span><i style="--c:var(--orange);width:28px"></i><span style="--c:var(--pink)">V1.0</span></div></div>
   <div class="cols">
-    <div><a class="brand" href="/">{logo_svg()}GlowBop</a>
+    <div><a class="ftlogo" href="/"><img src="/img/brand/glowbop-logo.webp" alt="GlowBop" width="880" height="233" loading="lazy"></a>
       <p class="dim" style="margin-top:12px;font-size:15px;max-width:34ch">Your lights, dancing to your music. A light show app for LED curtains, made in Fort Myers, Florida.</p>
       <a class="btn small" href="{WAIT}">✉️ Join the launch list</a></div>
     <div><h4>Product</h4><ul><li><a href="/features.html">Features</a></li><li><a href="/gallery.html">Gallery</a></li><li><a href="/lights.html">Supported lights</a></li><li><a href="/compare.html">Compare</a></li><li><a href="/pricing.html">Pricing</a></li></ul></div>
@@ -196,6 +196,7 @@ TRY = """<figure class="tryframe reveal" id="tryLive" aria-label="The real GlowB
 home = f'''
 <header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg.mp4" data-poster="/video/hero-bg.jpg" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback></video></div><div class="wrap">
   <div>
+    <img class="herologo" src="/img/brand/glowbop-logo.webp" alt="GlowBop" width="880" height="233">
     <span class="pill">🎃 <b>Launching this Halloween</b> · 7-day free trial</span>
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop. Run it all from a light-show console on your phone, iPad or laptop.</p>
