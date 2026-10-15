@@ -382,9 +382,9 @@
     {id: 'music', label: 'MUSIC', c: 'var(--pink)', title: 'Show control', mode: ['Music show · listening', 'shuffle on · hearing Speakers', 'var(--green)'],
      p: 'GlowBop hears whatever your computer plays and picks effects for every build-up and drop. Tap a key to feature one.',
      k: [['🌊', 'Big Wave', 'wave-bigwave'], ['🐍', 'Serpent', 'wave-serpent'], ['🎉', 'Neon Party', 'look-neon-party'], ['🌆', 'Synthwave', 'look-synthwave'], ['💥', 'The drop', 'drop'], ['🎲', 'Surprise me', '*']]},
-    {id: 'dj', label: 'DJ', c: 'var(--red)', title: 'Hit pads', mode: ['DJ mode', 'hand-played, right on the beat', 'var(--red)'],
-     p: 'Play the lights by hand. Every pad lands on the next beat. Hold to build, let go to drop.',
-     k: [['💥', 'Drop', 'drop'], ['🎆', 'Fireworks', 'fx-pixelfireworks'], ['🔥', 'Fire burst', 'fire-bonfire'], ['🔤', 'Crowd line', 'text-beat'], ['⚡', 'Strobe', 'look-club-rig'], ['🎲', 'Surprise', '*']]},
+    {id: 'dj', label: 'DJ', c: 'var(--red)', title: 'DJ mode', mode: ['DJ mode', 'hand-played, right on the beat', 'var(--red)'], dj: true,
+     p: 'Play the lights by hand. Every pad lands on the next beat. Hold the big key to build, let go to drop.',
+     k: [['💥', 'Drop', '!drop'], ['⚡', 'Strobe', '!strobe'], ['⚪', 'Flash', '!flash'], ['🔥', 'Fire burst', '!fire'], ['🎉', 'Confetti', '!confetti'], ['⬛', 'Blackout', '!blackout']]},
     {id: 'looks', label: 'LOOKS', c: 'var(--amber)', title: 'Looks', mode: ['Pinned look', 'stays until you release it', 'var(--amber)'],
      p: 'A look is a mood: colors plus effects for calm, medium and loud moments. 32 of them, plus 200+ effects.',
      k: [['🌌', 'Deep Space', 'look-deep-space'], ['🕹️', 'Retro Arcade', 'look-retro-arcade'], ['🔦', 'Club Rig', 'look-club-rig'], ['🧊', '3D Depth', 'look-3d-depth'], ['🌋', 'Wild Elements', 'look-wild-elements'], ['🎪', 'Mainstage', 'look-mainstage']]},
@@ -441,12 +441,25 @@
     $('.d-panel .ph span').textContent = t.title; $('.d-panel p').textContent = t.p;
     const keys = $('.keys'); keys.innerHTML = '';
     t.k.forEach(([em, name, cl], i) => { const b = document.createElement('button'); b.innerHTML = `<span class="em">${em}</span>${name}`; b.style.setProperty('--kc', t.c);
-      b.onclick = () => { chirp('tap'); play(b, name, cl); }; keys.appendChild(b); });
+      b.dataset.a = cl; b.onclick = () => { chirp('tap'); if (cl[0] === '!') { human(); DJ.press(cl.slice(1), b); } else play(b, name, cl); }; keys.appendChild(b); });
+    const ex = $('.dj-extra'); if (ex) ex.remove();
+    if (t.dj) {
+      const box = document.createElement('div'); box.className = 'dj-extra';
+      box.innerHTML = `<button class="dj-build">HOLD TO BUILD</button><div class="dj-lines">${['HANDS UP', 'JUMP', 'MAKE SOME NOISE', 'ONE MORE'].map(w => `<button>${w}</button>`).join('')}</div>`;
+      keys.after(box);
+      const bb = box.querySelector('.dj-build');
+      const st = e => { e.preventDefault(); human(); chirp('nav'); DJ.build(true); bb.classList.add('held'); bb.textContent = 'BUILDING… LET GO!'; };
+      const en = () => { if (!DJ.st.build) return; DJ.build(false); bb.classList.remove('held'); bb.textContent = 'HOLD TO BUILD'; chirp('tap'); };
+      bb.addEventListener('pointerdown', st); bb.addEventListener('pointerup', en); bb.addEventListener('pointerleave', en); bb.addEventListener('contextmenu', e => e.preventDefault());
+      box.querySelectorAll('.dj-lines button').forEach(x => x.onclick = () => { human(); chirp('tap'); DJ.say(x.textContent); });
+      DJ.reset(); play(null, 'Neon Party', 'look-neon-party'); return;
+    }
+    DJ.reset();
     play(keys.children[k || 0], t.k[k || 0][1], t.k[k || 0][2]);
   }
   function play(b, name, cl) {
     if (cl === '*') { const all = Object.keys(window.GB_CLIPS || {}).filter(n => /^(look|fx|wave)-/.test(n)); cl = all[(Math.random() * all.length) | 0]; name = (meta(cl) || {}).title || 'Surprise'; }
-    root.querySelectorAll('.keys button').forEach(x => x.classList.toggle('on', x === b));
+    if (b !== null) root.querySelectorAll('.keys button').forEach(x => x.classList.toggle('on', x === b));
     clip = cl; t0 = performance.now(); lastF = -1; load(cl);
     const m = tab.mode; $('.mode').style.setProperty('--mc', m[2]);
     $('.mode b').textContent = ['live', 'holiday', 'score', 'games', 'fire'].includes(tab.id) ? m[0] + ': ' + name : m[0];
@@ -454,27 +467,116 @@
     $('#dLook').textContent = name; $('#dEff').textContent = ((meta(cl) || {}).title || name).replace(/ ·.*/, '');
     $('.d-wall .ph .r').textContent = '840 BULBS · ' + name.toUpperCase();
   }
-  function draw(data, w, h, f) {
+  // 🎧 the DJ engine of the demo: hits land on the next beat of a 128 BPM clock, drawn on top of the playing clip
+  const BEAT = 60000 / 128, SPECTACLE = ['look-psychedelic', 'look-3d-depth', 'look-rainbow-riot', 'look-hypnotic', 'fx-pixelfireworks', 'look-warehouse-rave', 'look-chaos', 'fx-tesseract', 'look-hyperspace', 'shape-barberspin'];
+  let lastHuman = 0; const human = () => { lastHuman = performance.now(); };
+  const DJ = {
+    st: {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: []},
+    reset() { this.st = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: []}; },
+    press(a, btn) {
+      if (a === 'blackout') { this.st.black = !this.st.black; if (btn) btn.classList.toggle('on', this.st.black); note(this.st.black ? 'Blackout: tap again to bring it back' : 'Lights back'); return; }
+      this.st.queue.push(a); if (btn) { btn.classList.add('armed'); setTimeout(() => btn.classList.remove('armed'), 500); }
+      note({drop: 'Drop on the next beat', strobe: 'Strobe on the next beat', flash: 'Flash on the next beat', fire: 'Fire burst on the next beat', confetti: 'Confetti on the next beat'}[a]);
+    },
+    build(on) { if (on) this.st.build = performance.now(); else { const held = performance.now() - (this.st.build || 0); this.st.build = null; if (held > 350) this.st.queue.push('drop'); } },
+    say(w) { this.st.word = {w, t0: performance.now()}; note('Crowd line: ' + w); },
+    fire(a, w, h) {
+      const S = this.st, P = S.parts, R = Math.random;
+      if (a === 'drop') {
+        S.flash = 1; S.black = false; S.rings.push({x: w / 2, y: h / 2, r: 0, c: [255, 255, 255]});
+        for (let i = 0; i < 70; i++) { const an = R() * 6.283, sp = 8 + R() * 22; P.push({x: w / 2, y: h / 2, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 0, c: [[255, 61, 154], [51, 214, 255], [255, 204, 102], [155, 61, 255]][(R() * 4) | 0]}); }
+        play(null, 'The drop', SPECTACLE[(R() * SPECTACLE.length) | 0]); $('#dSec').textContent = 'DROP';
+      }
+      if (a === 'flash') S.flash = 1;
+      if (a === 'strobe') S.strobe = performance.now() + BEAT * 4;
+      if (a === 'fire') { for (let i = 0; i < 90; i++) { const an = -Math.PI / 2 + (R() - .5) * 1.6, sp = 10 + R() * 20; P.push({x: w / 2 + (R() - .5) * 6, y: h - 1, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 9, c: [[255, 90, 0], [255, 190, 30], [255, 40, 0], [255, 240, 160]][(R() * 4) | 0]}); }
+        S.rings.push({x: w / 2, y: h - 1, r: 0, c: [255, 120, 0]}); }
+      if (a === 'confetti') { for (const side of [0, w - 1]) for (let i = 0; i < 40; i++) { const an = -Math.PI / 2 + (side ? -1 : 1) * (.45 + R() * .5), sp = 16 + R() * 12;
+        P.push({x: side, y: h - 1, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1.6, g: 14, c: [[255, 61, 154], [51, 214, 255], [255, 204, 102], [60, 224, 138], [204, 153, 255], [255, 255, 255]][(R() * 6) | 0]}); } }
+    },
+    apply(buf, w, h, now, dt) {
+      const S = this.st;
+      const beatIdx = Math.floor(now / BEAT); if (S.queue.length && beatIdx !== this._lb) { S.queue.forEach(a => this.fire(a, w, h)); S.queue = []; }
+      this._lb = beatIdx;
+      const add = (x, y, c, k) => { x |= 0; y |= 0; if (x < 0 || y < 0 || x >= w || y >= h) return; const i = (y * w + x) * 3; buf[i] = Math.max(buf[i], c[0] * k); buf[i + 1] = Math.max(buf[i + 1], c[1] * k); buf[i + 2] = Math.max(buf[i + 2], c[2] * k); };
+      if (S.build) {                                                  // rising wall of light, faster and whiter
+        const k = Math.min(1, (now - S.build) / 6000), rate = 2 + 14 * k * k, pulse = .5 + .5 * Math.sin(now / 1000 * rate * 6.283), top = h * (1 - k);
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 3; for (let c = 0; c < 3; c++) buf[i + c] *= 1 - .55 * k;
+          if (y >= top) { const hue = (x / w + now / 2500) % 1, col = [.5 + .5 * Math.cos(6.283 * hue), .5 + .5 * Math.cos(6.283 * (hue - .33)), .5 + .5 * Math.cos(6.283 * (hue - .66))];
+            const lv = (.3 + .6 * k * pulse) * 255; for (let c = 0; c < 3; c++) buf[i + c] = Math.max(buf[i + c], (col[c] * (1 - k) + k) * lv); }
+          if (Math.random() < .01 + .05 * k) { buf[i] = buf[i + 1] = buf[i + 2] = 255; } }
+      }
+      for (const r of S.rings) { r.r += dt * 26; for (let a = 0; a < 6.283; a += .12) add(r.x + Math.cos(a) * r.r, r.y + Math.sin(a) * r.r * .9, r.c, Math.max(0, 1 - r.r / 30)); }
+      S.rings = S.rings.filter(r => r.r < 30);
+      for (const q of S.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= .97; q.vy = q.vy * .97 + q.g * dt; q.l -= dt * .9; if (q.l > 0) add(q.x, q.y, q.c, Math.min(1, q.l * 1.4)); }
+      S.parts = S.parts.filter(q => q.l > 0);
+      if (S.word) {                                                   // big scrolling words over a dimmed show
+        const el = now - S.word.t0, dur = 2600; if (el > dur) S.word = null;
+        else { const m = textMask(S.word.w, h); const x0 = Math.round(w - (el / dur) * (w + m.w)), y0 = Math.max(0, ((h - m.h) / 2) | 0), hue = el / 700;
+          for (let i = 0; i < buf.length; i++) buf[i] *= .35;
+          const col = [.5 + .5 * Math.cos(6.283 * hue), .5 + .5 * Math.cos(6.283 * (hue - .33)), .5 + .5 * Math.cos(6.283 * (hue - .66))].map(v => 120 + 135 * v);
+          for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (m.a[y * m.w + x]) { const X = x + x0, Y = y + y0; if (X >= 0 && X < w && Y < h) { const i = (Y * w + X) * 3; buf[i] = col[0]; buf[i + 1] = col[1]; buf[i + 2] = col[2]; } } }
+      }
+      if (S.strobe > now) { const on = Math.floor(now / 55) % 2 === 0; for (let i = 0; i < buf.length; i++) buf[i] = on ? 255 : buf[i] * .05; }
+      if (S.flash > .01) { for (let i = 0; i < buf.length; i++) buf[i] = Math.max(buf[i], 255 * S.flash); S.flash *= Math.pow(.02, dt); }
+      if (S.black) for (let i = 0; i < buf.length; i++) buf[i] = 0;
+      return S.build || S.parts.length || S.rings.length || S.word || S.strobe > now || S.flash > .01 || S.black || S.queue.length;
+    },
+  };
+  const masks = {};
+  function textMask(w, h) {                                          // the words as an LED bitmap, h rows tall
+    if (masks[w]) return masks[w];
+    const c = document.createElement('canvas'), fs = Math.max(8, Math.round(h * .62)); c.height = fs + 4; c.width = w.length * fs;
+    const x = c.getContext('2d'); x.font = `800 ${fs}px 'Saira Condensed', 'Arial Narrow', sans-serif`; const tw = Math.ceil(x.measureText(w).width) + 2; c.width = tw;
+    x.font = `800 ${fs}px 'Saira Condensed', 'Arial Narrow', sans-serif`; x.fillStyle = '#fff'; x.textBaseline = 'top'; x.fillText(w, 1, 1);
+    const d = x.getImageData(0, 0, c.width, c.height).data, a = new Uint8Array(c.width * c.height); for (let i = 0; i < a.length; i++) a[i] = d[i * 4 + 3] > 110 ? 1 : 0;
+    return (masks[w] = {w: c.width, h: c.height, a});
+  }
+  let toastT = 0; function note(t) { const el = $('.hint'); if (!el || !t) return; el.textContent = '🎧 ' + t; toastT = performance.now(); }
+  // 🤖 auto DJ: on the DJ tab, if nobody touches it, GlowBop plays a little set by itself
+  let nextAuto = 0, autoBuild = null;
+  function autoDJ(now) {
+    if (!tab.dj || now - lastHuman < 7000) { $('.mode small').textContent = tab.mode[1]; return; }
+    $('.mode small').textContent = 'AUTO DJ · tap a pad to take over';
+    if (autoBuild && now > autoBuild) { DJ.build(false); autoBuild = null; const bb = $('.dj-build'); if (bb) { bb.classList.remove('held'); bb.textContent = 'HOLD TO BUILD'; } nextAuto = now + 2600; return; }
+    if (autoBuild || now < nextAuto) return;
+    const r = Math.random(), keys = [...root.querySelectorAll('.keys button')];
+    if (r < .16) { DJ.build(true); autoBuild = now + 3200; const bb = $('.dj-build'); if (bb) { bb.classList.add('held'); bb.textContent = 'BUILDING… LET GO!'; } note('Auto DJ: building…'); return; }
+    if (r < .28) { DJ.say(['HANDS UP', 'JUMP', 'MAKE SOME NOISE', 'ONE MORE'][(Math.random() * 4) | 0]); nextAuto = now + 3000; return; }
+    const a = ['drop', 'fire', 'confetti', 'strobe', 'flash', 'fire', 'confetti'][(Math.random() * 7) | 0];
+    const b = keys.find(x => x.dataset.a === '!' + a); if (b) { b.classList.add('auto'); setTimeout(() => b.classList.remove('auto'), 350); }
+    DJ.press(a, null); nextAuto = now + 1500 + Math.random() * 1600;
+  }
+  let pxBuf = null, lastNow = performance.now();
+  function draw(data, w, h, f, now, dt) {
     const r = cv.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W = Math.max(1, r.width * d | 0), H = Math.max(1, r.height * d | 0);
     if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
-    const sx = W / w, sy = H / h, rad = Math.min(sx, sy) * 0.42, base = f * w * h * 4, px = data.data;
+    if (!pxBuf || pxBuf.length !== w * h * 3) pxBuf = new Float32Array(w * h * 3);
+    const base = f * w * h * 4, px = data.data;
+    for (let i = 0, n = w * h; i < n; i++) { pxBuf[i * 3] = px[base + i * 4]; pxBuf[i * 3 + 1] = px[base + i * 4 + 1]; pxBuf[i * 3 + 2] = px[base + i * 4 + 2]; }
+    const busy = DJ.apply(pxBuf, w, h, now, dt);
+    const sx = W / w, sy = H / h, rad = Math.min(sx, sy) * 0.42;
     g.fillStyle = '#05040a'; g.fillRect(0, 0, W, H); let sum = 0;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = base + (y * w + x) * 4, R = px[i], G = px[i + 1], B = px[i + 2], lit = R + G + B > 24; sum += R + G + B;
+      const i = (y * w + x) * 3, R = Math.min(255, pxBuf[i]) | 0, G = Math.min(255, pxBuf[i + 1]) | 0, B = Math.min(255, pxBuf[i + 2]) | 0, lit = R + G + B > 24; sum += R + G + B;
       g.fillStyle = lit ? `rgb(${R},${G},${B})` : '#16121f'; g.beginPath(); g.arc(x * sx + sx / 2, y * sy + sy / 2, lit ? rad : rad * 0.55, 0, 6.283); g.fill();
     }
-    return sum / (w * h * 765);
+    return [sum / (w * h * 765), busy];
   }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => vis = e.isIntersecting)).observe(root);
+  let busyLast = false;
   async function tick(now) {
-    requestAnimationFrame(tick); if (!vis) return;
+    requestAnimationFrame(tick); const dt = Math.min(.1, (now - lastNow) / 1000); lastNow = now; if (!vis) return;
+    autoDJ(now);
+    if (toastT && now - toastT > 2500) { toastT = 0; const el = $('.hint'); if (el) el.textContent = '👈 Tap the colored rail to switch sections'; }
     const m = meta(clip); const data = await load(clip); if (!m || !data) return;
-    const f = reduce ? 0 : Math.floor((now - t0) / 1000 * (m.fps || 15)) % m.n; if (f === lastF) return; lastF = f;
-    const lvl = draw(data, m.w, m.h, f);
+    const f = reduce ? 0 : Math.floor((now - t0) / 1000 * (m.fps || 15)) % m.n; if (f === lastF && !busyLast) return; lastF = f;
+    const [lvl, busy] = draw(data, m.w, m.h, f, now, dt); busyLast = !!busy;
     const lit = Math.round(Math.min(1, lvl * 3.2) * 24);
     meter.querySelectorAll('i').forEach((el, i) => el.style.background = i < lit ? (i < 9 ? 'var(--cyan)' : i < 15 ? 'var(--violet)' : i < 20 ? 'var(--pink)' : 'var(--amber)') : '');
-    const s = Math.floor(now / 4000) % 4; if (s !== sec) { sec = s; $('#dSec').textContent = ['GROOVE', 'BUILD', 'DROP', 'BREAK'][s]; }
+    const s = Math.floor(now / 4000) % 4; if (s !== sec && !(tab.dj && DJ.st.build)) { sec = s; $('#dSec').textContent = ['GROOVE', 'BUILD', 'DROP', 'BREAK'][s]; }
+    if (tab.dj && DJ.st.build) $('#dSec').textContent = 'BUILD';
   }
-  pick(T[0]); requestAnimationFrame(tick);
+  pick(T.find(t => t.dj) || T[0]); requestAnimationFrame(tick);
 })();

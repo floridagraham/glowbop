@@ -263,3 +263,11 @@ footer .fine{border-top:6px solid #1a1628}
 .cloud a{font:600 15px var(--cond);letter-spacing:1px;text-transform:uppercase;color:var(--text);background:var(--card2);border-left:5px solid var(--lav);border-radius:0 10px 0 10px;padding:7px 12px}
 .cloud a:nth-child(6n+2){border-left-color:var(--pink)}.cloud a:nth-child(6n+3){border-left-color:var(--cyan)}.cloud a:nth-child(6n+4){border-left-color:var(--amber)}.cloud a:nth-child(6n+5){border-left-color:var(--green)}.cloud a:nth-child(6n+6){border-left-color:var(--orange)}
 .cloud a:hover{text-decoration:none;filter:brightness(1.25)}
+.demo .dj-extra{display:flex;flex-direction:column;gap:8px}
+.demo .dj-build{appearance:none;border:0;border-radius:999px;background:var(--pink);color:#000;font:800 18px var(--cond);letter-spacing:3px;min-height:58px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.demo .dj-build.held{background:#fff;box-shadow:0 0 34px #fff}
+.demo .dj-lines{display:flex;flex-wrap:wrap;gap:6px}
+.demo .dj-lines button{appearance:none;border:0;border-radius:999px;background:var(--card2);color:var(--gold);font:700 13px var(--cond);letter-spacing:1px;padding:7px 12px;cursor:pointer}
+.demo .dj-lines button:hover{background:var(--gold);color:#000}
+.demo .keys button.armed,.demo .keys button.auto{background:var(--kc,var(--c));color:#000;box-shadow:0 0 22px var(--kc,var(--c))}
+.demo .keys button.on[data-a="!blackout"]{background:#fff;color:#000}

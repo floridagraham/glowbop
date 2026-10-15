@@ -74,7 +74,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=7">
+<link rel="stylesheet" href="/assets/console.css?v=8">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -104,7 +104,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=7"></script>
+<script src="/assets/site.js?v=8"></script>
 </body>
 </html>
 '''
@@ -322,7 +322,7 @@ home = f'''
 <section class="tight"><div class="wrap"><a class="launchban reveal" href="{WAIT}"><img src="/img/launch-banner.jpg" alt="GlowBop launches October 31. Light up Halloween. Join the launch list." loading="lazy"></a></div></section>
 <section><div class="wrap">
   <div class="center reveal"><span class="eyebrow">Pricing</span><h2>A whole light show crew for $5.99 a month</h2>
-  <p class="lead">$5.99 a month, $49 a year, or $129 once and it's yours. 🎃 <b>Founder launch deal: lifetime for $79</b> during launch week or for the first 100 buyers. Every plan starts with a 7-day free trial.</p>
+  <p class="lead">$5.99 a month, $49 a year, or $249 once and it's yours. 🎃 <b>Founder launch deal: lifetime for $79</b> during launch week or for the first 100 buyers. Every plan starts with a 7-day free trial.</p>
   <div class="btns" style="justify-content:center"><a class="btn primary" href="/pricing.html">See plans</a></div></div>
 </div></section>
 {band()}
@@ -966,7 +966,7 @@ ROWS = [
     ('Many curtains as one wall', [(Y, '1–4, side by side or stacked'), (M, 'Twinkly only'), (N, ''), (N, ''), (N, ''), (M, 'Virtual strips'), (N, '')]),
     ('Phone remote', [(Y, 'Any phone browser'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is a phone app')]),
     ('Runs on', [('Windows', ''), ('iOS, Android', ''), ('Windows, iOS, Android', ''), ('Windows, Mac', ''), ('Windows, Mac', ''), ('Win, Mac, Linux', ''), ('iPhone, iPad, Mac', '')]),
-    ('Price', [('<b>$5.99/mo</b>, $49/yr or $129 once', 'Founder lifetime $79 at launch'), ('Free app; dongle extra', ''), ('Free app; sync box extra', ''), ('Free app; sync box extra', ''), ('See their site', ''), ('Free, open source', ''), ('Paid app', '')]),
+    ('Price', [('<b>$5.99/mo</b>, $49/yr or $249 once', 'Founder lifetime $79 at launch'), ('Free app; dongle extra', ''), ('Free app; sync box extra', ''), ('Free app; sync box extra', ''), ('See their site', ''), ('Free, open source', ''), ('Paid app', '')]),
 ]
 HEAD = ['GlowBop', 'Twinkly app', 'Govee Home / Desktop', 'Philips Hue Sync', 'Nanoleaf Desktop', 'LedFx', 'Light DJ Pro']
 tbl = '<table><thead><tr><th></th>' + ''.join(f'<th{" class=us" if i == 0 else ""}>{h}</th>' for i, h in enumerate(HEAD)) + '</tr></thead><tbody>'
@@ -1000,12 +1000,12 @@ pricing = f'''<header class="pagehead"><div class="wrap center"><span class="eye
 <p class="lead">Every plan includes everything. Start with a <b>7-day free trial</b>, cancel anytime.</p>
 <span class="pill">🎃 Launching this Halloween. Join the list and we'll email you on day one.</span></div></header>
 <section style="padding-top:10px"><div class="wrap">
-<div class="founder reveal"><span class="tag">🎃 Founder launch deal</span><h3>Lifetime for <b>$79</b> <s>$129</s></h3><p>During launch week, or for the first 100 buyers, whichever comes first. Pay once, keep GlowBop and every update forever.</p></div>
-<div class="plans">{plan('Monthly', '$5.99', '/ month', 'Perfect for a party season.')}{plan('Yearly', '$49', '/ year', 'About $4.08 a month. Save 32%.', True, 'Best value')}{plan('Lifetime', '$129', 'once', 'Pay once, keep it forever. Founders pay $79 at launch.')}</div>
+<div class="founder reveal"><span class="tag">🎃 Founder launch deal</span><h3>Lifetime for <b>$79</b> <s>$249</s></h3><p>During launch week, or for the first 100 buyers, whichever comes first. Pay once, keep GlowBop and every update forever.</p></div>
+<div class="plans">{plan('Monthly', '$5.99', '/ month', 'Perfect for a party season.')}{plan('Yearly', '$49', '/ year', 'About $4.08 a month. Save 32%.', True, 'Best value')}{plan('Lifetime', '$249', 'once', 'Pay once, keep it forever. Founders pay $79 at launch.')}</div>
 <p class="center dim" style="margin-top:22px;font-size:15px">Payments are handled securely by Polar. Prices in USD.</p>
 <div style="max-width:780px;margin:50px auto 0"><h2 class="center">Pricing questions</h2>
 <details><summary>How does the free trial work?</summary><p>You get 7 days with every feature. If you cancel before the trial ends, you pay nothing.</p></details>
-<details><summary>What is the Founder deal?</summary><p>To celebrate the launch, lifetime costs $79 instead of $129 during launch week or for the first 100 buyers, whichever comes first. Same app, every feature, every update, forever.</p></details>
+<details><summary>What is the Founder deal?</summary><p>To celebrate the launch, lifetime costs $79 instead of $249 during launch week or for the first 100 buyers, whichever comes first. Same app, every feature, every update, forever.</p></details>
 <details><summary>Can I switch plans?</summary><p>Yes. Start monthly and move to yearly or lifetime whenever you like.</p></details>
 <details><summary>Do I need to buy anything else?</summary><p>Just your lights and a Windows computer. No dongles, sync boxes or extra subscriptions. Song lookup uses free keys.</p></details>
 </div></div></section>{band()}'''
@@ -1020,7 +1020,7 @@ thanks = f'''<header class="pagehead"><div class="wrap center"><span class="eyeb
 <p class="center dim" style="margin-top:26px">Lost your key or want to change plans? Open your <a href="{PORTAL}">customer portal</a>. Questions? Email <a href="mailto:{MAIL}">{MAIL}</a>.</p>
 </div></section>'''
 page('/thanks.html', 'Thank you · GlowBop', 'Your GlowBop order is complete. Find your license key and install the app.', thanks, '/thanks.html')
-page('/pricing.html', 'Pricing · GlowBop', 'GlowBop costs $5.99 a month, $49 a year, or $129 once, with a $79 Founder lifetime deal at launch. Every plan has every feature and a 7-day free trial.', pricing, '/pricing.html')
+page('/pricing.html', 'Pricing · GlowBop', 'GlowBop costs $5.99 a month, $49 a year, or $249 once, with a $79 Founder lifetime deal at launch. Every plan has every feature and a 7-day free trial.', pricing, '/pricing.html')
 
 
 # ================================================================ DOWNLOAD
