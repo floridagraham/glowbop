@@ -5,14 +5,23 @@
   'use strict';
   const {$, esc} = GB;
   const dj = b => GB.post('/api/dj', GB.withGroup(b));
-  const PADS = [['drop', '💥', 'Drop', 'var(--pink)'], ['strobe', '⚡', 'Strobe', '#ffffff'], ['flash', '⚪', 'Flash', 'var(--gold)'],
+  const PADS = [['drop', '💥', 'Drop', 'var(--pink)'], ['strobe', '⚡', 'Strobe', 'var(--cyan)'], ['flash', '⚪', 'Flash', 'var(--gold)'],
                 ['fire', '🔥', 'Fire burst', 'var(--orange)'], ['confetti', '🎉', 'Confetti', 'var(--lav)'], ['blackout', '⬛', 'Blackout', 'var(--peri)']];
   const LINES = ['HANDS UP', 'JUMP', 'MAKE SOME NOISE', "LET'S GO", 'ONE MORE', 'PUT YOUR LIGHTS UP', 'DROP IT', 'SING IT'];
   GB.css(`
   .dj-pads { grid-template-columns:repeat(3, minmax(0, 1fr)); }
   .dj-pads .tile { min-height:92px; font-size:calc(16px * var(--fs, 1)); }
   .dj-pads .tile .em { font-size:calc(32px * var(--fs, 1)); }
-  .dj-pads .tile:active, .dj-pads .tile.hit { background:var(--c); color:#000; box-shadow:0 0 26px var(--c); }
+  /* 🎨 every pad wears its own colour: tinted glass, glowing rim, coloured label; a hit floods it solid */
+  .dj-pads .tile { position:relative; overflow:hidden; color:#fff; border:2px solid color-mix(in srgb, var(--c) 75%, transparent); border-radius:0 18px 0 18px;
+    background:linear-gradient(160deg, color-mix(in srgb, var(--c) 42%, #14111f) 0%, color-mix(in srgb, var(--c) 14%, #0a0911) 70%);
+    box-shadow:inset 0 0 22px color-mix(in srgb, var(--c) 30%, transparent), 0 0 16px -6px var(--c); transition:transform .08s, box-shadow .15s, background .15s; }
+  .dj-pads .tile::before { content:''; position:absolute; left:0; right:0; top:0; height:5px; background:var(--c); box-shadow:0 0 12px var(--c); }
+  .dj-pads .tile .nm { color:color-mix(in srgb, var(--c) 45%, #fff); text-shadow:0 0 10px color-mix(in srgb, var(--c) 70%, transparent); font-weight:700; }
+  .dj-pads .tile .em { filter:drop-shadow(0 0 8px color-mix(in srgb, var(--c) 80%, transparent)); }
+  .dj-pads .tile:hover { box-shadow:inset 0 0 26px color-mix(in srgb, var(--c) 40%, transparent), 0 0 22px -4px var(--c); }
+  .dj-pads .tile:active, .dj-pads .tile.hit { background:var(--c); color:#000; box-shadow:0 0 30px var(--c); transform:scale(.97); }
+  .dj-pads .tile:active .nm, .dj-pads .tile.hit .nm { color:#000; text-shadow:none; }
   #djBuild { min-height:96px; font-size:calc(24px * var(--fs, 1)); letter-spacing:3px; touch-action:none; user-select:none; -webkit-user-select:none; }
   #djBuild.held { background:#fff; color:#000; box-shadow:0 0 40px #fff; }
   #djTap { min-height:86px; font-size:calc(26px * var(--fs, 1)); letter-spacing:4px; touch-action:manipulation; }
@@ -23,8 +32,10 @@
   #djPadsPanel { container-type:inline-size; }
   @container (min-width: 640px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
   .dj-skip { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; margin-top:10px; }
-  .dj-skip .btn { min-height:58px; padding:6px 4px; font-size:calc(14px * var(--fs, 1)); letter-spacing:1px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; line-height:1.1; touch-action:manipulation; }
-  .dj-skip .btn b { font-size:calc(20px * var(--fs, 1)); line-height:1; }
+  .dj-skip .btn { min-height:58px; padding:6px 4px; font-size:calc(14px * var(--fs, 1)); letter-spacing:1px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; line-height:1.1; touch-action:manipulation;
+    color:color-mix(in srgb, var(--c) 50%, #fff); border:2px solid color-mix(in srgb, var(--c) 70%, transparent); border-radius:22px 22px 22px 22px;
+    background:linear-gradient(180deg, color-mix(in srgb, var(--c) 30%, #13101d), color-mix(in srgb, var(--c) 8%, #0a0911)); box-shadow:0 0 14px -6px var(--c); }
+  .dj-skip .btn b { display:flex; align-items:center; justify-content:center; width:calc(26px * var(--fs, 1)); height:calc(26px * var(--fs, 1)); border-radius:50%; background:var(--c); color:#000; font-size:calc(13px * var(--fs, 1)) !important; box-shadow:0 0 10px var(--c); }
   .dj-skip .btn.hit { background:var(--c); color:#000; box-shadow:0 0 22px var(--c); }
   .dj-now { display:flex; justify-content:space-between; gap:10px; margin-top:8px; font:calc(13px * var(--fs, 1))/1.3 var(--mono); color:var(--dim); }
   .dj-now span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -47,9 +58,9 @@
       <div class="tiles dj-pads" id="djPads"></div>
       <div class="dj-skip" id="djSkip">
         <button class="btn" data-st="look-" style="--c:var(--gold)"><b>◀</b>LOOK</button>
-        <button class="btn" data-st="look+" style="--c:var(--gold)"><b>▶</b>NEXT LOOK</button>
+        <button class="btn" data-st="look+" style="--c:var(--orange)"><b>▶</b>NEXT LOOK</button>
         <button class="btn" data-st="effect-" style="--c:var(--cyan)"><b>◀</b>EFFECT</button>
-        <button class="btn" data-st="effect+" style="--c:var(--cyan)"><b>▶</b>NEXT EFFECT</button>
+        <button class="btn" data-st="effect+" style="--c:var(--lime, #b6ff3b)"><b>▶</b>NEXT EFFECT</button>
       </div>
       <div class="dj-now"><span>Look: <b id="djNowLook">-</b></span><span>Effect: <b id="djNowFx">-</b></span></div>
       <p class="note" id="djSnapNote"></p>`;

@@ -18,9 +18,13 @@
   .mu-card > .ph > .r { flex:1 1 0; }
   .mu-opt > .btn { justify-content:center; white-space:nowrap; font-size:calc(15px * var(--fs, 1)); letter-spacing:.5px; gap:6px; }
   .mu-opt > .btn > span { overflow:hidden; text-overflow:ellipsis; min-width:0; }
-  .mu-vid { position:relative; width:100%; aspect-ratio:16/9; border-radius:0 14px 0 14px; overflow:hidden; background:#000; border:1px solid var(--line); }
-  .mu-vid.off { height:0; aspect-ratio:auto; border:0; }
+  .mu-vid { position:relative; box-sizing:border-box; width:202px; height:202px; flex:0 0 202px; border-radius:0 14px 0 14px; overflow:hidden; background:#000; border:1px solid var(--line); }   /* 🎬 small tile next to the song: YouTube's smallest allowed player (200x200) */
+  .mu-vid.off { display:none; }
+  .mu-np.vid .mu-art { display:none; }
   .mu-vid > div { position:absolute; inset:0; transition:opacity 1s; } .mu-vid iframe { width:100%; height:100%; border:0; }
+  .mu-sty { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .mu-sty > span { font:calc(12px * var(--fs, 1))/1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+  .mu-sty .seg { flex:1; min-width:0; } .mu-sty .btn { min-height:34px; padding:4px 6px; font-size:calc(13px * var(--fs, 1)); --c:var(--gold); }
   .mu-np { display:flex; align-items:center; gap:14px; min-width:0; }
   .mu-art { width:88px; height:88px; flex:0 0 auto; border-radius:0 16px 0 16px; overflow:hidden; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(135deg, color-mix(in srgb, var(--pink) 35%, #000), color-mix(in srgb, var(--cyan) 30%, #000)); box-shadow:0 0 0 2px var(--violet), 0 0 22px color-mix(in srgb, var(--violet) 45%, transparent); }
@@ -105,8 +109,8 @@
     el.style.setProperty('--c', 'var(--violet)');
     el.innerHTML = `
       <div class="ph"><span id="muLbl">Now playing</span><span class="r" id="muSrc"></span></div>
-      <div class="mu-vid off" id="appVid"><div id="aw0"><div id="ayt0"></div></div><div id="aw1" style="opacity:0"><div id="ayt1"></div></div></div>
-      <div class="mu-np">
+      <div class="mu-np" id="muNp">
+        <div class="mu-vid off" id="appVid"><div id="aw0"><div id="ayt0"></div></div><div id="aw1" style="opacity:0"><div id="ayt1"></div></div></div>
         <div class="mu-art" id="muArt" hidden></div>
         <div class="mu-meta"><div class="mu-title" id="muTitle">Nothing playing</div><button class="mu-artist" id="muArtist" type="button">Play music in any app on the laptop</button></div>
       </div>
@@ -124,6 +128,8 @@
         <div class="lv" style="--c:var(--cyan)"><span>Volume</span><input type="range" id="muVol" min="0" max="100" value="50" aria-label="Volume"><b id="muVolPct"></b></div>
       </div>
       <div class="mu-fam" id="muFam"></div>
+      <div class="mu-sty" id="muSty" hidden><span>Light style</span><div class="seg">
+        <button class="btn" data-sty="auto">Auto</button><button class="btn" data-sty="epic">🎬 Epic</button><button class="btn" data-sty="dance">🪩 Dance</button><button class="btn" data-sty="chill">🌙 Chill</button></div></div>
       <div class="seg mu-opt">
         <button class="btn" id="muSleep" style="--c:var(--lav)"></button>
         <button class="btn" id="muParty" style="--c:var(--orange)"></button>
@@ -183,6 +189,11 @@
       if (ours()) await music({action: 'seek', pos: +sc.value}); else await post('/api/media', {action: 'seek', pos: +sc.value});
       setTimeout(() => { scrubbing = false; mediaPoll(); }, 700);
     };
+    document.querySelectorAll('#muSty [data-sty]').forEach(b => b.onclick = async () => {
+      const st = b.dataset.sty; let r = null;
+      try { r = await post('/api/songinfo', {style: st, artist: true}); } catch (e) {}
+      if (r && r.current) { si = r.current; renderNow(); toast(st === 'auto' ? '🧠 GlowBop picks the light style again' : `${b.textContent} lights for this song and this artist from now on`); }
+    });
     $('muVol').oninput = e => {
       const v = +e.target.value; $('muVolPct').textContent = v + '%'; clearTimeout(volT);
       volT = setTimeout(() => { if (ours()) music({action: 'volume', volume: v}); else post('/api/media', {action: 'vol', level: v}); }, 150);
@@ -229,6 +240,13 @@
     setTimeout(mediaLoop, document.hidden ? 4000 : GB.page === 'music' ? 1000 : 3000);
   }
 
+  // 🎬 the YouTube tile only comes out while GlowBop's own YouTube music is actually playing (and is what's on top);
+  // paused, stopped, or another app (Spotify, a browser...) playing: it tucks away and that app's song takes the card
+  function showTile() {
+    const on = !!window.__ytTile && !!(ms && ms.playing) && !!ours();
+    const v = $('appVid'), n = $('muNp'); if (!v || !n) return;
+    v.classList.toggle('off', !on); n.classList.toggle('vid', on);
+  }
   function renderNow() {
     let title = 'Nothing playing', sub = 'Play music in any app on the laptop', art = svg('note'), pos = 0, dur = 0, playing = false, app = '', src = 'IDLE';
     const mine = ours();
@@ -241,6 +259,7 @@
       app = np.app_name || 'Laptop'; src = playing ? 'on the laptop' : (np.status || '').toLowerCase() || 'on the laptop';
       if (np.art_v) art = `<img src="/api/media/art?v=${np.art_v}" alt="">`;
     }
+    showTile();
     $('muLbl').innerHTML = 'Now playing' + (app ? ' · <span class="mu-app">' + esc(app) + '</span>' : '');
     $('muSrc').textContent = src;
     $('muTitle').textContent = title; $('muArtist').textContent = sub;
@@ -266,6 +285,10 @@
     const fam = mine && ms.family && ms.family.length ? ms.family.map(esc).join(' · ') : '';
     $('muFam').innerHTML = sty ? svg('bulb') + ' ' + esc(sty) + (fam ? ` · <b>${fam}</b>` : '')
       : fam ? `${svg('palette')} Lights: <b>${fam}</b> ${ms.family_how === 'auto' ? '(auto)' : ''}` : '';
+    const showSty = !!(si && si.title && sty !== undefined && title && title.toLowerCase().includes(String(si.title).toLowerCase().slice(0, 12)));
+    $('muSty').hidden = !showSty;
+    if (showSty) { const cur = si.by_you ? (si.style || 'auto') : 'auto';
+      document.querySelectorAll('#muSty [data-sty]').forEach(b => { b.classList.toggle('on', b.dataset.sty === cur); b.title = b.dataset.sty === 'auto' ? 'Let GlowBop decide' + (si.style && !si.by_you ? ' (now: ' + si.style + ')' : '') : ''; }); }
     const party = !!ms.party;
     $('muParty').innerHTML = svg('fire') + '<span>' + (party ? 'Party: on' : 'Party mode') + '</span>'; $('muParty').classList.toggle('on', party);
     $('muSleep').innerHTML = svg('moon') + '<span>' + (ms.sleep_left ? 'Sleep ' + Math.ceil(ms.sleep_left / 60) + 'm' : 'Sleep timer') + '</span>'; $('muSleep').classList.toggle('on', !!ms.sleep_left);
@@ -462,11 +485,11 @@
     mediaLoop();
     // the GlowBop window on the laptop plays the music itself (the pop-up player is only a fallback)
     if (GB.local && location.pathname === '/app') {
-      const sc = document.createElement('script'); sc.src = '/player.js';
+      const sc = document.createElement('script'); sc.src = '/player.js?v=2';
       sc.onload = () => {
         let lastSt = '';
         window.appPlayer = LumaPlayer({kind: 'app', ids: ['ayt0', 'ayt1'], wraps: ['aw0', 'aw1'], onStatus: (st, want, active) => {
-          $('appVid').classList.toggle('off', !(active && want.vid));
+          window.__ytTile = !!(active && want.vid && want.playing); showTile();
           if (st === 'blocked' && lastSt !== 'blocked') toast('🔈 Click anywhere in GlowBop once to allow sound');
           lastSt = st;
         }});

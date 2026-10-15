@@ -71,6 +71,21 @@
   .md-lm.seg.wrap > .btn { flex:1 1 30%; padding:0 4px; }
   @media (max-width: 480px) { .md-lm.seg.wrap > .btn { font-size:calc(14px * var(--fs, 1)); letter-spacing:.5px; } }
   #mdLgEvery[hidden] { display:none; }
+  .md-wall { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:5px; }
+  .md-wall > .btn { min-height:62px; font-size:calc(18px * var(--fs, 1)); letter-spacing:1.5px; padding:0 4px; }
+  .md-wall > .btn:not(.on) { background:var(--dark); color:var(--text); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--c) 35%, transparent); }
+  .md-wall > .btn.on { box-shadow:0 0 0 2px #fff inset, 0 0 22px color-mix(in srgb, var(--c) 75%, transparent); }
+  @media (max-width: 480px) { .md-wall > .btn { font-size:calc(16px * var(--fs, 1)); letter-spacing:.5px; gap:4px; } .md-wall > .btn svg { width:16px; height:16px; } }
+  .md-livebtn { appearance:none; border:0; background:color-mix(in srgb, currentColor 14%, transparent); color:var(--c, var(--green)); border-radius:999px; min-height:32px; padding:0 12px; cursor:pointer;
+    font:700 calc(12px * var(--fs, 1))/1 var(--mono); letter-spacing:1px; }
+  .md-livebtn:not(.md-off) { color:var(--green); }
+  .md-more { border-top:2px solid var(--line); padding-top:4px; }
+  .md-more > summary { min-height:48px; }
+  .md-morein { display:flex; flex-direction:column; gap:10px; padding-bottom:4px; }
+  .md-lgwarn { color:var(--gold); }
+  #mdLgLay[hidden], #mdLgLay [hidden] { display:none; }
+  .md-built .chip { border-radius:999px; }
+  @media (max-width: 480px) { .md-colrow input[type=color] { width:44px; } .md-colrow .seg > .btn { flex:1 1 auto; } }
   `);
 
   // =========================================================== 🖥️ SCREEN MIRROR
@@ -298,15 +313,17 @@
   }
 
   // =========================================================== 🔤 TEXT & LOGO
+  // One "On the wall" switch at the top (OFF | TEXT | LOGO | BOTH) decides what shows. Everything else only edits settings.
   let TX = {state: {}, presets: []}, txMode = 'scroll', txColor = 'look', txLayer = 'over', lgMode = 'still', lgPixels = null, txLive = null;
-  let lgSrc = null, lgRes = null, lgRz = null, lgOpt = {boost: true, removeBg: true};
+  let lgSrc = null, lgRes = null, lgRz = null, lgOpt = {boost: true, removeBg: true}, lgLayout = 'auto', lgJobs = [], lgTimer = null;
   try { Object.assign(lgOpt, JSON.parse(localStorage.getItem('gb_logo_opts') || '{}')); } catch (e) {}
   const LG_HINT = 'Any picture works. A flat background is removed for you.';
   const LM_TIP = {still: 'Logo glows with the beat', pulse: 'Logo punches on every kick', shimmer: 'Logo colors shift each bar',
-    sparks: '✨ Logo builds itself from sparks', wipe: 'Logo wipes in on the beat', drop: '💥 Logo blasts apart on every drop'};
+    sparks: '✨ Logo builds itself from sparks', wipe: 'Logo wipes in on the beat', drop: '💥 Logo blasts apart on every drop', twinkle: '✨ Logo pops in dot by dot, then twinkles'};
   const LM_NOTE = {still: 'Glows and breathes with the beat.', pulse: 'Punches bigger on every kick.', shimmer: 'Colors swing round the color wheel each bar.',
     sparks: 'Builds itself from flying sparks each time it appears, then breathes.', wipe: 'Wipes in left to right on the beat, then holds.',
-    drop: 'Holds, then explodes into particles on every drop and flies back together.'};
+    drop: 'Holds, then explodes into particles on every drop and flies back together.', twinkle: 'Pops in dot by dot with a white flash, then random dots glint, like the GlowBop icon.'};
+  const WALL = {off: 'Off', text: 'Text', logo: 'Logo', both: 'Both'};
   async function loadText() {
     try {
       TX = await GB.get('/api/text?px=1' + (GB.gsel ? '&g=' + encodeURIComponent(GB.gsel) : ''));
@@ -326,48 +343,79 @@
   const txBody = () => ({text: $('mdTxText').value.trim() || 'GLOWBOP', mode: txMode, color: txColorVal(), layer: txLayer, speed: $('mdTxSpeed').value / 10,
     drop_flash: $('mdTxDrop').checked, drop_word: ($('mdTxDropWord').value || 'DROP').trim(), logo_mode: lgMode});
   async function sendText(b, msg) { const r = await GB.post('/api/text', GB.withGroup(b)); if (r) { if (msg) GB.toast(msg); setTimeout(loadText, 250); } return r; }
-  function txUpdate() { renderText(); const s = TX.state || {}; if (s.show && s.show !== 'off') { clearTimeout(txLive); txLive = setTimeout(() => sendText(txBody()), 250); } }
+  const showing = () => (TX.state || {}).show || 'off';
+  function txUpdate() { renderText(); const v = showing(); if (v === 'text' || v === 'both') { clearTimeout(txLive); txLive = setTimeout(() => sendText(txBody()), 250); } }
+  // the one switch: OFF fades out (and a slideshow can't bring the logo back while it's off)
+  function setWall(v) {
+    const s = TX.state || {}; if (v === showing()) return;
+    s.show = v; renderText();
+    if (v === 'off') return sendText({show: 'off'}, 'Fading out. The light show plays on.');
+    if (v === 'text') return sendText(Object.assign(txBody(), {show: 'text'}), '🔤 Text on the wall');
+    const b = v === 'both' ? Object.assign(txBody(), {show: 'both'}) : {show: 'logo'};
+    if (lgRes && !(s.has_logo && s.logo_name === lgRes.name)) Object.assign(b, lgBody());
+    const none = !s.has_logo && !lgRes;
+    return sendText(b, none ? '✨ No picture yet, so here is the GlowBop logo' : v === 'both' ? '🔁 Text and logo take turns every 8 bars' : '🖼️ Logo on the wall');
+  }
+  const liveBtn = id => `<button type="button" class="md-live md-off md-livebtn" id="${id}" aria-label="Turn on or off">OFF</button>`;
+  const more = (id, inner) => `<details class="md-more" id="${id}"><summary>More options</summary><div class="md-morein">${inner}</div></details>`;
+  const keepOpen = el => el.querySelectorAll('details.md-more').forEach(d => { try { d.open = localStorage.getItem('gb_' + d.id) === '1'; } catch (e) {}
+    d.addEventListener('toggle', () => { try { localStorage.setItem('gb_' + d.id, d.open ? '1' : '0'); } catch (e) {} }); });
+
+  GB.panel('text', 5, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
+    el.innerHTML = `
+      <div class="ph"><span>On the wall</span><span class="r"><span class="md-live md-off" id="mdWallLive">OFF</span></span></div>
+      <div class="seg md-wall" id="mdWall" role="radiogroup" aria-label="What shows on the wall">
+        <button class="btn" data-ws="off" style="--c:var(--orange)" role="radio">${GB.svg('power')}<span>Off</span></button>
+        <button class="btn" data-ws="text" style="--c:var(--gold)" role="radio"><span>Text</span></button>
+        <button class="btn" data-ws="logo" style="--c:var(--pink)" role="radio"><span>Logo</span></button>
+        <button class="btn" data-ws="both" style="--c:var(--lav)" role="radio"><span>Both</span></button>
+      </div>
+      <p class="note" id="mdWallNote"></p>
+      ${more('mdWallMore', `
+        <div class="sub">Layer</div>
+        <div class="seg md-lav"><button class="btn" data-tl="over">Over the show</button><button class="btn" data-tl="solo">Spotlight</button></div>
+        <p class="note">Over the show: the show keeps playing behind your words and logo. Spotlight: the show dims to a soft glow.</p>
+        <div class="md-drop"><label class="check"><input type="checkbox" id="mdTxDrop"><span>Flash a word on every drop</span></label>
+          <input type="text" id="mdTxDropWord" maxlength="12" value="DROP" aria-label="Drop word" style="--c:var(--gold)"></div>`)}`;
+    el.querySelectorAll('.md-lav .btn').forEach(b => b.style.setProperty('--c', 'var(--lav)'));
+    el.querySelectorAll('[data-ws]').forEach(b => b.onclick = () => setWall(b.dataset.ws));
+    el.querySelectorAll('[data-tl]').forEach(b => b.onclick = () => { txLayer = b.dataset.tl; renderText(); sendText({layer: txLayer}, txLayer === 'solo' ? 'Spotlight: the show dims behind' : 'Over the show'); });
+    $('mdTxDrop').onchange = () => sendText({drop_flash: $('mdTxDrop').checked, drop_word: ($('mdTxDropWord').value || 'DROP').trim()}, $('mdTxDrop').checked ? '💥 Drops will flash your word' : 'Drop word off');
+    $('mdTxDropWord').onchange = () => sendText({drop_word: ($('mdTxDropWord').value || 'DROP').trim()});
+    keepOpen(el);
+  });
 
   GB.panel('text', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--gold)');
     el.innerHTML = `
-      <div class="ph"><span>Text</span><span class="r"><span class="md-live md-off" id="mdTxLive">HIDDEN</span></span></div>
-      <p class="note">Words on the wall, on top of the show. Changes go live while the text is showing.</p>
+      <div class="ph"><span>Text</span><span class="r">${liveBtn('mdTxLive')}</span></div>
       <input type="text" id="mdTxText" maxlength="120" placeholder="e.g. HAPPY BIRTHDAY JACK *" autocomplete="off" aria-label="Message" style="--c:var(--gold)">
-      <div class="sub">Mode</div>
+      <div class="md-pre" id="mdTxPresets"></div>
+      <div class="sub">Style</div>
       <div class="seg wrap md-gold"><button class="btn" data-tm="scroll">Scroll</button><button class="btn" data-tm="beat">Beat words</button><button class="btn" data-tm="still">Still</button><button class="btn" data-tm="drop">On drop</button></div>
-      <div class="sub">Color</div>
       <div class="md-colrow"><div class="seg md-gold"><button class="btn" data-tc="look">Look</button><button class="btn" data-tc="rainbow">Rainbow</button><button class="btn" data-tc="white">White</button></div>
         <input type="color" id="mdTxColor" value="#ff2a8a" title="Pick your own color" aria-label="Pick your own color"></div>
-      <div class="sub">Layer</div>
-      <div class="seg md-gold"><button class="btn" data-tl="over">Over the show</button><button class="btn" data-tl="solo">Text only</button></div>
-      <label class="lv" style="--c:var(--gold)"><span>Speed</span><input type="range" id="mdTxSpeed" min="3" max="30" value="10"><b id="mdTxSpeedV">1.0x</b></label>
-      <div class="grid2"><button class="btn c lg" id="mdTxShow" style="--c:var(--gold)"></button><button class="btn lg" id="mdTxSave">${GB.svg('save')}<span>Save</span></button></div>
-      <div class="md-drop"><label class="check"><input type="checkbox" id="mdTxDrop"><span>Flash a word on every drop</span></label>
-        <input type="text" id="mdTxDropWord" maxlength="12" value="DROP" aria-label="Drop word" style="--c:var(--gold)"></div>
-      <div class="sub">Saved</div>
-      <div class="md-pre" id="mdTxPresets"></div>`;
+      <button class="btn" id="mdTxSave">${GB.svg('save')}<span>Save this text</span></button>
+      ${more('mdTxMore', `<label class="lv" style="--c:var(--gold)"><span>Speed</span><input type="range" id="mdTxSpeed" min="3" max="30" value="10"><b id="mdTxSpeedV">1.0x</b></label>`)}`;
     el.querySelectorAll('.md-gold .btn').forEach(b => b.style.setProperty('--c', 'var(--gold)'));
-    $('mdTxShow').onclick = () => { const s = TX.state || {}; const on = s.show && s.show !== 'off' && s.show !== 'logo';
-      sendText(on ? {show: 'off'} : Object.assign(txBody(), {show: 'text'}), on ? 'Text hidden' : '🔤 Text on the wall'); };
-    $('mdTxSave').onclick = async () => { if (await sendText(Object.assign(txBody(), {show: (TX.state || {}).show || 'off'}))) sendText({preset_save: 'text', name: $('mdTxText').value.trim() || 'GLOWBOP'}, '💾 Saved'); };
-    $('mdTxText').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendText(Object.assign(txBody(), {show: 'text'}), '🔤 Text on the wall'); } });
+    $('mdTxLive').onclick = () => { const v = showing(); setWall(v === 'text' ? 'off' : v === 'both' ? 'logo' : v === 'logo' ? 'both' : 'text'); };
+    $('mdTxSave').onclick = async () => { if (await sendText(txBody())) sendText({preset_save: 'text', name: $('mdTxText').value.trim() || 'GLOWBOP'}, '💾 Saved'); };
+    $('mdTxText').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); txUpdate(); } });
     $('mdTxText').addEventListener('input', txUpdate);
     el.querySelectorAll('[data-tm]').forEach(b => b.onclick = () => { txMode = b.dataset.tm; txUpdate(); });
     el.querySelectorAll('[data-tc]').forEach(b => b.onclick = () => { txColor = b.dataset.tc; txUpdate(); });
     $('mdTxColor').oninput = () => { txColor = 'custom'; txUpdate(); };
-    el.querySelectorAll('[data-tl]').forEach(b => b.onclick = () => { txLayer = b.dataset.tl; txUpdate(); });
     $('mdTxSpeed').oninput = txUpdate;
-    $('mdTxDrop').onchange = () => sendText({drop_flash: $('mdTxDrop').checked, drop_word: ($('mdTxDropWord').value || 'DROP').trim()}, $('mdTxDrop').checked ? '💥 Drops will flash your word' : 'Drop word off');
-    $('mdTxDropWord').onchange = () => sendText({drop_word: ($('mdTxDropWord').value || 'DROP').trim()});
     GB.paintRange($('mdTxSpeed'));
+    keepOpen(el);
   });
 
   GB.panel('text', 20, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--pink)');
     const tg = (id, t, s) => `<button class="md-fx" id="${id}" type="button" aria-pressed="false"><span class="t"><b>${t}</b><small>${s}</small></span><span class="sw"></span></button>`;
     el.innerHTML = `
-      <div class="ph"><span>Logo</span><span class="r"><span class="md-live md-off" id="mdLgLive">HIDDEN</span></span></div>
+      <div class="ph"><span>Logo</span><span class="r">${liveBtn('mdLgLive')}</span></div>
       <div class="md-lg"><canvas id="mdLgPrev" width="192" height="200" aria-label="Your picture"></canvas>
         <div><input type="file" id="mdLgFile" accept="image/*" hidden>
           <button class="btn c" id="mdLgPick" style="--c:var(--violet)">${GB.svg('add')}<span>Choose a picture</span></button>
@@ -376,38 +424,40 @@
         <figure id="mdLgBeforeF"><figcaption><span>Before</span><i class="md-onw">ON WALL</i></figcaption><canvas id="mdLgBefore" aria-label="Before: plain shrink"></canvas></figure>
         <figure id="mdLgAfterF"><figcaption><span id="mdLgAfterL">After</span><i class="md-onw">ON WALL</i></figcaption><canvas id="mdLgAfter" aria-label="How the logo looks on the wall"></canvas></figure>
       </div>
+      <div class="seg md-pinks" id="mdLgLay" hidden><button class="btn" data-ll="whole">Whole logo</button><button class="btn" data-ll="icon">Icon only</button><button class="btn" data-ll="scroll">Scroll it</button></div>
+      <p class="note md-lgwarn" id="mdLgWarn" hidden></p>
       <p class="note md-lgnote" id="mdLgNote" hidden></p>
-      <div class="md-fxl">
+      <div class="sub">Saved logos</div>
+      <div class="md-pre" id="mdLgPresets"></div>
+      <div class="sub">Entrance &amp; motion</div>
+      <div class="seg wrap md-pinks md-lm"><button class="btn" data-lm="still">Glow</button><button class="btn" data-lm="pulse">Pulse</button><button class="btn" data-lm="shimmer">Color shift</button><button class="btn" data-lm="sparks">Sparks</button><button class="btn" data-lm="wipe">Wipe in</button><button class="btn" data-lm="drop">Drop blast</button><button class="btn" data-lm="twinkle">Twinkle</button></div>
+      <p class="note" id="mdLgMdNote"></p>
+      <div class="grid2">
+        <button class="btn c" id="mdLgSave" style="--c:var(--gold)">${GB.svg('save')}<span>Save logo</span></button>
+        <button class="btn danger" id="mdLgRemove">${GB.svg('trash')}<span>Remove</span></button>
+      </div>
+      ${more('mdLgMore', `<div class="md-fxl">
         ${tg('mdLgBoost', 'Boost for LEDs', 'Punchier colors, lifts dark colors, thickens thin lines, turns near-black off.')}
         ${tg('mdLgBg', 'Remove background', 'Finds a flat background (white or any solid color) and turns it off.')}
-      </div>
-      <div class="sub">Entrance &amp; motion</div>
-      <div class="seg wrap md-pinks md-lm"><button class="btn" data-lm="still">Glow</button><button class="btn" data-lm="pulse">Pulse</button><button class="btn" data-lm="shimmer">Color shift</button><button class="btn" data-lm="sparks">Sparks</button><button class="btn" data-lm="wipe">Wipe in</button><button class="btn" data-lm="drop">Drop blast</button></div>
-      <p class="note" id="mdLgMdNote"></p>
-      <div class="md-fxl">
         ${tg('mdLgInside', 'Show inside the logo', 'The light show plays only inside the logo shape, with a soft glow round the edge.')}
-        ${tg('mdLgSlide', 'Slideshow', 'Rotates through every saved logo, with the entrance above.')}
-      </div>
-      <div class="seg md-pinks" id="mdLgEvery"><button class="btn" data-se="8bars">Every 8 bars</button><button class="btn" data-se="1min">1 min</button><button class="btn" data-se="5min">5 min</button></div>
-      <p class="note" id="mdLgSlNote"></p>
-      <div class="pads">
-        <button class="btn c" id="mdLgShow" style="--c:var(--pink)"></button>
-        <button class="btn c" id="mdLgBoth" style="--c:var(--lav)">${GB.svg('shuffle')}<span>Logo + text</span></button>
-        <button class="btn c" id="mdLgSave" style="--c:var(--gold)">${GB.svg('save')}<span>Save</span></button>
-        <button class="btn danger" id="mdLgRemove">${GB.svg('trash')}<span>Remove</span></button>
-      </div>`;
+        ${tg('mdLgSlide', 'Slideshow', 'While the logo is on the wall, rotates through every saved logo.')}
+        </div>
+        <div class="seg md-pinks" id="mdLgEvery"><button class="btn" data-se="8bars">Every 8 bars</button><button class="btn" data-se="1min">1 min</button><button class="btn" data-se="5min">5 min</button></div>
+        <p class="note" id="mdLgSlNote"></p>`)}`;
     el.querySelectorAll('.md-pinks .btn').forEach(b => b.style.setProperty('--c', 'var(--pink)'));
-    el.querySelectorAll('[data-lm]').forEach(b => b.onclick = () => { lgMode = b.dataset.lm; renderText(); sendText({logo_mode: lgMode}, (TX.state || {}).show === 'logo' ? LM_TIP[lgMode] : ''); });
+    $('mdLgLive').onclick = () => { const v = showing(); setWall(v === 'logo' ? 'off' : v === 'both' ? 'text' : v === 'text' ? 'both' : 'logo'); };
+    el.querySelectorAll('[data-lm]').forEach(b => b.onclick = () => { lgMode = b.dataset.lm; renderText(); const v = showing(); sendText({logo_mode: lgMode}, v === 'logo' || v === 'both' ? LM_TIP[lgMode] : ''); });
     el.querySelectorAll('[data-se]').forEach(b => b.onclick = () => { TX.state.slide_every = b.dataset.se; renderText(); sendText({slide_every: b.dataset.se}); });
+    el.querySelectorAll('[data-ll]').forEach(b => b.onclick = () => { lgLayout = b.dataset.ll; if (lgSrc) { lgRun(); lgSend(); } });
     const flip = k => { lgOpt[k] = !lgOpt[k]; try { localStorage.setItem('gb_logo_opts', JSON.stringify(lgOpt)); } catch (e) {}
-      if (lgSrc) { lgRun(); lgSend(false); } else renderText(); };
+      if (lgSrc) { lgRun(); lgSend(); } else renderText(); };
     $('mdLgBoost').onclick = () => flip('boost');
     $('mdLgBg').onclick = () => flip('removeBg');
     $('mdLgInside').onclick = () => { const v = !(TX.state || {}).logo_inside; TX.state.logo_inside = v; renderText();
       sendText({logo_inside: v}, v ? '✨ The show plays inside your logo' : 'Logo drawn normally'); };
     $('mdLgSlide').onclick = () => { const s = TX.state || {}, v = !s.slideshow;
       if (v && (s.logo_count || 0) < 2) GB.toast('Save 2 or more logos to rotate them');
-      s.slideshow = v; renderText(); sendText(Object.assign({slideshow: v}, v && s.has_logo && s.show !== 'logo' && s.show !== 'both' ? {show: 'logo'} : {}), v ? '🔁 Logo slideshow on' : 'Slideshow off'); };
+      s.slideshow = v; renderText(); sendText({slideshow: v}, v ? '🔁 Slideshow on (while the logo is on the wall)' : 'Slideshow off'); };
     $('mdLgPick').onclick = () => $('mdLgFile').click();
     $('mdLgFile').onchange = () => {
       const f = $('mdLgFile').files[0]; if (!f) return; const img = new Image();
@@ -416,22 +466,19 @@
         const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
         g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, w, h);
         lgSrc = {data: g.getImageData(0, 0, w, h).data, w, h, name: f.name.replace(/\.[^.]+$/, '').slice(0, 40)};
-        URL.revokeObjectURL(img.src);
+        URL.revokeObjectURL(img.src); lgLayout = 'auto';
         lgRun(); lgSend(true);
       };
       img.onerror = () => GB.toast('⚠️ Could not read that picture');
       img.src = URL.createObjectURL(f);
     };
-    $('mdLgShow').onclick = () => { const s = TX.state || {}; if (s.show === 'logo') return sendText({show: 'off'}, 'Logo hidden');
-      if (!s.has_logo && !lgPixels) return GB.toast('Choose a picture first'); sendText({show: 'logo', logo_mode: lgMode}, '🖼️ Logo on the wall'); };
-    $('mdLgBoth').onclick = () => { const s = TX.state || {}; if (!s.has_logo) return GB.toast('Choose a picture first');
-      sendText(Object.assign(txBody(), {show: s.show === 'both' ? 'off' : 'both'}), s.show === 'both' ? 'Text + logo off' : '🔁 Text and logo take turns every 8 bars'); };
     $('mdLgRemove').onclick = async () => { const s = TX.state || {};
       if (!s.has_logo && !lgPixels) return GB.toast('No logo loaded');
       const show = s.show === 'both' ? 'text' : (s.show === 'logo' ? 'off' : (s.show || 'off'));
       if (await sendText({logo: null, show}, '🗑️ Logo removed')) { lgPixels = null; lgSrc = null; lgRes = null; $('mdLgFile').value = ''; const c = $('mdLgPrev'); c.getContext('2d').clearRect(0, 0, c.width, c.height); $('mdLgName').textContent = LG_HINT; lgPaint(); } };
     $('mdLgSave').onclick = () => { if (!(TX.state || {}).has_logo) return GB.toast('Choose a picture first'); sendText({preset_save: 'logo', name: (TX.state.logo_name || 'Logo')}, '💾 Logo saved'); };
     window.addEventListener('resize', () => { clearTimeout(lgRz); lgRz = setTimeout(lgPaint, 150); });
+    keepOpen(el);
     lgPaint();
   });
 
@@ -440,7 +487,9 @@
   function lgRun() {
     if (!lgSrc) return;
     const [W, H] = lgWall();
-    lgRes = lgProcess(lgSrc.data, lgSrc.w, lgSrc.h, W, H, lgOpt); lgRes.W = W; lgRes.H = H; lgRes.name = lgSrc.name;
+    const t0 = performance.now();
+    lgRes = lgProcess(lgSrc.data, lgSrc.w, lgSrc.h, W, H, Object.assign({layout: lgLayout}, lgOpt)); lgRes.W = W; lgRes.H = H; lgRes.name = lgSrc.name; lgRes.ms = Math.round(performance.now() - t0);
+    GB.lgLast = {ms: lgRes.ms, layout: lgRes.layout, avail: lgRes.avail, stats: lgRes.stats, OW: lgRes.OW};    // (for tests)
     lgPixels = (lgOpt.boost ? lgRes.boost : lgRes.plain).rgb;
     const pc = $('mdLgPrev'), pv = pc.getContext('2d'), t = lgRes.thumb;           // the cleaned-up picture (checks = removed)
     pv.clearRect(0, 0, pc.width, pc.height);
@@ -448,119 +497,248 @@
     const tc = document.createElement('canvas'); tc.width = t.w; tc.height = t.h; tc.getContext('2d').putImageData(new ImageData(t.data, t.w, t.h), 0, 0);
     const s = Math.min(pc.width / t.w, pc.height / t.h) * 0.92; pv.imageSmoothingQuality = 'high';
     pv.drawImage(tc, (pc.width - t.w * s) / 2, (pc.height - t.h * s) / 2, t.w * s, t.h * s);
-    $('mdLgName').textContent = lgSrc.name + ' · ' + W + '×' + H + ' bulbs';
+    $('mdLgName').textContent = lgSrc.name + ' · ' + W + '×' + H + ' bulbs' + (lgRes.OW > W ? ' · scrolls' : '');
     lgPaint();
   }
-  function lgSend(show) {
-    if (!lgRes) return; const v = lgOpt.boost ? lgRes.boost : lgRes.plain;
-    const b = {logo: {rgb: v.rgb, a: v.a, w: lgRes.W, h: lgRes.H, name: lgRes.name}, logo_mode: lgMode};
-    if (show) b.show = (TX.state || {}).show === 'both' ? 'both' : 'logo';
-    sendText(b, show ? '🖼️ Logo on the wall' : (lgOpt.boost ? '⚡ Boost on' : 'Boost off') + ' · ' + (lgOpt.removeBg ? 'background removed' : 'background kept'));
+  function lgBody() { const v = lgOpt.boost ? lgRes.boost : lgRes.plain;
+    return {logo: {rgb: v.rgb, a: v.a, w: lgRes.OW, h: lgRes.H, name: lgRes.name, scroll: lgRes.OW > lgRes.W}, logo_mode: lgMode}; }
+  function lgSend(fresh) {
+    if (!lgRes) return; const v = showing(), on = v === 'logo' || v === 'both';
+    sendText(lgBody(), fresh ? (on ? '🖼️ Logo updated on the wall' : '🖼️ Logo ready. Tap LOGO at the top to show it') : (lgOpt.boost ? '⚡ Boost on' : 'Boost off') + ' · ' + (lgOpt.removeBg ? 'background removed' : 'background kept'));
   }
-  function lgDraw(cv, rgb, W, H) {                                      // the bulbs as glowing dots, like the live wall preview
-    const box = cv.parentElement, bw = Math.max(60, (box.clientWidth || 162) - 12), st = Math.min(bw / W, 210 / H), cssW = Math.round(st * W), cssH = Math.round(st * H);
-    const dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
-    cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px'; const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  function lgDraw(cv, rgb, LW, H, VW, ox) {                             // the bulbs as glowing dots, like the live wall preview (VW columns, from ox)
+    VW = VW || LW; ox = ox || 0;
+    const box = cv.parentElement, bw = Math.max(60, (box.clientWidth || 162) - 12), st = Math.min(bw / VW, 210 / H), cssW = Math.round(st * VW), cssH = Math.round(st * H);
+    const dpr = Math.min(2, window.devicePixelRatio || 1), pw = Math.round(cssW * dpr), ph = Math.round(cssH * dpr);
+    if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px'; }
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.fillStyle = '#05040a'; g.fillRect(0, 0, cssW, cssH);
-    const r = st * 0.42;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3;
-      if (rgb && rgb[i] + rgb[i + 1] + rgb[i + 2] > 6) continue; g.fillStyle = '#16121f'; g.beginPath(); g.arc(x * st + st / 2, y * st + st / 2, r * 0.55, 0, 6.283); g.fill(); }
+    const r = st * 0.42, at = (x, y) => { const c = ox + x - (LW > VW ? VW : 0); if (!rgb || c < 0 || c >= LW) return null; const i = (y * LW + c) * 3; return rgb[i] + rgb[i + 1] + rgb[i + 2] > 6 ? [rgb[i], rgb[i + 1], rgb[i + 2]] : null; };
+    for (let y = 0; y < H; y++) for (let x = 0; x < VW; x++) { if (at(x, y)) continue; g.fillStyle = '#16121f'; g.beginPath(); g.arc(x * st + st / 2, y * st + st / 2, r * 0.55, 0, 6.283); g.fill(); }
     if (!rgb) return;
     g.globalCompositeOperation = 'lighter';
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, R = rgb[i], G = rgb[i + 1], B = rgb[i + 2];
-      if (R + G + B <= 6) continue; const px = x * st + st / 2, py = y * st + st / 2, gr = g.createRadialGradient(px, py, 0, px, py, st * 1.15);
+    for (let y = 0; y < H; y++) for (let x = 0; x < VW; x++) { const c = at(x, y); if (!c) continue; const [R, G, B] = c;
+      const px = x * st + st / 2, py = y * st + st / 2, gr = g.createRadialGradient(px, py, 0, px, py, st * 1.15);
       gr.addColorStop(0, `rgba(${R},${G},${B},0.42)`); gr.addColorStop(1, `rgba(${R},${G},${B},0)`); g.fillStyle = gr; g.fillRect(px - st * 1.2, py - st * 1.2, st * 2.4, st * 2.4); }
     g.globalCompositeOperation = 'source-over';
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, R = rgb[i], G = rgb[i + 1], B = rgb[i + 2];
-      if (R + G + B <= 6) continue; const px = x * st + st / 2, py = y * st + st / 2;
+    for (let y = 0; y < H; y++) for (let x = 0; x < VW; x++) { const c = at(x, y); if (!c) continue; const [R, G, B] = c, px = x * st + st / 2, py = y * st + st / 2;
       g.fillStyle = `rgb(${R},${G},${B})`; g.beginPath(); g.arc(px, py, r, 0, 6.283); g.fill();
       g.fillStyle = `rgba(255,255,255,${0.18 * Math.max(R, G, B) / 255})`; g.beginPath(); g.arc(px - r * 0.2, py - r * 0.25, r * 0.4, 0, 6.283); g.fill(); }
+  }
+  function lgAnim() {                                                   // a wide logo scrolls in the preview too (6 bulbs a second, like the wall)
+    clearInterval(lgTimer); lgTimer = null;
+    const draw = () => { const t = performance.now() / 1000;
+      lgJobs.forEach(([cv, rgb, LW, H, VW]) => lgDraw(cv, rgb, LW, H, VW, LW > VW ? Math.floor(t * 6) % (LW + VW) : 0)); };
+    draw();
+    if (lgJobs.some(j => j[2] > j[4]) && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+      lgTimer = setInterval(() => { if (!document.hidden && document.body.dataset.page === 'text') draw(); }, 140);
   }
   function lgPaint() {
     if (!$('mdLgBA')) return;
     const bf = $('mdLgBeforeF'), af = $('mdLgAfterF'), s = TX.state || {}, local = lgRes && (!s.logo_name || s.logo_name === lgRes.name);
     $('mdLgPrev').style.display = lgRes ? '' : 'none';
+    const lay = $('mdLgLay'), warn = $('mdLgWarn');
     if (local) {
       bf.hidden = false; $('mdLgBA').classList.remove('one');
       $('mdLgAfterL').textContent = 'After';
       bf.classList.toggle('sel', !lgOpt.boost); af.classList.toggle('sel', !!lgOpt.boost);
-      lgDraw($('mdLgBefore'), lgRes.plain.rgb, lgRes.W, lgRes.H); lgDraw($('mdLgAfter'), lgRes.boost.rgb, lgRes.W, lgRes.H);
+      lgJobs = [[$('mdLgBefore'), lgRes.plain.rgb, lgRes.OW, lgRes.H, lgRes.W], [$('mdLgAfter'), lgRes.boost.rgb, lgRes.OW, lgRes.H, lgRes.W]];
       const n = $('mdLgNote'); n.hidden = !lgRes.notes.length; n.textContent = lgRes.notes.join(' ');
+      warn.hidden = !lgRes.warn.length; warn.textContent = '⚠️ ' + lgRes.warn.join(' ');
+      const av = lgRes.avail; lay.hidden = !(av.icon || av.scroll);
+      lay.querySelectorAll('[data-ll]').forEach(b => { b.hidden = b.dataset.ll !== 'whole' && !av[b.dataset.ll]; b.classList.toggle('on', b.dataset.ll === lgRes.layout); });
     } else {
       bf.hidden = true; $('mdLgBA').classList.add('one'); af.classList.add('sel');
-      $('mdLgAfterL').textContent = TX.logo ? (s.logo_name || 'On the wall') : 'On the wall';
-      const [W, H] = TX.logo ? [TX.logo.w, TX.logo.h] : lgWall();
-      lgDraw($('mdLgAfter'), TX.logo ? TX.logo.rgb : null, W, H);
-      $('mdLgNote').hidden = true;
+      $('mdLgAfterL').textContent = TX.logo ? (s.logo_name || 'On the wall') : 'No logo yet';
+      const [W, H] = lgWall();
+      lgJobs = [[$('mdLgAfter'), TX.logo ? TX.logo.rgb : null, TX.logo ? TX.logo.w : W, TX.logo ? TX.logo.h : H, TX.logo ? Math.min(W, TX.logo.w) : W]];
+      $('mdLgNote').hidden = true; warn.hidden = true; lay.hidden = true;
     }
+    lgAnim();
   }
 
   /*LGPROC*/
   // 🖼️ Logo -> LED pixels, all on the phone. Pure maths on RGBA bytes so it is testable anywhere.
-  // Returns {plain, boost} (each {rgb:[0-255 x3], a:[0-255]} at W x H), notes, and the cleaned-up source for the thumbnail.
+  // o = {boost, removeBg, layout: 'auto' | 'whole' | 'icon' | 'scroll'}
+  // Returns {plain, boost} (each {rgb:[0-255 x3], a:[0-255]} at OW x H), OW (= W, or wider for a logo that scrolls), layout (the one used),
+  // avail {icon, scroll}, notes (what was done), warn (what will not read well), and the cleaned-up crop for the thumbnail.
   function lgProcess(src, sw, sh, W, H, o) {
     const N = sw * sh, px = new Float32Array(N * 4);
     for (let i = 0; i < N * 4; i++) px[i] = src[i] / 255;
-    const notes = []; let removed = false, transparent = false;
-    const border = [];
-    for (let x = 0; x < sw; x++) border.push(x, (sh - 1) * sw + x);
-    for (let y = 1; y < sh - 1; y++) border.push(y * sw, y * sw + sw - 1);
+    const notes = [], warn = []; let removed = false, transparent = false, peeled = false;
+    const lum = i => 0.3 * px[i * 4] + 0.59 * px[i * 4 + 1] + 0.11 * px[i * 4 + 2];
+    const sat = i => { const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2], mx = Math.max(r, g, b); return mx > 0 ? (mx - Math.min(r, g, b)) / mx : 0; };
+    const sides = [[], [], [], []];
+    for (let x = 0; x < sw; x++) { sides[0].push(x); sides[1].push((sh - 1) * sw + x); }
+    for (let y = 0; y < sh; y++) { sides[2].push(y * sw); sides[3].push(y * sw + sw - 1); }
+    const border = sides.flat();
     let clear = 0; for (const i of border) if (px[i * 4 + 3] < 0.5) clear++;
     if (clear > border.length * 0.3) { transparent = true; notes.push('Using the picture\'s see-through background.'); }
-    else if (o.removeBg) {                                              // flat background? (most of the border is one colour)
+    // how many colours? (photos have thousands, logos a handful plus JPEG noise)
+    const cset = new Set(); for (let i = 0; i < N; i += 3) if (src[i * 4 + 3] > 127) cset.add(((src[i * 4] >> 3) << 10) | ((src[i * 4 + 1] >> 3) << 5) | (src[i * 4 + 2] >> 3));
+    // a very dark picture (dark logo on black / navy): stretch it so the bulbs can show it
+    if (!transparent) {
+      const hist = new Uint32Array(64); let n = 0;
+      for (let i = 0; i < N; i++) if (px[i * 4 + 3] > 0.5) { hist[Math.min(63, (lum(i) * 64) | 0)]++; n++; }
+      let acc = 0, p99 = 1; for (let k = 63; k >= 0; k--) { acc += hist[k]; if (acc > n * 0.01) { p99 = (k + 1) / 64; break; } }
+      if (n && p99 < 0.4) { const k = 0.85 / Math.max(p99, 0.06); for (let i = 0; i < N; i++) for (let c = 0; c < 3; c++) px[i * 4 + c] = Math.min(1, px[i * 4 + c] * k); notes.push('Very dark picture brightened so it shows.'); }
+    }
+    let inkDark = false, br = 0, bg = 0, bb = 0;
+    const dist = (i, r, g, b) => Math.hypot(px[i * 4] - r, px[i * 4 + 1] - g, px[i * 4 + 2] - b);
+    const darkInk = i => { const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b); return mx < 0.25 || (0.3 * r + 0.59 * g + 0.11 * b < 0.5 && mx - mn < 0.2); };
+    const seen = new Uint8Array(N);
+    const flood = (starts, ok) => { const st = []; for (const i of starts) if (!seen[i] && ok(i)) { seen[i] = 1; st.push(i); }
+      while (st.length) { const i = st.pop(), x = i % sw;
+        if (x > 0 && !seen[i - 1] && ok(i - 1)) { seen[i - 1] = 1; st.push(i - 1); }
+        if (x < sw - 1 && !seen[i + 1] && ok(i + 1)) { seen[i + 1] = 1; st.push(i + 1); }
+        if (i >= sw && !seen[i - sw] && ok(i - sw)) { seen[i - sw] = 1; st.push(i - sw); }
+        if (i < N - sw && !seen[i + sw] && ok(i + sw)) { seen[i + sw] = 1; st.push(i + sw); } } };
+    if (!transparent && o.removeBg) {                                  // flat background? (most of the border, on 3+ sides, is one colour)
       const buck = new Map(), key = i => ((src[i * 4] >> 4) << 8) | ((src[i * 4 + 1] >> 4) << 4) | (src[i * 4 + 2] >> 4);
-      for (const i of border) if (px[i * 4 + 3] >= 0.5) { const k = key(i); buck.set(k, (buck.get(k) || 0) + 1); }
+      for (const i of border) { const k = key(i); buck.set(k, (buck.get(k) || 0) + 1); }
       let bk = -1, bn = 0; buck.forEach((n, k) => { if (n > bn) { bn = n; bk = k; } });
-      let br = 0, bg = 0, bb = 0, c = 0;
-      for (const i of border) if (px[i * 4 + 3] >= 0.5 && key(i) === bk) { br += px[i * 4]; bg += px[i * 4 + 1]; bb += px[i * 4 + 2]; c++; }
+      let c = 0; for (const i of border) if (key(i) === bk) { br += px[i * 4]; bg += px[i * 4 + 1]; bb += px[i * 4 + 2]; c++; }
       if (c) { br /= c; bg /= c; bb /= c; }
-      const tol = 0.2, dist = i => Math.hypot(px[i * 4] - br, px[i * 4 + 1] - bg, px[i * 4 + 2] - bb);
-      let near = 0, opq = 0; for (const i of border) if (px[i * 4 + 3] >= 0.5) { opq++; if (dist(i) < tol) near++; }
-      if (c && near >= opq * 0.6) {
-        const seen = new Uint8Array(N), st = [];
-        for (const i of border) if (px[i * 4 + 3] >= 0.5 && dist(i) < tol) { seen[i] = 1; st.push(i); }
-        while (st.length) {                                             // flood fill the background in from the edges
-          const i = st.pop(), x = i % sw, y = (i / sw) | 0;
-          if (x > 0 && !seen[i - 1] && dist(i - 1) < tol) { seen[i - 1] = 1; st.push(i - 1); }
-          if (x < sw - 1 && !seen[i + 1] && dist(i + 1) < tol) { seen[i + 1] = 1; st.push(i + 1); }
-          if (y > 0 && !seen[i - sw] && dist(i - sw) < tol) { seen[i - sw] = 1; st.push(i - sw); }
-          if (y < sh - 1 && !seen[i + sw] && dist(i + sw) < tol) { seen[i + sw] = 1; st.push(i + sw); }
-        }
-        let cnt = 0;
-        for (let i = 0; i < N; i++) if (seen[i] || dist(i) < tol * 0.5) { seen[i] = 1; px[i * 4 + 3] = 0; cnt++; }   // + the same colour inside letters (the hole in an O)
-        for (let i = 0; i < N; i++) {                                   // soften the cut edge
-          if (seen[i]) continue; const x = i % sw, y = (i / sw) | 0;
-          const nb = (x > 0 && seen[i - 1]) || (x < sw - 1 && seen[i + 1]) || (y > 0 && seen[i - sw]) || (y < sh - 1 && seen[i + sw]);
-          if (nb) { const d = dist(i); if (d < tol * 2) px[i * 4 + 3] *= Math.min(1, Math.max(0, (d - tol * 0.5) / (tol * 1.5))); }
-        }
+      const tol = 0.2, near = i => dist(i, br, bg, bb) < tol;
+      let nNear = 0; for (const i of border) if (near(i)) nNear++;
+      const flatSides = sides.filter(sd => sd.filter(near).length >= sd.length * 0.5).length;
+      if (c && nNear >= border.length * 0.6 && flatSides >= 3) {
+        flood(border, near);
+        let fg = 0, dk = 0; for (let i = 0; i < N; i++) if (!seen[i] && dist(i, br, bg, bb) >= tol * 0.5) { fg++; if (darkInk(i)) dk++; }   // (not counting holes the background colour)
+        inkDark = fg > 0 && dk > fg * 0.6;
+        // the same colour inside the shape: holes in dark letters go too, but white letters on a coloured badge stay
+        if (inkDark) for (let i = 0; i < N; i++) if (!seen[i] && dist(i, br, bg, bb) < tol * 0.5) seen[i] = 1;
+        let cnt = 0; for (let i = 0; i < N; i++) if (seen[i]) cnt++;
         removed = cnt > N * 0.02 && cnt < N * 0.995;
-        if (!removed) for (let i = 0; i < N; i++) px[i * 4 + 3] = src[i * 4 + 3] / 255;   // took everything (or nothing): undo
-        else {
+        if (removed) {
           const nm = br > 0.85 && bg > 0.85 && bb > 0.85 ? 'white' : br < 0.15 && bg < 0.15 && bb < 0.15 ? 'black' : 'solid ' + lgHex(br, bg, bb);
           notes.push('Removed the ' + nm + ' background.');
+          // a card / sign / paper inside the picture (a photo of a business card): peel that too
+          const edge = []; for (let i = 0; i < N; i++) { if (seen[i]) continue; const x = i % sw;
+            if ((x > 0 && seen[i - 1]) || (x < sw - 1 && seen[i + 1]) || (i >= sw && seen[i - sw]) || (i < N - sw && seen[i + sw])) edge.push(i); }
+          const paper = []; for (let i = 0; i < N; i++) if (!seen[i] && lum(i) > 0.65 && sat(i) < 0.15) paper.push(i);
+          if (!inkDark && paper.length > fg * 0.35) {
+            let pr = 0, pg = 0, pb = 0; for (const i of paper) { pr += px[i * 4]; pg += px[i * 4 + 1]; pb += px[i * 4 + 2]; } pr /= paper.length; pg /= paper.length; pb /= paper.length;
+            const before = seen.slice(); flood(paper, i => dist(i, pr, pg, pb) < 0.18);
+            let pc = 0, qx0 = sw, qy0 = sh, qx1 = 0, qy1 = 0;
+            for (let i = 0; i < N; i++) if (seen[i] && !before[i]) { pc++; const x = i % sw, y = (i / sw) | 0; if (x < qx0) qx0 = x; if (x > qx1) qx1 = x; if (y < qy0) qy0 = y; if (y > qy1) qy1 = y; }
+            const solid = pc / Math.max(1, (qx1 - qx0 + 1) * (qy1 - qy0 + 1));   // a card is one solid shape; faint letters or white lettering are not
+            if (pc > fg * 0.35 && pc < fg * 0.95 && solid > 0.45) {
+              peeled = true; notes.push('Also removed the card behind the logo.');
+              const mid = seen.slice(); flood(edge, i => !seen[i]);    // + the card's shadow / blurry rim (outside the card, touching the background)
+              let rim = 0, left = 0; for (let i = 0; i < N; i++) { if (seen[i] && !mid[i]) rim++; if (!seen[i]) left++; }
+              if (left < (rim + left) * 0.08) seen.set(mid);          // (leaked into the logo: undo)
+            } else seen.set(before);
+          }
+          const bl = 0.3 * br + 0.59 * bg + 0.11 * bb;
+          if (!inkDark && !peeled && bl > 0.7) {                         // a soft grey drop shadow round a colourful logo: goes with the background
+            const before = seen.slice(); flood([...Array(N).keys()].filter(i => seen[i]), i => sat(i) < 0.1 && lum(i) > 0.3 && lum(i) < bl - 0.03 && dist(i, br, bg, bb) < 0.75);
+            let sc_ = 0; for (let i = 0; i < N; i++) if (seen[i] && !before[i]) sc_++;
+            if (sc_ > N * 0.002) notes.push('Removed the drop shadow.');
+          }
+          for (let i = 0; i < N; i++) if (seen[i]) px[i * 4 + 3] = 0;
+          for (let i = 0; i < N; i++) {                                 // soften the cut edge (JPEG fringe)
+            if (seen[i]) continue; const x = i % sw;
+            const nb = (x > 0 && seen[i - 1]) || (x < sw - 1 && seen[i + 1]) || (i >= sw && seen[i - sw]) || (i < N - sw && seen[i + sw]);
+            if (nb) { const d = dist(i, br, bg, bb); if (d < tol * 2) px[i * 4 + 3] *= Math.min(1, Math.max(0, (d - tol * 0.5) / (tol * 1.5))); }
+          }
         }
       } else notes.push('No flat background found, so the whole picture is used.');
     }
+    const photo = !removed && !transparent && cset.size > 500;
     if (removed || transparent) {                                       // a black logo on a cut-out background: light it up in white
-      let fg = 0, dark = 0;
-      for (let i = 0; i < N; i++) if (px[i * 4 + 3] > 0.5) { fg++; const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-        if (mx < 0.25 || (0.3 * r + 0.59 * g + 0.11 * b < 0.22 && mx - mn < 0.2)) dark++; }
-      if (fg && dark > fg * 0.6) {
+      let fg = 0, dark = 0, vivid = 0;
+      for (let i = 0; i < N; i++) if (px[i * 4 + 3] > 0.5) { fg++; if (darkInk(i)) dark++; else if (sat(i) > 0.4 && Math.max(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]) > 0.4) vivid++; }
+      if (fg && dark > fg * 0.6 && vivid < fg * 0.1) {                  // (colourful dots on a dark tile: the dark just stays off)
         for (let i = 0; i < N; i++) { const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-          if (mx < 0.35 && mx - mn < 0.15) { const v = 1 - mx * 0.6; px[i * 4] = px[i * 4 + 1] = px[i * 4 + 2] = v; } }
+          if (mx < 0.6 && mx - mn < 0.15) { const v = 1 - mx * 0.6; px[i * 4] = px[i * 4 + 1] = px[i * 4 + 2] = v; } }
         notes.push('Dark logo lit in white so the bulbs can show it.');
       }
     }
-    // crop to the logo itself so it fills the wall
-    let x0 = 0, y0 = 0, x1 = sw, y1 = sh;
+    // ---- what's in the picture: cut it into parts (rows, then columns, a few levels) to find the icon and the small text
+    const M = new Uint8Array(N);
+    for (let i = 0; i < N; i++) M[i] = px[i * 4 + 3] > 0.3 && Math.max(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]) > 0.06 ? 1 : 0;
+    let X0 = 0, Y0 = 0, X1 = sw, Y1 = sh;
     if (removed || transparent) {
-      x0 = sw; y0 = sh; x1 = 0; y1 = 0;
-      for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) if (px[(y * sw + x) * 4 + 3] > 0.3) { if (x < x0) x0 = x; if (x >= x1) x1 = x + 1; if (y < y0) y0 = y; if (y >= y1) y1 = y + 1; }
-      if (x1 <= x0) { x0 = 0; y0 = 0; x1 = sw; y1 = sh; }
+      X0 = sw; Y0 = sh; X1 = 0; Y1 = 0;
+      for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) if (M[y * sw + x]) { if (x < X0) X0 = x; if (x >= X1) X1 = x + 1; if (y < Y0) Y0 = y; if (y >= Y1) Y1 = y + 1; }
+      if (X1 <= X0) { X0 = 0; Y0 = 0; X1 = sw; Y1 = sh; }
     }
-    // resample into a fine grid (S x S samples per bulb), premultiplied, box-filtered
-    const S = 6, GW = W * S, GH = H * S, cw = x1 - x0, ch = y1 - y0, sc = Math.min(GW / cw, GH / ch);
-    const dw = cw * sc, dh = ch * sc, ox = (GW - dw) / 2, oy = (GH - dh) / 2, G = new Float32Array(GW * GH * 4);
+    const parts = [], bands = [];
+    const cut = (x0, y0, x1, y1, depth) => {
+      const rp = new Uint32Array(y1 - y0), cp = new Uint32Array(x1 - x0); let ink = 0;
+      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (M[y * sw + x]) { rp[y - y0]++; cp[x - x0]++; ink++; }
+      if (!ink) return;
+      let ra = 0; while (!rp[ra]) ra++; let rb = rp.length - 1; while (!rp[rb]) rb--;
+      let ca = 0; while (!cp[ca]) ca++; let cb = cp.length - 1; while (!cp[cb]) cb--;
+      const RP = rp.subarray(ra, rb + 1), CP = cp.subarray(ca, cb + 1);
+      y1 = y0 + rb + 1; y0 += ra; x1 = x0 + cb + 1; x0 += ca;
+      const hh = y1 - y0, runs = (prof, gap) => { const out = []; let s = -1, e = -1;
+        for (let k = 0; k < prof.length; k++) { if (prof[k]) { if (s < 0) s = k; else if (k - e - 1 >= gap) { out.push([s, e + 1]); s = k; } e = k; } }
+        if (s >= 0) out.push([s, e + 1]); return out; };
+      if (depth < 5 && parts.length < 300) {
+        const rs = runs(RP, Math.max(2, Math.round((Y1 - Y0) * 0.02)));
+        if (depth === 0) rs.forEach(([s, e]) => bands.push([y0 + s, y0 + e]));
+        if (rs.length > 1) { rs.forEach(([s, e]) => cut(x0, y0 + s, x1, y0 + e, depth + 1)); return; }
+        const cs = runs(CP, Math.max(2, Math.round(hh * 0.12)));
+        if (cs.length > 1) { cs.forEach(([s, e]) => cut(x0 + s, y0, x0 + e, y1, depth + 1)); return; }
+      }
+      parts.push({x0, y0, x1, y1, ink});
+    };
+    cut(X0, Y0, X1, Y1, 0);
+    const cw = X1 - X0, ch = Y1 - Y0, sWhole = Math.min(W / cw, H / ch), tot = parts.reduce((s, p) => s + p.ink, 0) || 1;
+    const tiny = (p, sc) => (p.y1 - p.y0) * sc < 5;                     // letters this short (in bulbs) are mush
+    let icon = null;
+    for (const p of parts) { const ph = p.y1 - p.y0, pw = p.x1 - p.x0, as = pw / ph;
+      if (as > 0.33 && as < 3 && ph >= ch * 0.25 && pw * ph > 0.04 * cw * ch && (!icon || pw * ph > (icon.x1 - icon.x0) * (icon.y1 - icon.y0))) icon = p; }
+    let IB = null;
+    if (icon) {                                                         // the icon + anything else big enough to read; the small text goes
+      IB = {x0: icon.x0, y0: icon.y0, x1: icon.x1, y1: icon.y1};
+      for (const p of parts) if (p !== icon && !tiny(p, sWhole)) { IB.x0 = Math.min(IB.x0, p.x0); IB.y0 = Math.min(IB.y0, p.y0); IB.x1 = Math.max(IB.x1, p.x1); IB.y1 = Math.max(IB.y1, p.y1); }
+      const inIB = parts.filter(p => p.x0 >= IB.x0 && p.x1 <= IB.x1 && p.y0 >= IB.y0 && p.y1 <= IB.y1).reduce((s, p) => s + p.ink, 0);
+      const gain = Math.min(W / (IB.x1 - IB.x0), H / (IB.y1 - IB.y0)) / sWhole;
+      if (!(inIB < tot * 0.92 && gain > 1.15)) IB = null;
+    }
+    // scrolling: the main band(s) of the logo at full wall height, sliding across
+    let SB = null;
+    if (!photo && bands.length) {
+      const mh = Math.max(...bands.map(([s, e]) => e - s)), keep = bands.filter(([s, e]) => e - s >= mh * 0.6);
+      const sy0 = Math.min(...keep.map(k => k[0])), sy1 = Math.max(...keep.map(k => k[1]));
+      let sx0 = sw, sx1 = 0; for (let y = sy0; y < sy1; y++) for (let x = X0; x < X1; x++) if (M[y * sw + x]) { if (x < sx0) sx0 = x; if (x >= sx1) sx1 = x + 1; }
+      const lw = Math.round((sx1 - sx0) * H / (sy1 - sy0));
+      let ink = 0; for (let y = sy0; y < sy1; y++) for (let x = sx0; x < sx1; x++) ink += M[y * sw + x];
+      if (sx1 > sx0 && lw > W * 1.6 && ink < (sx1 - sx0) * (sy1 - sy0) * 0.55) SB = {x0: sx0, y0: sy0, x1: sx1, y1: sy1};   // (lettering, not a solid block)
+    }
+    const avail = {icon: !!IB, scroll: !!SB};
+    let lay = o.layout && o.layout !== 'auto' && (o.layout === 'whole' || avail[o.layout]) ? o.layout : null;
+    if (!lay) lay = SB && cw / ch > 2.5 * W / H ? 'scroll' : IB ? 'icon' : 'whole';
+    let R = lay === 'icon' ? IB : lay === 'scroll' ? SB : {x0: X0, y0: Y0, x1: X1, y1: Y1};
+    if (lay === 'whole' && (removed || transparent)) {                  // specks of writing under 2 bulbs tall just make dots: leave them out
+      const tinyP = parts.filter(p => (p.y1 - p.y0) * sWhole < 2.2), tInk = tinyP.reduce((s, p) => s + p.ink, 0);
+      if (tinyP.length && tInk < tot * 0.25 && tinyP.length < parts.length) {
+        for (const p of tinyP) for (let y = p.y0; y < p.y1; y++) for (let x = p.x0; x < p.x1; x++) { const i = y * sw + x; if (M[i]) { px[i * 4 + 3] = 0; M[i] = 0; } }
+        const keepP = parts.filter(p => !tinyP.includes(p));
+        R = {x0: Math.min(...keepP.map(p => p.x0)), y0: Math.min(...keepP.map(p => p.y0)), x1: Math.max(...keepP.map(p => p.x1)), y1: Math.max(...keepP.map(p => p.y1))};
+        notes.push('Tiny writing left out (too small for the bulbs).');
+      }
+    }
+    const x0 = R.x0, y0 = R.y0, x1 = R.x1, y1 = R.y1, rw = x1 - x0, rh = y1 - y0;
+    let OW = W; if (lay === 'scroll') OW = Math.min(360, Math.max(W + 1, Math.round(rw * H / rh)));
+    const sOut = Math.min(OW / rw, H / rh);
+    if (lay === 'icon') notes.push('Icon only: the small writing is left out so the icon is big. Tap Whole logo to keep it.');
+    if (lay === 'scroll') notes.push('Wide logo: it scrolls across the wall.');
+    // warnings: what still won't read at this size
+    const smallInk = parts.filter(p => p.x0 >= x0 && p.x1 <= x1 && p.y0 >= y0 && p.y1 <= y1 && (p.y1 - p.y0) * sOut < 4).reduce((s, p) => s + p.ink, 0);
+    const tipOpt = [avail.icon && lay !== 'icon' ? 'Icon only' : '', avail.scroll && lay !== 'scroll' ? 'Scroll it' : ''].filter(Boolean).join(' or ');
+    if (peeled) warn.push('Photo of a card or sign: the original logo file will look sharper.');
+    if (photo) warn.push(`This looks like a photo. On ${W}×${H} bulbs photos turn busy; a simple logo or icon reads best.`);
+    else if (smallInk > tot * 0.25) warn.push(`This logo has a lot of small text that won't read on ${W}×${H} bulbs. ${tipOpt ? 'Try ' + tipOpt + ', or' : 'Try a simpler icon, or'} use Text above for your business name.`);
+    if (!photo && parts.length > 60 && lay === 'whole') warn.push('Lots of fine detail here. A bold, simple version of the logo will look much better.');
+    const slab = parts.find(p => { const a = (p.x1 - p.x0) * (p.y1 - p.y0); return a > cw * ch * 0.25 && p.ink > a * 0.9 && (p.x1 - p.x0) > (p.y1 - p.y0) * 2; });
+    if (!photo && slab && parts.length > 3) warn.push('This looks like a screenshot or a whole page. Crop the picture to just the logo first for a much better result.');
+    // resample the chosen part into a fine grid (S x S samples per bulb), premultiplied, box-filtered
+    const S = 6, GW = OW * S, GH = H * S, sc = Math.min(GW / rw, GH / rh);
+    const dw = rw * sc, dh = rh * sc, ox = (GW - dw) / 2, oy = (GH - dh) / 2, G = new Float32Array(GW * GH * 4);
     for (let gy = 0; gy < GH; gy++) {
       const sy0 = (gy - oy) / sc + y0, sy1 = (gy + 1 - oy) / sc + y0;
       if (sy1 <= y0 || sy0 >= y1) continue;
@@ -581,20 +759,20 @@
       for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { let m = T[y * GW + x]; for (let k = Math.max(0, y - r); k <= Math.min(GH - 1, y + r); k++) m = fn(m, T[k * GW + x]); O[y * GW + x] = m; }
       return O;
     };
-    const mask = new Float32Array(GW * GH); let fg = 0;
-    for (let i = 0; i < GW * GH; i++) { mask[i] = G[i * 4 + 3] > 0.5 && Math.max(G[i * 4], G[i * 4 + 1], G[i * 4 + 2]) > 0.08 ? 1 : 0; fg += mask[i]; }
+    const mask = new Float32Array(GW * GH); let fgn = 0;
+    for (let i = 0; i < GW * GH; i++) { mask[i] = G[i * 4 + 3] > 0.5 && Math.max(G[i * 4], G[i * 4 + 1], G[i * 4 + 2]) > 0.08 ? 1 : 0; fgn += mask[i]; }
     const er = maxf(mask, 1, S >> 1, Math.min); let keep = 0; for (let i = 0; i < GW * GH; i++) keep += er[i];
-    const thin = fg > 0 && keep < fg * 0.3;
+    const thin = fgn > 0 && keep < fgn * 0.3 && !photo;
     let GB2 = G;
     if (thin && o.boost) {
-      const r = fg < GW * GH * 0.04 ? 3 : 2; GB2 = new Float32Array(GW * GH * 4);
+      const r = fgn < GW * GH * 0.04 ? 3 : 2; GB2 = new Float32Array(GW * GH * 4);
       const sel = new Float32Array(GW * GH);                            // dilate the bright detail: take the brightest neighbour's colour
       for (let c = 0; c < 4; c++) { for (let i = 0; i < GW * GH; i++) sel[i] = G[i * 4 + c]; const D = maxf(sel, 1, r, Math.max); for (let i = 0; i < GW * GH; i++) GB2[i * 4 + c] = D[i]; }
       notes.push('Thin lines thickened so they read on the bulbs.');
     }
     const cells = Gr => {                                               // average each bulb's S x S samples
       const out = [];
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      for (let y = 0; y < H; y++) for (let x = 0; x < OW; x++) {
         let r = 0, g = 0, b = 0, a = 0;
         for (let yy = 0; yy < S; yy++) for (let xx = 0; xx < S; xx++) { const j = ((y * S + yy) * GW + x * S + xx) * 4; r += Gr[j]; g += Gr[j + 1]; b += Gr[j + 2]; a += Gr[j + 3]; }
         const n = S * S; out.push(a > 1e-4 ? [r / a, g / a, b / a, a / n] : [0, 0, 0, 0]);
@@ -602,27 +780,42 @@
       return out;
     };
     const finish = (cl, boost) => {
-      const rgb = [], al = [];
+      const rgb = [], al = [], hs = [];
       for (const [r0, g0, b0, A] of cl) {
         let r = r0, g = g0, b = b0, af;
         if (boost) {
           af = Math.min(1, Math.max(0, (A - 0.12) / 0.38));
           let [h, s, v] = lgHsv(r, g, b);
-          if (s > 0.2) { s = Math.min(1, s * 1.4 + 0.08); v = Math.max(v, 0.5 + 0.5 * v); }    // lift dark-but-coloured, punch the colour
+          if (s > 0.2) { s = Math.min(1, s * 1.4 + 0.08); if (v > 0.22) v = Math.max(v, 0.5 + 0.5 * v); }    // lift dark-but-coloured (not near-black: that stays off), punch the colour
+          else if (s > 0.07 && v > 0.55) { s = Math.min(0.85, s * 2.6 + 0.05); }             // pastels: LEDs wash them to white, so deepen them
           else v = Math.min(1, Math.max(0, (v - 0.5) * 1.3 + 0.5));                           // greys: more contrast
           [r, g, b] = lgRgb(h, s, v);
           const mx = Math.max(r, g, b);
           if (mx > 0.15) { const k = Math.min(2.2, 1 / mx) * 0.85 + 0.15; r = Math.min(1, r * k); g = Math.min(1, g * k); b = Math.min(1, b * k); }
           if (Math.max(r, g, b) * af < 0.18) af = 0;                   // near-black: an off bulb
-        } else { af = Math.min(1, A); if (Math.max(r, g, b) * af < 0.05) af = 0; }
-        rgb.push(Math.round(r * af * 255), Math.round(g * af * 255), Math.round(b * af * 255)); al.push(Math.round(af * 255));
+          hs.push(s);
+        } else { af = Math.min(1, A); if (Math.max(r, g, b) * af < 0.05) af = 0; hs.push(0); }
+        rgb.push(r, g, b); al.push(af);
       }
-      return {rgb, a: al};
+      if (boost && (removed || transparent)) {                          // grey/white fringe round a colourful logo (JPEG halo, drop shadow): drop it
+        let sw_ = 0, ss = 0; for (let i = 0; i < al.length; i++) if (al[i] > 0) { sw_ += al[i]; ss += hs[i] * al[i]; }
+        if (sw_ && ss / sw_ > 0.4) {
+          const off = i => al[i] === 0, drop = [];
+          for (let y = 0; y < H; y++) for (let x = 0; x < OW; x++) { const i = y * OW + x; if (!al[i] || hs[i] > 0.15) continue;
+            const nb = [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].filter(([a, b]) => a >= 0 && a < OW && b >= 0 && b < H).map(([a, b]) => b * OW + a);
+            if (nb.length < 4 || nb.some(off)) { if (nb.some(j => al[j] > 0 && hs[j] > 0.4)) drop.push(i); } }
+          drop.forEach(i => { al[i] = 0; });
+        }
+      }
+      const R8 = [], A8 = [];
+      for (let i = 0; i < al.length; i++) { R8.push(Math.round(rgb[i * 3] * al[i] * 255), Math.round(rgb[i * 3 + 1] * al[i] * 255), Math.round(rgb[i * 3 + 2] * al[i] * 255)); A8.push(Math.round(al[i] * 255)); }
+      return {rgb: R8, a: A8};
     };
     const plainCells = cells(G);
-    const thumb = new Uint8ClampedArray(cw * ch * 4);                   // the cleaned-up picture, for the thumbnail
-    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) { const i = ((y + y0) * sw + x + x0) * 4, j = (y * cw + x) * 4; for (let c = 0; c < 4; c++) thumb[j + c] = Math.round(px[i + c] * 255); }
-    return {plain: finish(plainCells, false), boost: finish(GB2 === G ? plainCells : cells(GB2), true), notes, removed, transparent, thin, thumb: {data: thumb, w: cw, h: ch}};
+    const thumb = new Uint8ClampedArray(rw * rh * 4);                   // the cleaned-up crop, for the thumbnail
+    for (let y = 0; y < rh; y++) for (let x = 0; x < rw; x++) { const i = ((y + y0) * sw + x + x0) * 4, j = (y * rw + x) * 4; for (let c = 0; c < 4; c++) thumb[j + c] = Math.round(px[i + c] * 255); }
+    return {plain: finish(plainCells, false), boost: finish(GB2 === G ? plainCells : cells(GB2), true), OW, layout: lay, avail, notes, warn, removed, transparent, photo, thin, peeled,
+      stats: {colours: cset.size, parts: parts.length, smallInk: Math.round(smallInk / tot * 100)}, thumb: {data: thumb, w: rw, h: rh}};
   }
   function lgHex(r, g, b) { return '#' + [r, g, b].map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join(''); }
   function lgHsv(r, g, b) {
@@ -637,17 +830,16 @@
   /*/LGPROC*/
 
   function renderText() {
-    if (!$('mdTxShow')) return;
-    const s = TX.state || {}, on = s.show && s.show !== 'off', txOn = on && s.show !== 'logo';
-    GB.lbl($('mdTxShow'), txOn ? 'stop' : 'play', txOn ? 'Hide text' : 'Show text');
-    $('mdTxShow').classList.toggle('on', !!txOn); $('mdTxShow').style.setProperty('--c', txOn ? 'var(--orange)' : 'var(--gold)');
-    GB.lbl($('mdLgShow'), s.show === 'logo' ? 'stop' : 'play', s.show === 'logo' ? 'Hide logo' : 'Show logo');
-    $('mdLgShow').classList.toggle('on', s.show === 'logo'); $('mdLgShow').style.setProperty('--c', s.show === 'logo' ? 'var(--orange)' : 'var(--pink)');
-    $('mdLgBoth').classList.toggle('on', s.show === 'both');
-    const tl = $('mdTxLive'), showing = {text: 'SHOWING', both: 'TAKING TURNS'}[s.show];
-    tl.textContent = showing || 'HIDDEN'; tl.classList.toggle('md-off', !showing);
-    const ll = $('mdLgLive'), lshow = {logo: 'SHOWING', both: 'TAKING TURNS'}[s.show];
-    ll.textContent = lshow || (s.has_logo ? 'LOADED' : 'NONE'); ll.classList.toggle('md-off', !lshow);
+    if (!$('mdWall')) return;
+    const s = TX.state || {}, v = showing(), txOn = v === 'text' || v === 'both', lgOn = v === 'logo' || v === 'both';
+    document.querySelectorAll('#mdWall [data-ws]').forEach(b => { const on = b.dataset.ws === v; b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    const wl = $('mdWallLive'); wl.textContent = v === 'off' ? 'OFF' : v === 'both' ? 'TAKING TURNS' : WALL[v].toUpperCase() + ' ON'; wl.classList.toggle('md-off', v === 'off');
+    $('mdWallNote').textContent = v === 'off' ? 'Nothing on top. The light show plays. Pick Text, Logo or Both.'
+      : v === 'text' ? `Showing "${(s.text || 'GLOWBOP').slice(0, 40)}". Edits below go live.`
+      : v === 'logo' ? `Showing ${s.logo_name || 'the logo'}${s.slideshow ? ', slideshow on' : ''}. Changes below go live.`
+      : 'Text and logo take turns every 8 bars.';
+    const tl = $('mdTxLive'); tl.textContent = txOn ? 'ON' : 'OFF'; tl.classList.toggle('md-off', !txOn); tl.setAttribute('aria-pressed', txOn ? 'true' : 'false');
+    const ll = $('mdLgLive'); ll.textContent = lgOn ? 'ON' : 'OFF'; ll.classList.toggle('md-off', !lgOn); ll.setAttribute('aria-pressed', lgOn ? 'true' : 'false');
     document.querySelectorAll('#pg-text [data-tm]').forEach(b => b.classList.toggle('on', b.dataset.tm === txMode));
     document.querySelectorAll('#pg-text [data-tc]').forEach(b => b.classList.toggle('on', b.dataset.tc === txColor));
     $('mdTxColor').classList.toggle('on', txColor === 'custom');
@@ -659,24 +851,37 @@
     document.querySelectorAll('#pg-text [data-se]').forEach(b => b.classList.toggle('on', b.dataset.se === (s.slide_every || '8bars')));
     $('mdLgEvery').hidden = !s.slideshow;
     const nl = s.logo_count || 0;
-    $('mdLgSlNote').textContent = s.slideshow ? (nl >= 2 ? `Rotating ${nl} saved logos. Now: ${s.logo_name || '-'}` : `Only ${nl} saved logo${nl === 1 ? '' : 's'}. Save 2 or more to rotate (pick a picture, tap Save).`) : (nl ? `${nl} saved logo${nl === 1 ? '' : 's'}. Great for sponsors at a game or business.` : 'Save logos below, then rotate them. Great for sponsors.');
+    $('mdLgSlNote').textContent = s.slideshow ? (nl >= 2 ? `Rotating ${nl} saved logos while the logo is on the wall. Now: ${s.logo_name || '-'}` : `Only ${nl} saved logo${nl === 1 ? '' : 's'}. Save 2 or more to rotate (pick a picture, tap Save logo).`) : (nl ? `${nl} saved logo${nl === 1 ? '' : 's'}. Great for sponsors at a game or business.` : 'Save logos, then rotate them. Great for sponsors.');
     $('mdTxSpeedV').textContent = ($('mdTxSpeed').value / 10).toFixed(1) + 'x';
-    const box = $('mdTxPresets'); box.innerHTML = '';
-    const pre = TX.presets || [];
-    pre.slice().reverse().forEach(p => {
-      const w = document.createElement('span'); w.className = 'md-pc';
-      const c = document.createElement('button'); c.className = 'chip';
-      c.textContent = (p.kind === 'logo' ? '🖼️ ' : '🔤 ') + p.name; c.onclick = () => sendText({preset: p.name, preset_kind: p.kind}, `Showing "${p.name}"`);
-      const x = document.createElement('button'); x.className = 'md-px'; x.innerHTML = GB.svg('close'); x.title = 'Delete'; x.setAttribute('aria-label', 'Delete ' + p.name);
-      x.onclick = () => {                                              // tap once to arm, again to delete (no pop-up)
-        if (!x.classList.contains('sure')) { x.classList.add('sure'); x.textContent = 'Delete?'; clearTimeout(x._t); x._t = setTimeout(() => { x.classList.remove('sure'); x.innerHTML = GB.svg('close'); }, 3000); return; }
-        sendText({preset_delete: p.name, preset_kind: p.kind}, `🗑️ Deleted "${p.name}"`);
-      };
-      w.appendChild(c); w.appendChild(x); box.appendChild(w);
-    });
-    const n = document.createElement('p'); n.className = 'note'; n.style.width = '100%';
-    n.textContent = pre.length ? 'Tap a saved one to show it. Tap X twice to delete it.' : 'Nothing saved yet. Tap Save above, or Save on a logo.';
-    box.appendChild(n);
+    const pre = (TX.presets || []).slice().reverse();
+    const chips = (box, kind, empty) => {
+      box.innerHTML = '';
+      const list = pre.filter(p => p.kind === kind).sort((a, b) => (b.builtin ? 1 : 0) - (a.builtin ? 1 : 0));
+      list.forEach(p => {
+        const w = document.createElement('span'); w.className = 'md-pc' + (p.builtin ? ' md-built' : '');
+        const c = document.createElement('button'); c.className = 'chip'; c.style.setProperty('--c', kind === 'logo' ? 'var(--pink)' : 'var(--gold)');
+        const cur = kind === 'logo' ? s.has_logo && s.logo_name === p.name : s.text === p.text;
+        c.classList.toggle('on', !!cur);
+        c.textContent = (p.builtin ? '✨ ' : kind === 'logo' ? '🖼️ ' : '🔤 ') + p.name;
+        c.onclick = () => { const on = kind === 'logo' ? (v === 'logo' || v === 'both') : (v === 'text' || v === 'both');
+          if (kind === 'text') $('mdTxText').value = p.text || p.name;
+          if (kind === 'logo') { lgSrc = null; lgRes = null; lgPixels = null; }
+          sendText({preset: p.name, preset_kind: p.kind, keep_show: true}, on ? `Showing "${p.name}"` : `"${p.name}" ready. Tap ${kind === 'logo' ? 'LOGO' : 'TEXT'} at the top to show it`); };
+        w.appendChild(c);
+        if (!p.builtin) {
+          const x = document.createElement('button'); x.className = 'md-px'; x.innerHTML = GB.svg('close'); x.title = 'Delete'; x.setAttribute('aria-label', 'Delete ' + p.name);
+          x.onclick = () => {                                            // tap once to arm, again to delete (no pop-up)
+            if (!x.classList.contains('sure')) { x.classList.add('sure'); x.textContent = 'Delete?'; clearTimeout(x._t); x._t = setTimeout(() => { x.classList.remove('sure'); x.innerHTML = GB.svg('close'); }, 3000); return; }
+            sendText({preset_delete: p.name, preset_kind: p.kind}, `🗑️ Deleted "${p.name}"`);
+          };
+          w.appendChild(x);
+        }
+        box.appendChild(w);
+      });
+      if (!list.filter(p => !p.builtin).length) { const n = document.createElement('p'); n.className = 'note'; n.style.width = '100%'; n.textContent = empty; box.appendChild(n); }
+    };
+    chips($('mdTxPresets'), 'text', 'Saved messages show up here.');
+    chips($('mdLgPresets'), 'logo', 'Your saved logos show up here. ✨ GlowBop is always there.');
   }
 
   // =========================================================== follow the engine
@@ -690,5 +895,7 @@
     if (hl !== hLive) { hLive = hl; if (hl && !hOpen) hOpen = hl; renderHolidays(); }
     const tn = s.text && s.text.logo_name;                              // the slideshow moved on: refresh the logo preview
     if (tn !== undefined && TX.state && TX.state.logo_name !== undefined && tn !== TX.state.logo_name) { TX.state.logo_name = tn; loadText(); }
+    const sh = s.text && s.text.show;                                   // switched on / off from another phone or Claude
+    if (sh && TX.state && TX.state.show && sh !== TX.state.show) { TX.state.show = sh; renderText(); }
   });
 })();
