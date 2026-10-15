@@ -177,7 +177,7 @@ home = f'''
     <span class="pill">🎃 <b>Launching this Halloween</b> · 7-day free trial</span>
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop. Run it all from a light-show console on your phone, iPad or laptop.</p>
-    <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="#try" style="--c:var(--cyan)">🎛️ Try the console</a></div>
+    <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="/try/" style="--c:var(--cyan)">🎛️ Try the real app now</a></div>
     <div class="stats"><div><b>200+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
   <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
@@ -188,6 +188,8 @@ home = f'''
   <p class="lead">This is the GlowBop console. Tap the colored rail on the left, then tap a key. The little wall plays real recordings from the GlowBop engine.</p></div>
   <div class="reveal">{DEMO}</div>
   <p class="center"><span class="demo-tag">● DEMO · on your lights it runs live, right to the beat</span></p>
+  <div class="center reveal" style="margin-top:22px"><a class="btn primary lg" href="/try/">🚀 Open the full GlowBop app</a>
+  <p class="lead" style="margin-top:12px;font-size:16px">Every page, every control: music, DJ, looks, games, scenes, holidays, fire, sports, live feeds and text. It runs right in your browser on a phone, iPad or laptop, on a pretend light wall.</p></div>
 </div></section>
 
 <section class="alt"><div class="wrap">

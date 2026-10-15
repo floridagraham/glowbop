@@ -470,23 +470,32 @@
     setTimeout(siLoop, 5000);
   }
 
-  // =================================================================== 4. CONTROL FROM YOUR PHONE
+  // =================================================================== 4. CONTROL FROM YOUR PHONE / SHARE THE REMOTE
+  // On the laptop: the QR code to open the remote. On a phone or iPad: the same QR code, so a friend or coworker can
+  // scan it right off your screen, plus Share (text / AirDrop) and Copy link.
+  GB.css(`.su-share { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; } .su-share .btn { flex:1 1 140px; }`);
   GB.panel('setup', 40, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
-    el.innerHTML = `<div class="ph"><span>Control from your phone</span></div>
-      <div class="su-qr" id="suPcLaptop" hidden>
-        <img id="suQr" alt="QR code for the phone remote" hidden>
+    const local = GB.local;
+    el.innerHTML = `<div class="ph"><span>${local ? 'Control from your phone' : 'Share the remote'}</span></div>
+      ${local ? '' : '<p style="font-size:14px;line-height:1.55;margin:0 0 10px">✅ This device is connected. To let someone else run the lights too, have them scan this code from your screen, or send them the link.</p>'}
+      <div class="su-qr">
+        <img id="suQr" alt="QR code for the GlowBop remote" hidden>
         <ol>
-          <li>Put your phone on the <b style="font-family:inherit;color:var(--text);font-weight:700">same Wi-Fi</b> as this computer (Wi-Fi works best, not the guest network).</li>
-          <li>Point your phone camera at the code, or type <b id="suLink">…</b> in Safari / Chrome.</li>
+          <li>Their phone or iPad goes on the <b style="font-family:inherit;color:var(--text);font-weight:700">same Wi-Fi</b> as the GlowBop computer (not the guest network).</li>
+          <li>Point the camera at the code, or type <b id="suLink">…</b> in Safari / Chrome.</li>
           <li>Tap <b style="font-family:inherit;color:var(--text);font-weight:700">Share → Add to Home Screen</b> to get the GlowBop app icon.</li>
         </ol>
       </div>
-      <div id="suPcPhone" hidden style="font-size:14px;line-height:1.55">✅ Your phone is connected over Wi-Fi.<br>Tip: tap <b>Share → Add to Home Screen</b> so GlowBop opens like an app.</div>
-      <p class="note">Not connecting? Make sure both are on the same Wi-Fi, turn off VPN on the phone, and if Windows asks, allow GlowBop on <b>private networks</b>. TikTok (Surplife) curtains talk to this computer over Bluetooth, so keep it within about 30 ft of them.</p>`;
-    $('suPcLaptop').hidden = !GB.local; $('suPcPhone').hidden = GB.local;
-    GB.get('/api/link').then(j => $('suLink').textContent = j.link).catch(() => {});
-    if (!GB.local) return;
+      <div class="su-share"><button class="btn" id="suShare" style="--c:var(--green)">📤 Share link</button><button class="btn" id="suCopy" style="--c:var(--cyan)">📋 Copy link</button></div>
+      <p class="note">Not connecting? Make sure both are on the same Wi-Fi, turn off VPN on the phone, and if Windows asks, allow GlowBop on <b>private networks</b>. TikTok (Surplife) curtains talk to the computer over Bluetooth, so keep it within about 30 ft of them.</p>`;
+    let link = '';
+    GB.get('/api/link').then(j => { link = j.link; $('suLink').textContent = j.link; }).catch(() => {});
+    $('suShare').hidden = !navigator.share;
+    $('suShare').onclick = async () => { if (!link) return; try { await navigator.share({title: 'GlowBop remote', text: 'Run the GlowBop lights from your phone (same Wi-Fi):', url: link}); } catch (e) {} };
+    $('suCopy').onclick = async () => { if (!link) return;
+      try { await navigator.clipboard.writeText(link); GB.toast('📋 Link copied'); }
+      catch (e) { const t = document.createElement('textarea'); t.value = link; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); GB.toast('📋 Link copied'); } catch (x) {} t.remove(); } };
     let tries = 0; const img = $('suQr');
     const load = () => { img.onload = () => { img.hidden = false; }; img.onerror = () => { if (++tries < 20) setTimeout(load, 15000); }; img.src = '/api/qr.svg?t=' + tries; };
     load();
