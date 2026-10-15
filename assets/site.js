@@ -381,10 +381,10 @@
      k: [['🔥', 'Classic', 'fire-classic-cozy'], ['🌋', 'Roaring', 'fire-classic-roar'], ['🌈', 'Rainbow', 'fire-rainbow-cozy'], ['💙', 'Blue gas', 'fire-blue-cozy'], ['💜', 'Purple', 'fire-purple-roar'], ['🤍', 'Ice', 'fire-ice-cozy']]},
     {id: 'score', label: 'SCORE', c: 'var(--violet)', title: 'Scoreboard', mode: ['Scoreboard', 'game day · live stats', 'var(--violet)'],
      p: 'Keep score at the field, follow your team live with real game stats, or put F1 on the wall.',
-     k: [['⚽', 'Game Day', 'score-soccer'], ['🏎️', 'F1 board', 'score-f1'], ['⏱️', 'Countdown clock', 'score-timer']]},
+     k: [['⚾', 'Baseball live', 'score-baseball'], ['🏈', 'Football live', 'score-football'], ['🏀', 'Basketball', 'score-basketball'], ['🏒', 'Hockey', 'score-hockey'], ['⚽', 'Soccer', 'score-soccer'], ['🏎️', 'F1 board', 'score-f1']]},
     {id: 'live', label: 'LIVE', c: 'var(--green)', title: 'Pick a live feed', mode: ['Live', 'on the wall until you turn it off', 'var(--green)'],
      p: 'Things from the outside world, live on your lights: countdowns, weather, storm watch, golf, NASCAR and what\'s flying overhead.',
-     k: [['🎉', 'Countdown', 'live-countdown'], ['🌦️', 'Weather', 'live-weather'], ['🎆', 'Fireworks', 'fx-pixelfireworks']]},
+     k: [['🎉', 'Countdown', 'live-countdown'], ['🌦️', 'Weather', 'live-weather'], ['🌀', 'Storm watch', 'live-storm'], ['⛳', 'Golf', 'live-golf'], ['🏁', 'NASCAR', 'live-nascar'], ['✈️', 'Overhead', 'live-overhead']]},
     {id: '3d', label: '3D', c: 'var(--lav)', title: '3D shapes', mode: ['Wrapped wall', 'cylinder · globe · box', 'var(--lav)'],
      p: 'Bend your curtains around a cylinder, a box or a globe. GlowBop wraps the picture seamlessly and plays effects made for 3D.',
      k: [['🌍', 'Spinning globe', 'shape-spinningglobe'], ['💈', 'Barber spin', 'shape-barberspin'], ['⭕', 'Rising rings', 'shape-risingrings'], ['🌊', 'Ocean swell', 'wave-oceanswell'], ['〰️', 'Twin waves', 'wave-twinwaves']]},
@@ -416,7 +416,7 @@
     root.querySelectorAll('.keys button').forEach(x => x.classList.toggle('on', x === b));
     clip = cl; t0 = performance.now(); lastF = -1; load(cl);
     const m = tab.mode; $('.mode').style.setProperty('--mc', m[2]);
-    $('.mode b').textContent = tab.id === 'live' || tab.id === 'holiday' ? m[0] + ': ' + name : m[0];
+    $('.mode b').textContent = tab.id === 'live' || tab.id === 'holiday' || tab.id === 'score' ? m[0] + ': ' + name : m[0];
     $('.mode small').textContent = m[1];
     $('#dLook').textContent = name; $('#dEff').textContent = ((meta(cl) || {}).title || name).replace(/ ·.*/, '');
     $('.d-wall .ph .r').textContent = '840 BULBS · ' + name.toUpperCase();
