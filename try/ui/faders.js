@@ -176,7 +176,7 @@
     r.classList.toggle('up', !!up.length);
     const b = $('fdReset'); if (b) b.disabled = !up.length;
   }
-  GB.panel('dj', 70, el => {                                   // 🔒 Pro tools sit below the Home DJ panels
+  GB.panel('dj', 11, el => {                                   // 🔒 Pro tools sit below the Home DJ panels
     el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)'); el.id = 'fdPanel';
     el.innerHTML = `<div class="ph"><span>Fader board</span><span class="r" id="fdR">ALL AT DEFAULT</span></div>
       <div class="fd-board" id="fdBoard"></div>

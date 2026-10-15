@@ -21,3 +21,47 @@
   #demoBar .dm-x { min-width:36px; height:34px; padding:0 10px; font-size:15px; }
 }
 body.wallfull #demoBar { display:none; }
+
+/* 🖼️ embed mode (/try/?embed=1#dj, the live console inside the home page's frame): no banner, the console fills the frame */
+.gb-embed #demoBar { display:none; }
+
+/* 🎧 DJ page in the demo: Build & drop, the hit pads and the fader board sit together right under the wall, no scrolling.
+   (sync_ui.py moves the fader board up; mock.js scrolls the console header away on phones and upright iPads.) */
+body[data-page=dj] #pg-dj { gap:10px; }
+body[data-page=dj] #pg-dj > .panel.box { padding:10px 12px 12px; gap:8px; }
+body[data-page=dj] #pg-dj #djBuild { min-height:56px; font-size:calc(22px * var(--fs, 1)); }
+body[data-page=dj] #pg-dj #djBuild + .note, body[data-page=dj] #djSnapNote, body[data-page=dj] #fdPanel .fd-foot .note { display:none; }
+body[data-page=dj] #pg-dj #fdPanel .fd-foot { justify-content:flex-end; margin-top:0; }
+body[data-page=dj] #pg-dj .dj-pads .tile { min-height:58px; padding:6px 4px; gap:2px; }
+body[data-page=dj] #pg-dj .dj-pads .tile .em { font-size:calc(24px * var(--fs, 1)); }
+body[data-page=dj] #pg-dj .dj-skip { margin-top:6px; gap:6px; }
+body[data-page=dj] #pg-dj .dj-skip .btn { min-height:42px; }
+body[data-page=dj] #pg-dj .dj-now { margin-top:2px; }
+body[data-page=dj] #pg-dj #fdPanel .fd-track { height:96px; }
+/* wide layouts show Look / Effect in the readouts beside the wall already */
+@media (min-width: 1000px) and (min-aspect-ratio: 1/1) { body[data-page=dj] #pg-dj .dj-now { display:none; } }
+/* phones + upright iPads: wall, then the DJ controls, then the mode bar (it moves below the DJ panels on this page only) */
+@media not all and (min-width: 1000px) and (min-aspect-ratio: 1/1) {
+  body[data-page=dj] #view { display:contents; }
+  body[data-page=dj] #pages { order:1; }
+  body[data-page=dj] #view > .modebar { order:2; }
+  body[data-page=dj] #view > .reads-panel { order:3; }
+  body[data-page=dj] .wallbox:not(.full) #wall { width:auto !important; height:auto !important; max-width:100%; max-height:18vh; margin:0 auto; }
+  body[data-page=dj] #view .seg { display:none; }     /* Mirror / Full view / Lights: one tap away on other pages, and tapping the wall opens Full view */
+}
+@media (max-width: 699px) {
+  body[data-page=dj] #pg-dj #djBuild { min-height:52px; font-size:calc(20px * var(--fs, 1)); }
+}
+@media (max-width: 380px) {          /* narrow phones and the home page's phone frame: pad names stay on one line */
+  body[data-page=dj] #pg-dj .dj-pads .tile { font-size:calc(13.5px * var(--fs, 1)); letter-spacing:0; }
+  body[data-page=dj] #pg-dj .dj-skip .btn { font-size:calc(12.5px * var(--fs, 1)); letter-spacing:.3px; }
+}
+/* the home page's landscape frame is a little shorter than a real screen: pack the DJ column a bit tighter there */
+@media (min-width: 1000px) and (min-aspect-ratio: 1/1) {
+  .gb-embed body[data-page=dj] #pg-dj #djBuild { min-height:50px; }
+  .gb-embed body[data-page=dj] #pg-dj .dj-pads .tile { min-height:50px; }
+  .gb-embed body[data-page=dj] #pg-dj .dj-skip .btn { min-height:38px; }
+  .gb-embed body[data-page=dj] #pg-dj #fdPanel .fd-track { height:78px; }
+}
+body[data-page=dj] #pg-dj #djBuild.held { letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }   /* no jump while held */
+@media (max-width: 420px) { body[data-page=dj] #pg-dj #djBuild.held { font-size:calc(16px * var(--fs, 1)); letter-spacing:.5px; padding-left:8px; padding-right:8px; } }

@@ -1322,6 +1322,63 @@
     log('pretend engine running: ' + Object.keys(CLIPS).length + ' recorded clips, ' + Object.keys(CAT.looks).length + ' looks');
   }
 
+  // ======================================================================= 🖼️ embed mode: /try/?embed=1#dj inside the home page's frame
+  // No DEMO banner (demo.css hides it), links leave the frame (target _top), and scrolling stays inside the frame.
+  const EMBED = /[?&]embed=1\b/.test(location.search);
+  if (EMBED) {
+    document.documentElement.classList.add('gb-embed');
+    document.addEventListener('click', e => {
+      const a = e.target.closest && e.target.closest('a[href]'); if (!a) return;
+      const h = a.getAttribute('href') || '';
+      if (h[0] === '#' || /^javascript:/i.test(h) || (a.target && a.target !== '_self')) return;
+      a.target = '_top';
+    }, true);
+    const open0 = window.open;
+    window.open = (u, t, f) => open0.call(window, u, t && t !== '_self' ? t : '_top', f);
+    // the app scrolls panels into view; inside a frame that would also scroll the page around the frame, so scroll only in here
+    Element.prototype.scrollIntoView = function (o) {
+      const opt = typeof o === 'object' && o ? o : {block: o === false ? 'end' : 'start'}, r = this.getBoundingClientRect();
+      if (opt.block === 'nearest') {
+        for (let p = this.parentElement; p && p !== document.body; p = p.parentElement) {
+          const cs = getComputedStyle(p); if (!/(auto|scroll)/.test(cs.overflowY + cs.overflowX) || p.scrollHeight <= p.clientHeight && p.scrollWidth <= p.clientWidth) continue;
+          const pr = p.getBoundingClientRect();
+          if (r.top < pr.top) p.scrollTop += r.top - pr.top; else if (r.bottom > pr.bottom) p.scrollTop += r.bottom - pr.bottom;
+          if (r.left < pr.left) p.scrollLeft += r.left - pr.left; else if (r.right > pr.right) p.scrollLeft += r.right - pr.right;
+          return;
+        }
+        if (r.top >= 0 && r.bottom <= innerHeight) return;
+      }
+      const y = scrollY + r.top - (opt.block === 'center' ? (innerHeight - r.height) / 2 : opt.block === 'end' ? innerHeight - r.height : 0);
+      window.scrollTo({top: Math.max(0, y), behavior: opt.behavior === 'smooth' ? 'smooth' : 'auto'});
+    };
+  }
+
+  // ======================================================================= 🎧 DJ page: the playable controls sit right under the wall
+  // demo.css packs the DJ page (fader board moved up by sync_ui.py). On a phone or upright iPad the console header and wall come
+  // first, so the demo scrolls just far enough that Build, the hit pads and (when they fit) the faders are on screen with the wall.
+  function fitDJ() {
+    if (!window.GB || GB.page !== 'dj' || document.body.classList.contains('wallfull')) return;
+    const q = s => document.getElementById(s), wb = q('wallBox'), view = wb && wb.closest('.panel'), pads = q('djPadsPanel'), fd = q('fdPanel');
+    if (!view || !pads) return;
+    const bar = q('demoBar'), barH = bar && bar.offsetParent !== null ? bar.getBoundingClientRect().height : 0;
+    const docTop = el => el.getBoundingClientRect().top + scrollY, docBot = el => el.getBoundingClientRect().bottom + scrollY;
+    const wallTop = docTop(view) - barH - 6, room = innerHeight - barH;
+    const last = fd && docBot(fd) - docTop(view) + 6 <= room ? fd : pads;
+    // nothing to do when it all fits already; otherwise go all the way to the wall (a half-cut header looks broken)
+    const y = docBot(last) - innerHeight + 10 > 0 ? Math.max(0, wallTop) : 0;
+    if (Math.abs(scrollY - y) > 2) window.scrollTo({top: y, behavior: 'auto'});
+    fitDJ.at = y;
+  }
+  window.__demoFitDJ = fitDJ;   // handy for tests
+  function fitSoon() { [140, 600, 1500].forEach(ms => setTimeout(() => { if (scrollY === 0 || scrollY === fitDJ.at) fitDJ(); }, ms)); }
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!window.GB) return;
+    GB.on('page', id => { document.body.classList.toggle('demo-dj', id === 'dj'); if (id === 'dj') fitSoon(); });
+    document.body.classList.toggle('demo-dj', GB.page === 'dj');
+    if (GB.page === 'dj') fitSoon();
+    let rz = 0; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (scrollY === 0 || scrollY === fitDJ.at) fitDJ(); }, 200); });
+  });
+
   // ======================================================================= the DEMO banner
   document.addEventListener('DOMContentLoaded', () => {
     const bar = document.getElementById('demoBar'); if (!bar) return;

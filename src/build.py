@@ -90,7 +90,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=4">
-<link rel="stylesheet" href="/assets/console.css?v=16">
+<link rel="stylesheet" href="/assets/console.css?v=17">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -120,7 +120,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=12"></script>
+<script src="/assets/site.js?v=13"></script>
 </body>
 </html>
 '''
@@ -167,6 +167,10 @@ LIVEWALL = {'phone-music': 'wave-serpent', 'phone-live': 'live-weather', 'phone-
             'ipad-land': 'wave-bigwave', 'ipad-port': 'fx-pixelfireworks', 'desk-live': 'live-countdown'}
 
 
+TRYPAGE = {'desk-live': 'feeds', 'desk-setup': 'lights', 'ipad-land': 'music', 'ipad-port': 'music', 'phone-music': 'music',
+           'phone-live': 'feeds', 'phone-score': 'score', 'phone-looks': 'looks'}
+
+
 def devframe(kind, img, alt, tag='', c='var(--amber)', cap=''):
     inner = f'<img src="/img/app/{img}.webp" alt="{html.escape(alt)}" loading="lazy">'
     if img in LIVEWALL:                      # the live wall in the screenshot plays a real recording, like the real app
@@ -175,24 +179,20 @@ def devframe(kind, img, alt, tag='', c='var(--amber)', cap=''):
     base = '<div class="base"></div>' if kind == 'laptop' else ''
     t = f'<span class="tag" style="--c:{c}">{tag}</span>' if tag else ''
     fc = f'<figcaption>{cap}</figcaption>' if cap else ''
-    return f'<figure class="dev {kind} reveal">{t}<div class="scr">{inner}</div>{base}{fc}</figure>'
+    pg = TRYPAGE.get(img, 'music')           # 🕹️ a tap on the screenshot opens that page in the live demo
+    return (f'<figure class="dev {kind} reveal">{t}<a class="scr" href="/try/#{pg}" aria-label="Try this in the live demo: {html.escape(alt)}">'
+            f'{inner}<span class="try" aria-hidden="true">▶ Try it live</span></a>{base}{fc}</figure>')
 
 
-DEMO = f'''<div class="demo" id="demo" aria-label="Try the GlowBop console">
-  <div class="d-top"><div class="el">{logo_svg()}</div><div class="br"><div class="bb"><i style="--c:var(--amber);--w:30px"></i><i style="--c:var(--lav);--w:18px"></i><i class="grow" style="--c:var(--pink)"></i><b>GLOWBOP</b><i style="--c:var(--cyan);--w:22px"></i></div>
-  <div class="st"><span class="k">LIGHT SHOW CONSOLE</span>ONLINE · LISTENING</div></div></div>
-  <nav class="d-rail" aria-label="Console sections"></nav>
-  <div class="d-main">
-    <div class="d-wall"><div class="ph"><span>Live wall</span><span class="r">840 BULBS</span></div>
-      <div class="wallbox"><canvas aria-label="The live wall"></canvas></div>
-      <div class="mode"><div><b>Music show · listening</b><small>shuffle on</small></div></div>
-      <div class="reads"><div><div class="k">Tempo</div><div class="v">128<small style="font-size:14px"> BPM</small></div></div><div><div class="k">Section</div><div class="v p" id="dSec">GROOVE</div></div>
-        <div class="meter"></div><div><div class="k">Look</div><div class="v s" id="dLook">–</div></div><div><div class="k">Effect</div><div class="v s" id="dEff" style="color:var(--lav)">–</div></div></div>
-    </div>
-    <div class="d-panel"><div class="ph"><span>Show control</span><span class="r">TAP A KEY</span></div><p></p><div class="keys"></div>
-      <div class="hint">👈 Tap the colored rail to switch sections</div></div>
+TRY = """<figure class="tryframe reveal" id="tryLive" aria-label="The real GlowBop console, live">
+  <div class="tf-scr">
+    <picture class="tf-poster"><source media="(max-width: 699px)" srcset="/img/try-poster-phone.webp"><source media="(orientation: portrait) and (max-width: 1023px)" srcset="/img/try-poster-tall.webp">
+      <img src="/img/try-poster-wide.webp" alt="The GlowBop console on the DJ page: the live wall, Hold to build, the hit pads and the fader board" loading="lazy" decoding="async"></picture>
+    <iframe data-src="/try/?embed=1#dj" title="The real GlowBop console on a pretend light wall" loading="lazy" allow="fullscreen; autoplay" allowfullscreen inert tabindex="-1"></iframe>
+    <a class="tf-play" href="/try/#dj"><span class="tf-btn"><i aria-hidden="true">▶</i>Play with the real console</span></a>
   </div>
-</div>'''
+  <figcaption class="tf-cap"><span>Tap the pads. This is the real GlowBop console on a pretend wall.</span><a class="tf-full" href="/try/#dj">Full screen ⤢</a></figcaption>
+</figure>"""
 home = f'''
 <header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg.mp4" data-poster="/video/hero-bg.jpg" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback></video></div><div class="wrap">
   <div>
@@ -207,8 +207,8 @@ home = f'''
 
 <section class="tight" id="try"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--green)">Try it right here</span><h2>Drive the light show</h2>
-  <p class="lead">This is the GlowBop console. Tap the colored rail on the left, then tap a key. The little wall plays real recordings from the GlowBop engine.</p></div>
-  <div class="reveal">{DEMO}</div>
+  <p class="lead">This is the real GlowBop console, running right here on a pretend light wall. Hold to build, let go to drop, then hit the pads and ride the faders. Tap the colored rail for every other page.</p></div>
+  {TRY}
   <p class="center"><span class="demo-tag">● DEMO · on your lights it runs live, right to the beat</span></p>
   <div class="center reveal" style="margin-top:22px"><a class="btn primary lg" href="/try/">🚀 Open the full GlowBop app</a>
   <p class="lead" style="margin-top:12px;font-size:16px">Every page, every control: music, DJ pads and skip keys, looks, games, scenes, holidays, fire, sports, live feeds and text, plus the <a href="/features.html#pro-dj">Pro DJ tools</a>: Song Shows, the fader board, override keys and loop banks. It runs right in your browser on a phone, iPad or laptop, on a pretend light wall.</p></div>
