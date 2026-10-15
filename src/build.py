@@ -187,7 +187,7 @@ def devframe(kind, img, alt, tag='', c='var(--amber)', cap=''):
 TRY = """<figure class="tryframe reveal" id="tryLive" aria-label="The real GlowBop console, live">
   <div class="tf-scr">
     <picture class="tf-poster"><source media="(max-width: 699px)" srcset="/img/try-poster-phone.webp"><source media="(orientation: portrait) and (max-width: 1023px)" srcset="/img/try-poster-tall.webp">
-      <img src="/img/try-poster-wide.webp" alt="The GlowBop console on the DJ page: the live wall, Hold to build, the hit pads and the fader board" loading="lazy" decoding="async"></picture>
+      <img src="/img/try-poster-wide.webp" alt="The GlowBop console: the live wall and the music player, with the DJ page one tap away" loading="lazy" decoding="async"></picture>
     <iframe data-src="/try/?embed=1#music" title="The real GlowBop console on a pretend light wall" loading="lazy" allow="fullscreen; autoplay" allowfullscreen inert tabindex="-1"></iframe>
     <a class="tf-play" href="/try/#music"><span class="tf-btn"><i aria-hidden="true">▶</i>Loading the real console…</span></a>
   </div>
@@ -265,7 +265,7 @@ home = f'''
   <div class="feat reveal">
     <div><span class="eyebrow">New · DJ mode</span><h2>Play the lights like a club lighting tech</h2>
       <p class="lead">DJ has its own key. The music show keeps running and you add moves on top, by hand. Pads fire the moment you touch them, or turn on Snap to beat and every hit lands on the beat.</p>
-      <ul class="ticks"><li><b>Hit pads:</b> drop, strobe, flash, fire burst, confetti and blackout.</li><li><b>Skip keys:</b> back or forward one look or one effect, with the names shown right below.</li><li><b>Hold to build</b>, let go to drop.</li><li><b>Cue the next look</b>, <b>tap tempo</b> and big <b>crowd lines</b> like HANDS UP.</li><li>Plug in a <b>DJ controller</b> and teach it every pad.</li><li><b>Pro DJ</b> adds a fader board and loop banks at the bottom of the DJ page.</li></ul>
+      <ul class="ticks"><li><b>Hit pads:</b> drop, strobe, flash, fire burst, confetti and blackout.</li><li><b>Skip keys:</b> back or forward one look or one effect, with the names shown right below.</li><li><b>Hold to build</b>, let go to drop, in 7 build styles: Rise, Close in, Burst out, Spin, Rainbow, Zipper and Heartbeat, or Auto for a new one each time.</li><li><b>Cue the next look</b>, <b>tap tempo</b> and big <b>crowd lines</b> like HANDS UP.</li><li>Plug in a <b>DJ controller</b> and teach it every pad.</li><li><b>Pro DJ</b> adds a fader board and loop banks at the bottom of the DJ page.</li></ul>
       <a class="btn" href="/guide/dj.html">DJ mode guide →</a></div>
     <div class="media"><div class="grid g2 mini">{clip('drop')}{clip('fx-pixelfireworks')}{clip('text-beat')}{clip('look-club-rig')}</div></div>
   </div>
@@ -742,7 +742,9 @@ guide('dj', f'''
 <p>Top to bottom, the page goes: <b>Build &amp; drop</b>, the <b>hit pads</b> with the skip keys, <b>tap tempo</b>, <b>cue the next look</b>, <b>crowd lines</b> and the <b>DJ controller</b>.</p>
 {tip(f'<b>With Pro DJ</b> {PT} the <a href="/guide/pro-dj.html#faders">fader board</a> and the <a href="/guide/pro-dj.html#loops">loop banks</a> sit at the bottom of this page. On Home DJ you see a short card about them instead.', 'pink')}
 <h2 id="build">Hold to build</h2>
-<p>Press and <b>hold</b> <span class="k">Hold to build</span>. A wall of light rises from the floor, flickering faster and turning white-hot. <b>Let go</b> and it drops. Slide your finger off the key to cancel.</p>
+<p>Press and <b>hold</b> <span class="k">Hold to build</span>. The wall winds up over about 8 seconds, flickering faster and turning white-hot in your look's colours. The key fills up with a seconds counter so you can time it, and reads <b>FULL</b> when it's maxed out. <b>Let go</b> and it drops. Slide your finger off the key to cancel.</p>
+<p>Pick a <b>build style</b> from the row under the key (each phone or tablet remembers its own pick):</p>
+<ul class="ticks"><li><b>Rise</b>: light climbs from the floor with a soft rainbow sweep (the classic).</li><li><b>Close in</b>: a ring of light squeezes in from the edges to the middle.</li><li><b>Burst out</b>: a glowing core grows from the middle out to the edges.</li><li><b>Spin</b>: a radar sweep that speeds up and grows more arms.</li><li><b>Rainbow</b>: a full, bright rainbow wash that gets faster.</li><li><b>Zipper</b>: two bars race in from the sides and meet in the middle.</li><li><b>Heartbeat</b>: a heart in the middle thumps faster and faster.</li><li><b>Auto</b>: a different style every time.</li></ul>
 {tip('<b>Pro move:</b> Blackout for one bar, then hold Build through the last bars of the build-up and let go right on the drop.', 'pink')}
 <h2 id="pads">Hit pads</h2>
 <p>Six big pads. Out of the box a pad fires the instant your finger touches it. Tap <span class="k">⚡ Instant</span> at the top of the card to switch to <span class="k">🥁 Snap to beat</span>: then every pad waits for the next beat, so even a late tap lands right on time.</p>
