@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   const {$, esc} = GB;
-  const ICON = {black: '⬛', white: '⚪', strobe: '⚡', house: '💡', color: '●', crowd: '🔦', logo: '🔤'};
+  const ICON = {black: '⬛', white: '⚪', strobe: '⚡', disco: '🪩', house: '💡', color: '●', crowd: '🔦', logo: '🔤'};
   const FADE_NAME = {0: 'SNAP', 0.25: '0.25 S', 1: '1 S'};
   const SWATCHES = ['#ff1a1a', '#ff7a1a', '#ffd21a', '#2bff5a', '#1ad9ff', '#1a4dff', '#8a2bff', '#ff2fa0', '#ffb46b', '#ffffff'];
   let K = [];                          // key configs from the engine
@@ -19,13 +19,14 @@
 
   GB.css(`
   #pg-ops { --c:#e9e6ff; }
-  .ov-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; user-select:none; -webkit-user-select:none; }
+  .ov-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; user-select:none; -webkit-user-select:none; }
   .ov-key { appearance:none; border:0; position:relative; border-radius:0 16px 0 16px; background:var(--dark); color:var(--text); min-height:96px; padding:18px 6px 12px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; touch-action:none; -webkit-touch-callout:none; cursor:pointer;
     font:700 calc(15px * var(--fs, 1))/1.05 var(--cond); letter-spacing:1px; text-transform:uppercase; text-align:center; min-width:0; transition:background .08s, box-shadow .08s; }
   .ov-key .em { font-size:calc(28px * var(--fs, 1)); line-height:1; }
   .ov-key .em.dot { width:calc(26px * var(--fs, 1)); height:calc(26px * var(--fs, 1)); border-radius:50%; background:var(--kc); box-shadow:0 0 14px var(--kc); font-size:0; }
-  .ov-key .lb { max-width:100%; overflow-wrap:anywhere; }
+  .ov-key .lb { max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:clip; letter-spacing:.5px; font-size:min(1em, calc(15px * var(--fs, 1))); }
+  #ovGrid { container-type:inline-size; } @container (max-width: 420px) { .ov-key .lb { font-size:calc(12px * var(--fs, 1)); letter-spacing:0; } }
   .ov-key .sc { position:absolute; top:6px; left:8px; font:calc(11px * var(--fs, 1))/1 var(--mono); color:var(--dim); border:1px solid var(--line); border-radius:5px; padding:2px 4px; }
   .ov-key .md { position:absolute; top:6px; right:8px; font:700 calc(10px * var(--fs, 1))/1 var(--cond); letter-spacing:1px; color:var(--dim); }
   .ov-key .md.latch { color:var(--gold); }
@@ -123,7 +124,7 @@
     return `<span class="sc">${i + 1}</span><span class="md ${k.mode}">${k.mode === 'latch' ? 'LATCH' : 'HOLD'}</span>
       <span class="em${dot ? ' dot' : ''}">${dot ? '' : ICON[k.kind] || '●'}</span><span class="lb">${esc(k.label)}</span>${k.fade ? `<span class="fdt">${FADE_NAME[k.fade] || k.fade + ' S'}</span>` : ''}`;
   }
-  const KC = k => k.kind === 'black' ? '#000' : k.kind === 'white' ? '#ffffff' : k.kind === 'strobe' ? '#f4f2ff' : k.kind === 'logo' ? 'var(--gold)' : k.kind === 'crowd' ? 'var(--cyan)' : (k.color || '#fff');
+  const KC = k => k.kind === 'black' ? '#000' : k.kind === 'white' ? '#ffffff' : k.kind === 'strobe' ? '#f4f2ff' : k.kind === 'logo' ? 'var(--gold)' : k.kind === 'disco' ? 'var(--orchid)' : k.kind === 'crowd' ? 'var(--cyan)' : (k.color || '#fff');
   function buildKeys() {
     const g = $('ovGrid'); if (!g) return;
     const sig = JSON.stringify(K.map(k => [k.id, k.label, k.mode, k.fade, k.color]));
@@ -212,11 +213,11 @@
     el.innerHTML = `<div class="ph"><span>Override keys</span><span class="r" id="ovR">NOTHING ON</span></div>
       <div class="ov-top"><button class="btn sm" id="ovRelease" disabled>✋ Release all</button><span class="grow"></span><button class="btn sm" id="ovEdit" style="--c:var(--lav)">✏️ Edit keys</button></div>
       <div class="ov-grid" id="ovGrid"><p class="note">Loading keys…</p></div>
-      <p class="note" id="ovNote">Hold a key and it takes over the whole wall, whatever is playing. Let go and the show comes back. LATCH keys stay on until you tap them again. Several at once: BLACKOUT wins, then WHITE, STROBE, LOGO, HOUSE, the colours, CROWD. On the laptop, keys 1 to 9 work too (0 releases everything).</p>`;
+      <p class="note" id="ovNote">Hold a key and it takes over the whole wall, whatever is playing. Let go and the show comes back. LATCH keys stay on until you tap them again. Several at once: BLACKOUT wins, then WHITE, STROBE, DISCO, HOUSE, the colours, CROWD. On the laptop, keys 1 to 8 work too (0 releases everything).</p>`;
     $('ovRelease').onclick = releaseAll;
     $('ovEdit').onclick = () => { edit = !edit; $('ovEdit').classList.toggle('on', edit); $('ovEdit').textContent = edit ? '✅ Done' : '✏️ Edit keys'; $('ovGrid').classList.toggle('edit', edit);
       if (edit) GB.toast('✏️ Tap a key to change it'); };
-    GB.proGate(el, 'Override keys', {pitch: 'Big panic buttons that take over the whole wall in one touch: blackout, full white, strobe, house lights, your colours, a crowd sweep and your logo. Hold or latch, with smooth fades and laptop shortcuts.'});
+    GB.proGate(el, 'Override keys', {pitch: 'Big panic buttons that take over the whole wall in one touch: blackout, full white, strobe, house lights, your colours, a disco ball drop and a crowd sweep. Hold or latch, with smooth fades and laptop shortcuts.'});
   });
 
   const IL_LOOKS = [['breathe', '🌬️', 'Breathing'], ['text', '🔤', 'Words'], ['glow', '🕯️', 'Warm glow'], ['look', '🎨', 'A look, slowed']];

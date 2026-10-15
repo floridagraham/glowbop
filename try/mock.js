@@ -493,11 +493,11 @@
 
   // ----------------------------------------------------------------------- 🚨 override keys + 🎙️ interlude (overrides.py)
   const OV_KEYS = [{id: 'blackout', kind: 'black', label: 'BLACKOUT', mode: 'hold', fade: 0}, {id: 'white', kind: 'white', label: 'WHITE', mode: 'hold', fade: 0},
-    {id: 'strobe', kind: 'strobe', label: 'STROBE', mode: 'hold', fade: 0}, {id: 'house', kind: 'house', label: 'HOUSE', mode: 'latch', fade: 1, color: '#ffb46b'},
+    {id: 'strobe', kind: 'strobe', label: 'STROBE', mode: 'hold', fade: 0}, {id: 'disco', kind: 'disco', label: 'DISCO', mode: 'hold', fade: 0},
+    {id: 'house', kind: 'house', label: 'HOUSE', mode: 'latch', fade: 1, color: '#ffb46b'},
     {id: 'red', kind: 'color', label: 'RED', mode: 'hold', fade: 0, color: '#ff1a1a'}, {id: 'blue', kind: 'color', label: 'BLUE', mode: 'hold', fade: 0, color: '#1a4dff'},
-    {id: 'pink', kind: 'color', label: 'PINK', mode: 'hold', fade: 0, color: '#ff2fa0'}, {id: 'crowd', kind: 'crowd', label: 'CROWD', mode: 'hold', fade: 0.25},
-    {id: 'logo', kind: 'logo', label: 'LOGO', mode: 'hold', fade: 0}];
-  const PRIO = ['black', 'white', 'strobe', 'logo', 'house', 'color', 'crowd'], FADES = [0, 0.25, 1], IL_LOOKS = ['breathe', 'text', 'glow', 'look'], IL_RET = ['none', 'flash', 'drop'];
+    {id: 'crowd', kind: 'crowd', label: 'CROWD', mode: 'hold', fade: 0.25}];
+  const PRIO = ['black', 'white', 'strobe', 'disco', 'logo', 'house', 'color', 'crowd'], FADES = [0, 0.25, 1], IL_LOOKS = ['breathe', 'text', 'glow', 'look'], IL_RET = ['none', 'flash', 'drop'];
   const OV = {keys: OV_KEYS.map(k => Object.assign({}, k)), il: {look: 'breathe', text: 'BE RIGHT BACK', look_name: '', auto: 0, ret: 'flash', fade_in: 2, fade_out: 1.5},
     held: {}, latched: new Set(), lv: {}, ilOn: false, ilAuto: false, ilLv: 0, ilSince: null, retPending: false, quietT: null, loudT: null, rev: 0, ilT: 0};
   const ovOnIds = () => OV.keys.filter(k => OV.latched.has(k.id) || (OV.held[k.id] || 0) > wall()).map(k => k.id);
@@ -596,6 +596,7 @@
           const d = Math.abs((((xs - c + 0.5) % 1) + 1) % 1 - 0.5), beam = Math.pow(clamp(1 - d / 0.11, 0, 1), 1.5), pc = palAt(cols, c + n * 0.4);
           for (let ch = 0; ch < 3; ch++) best[ch] = Math.max(best[ch], beam * (pc[ch] * 0.5 + 127)); });
         out[i] = best[0]; out[i + 1] = best[1]; out[i + 2] = best[2]; } }
+    else if (kind === 'disco') discoPic(out, t - ((OV.onT || {})[k.id] ?? t));
     else if (kind === 'logo') {
       const s = TX.s, L = TX.logo;
       if (L && (['logo', 'both'].includes(s.show) || !String(s.text || '').trim())) {
@@ -605,11 +606,36 @@
     }
     return out;
   }
+  // 🪩 port of overrides.py _disco_pic: the ball drops in with sparkles, a white burst, then spins throwing coloured spots
+  const dhsv = h => [0, 4, 2].map(o => clamp(Math.abs(((h * 6 + o) % 6) - 3) - 1, 0, 1));
+  function discoPic(out, s) {
+    const cx = (W - 1) / 2, R = Math.max(2.5, Math.min(W, H) * 0.31), cyE = H * 0.46, spin = s * 1.6;
+    let cy = cyE; if (s < 0.55) { const e = s / 0.55; cy = -R - 1 + (cyE + R + 1) * (1 - Math.pow(1 - e, 3)); } else if (s < 0.85) cy = cyE + Math.sin((s - 0.55) / 0.3 * Math.PI) * R * 0.12;
+    const px = (x, y, c) => { const i = (y * W + x) * 3; for (let ch = 0; ch < 3; ch++) out[i + ch] = Math.max(out[i + ch], c[ch] * 255); };
+    if (s > 0.5) { const n = Math.max(14, (W * H / 14) | 0), fade = Math.min(1, (s - 0.5) / 0.4);
+      for (let k = 0; k < n; k++) { const r1 = ((k * 2654435761) % 1000) / 1000, r2 = ((k * 40503 + 17) % 997) / 997, r3 = ((k * 9973 + 5) % 991) / 991;
+        const ang = r1 * 2 * Math.PI + spin * 0.9, rad = R * 1.05 + r2 * (Math.max(W, H) * 0.95 - R * 1.05), sx = cx + Math.cos(ang) * rad, sy = cy + Math.sin(ang) * rad * 0.8;
+        const c = dhsv((r3 + s * 0.15) % 1).map(v => v * 0.85 + 0.15), tw = (0.55 + 0.45 * Math.sin(s * 9 + k * 1.7)) * fade;
+        for (let y = Math.max(0, sy - 3 | 0); y < Math.min(H, sy + 4); y++) for (let x = Math.max(0, sx - 3 | 0); x < Math.min(W, sx + 4); x++) {
+          const g = Math.exp(-((x - sx) ** 2 + (y - sy) ** 2) / 1.5) * tw; if (g > 0.02) px(x, y, c.map(v => v * g)); } } }
+    const top = Math.max(0, Math.min(H, Math.floor(cy - R))), xi = Math.round(cx); for (let y = 0; y < top; y++) px(xi, y, [0.35, 0.35, 0.35]);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = (x - cx) / R, dy = (y - cy) / R, r2 = dx * dx + dy * dy; if (r2 > 1) continue;
+      const nz = Math.sqrt(1 - r2), lon = Math.atan2(dx, nz) + spin, lat = Math.asin(clamp(dy, -1, 1));
+      const ti = Math.floor(lon / (Math.PI / 6)), tj = Math.floor(lat / (Math.PI / 7)), h = (((ti * 73856093) ^ (tj * 19349663)) >>> 0) & 1023;
+      let c; if ((h + Math.floor(s * 14)) % 6 === 0) c = [1, 1, 1];
+      else { const base = 0.38 + 0.42 * nz + 0.2 * ((h % 7) / 6), tint = dhsv(((h % 360) / 360 + s * 0.2) % 1); c = tint.map(v => base * (0.6 + 0.4 * v)); }
+      if (Math.abs(Math.sin(lon * 6)) < 0.12 || Math.abs(Math.sin(lat * 7)) < 0.12) c = c.map(v => v * 0.45);
+      const i = (y * W + x) * 3; for (let ch = 0; ch < 3; ch++) out[i + ch] = c[ch] * 255; }
+    if (s < 0.9) { const k = Math.max(6, (W * H / 40) | 0), seed = Math.floor(s * 30) + 3; for (let j = 0; j < k; j++) px(((seed * 31 + j * 97) * 13) % W, ((seed * 17 + j * 53) * 7) % H, [1, 1, 1]); }
+    if (s > 0.5 && s < 1.2) { const f = (s - 0.5) / 0.7;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const ring = Math.hypot(x - cx, y - cy), v = Math.exp(-((ring - f * Math.max(W, H) * 1.1) ** 2) / 4) * (1 - f) + (s < 0.62 ? (0.62 - s) / 0.12 * 0.9 : 0); if (v > 0.02) px(x, y, [v, v, v].map(q => Math.min(1, q))); } }
+  }
   function ovApply(out, t, bri, mm) {                               // 🚨 the very last thing, on every mode (even lights off)
     if (!Object.keys(OV.lv).length) return;
     const order = OV.keys.slice().sort((a, b) => (PRIO.indexOf(b.kind) - PRIO.indexOf(a.kind)) || (OV.keys.indexOf(b) - OV.keys.indexOf(a)));
     const heldCol = OV.keys.find(k => k.kind === 'color' && (OV.lv[k.id] || 0) > 0.5);
-    order.forEach(k => { const lv = OV.lv[k.id] || 0; if (lv <= 0) return;
+    const onT = OV.onT || (OV.onT = {});
+    order.forEach(k => { const lv = OV.lv[k.id] || 0; if (lv <= 0) { delete onT[k.id]; return; } if (onT[k.id] == null) onT[k.id] = t;
       const pic = keyPic(k, t, heldCol), sc = k.kind === 'black' ? 0 : ['white', 'strobe'].includes(k.kind) ? bri : bri * mm;
       for (let i = 0; i < out.length; i++) out[i] = out[i] * (1 - lv) + pic[i] * sc * lv; });
   }
