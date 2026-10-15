@@ -74,7 +74,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=5">
+<link rel="stylesheet" href="/assets/console.css?v=6">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -104,7 +104,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=5"></script>
+<script src="/assets/site.js?v=6"></script>
 </body>
 </html>
 '''

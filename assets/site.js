@@ -405,13 +405,24 @@
      k: [['🎂', 'Birthday', 'text-birthday'], ['🥁', 'Beat words', 'text-beat'], ['✨', 'Sparkle', 'sparkle']]},
   ];
   const $ = s => root.querySelector(s), meta = n => (window.GB_CLIPS || {})[n];
+  // 🔊 the same console chirps as the app (synthesized, no files); only after a tap, with a mute key
+  let actx = null, snd = true;
+  try { snd = localStorage.getItem('gb_demo_snd') !== '0'; } catch (e) {}
+  const SC = {tap: [[0, 1568, .045], [.05, 2093, .04]], nav: [[0, 1319, .05], [.055, 1047, .05], [.11, 1568, .06]]};
+  const chirp = k => { if (!snd) return; try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
+    const t0 = actx.currentTime + .005; SC[k].forEach(([dt, f, d]) => { const o = actx.createOscillator(), g = actx.createGain(), fl = actx.createBiquadFilter(), t = t0 + dt;
+      o.type = 'square'; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = 2600; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.05, t + .004);
+      g.gain.setValueAtTime(.05, t + d - .012); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(fl); fl.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + d + .02); }); } catch (e) {} };
+  const sb = document.createElement('button'); sb.className = 'd-snd'; const paintS = () => sb.textContent = snd ? '🔊 SOUND' : '🔇 MUTED';
+  sb.onclick = () => { snd = !snd; try { localStorage.setItem('gb_demo_snd', snd ? '1' : '0'); } catch (e) {} paintS(); chirp('tap'); }; paintS();
+  const stl = root.querySelector('.d-top .st'); if (stl) stl.appendChild(sb);
   const cache = {};
   const load = n => cache[n] || (cache[n] = new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
     const g = c.getContext('2d'); g.drawImage(im, 0, 0); res(g.getImageData(0, 0, im.width, im.height)); }; im.onerror = () => res(null); im.src = '/clips/' + n + '.png'; }));
   const cv = $('canvas'), g = cv.getContext('2d');
   let tab = T[0], clip = 'wave-bigwave', t0 = performance.now(), vis = true, lastF = -1, sec = 0;
   const rail = $('.d-rail');
-  T.forEach(t => { const b = document.createElement('button'); b.textContent = t.label; b.style.setProperty('--c', t.c); b.onclick = () => pick(t); rail.appendChild(b); });
+  T.forEach(t => { const b = document.createElement('button'); b.textContent = t.label; b.style.setProperty('--c', t.c); b.onclick = () => { chirp('nav'); pick(t); }; rail.appendChild(b); });
   const tail = document.createElement('i'); tail.className = 'tail'; rail.appendChild(tail);
   const meter = $('.meter'); for (let i = 0; i < 24; i++) meter.appendChild(document.createElement('i'));
   function pick(t, k) {
@@ -420,7 +431,7 @@
     $('.d-panel .ph span').textContent = t.title; $('.d-panel p').textContent = t.p;
     const keys = $('.keys'); keys.innerHTML = '';
     t.k.forEach(([em, name, cl], i) => { const b = document.createElement('button'); b.innerHTML = `<span class="em">${em}</span>${name}`; b.style.setProperty('--kc', t.c);
-      b.onclick = () => play(b, name, cl); keys.appendChild(b); });
+      b.onclick = () => { chirp('tap'); play(b, name, cl); }; keys.appendChild(b); });
     play(keys.children[k || 0], t.k[k || 0][1], t.k[k || 0][2]);
   }
   function play(b, name, cl) {

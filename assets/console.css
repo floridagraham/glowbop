@@ -252,3 +252,4 @@ footer .fine{border-top:6px solid #1a1628}
 .founder .tag{display:inline-block;background:var(--amber);color:#000;font:700 13px var(--cond);letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:0 8px 0 8px}
 .founder h3{font-size:30px;margin:10px 0 4px}.founder h3 b{color:var(--amber);font-family:var(--mono);font-size:38px}.founder h3 s{color:var(--dim);font-size:22px;margin-left:8px}
 .founder p{color:var(--dim);margin:0}
+.demo .d-snd{margin-left:auto;margin-right:6px;appearance:none;border:0;border-radius:999px;background:var(--cyan);color:#000;font:700 12px var(--cond);letter-spacing:1.5px;padding:5px 12px;cursor:pointer}
