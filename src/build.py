@@ -74,7 +74,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=11">
+<link rel="stylesheet" href="/assets/console.css?v=12">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -122,6 +122,11 @@ def band(title='Ready to light up the party?', text='Join the launch list and we
 
 
 # ================================================================ HOME
+TICK_ITEMS = ['200+ EFFECTS', '44 LIVE LEAGUES', 'DJ MODE', 'SEES THE DROP COMING', '9 FIRE STYLES', '8 ARCADE GAMES', 'F1 RACE DAY', 'REMEMBERS YOUR SONGS', 'HOLIDAY MINI-MOVIES', '3D SHAPES', '1–8 CURTAINS', 'LIVE WEATHER']
+def ticker():
+    run = ''.join(f'<span>{t}</span><i>★</i>' for t in TICK_ITEMS)
+    return f'<div class="ledtick" aria-label="{html.escape(" · ".join(TICK_ITEMS))}"><div class="ledtick-run" aria-hidden="true">{run}{run}</div></div>'
+
 FEATS = [
     ('🧠', 'Hears the whole song', 'Not just the beat: it sees the drop coming, remembers your songs, counts the bars and reads the mood. The most advanced music brain for LED lights.', '/guide/music.html'),
     ('🎛️', 'A real light console', 'A new control panel for phone, iPad and laptop, with a live view of your wall and big colored keys.', '/guide/console.html', 1),
@@ -178,11 +183,12 @@ home = f'''
     <span class="pill">🎃 <b>Launching this Halloween</b> · 7-day free trial</span>
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop. Run it all from a light-show console on your phone, iPad or laptop.</p>
-    <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="/try/" style="--c:var(--cyan)">🎛️ Try the real app now</a></div>
+    <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn chase" href="/try/" style="--c:var(--cyan)">🎛️ Try the real app now</a></div>
     <div class="stats"><div><b>200+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
   <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
 </div></header>
+{ticker()}
 
 <section class="tight" id="try"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--green)">Try it right here</span><h2>Drive the light show</h2>
@@ -442,6 +448,7 @@ SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('s
         ('score-f1', 'F1: new leader'), ('f1-win', 'F1: chequered flag'), ('f1-safety', 'F1: safety car'), ('score-football', 'Football live')]
 features = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Features</span><h1>Everything <span class="grad">GlowBop</span> can do</h1>
 <p class="lead">A music light show, a holiday display, a scoreboard, live feeds and a sign, all run from one light-show console. Every section links to the step-by-step guide.</p></div></header>
+{ticker()}
 <section class="tight" style="padding-top:0"><div class="wrap">
   <figure class="led real reel reveal" style="aspect-ratio:40/21"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="featReel" aria-label="GlowBop showreel"></canvas>
   <figcaption>🔴 Recorded from GlowBop · <b id="featReel">Psychedelic</b></figcaption></figure>

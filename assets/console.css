@@ -325,3 +325,41 @@ table.cmp thead th.us{background:#0a0812;padding:14px 12px 16px;text-align:cente
 table.cmp tr.grp th{background:linear-gradient(90deg,rgba(255,61,154,.22),rgba(155,61,255,.16) 40%,rgba(0,0,0,0));padding:18px 14px 12px;border-top:2px solid rgba(255,61,154,.5)}
 table.cmp tr.grp b{font:800 17px var(--cond);letter-spacing:3px;text-transform:uppercase;color:#fff;margin-right:14px}
 table.cmp tr.grp span{font-size:14px;color:var(--lav)}
+
+/* ✨ spectacular bits: an angle that spins for the rainbow halos + LED chase lights */
+@property --gbA{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes gbspin{to{--gbA:360deg}}
+
+/* 1. pricing: the Best value card and the Founder deal get a live rainbow LED ring + a pulsing glow */
+@keyframes bestglow{0%,100%{box-shadow:0 0 40px -6px rgba(255,61,154,.75),0 0 90px -30px rgba(51,214,255,.6)}50%{box-shadow:0 0 60px -4px rgba(155,61,255,.85),0 0 120px -30px rgba(255,204,102,.6)}}
+.plan.best,.founder{position:relative;border:0;background:#0d0b16;animation:bestglow 3.2s ease-in-out infinite}
+.founder{background:radial-gradient(120% 140% at 50% 0%,#2a1430,#0d0b16 60%)}
+.plan.best::before,.founder::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:3px;pointer-events:none;
+  background:conic-gradient(from var(--gbA),var(--pink),var(--violet),var(--cyan),var(--amber),var(--pink));animation:gbspin 4s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.plan.best .price,.founder h3 b{background:linear-gradient(90deg,var(--pink),var(--violet),var(--cyan),var(--amber),var(--pink));background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:usflowx 4s linear infinite}
+.plan.best .tag,.founder .tag{background:linear-gradient(90deg,var(--amber),var(--pink));color:#000;box-shadow:0 0 16px rgba(255,61,154,.8)}
+
+/* 2. LED chase: little lights run round the main buttons */
+.btn.primary,.btn.chase{position:relative;isolation:isolate}
+.btn.primary::after,.btn.chase::after{content:"";position:absolute;inset:-3px;border-radius:999px;padding:2px;pointer-events:none;
+  background:repeating-conic-gradient(from var(--gbA),#fff 0 5deg,transparent 5deg 15deg,var(--cyan) 15deg 20deg,transparent 20deg 30deg,var(--amber) 30deg 35deg,transparent 35deg 45deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  animation:gbspin 6s linear infinite;filter:drop-shadow(0 0 4px rgba(255,255,255,.8))}
+.btn.chase{background:#0d0b16;color:#fff;border:0}
+
+/* 4. LED ticker strip: dot-matrix letters scrolling like a real wall */
+@keyframes tickrun{to{transform:translateX(-50%)}}
+.ledtick{overflow:hidden;background:#05040a;border-top:2px solid #1c1730;border-bottom:2px solid #1c1730;padding:12px 0;position:relative;
+  background-image:radial-gradient(circle,#1a1528 1.6px,transparent 2px);background-size:9px 9px}
+.ledtick::before,.ledtick::after{content:"";position:absolute;top:0;bottom:0;width:60px;z-index:1;pointer-events:none}
+.ledtick::before{left:0;background:linear-gradient(90deg,#000,transparent)}.ledtick::after{right:0;background:linear-gradient(-90deg,#000,transparent)}
+.ledtick-run{display:flex;width:max-content;align-items:center;gap:26px;animation:tickrun 38s linear infinite;padding-left:26px}
+.ledtick span,.ledtick i{font:900 38px/1 var(--cond);letter-spacing:5px;font-style:normal;white-space:nowrap;
+  background:linear-gradient(90deg,var(--pink),var(--violet),var(--cyan),var(--amber),var(--pink));background-size:600px 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-mask-image:radial-gradient(circle,#000 1.9px,transparent 2.3px);mask-image:radial-gradient(circle,#000 1.9px,transparent 2.3px);-webkit-mask-size:5px 5px;mask-size:5px 5px;
+  filter:drop-shadow(0 0 6px rgba(255,61,154,.55)) brightness(1.25)}
+.ledtick i{background:none;color:#fff;-webkit-text-fill-color:#fff}
+@media(max-width:600px){.ledtick span,.ledtick i{font-size:28px}}
+@media(prefers-reduced-motion:reduce){.ledtick-run{animation-duration:90s}}
