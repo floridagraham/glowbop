@@ -434,13 +434,13 @@ F2 = [
      'Hang curtains side by side, stack them, or build a grid of rows and columns. GlowBop treats them as one big screen and resizes every show to fit, keeping pixel art crisp.',
      ['<b>Grid walls:</b> tap a shape like 2 × 2, 3 × 2 or 4 × 2 for up to 8 curtains.', 'A <b>line-up wizard</b> shows a number and arrow on each curtain so you can rotate, flip and order them.', '<b>Lock it in</b> so nothing moves by accident.', 'Run them as <b>one show</b> or split them into <b>groups</b> with their own shows.'],
      '/guide/lineup.html', 'Line-up guide'),
-    ('!phone:phone-music', 'The GlowBop console on an iPhone', 'Phone remote', 'Control it all from your phone',
+    ('!phone:phone-music', 'The GlowBop console on an iPhone', 'Phone & iPad remote', 'Control it all from your phone or iPad',
      'The GlowBop laptop app shows a QR code. Scan it on any phone or tablet on the same Wi-Fi and the full console opens in the browser.',
      ['Live preview of every curtain right on your phone.', 'Big keys sized for thumbs on every section.', 'Add it to your home screen and it opens like an app, with its own icon.', 'Works at the field too, over your phone\'s hotspot.'],
      '/guide/getting-started.html#phone', 'Phone setup'),
 ]
 ORDER = ['Music show', 'DJ mode', 'Big Wave', 'Looks', 'Games', 'Wild Elements', '3D shapes', 'Fireplace', 'Holidays', 'Live feeds', 'Scoreboard', 'Formula 1',
-         'Music show', 'Epic mode', 'The console', 'Text & logos', 'Screen mirror', 'Multi-curtain', 'Phone remote']
+         'Music show', 'Epic mode', 'The console', 'Text & logos', 'Screen mirror', 'Multi-curtain', 'Phone & iPad remote']
 F2.sort(key=lambda f: ORDER.index(f[2]) if f[2] in ORDER else 99)
 SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('shape-spinningglobe', '3D spinning globe'), ('fx-pixelfireworks', 'Pixel fireworks'),
         ('wave-serpent', 'Serpent'), ('fx-laserweb', 'Laser web'), ('fx-tesseract', 'Tesseract'), ('fx-volcano', 'Volcano'),
