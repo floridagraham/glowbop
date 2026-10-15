@@ -17,8 +17,8 @@
   GB.css(`
   .gm-tiles { grid-template-columns:repeat(2, minmax(0, 1fr)); }
   .gm-tiles .tile { min-height:104px; align-items:flex-start; justify-content:flex-end; text-align:left; padding:12px; }
-  .gm-tiles .tile .em { font-size:34px; }
-  .gm-tiles .tile small { display:block; font:400 12.5px/1.3 var(--body); letter-spacing:0; text-transform:none; opacity:.8; }
+  .gm-tiles .tile .em { font-size:calc(34px * var(--fs, 1)); }
+  .gm-tiles .tile small { display:block; font:400 calc(12.5px * var(--fs, 1))/1.3 var(--body); letter-spacing:0; text-transform:none; opacity:.8; }
   @media (min-width: 700px) { .gm-tiles { grid-template-columns:repeat(4, minmax(0, 1fr)); } }
   `);
   GB.panel('games', 10, el => {

@@ -17,7 +17,7 @@
   GB.css(`
   .fd-intro { display:flex; gap:10px; align-items:center; }
   .fd-loc { display:flex; gap:8px; } .fd-loc input { flex:1; min-width:0; }
-  .fd-on { font:700 12px var(--cond); letter-spacing:1.5px; padding:3px 8px; border-radius:999px; background:var(--green); color:#000; }
+  .fd-on { font:700 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; padding:3px 8px; border-radius:999px; background:var(--green); color:#000; }
   `);
   // 🎛️ the picker: one big key per live feed. Tap = on the wall (or off again); the panel below has its settings.
   const PICK = [['countdown', '🎉', 'Countdown', 'var(--gold)', 'Countdown'], ['weather', '🌦️', 'Weather', 'var(--cyan)', 'Weather'],

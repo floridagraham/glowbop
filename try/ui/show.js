@@ -9,7 +9,7 @@
   const setLbl = (b, ic, text) => { if (!b || b._k === ic + text) return; b._k = ic + text; GB.lbl(b, ic, text); };
 
   GB.css(`
-  .sh-pads .btn { position:relative; min-height:64px; align-items:flex-end; padding:0 12px 9px; font-size:15px; line-height:1.05; border-radius:0 18px 0 18px; }
+  .sh-pads .btn { position:relative; min-height:64px; align-items:flex-end; padding:0 12px 9px; font-size:calc(15px * var(--fs, 1)); line-height:1.05; border-radius:0 18px 0 18px; }
   .sh-pads .btn svg { position:absolute; left:12px; top:10px; margin:0; width:18px; height:18px; }
   .sh-pads .sh-power { grid-column:span 2; }
   .sh-pads .btn.sh-off { background:var(--dark); color:var(--text); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--c) 45%, transparent); }
@@ -17,14 +17,14 @@
   .sh-pads .btn.sh-dead { --c:var(--red) !important; background:#3a0f1c; color:#ffc2cf; box-shadow:inset 0 0 0 2px var(--red), 0 0 14px color-mix(in srgb, var(--red) 45%, transparent); }
   .sh-pads .btn.sh-dead svg { color:var(--red); }
   .sh-segrow { display:flex; flex-direction:column; gap:6px; }
-  .sh-segrow > span { font:600 13px var(--cond); letter-spacing:2px; color:var(--c, var(--label)); text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+  .sh-segrow > span { font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:var(--c, var(--label)); text-transform:uppercase; display:flex; align-items:center; gap:6px; }
   .sh-segrow > span svg { width:16px; height:16px; fill:currentColor; flex:0 0 auto; }
   .sh-segrow .seg > .btn { --c:inherit; }
   .lv > span svg { width:16px; height:16px; fill:currentColor; flex:0 0 auto; }
   .sh-effs { height:320px; border:1px solid var(--line); border-radius:12px; padding:0 6px; background:#06050c; }
   .sh-effs .item { width:100%; appearance:none; border:0; border-bottom:1px solid var(--line); background:transparent; color:var(--text); text-align:left; font:inherit; cursor:pointer; }
   .sh-effs .item:last-child { border-bottom:0; }
-  .sh-effs .item .tx b { font:700 16px/1.2 var(--cond); letter-spacing:.5px; }
+  .sh-effs .item .tx b { font:700 calc(16px * var(--fs, 1))/1.2 var(--cond); letter-spacing:.5px; }
   .sh-effs .item .tx small { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.35; }
   .sh-effs .item.on { background:color-mix(in srgb, var(--amber) 22%, #0a0812); box-shadow:inset 4px 0 0 var(--amber); }
   .sh-effs .item.on .tx b { color:var(--amber); }
@@ -33,8 +33,8 @@
   .sh-fx { display:flex; flex-wrap:wrap; gap:6px; }
   .sh-fx > .btn { flex:1 1 120px; }
   .sh-fx > #shRelease { flex:3 1 220px; }
-  .sh-tiles .tile { min-height:84px; font-size:13px; }
-  .sh-tiles .tile .em { font-size:26px; }
+  .sh-tiles .tile { min-height:84px; font-size:calc(13px * var(--fs, 1)); }
+  .sh-tiles .tile .em { font-size:calc(26px * var(--fs, 1)); }
   .sh-chips .chip { text-transform:capitalize; }
   `);
 

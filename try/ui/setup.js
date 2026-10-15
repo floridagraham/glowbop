@@ -14,50 +14,50 @@
   .su-gslots { display:grid; gap:6px; }
   .su-gs { appearance:none; border:2px dashed var(--line); background:#06050c; color:var(--dim); border-radius:0 14px 0 14px; min-height:72px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:6px 4px; min-width:0; }
   .su-gs.full { border:2px solid var(--c); color:var(--text); background:var(--panel); }
-  .su-gs small { font-size:12px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .su-gs small { font-size:calc(12px * var(--fs, 1)); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
   .su-dev { border-bottom:1px solid var(--line); padding:8px 2px 10px; display:flex; flex-direction:column; gap:8px; min-width:0; }
   .su-dev.off .su-top { opacity:.5; }
   .su-top { display:flex; align-items:center; gap:10px; min-width:0; }
   .su-dot { width:14px; height:14px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 8px currentColor; }
-  .su-num { width:30px; height:30px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center; font:800 16px var(--cond); color:#000; }
+  .su-num { width:30px; height:30px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center; font:800 calc(16px * var(--fs, 1)) var(--cond); color:#000; }
   .su-tx { flex:1; min-width:0; }
-  .su-tx b { display:block; font:700 16px/1.15 var(--cond); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .su-tx small { display:block; color:var(--dim); font-size:12px; line-height:1.35; overflow-wrap:anywhere; }
+  .su-tx b { display:block; font:700 calc(16px * var(--fs, 1))/1.15 var(--cond); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .su-tx small { display:block; color:var(--dim); font-size:calc(12px * var(--fs, 1)); line-height:1.35; overflow-wrap:anywhere; }
   .su-acts { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:4px; }
-  .su-acts .btn { padding:0 4px; font-size:13px; gap:4px; border-radius:6px; min-height:44px; }
+  .su-acts .btn { padding:0 4px; font-size:calc(13px * var(--fs, 1)); gap:4px; border-radius:6px; min-height:44px; }
   .su-acts .btn:first-child { border-radius:22px 6px 6px 22px; } .su-acts .btn:last-child { border-radius:6px 22px 22px 6px; }
   .su-acts .btn svg { width:16px; height:16px; }
   @media (max-width: 520px) { .su-acts { grid-template-columns:repeat(2, minmax(0, 1fr)); } .su-acts .btn, .su-acts .btn:first-child, .su-acts .btn:last-child { border-radius:22px; } }
   .su-opt .seg .btn { padding:0 4px; }
-  @media (max-width: 520px) { .su-opt .seg .btn { font-size:13px; letter-spacing:.5px; } }
+  @media (max-width: 520px) { .su-opt .seg .btn { font-size:calc(13px * var(--fs, 1)); letter-spacing:.5px; } }
   .su-opt { display:flex; flex-direction:column; gap:4px; padding-left:24px; min-width:0; }
-  .su-opt > span { font:600 12px var(--cond); letter-spacing:1.5px; color:var(--label); text-transform:uppercase; }
-  .su-opt .seg .btn { min-height:44px; font-size:14px; }
+  .su-opt > span { font:600 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; color:var(--label); text-transform:uppercase; }
+  .su-opt .seg .btn { min-height:44px; font-size:calc(14px * var(--fs, 1)); }
   .su-ren { display:flex; gap:6px; min-width:0; } .su-ren input { flex:1; min-width:0; }
   .su-grp { display:flex; align-items:center; gap:10px; padding:6px 2px; border-bottom:1px solid var(--line); min-width:0; }
-  .su-grp b { flex:1; min-width:0; font:700 15px var(--cond); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .su-grp b { flex:1; min-width:0; font:700 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .su-grp select { flex:0 0 120px; width:120px; }
-  .su-gname { display:grid; grid-template-columns:76px minmax(0, 1fr); gap:8px; align-items:center; font:600 13px var(--cond); letter-spacing:1.5px; color:var(--label); text-transform:uppercase; }
+  .su-gname { display:grid; grid-template-columns:76px minmax(0, 1fr); gap:8px; align-items:center; font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; color:var(--label); text-transform:uppercase; }
   .su-map { width:100%; max-width:380px; height:auto; display:block; margin:0 auto; background:#05040a; border:2px solid var(--dark); border-radius:0 14px 0 14px; }
   .su-vid { width:100%; border-radius:0 14px 0 14px; background:#000; display:block; }
   .su-prog { height:10px; background:var(--dark2); border-radius:3px; overflow:hidden; }
   .su-prog i { display:block; height:100%; width:0; background:linear-gradient(90deg, var(--pink), var(--cyan)); transition:width .2s; }
   .su-box { display:flex; flex-direction:column; gap:10px; min-width:0; }
   .su-inset { background:#06050c; border:1px solid var(--line); border-radius:0 14px 0 14px; padding:10px; display:flex; flex-direction:column; gap:10px; min-width:0; }
-  .su-lu .seg .btn { font-size:18px; } .su-lu .su-opt { padding-left:0; }
-  @media (max-width: 520px) { .su-lu .su-opt .seg .btn, .su-lu [data-sulua] { font-size:13px; letter-spacing:.5px; padding:0 3px; } }
+  .su-lu .seg .btn { font-size:calc(18px * var(--fs, 1)); } .su-lu .su-opt { padding-left:0; }
+  @media (max-width: 520px) { .su-lu .su-opt .seg .btn, .su-lu [data-sulua] { font-size:calc(13px * var(--fs, 1)); letter-spacing:.5px; padding:0 3px; } }
   .su-addrow { display:flex; gap:8px; min-width:0; } .su-addrow input { flex:1; min-width:0; }
   .su-qr { display:flex; gap:16px; align-items:flex-start; min-width:0; }
   .su-qr img { width:140px; height:140px; border-radius:10px; background:#fff; padding:6px; flex:0 0 auto; }
-  .su-qr ol { margin:0; padding-left:20px; line-height:1.55; font-size:14px; min-width:0; }
+  .su-qr ol { margin:0; padding-left:20px; line-height:1.55; font-size:calc(14px * var(--fs, 1)); min-width:0; }
   .su-qr ol b { overflow-wrap:anywhere; color:var(--cyan); font-family:var(--mono); font-weight:400; }
   @media (max-width: 520px) { .su-qr { flex-direction:column; align-items:center; } .su-qr ol { align-self:stretch; } }
-  .su-done { text-align:center; padding:14px 6px; font-size:15px; line-height:1.5; }
-  .su-done b.su-tk { display:block; font:28px var(--mono); color:var(--cyan); margin:6px 0; letter-spacing:2px; }
+  .su-done { text-align:center; padding:14px 6px; font-size:calc(15px * var(--fs, 1)); line-height:1.5; }
+  .su-done b.su-tk { display:block; font:calc(28px * var(--fs, 1)) var(--mono); color:var(--cyan); margin:6px 0; letter-spacing:2px; }
   .su-keys { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; } .su-keys .btn { grid-column:1 / -1; }
   @media (max-width: 600px) { .su-keys { grid-template-columns:minmax(0, 1fr); } }
-  .su-now { font:14px var(--mono); color:var(--cyan); overflow-wrap:anywhere; }
+  .su-now { font:calc(14px * var(--fs, 1)) var(--mono); color:var(--cyan); overflow-wrap:anywhere; }
   `);
 
   const DEVCOL = GB.DEVCOL;
@@ -114,6 +114,7 @@
         <div class="seg" id="suShapeSeg"><button class="btn" data-sushape="flat">Flat wall</button><button class="btn" data-sushape="cylinder">Cylinder</button><button class="btn" data-sushape="box">Box</button><button class="btn" data-sushape="globe">Globe</button></div>
         <label class="field" id="suLidRow" hidden>Curtain on top (lid)<select id="suLid"></select></label>
         <p class="note" id="suShapeTip"></p>
+        <button class="btn c wide" id="suEarth" style="--c:var(--cyan)">🌍 Spin the real Earth</button>
       </div>
       <div class="sub">Line up my curtains</div>
       <button class="btn c wide" id="suLuStart" style="--c:var(--lav)">${lbl('map', 'Line up my curtains')}</button>
@@ -267,7 +268,12 @@
     if (!ord.length) box.innerHTML = '<p class="note">No grid curtains yet (Twinkly curtains or Surplife Bluetooth curtains). Add them above first.</p>';
   }
 
-  // 🧊 shape: flat wall, or curtains wrapped around a cylinder / box / globe (art pieces)
+  document.addEventListener('click', async e => {                     // 🌍 the real Earth turning on the wall (best wrapped round a globe or cylinder)
+    if (!e.target.closest || !e.target.closest('#suEarth')) return;
+    const on = (GB.status || {}).locked === 'EarthGlobe';
+    if (await GB.control({lock_effect: on ? null : 'EarthGlobe'})) { GB.sfx('on'); GB.toast(on ? '🎵 Back to the music show' : '🌍 The Earth is turning on your wall'); }
+  });
+    // 🧊 shape: flat wall, or curtains wrapped around a cylinder / box / globe (art pieces)
   const SHAPE_TIPS = {
     flat: 'A normal flat wall. Use Line up below to set the order and the grid.',
     cylinder: 'Wrap the curtains side by side all the way around a tube or column, rows going around. Line them up below in the order they go around. Optional: one more curtain on the top as a lid.',
@@ -478,7 +484,7 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
     const local = GB.local;
     el.innerHTML = `<div class="ph"><span>${local ? 'Control from your phone' : 'Share the remote'}</span></div>
-      ${local ? '' : '<p style="font-size:14px;line-height:1.55;margin:0 0 10px">✅ This device is connected. To let someone else run the lights too, have them scan this code from your screen, or send them the link.</p>'}
+      ${local ? '' : '<p style="font-size:calc(14px * var(--fs, 1));line-height:1.55;margin:0 0 10px">✅ This device is connected. To let someone else run the lights too, have them scan this code from your screen, or send them the link.</p>'}
       <div class="su-qr">
         <img id="suQr" alt="QR code for the GlowBop remote" hidden>
         <ol>
@@ -499,6 +505,19 @@
     let tries = 0; const img = $('suQr');
     const load = () => { img.onload = () => { img.hidden = false; }; img.onerror = () => { if (++tries < 20) setTimeout(load, 15000); }; img.src = '/api/qr.svg?t=' + tries; };
     load();
+  });
+
+  // =================================================================== 🔠 text size (per phone / iPad, remembered)
+  const FS = [['1', 'Normal'], ['1.12', 'Bigger'], ['1.25', 'Biggest']];
+  const applyFs = () => document.documentElement.style.setProperty('--fs', GB.store.get('gb_fs', '1.12'));
+  applyFs();
+  GB.panel('setup', 57, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
+    el.innerHTML = `<div class="ph"><span>Text size</span></div><div class="seg" id="suFs">${FS.map(([v, n]) => `<button class="btn" data-fs="${v}" style="--c:var(--cyan)">${n}</button>`).join('')}</div>
+      <p class="note">Makes the words on this phone or iPad bigger or smaller. Each device remembers its own.</p>`;
+    const paint = () => el.querySelectorAll('[data-fs]').forEach(b => b.classList.toggle('on', b.dataset.fs === GB.store.get('gb_fs', '1.12')));
+    el.querySelectorAll('[data-fs]').forEach(b => b.onclick = () => { GB.store.set('gb_fs', b.dataset.fs); applyFs(); paint(); GB.sfx('tap'); });
+    paint();
   });
 
   // =================================================================== 4b. FIX IT: restart GlowBop from any phone or iPad

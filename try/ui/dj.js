@@ -10,13 +10,13 @@
   const LINES = ['HANDS UP', 'JUMP', 'MAKE SOME NOISE', "LET'S GO", 'ONE MORE', 'PUT YOUR LIGHTS UP', 'DROP IT', 'SING IT'];
   GB.css(`
   .dj-pads { grid-template-columns:repeat(3, minmax(0, 1fr)); }
-  .dj-pads .tile { min-height:92px; font-size:16px; }
-  .dj-pads .tile .em { font-size:32px; }
+  .dj-pads .tile { min-height:92px; font-size:calc(16px * var(--fs, 1)); }
+  .dj-pads .tile .em { font-size:calc(32px * var(--fs, 1)); }
   .dj-pads .tile:active, .dj-pads .tile.hit { background:var(--c); color:#000; box-shadow:0 0 26px var(--c); }
-  #djBuild { min-height:96px; font-size:24px; letter-spacing:3px; touch-action:none; user-select:none; -webkit-user-select:none; }
+  #djBuild { min-height:96px; font-size:calc(24px * var(--fs, 1)); letter-spacing:3px; touch-action:none; user-select:none; -webkit-user-select:none; }
   #djBuild.held { background:#fff; color:#000; box-shadow:0 0 40px #fff; }
-  #djTap { min-height:86px; font-size:26px; letter-spacing:4px; touch-action:manipulation; }
-  .dj-bpm { font:44px/1 var(--mono); color:var(--cyan); text-align:center; }
+  #djTap { min-height:86px; font-size:calc(26px * var(--fs, 1)); letter-spacing:4px; touch-action:manipulation; }
+  .dj-bpm { font:calc(44px * var(--fs, 1))/1 var(--mono); color:var(--cyan); text-align:center; }
   .dj-midi .item { cursor:pointer; }
   @media (min-width: 700px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
   `);
@@ -33,7 +33,7 @@
   }
   GB.panel('dj', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--red)');
-    el.innerHTML = `<div class="ph"><span>Hit pads</span><button class="btn" id="djSnap" style="--c:var(--cyan);min-height:34px;padding:4px 14px;font-size:13px"></button></div>
+    el.innerHTML = `<div class="ph"><span>Hit pads</span><button class="btn" id="djSnap" style="--c:var(--cyan);min-height:34px;padding:4px 14px;font-size:calc(13px * var(--fs, 1))"></button></div>
       <div class="tiles dj-pads" id="djPads"></div>
       <p class="note" id="djSnapNote"></p>`;
     const paintSnap = () => { const on = snap(); const s = el.querySelector('#djSnap'); s.classList.toggle('on', on); s.textContent = on ? '🥁 SNAP TO BEAT: ON' : '⚡ INSTANT';

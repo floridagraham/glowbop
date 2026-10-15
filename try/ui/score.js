@@ -26,45 +26,45 @@
   .sb-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); grid-template-areas:"m m" "h a"; gap:8px 14px; align-items:start; }
   .sb-grid > .sb-mid { grid-area:m; } .sb-grid > .sb-tm:first-child { grid-area:h; } .sb-grid > .sb-tm:last-child { grid-area:a; }
   .sb-tm { text-align:center; min-width:0; }
-  .sb-nm { font:800 clamp(16px, 6.5cqw, 26px)/1.1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--tc); text-shadow:0 0 10px var(--tc);
+  .sb-nm { font:800 clamp(calc(16px * var(--fs, 1)), 6.5cqw, 26px)/1.1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--tc); text-shadow:0 0 10px var(--tc);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-bottom:3px solid var(--tc); padding-bottom:4px; }
   .sb-pos { display:inline-block; width:.55em; height:.55em; border-radius:50%; background:var(--amber); box-shadow:0 0 8px var(--amber); margin:0 6px .1em 0; vertical-align:middle; visibility:hidden; }
   .sb-tm.ball .sb-pos { visibility:visible; }
-  .sb-sc { font:clamp(64px, 30cqw, 130px)/1 var(--mono); color:#fff; text-shadow:0 0 18px var(--tc), 0 0 3px #fff; margin-top:6px; font-variant-numeric:tabular-nums; }
+  .sb-sc { font:clamp(calc(64px * var(--fs, 1)), 30cqw, 130px)/1 var(--mono); color:#fff; text-shadow:0 0 18px var(--tc), 0 0 3px #fff; margin-top:6px; font-variant-numeric:tabular-nums; }
   .sb-sc.d3 { font-size:clamp(48px, 20cqw, 96px); padding-top:.15em; }
-  .sb-st { font:12px var(--mono); color:var(--dim); letter-spacing:1px; min-height:16px; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-st { font:calc(12px * var(--fs, 1)) var(--mono); color:var(--dim); letter-spacing:1px; min-height:16px; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .sb-mid { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 12px; min-height:30px; padding-bottom:6px; border-bottom:1px dashed #241d3a; }
-  .sb-clk { font:clamp(34px, 13cqw, 56px)/1 var(--mono); color:var(--amber); text-shadow:0 0 12px rgba(255,178,61,.75); font-variant-numeric:tabular-nums; }
+  .sb-clk { font:clamp(calc(34px * var(--fs, 1)), 13cqw, 56px)/1 var(--mono); color:var(--amber); text-shadow:0 0 12px rgba(255,178,61,.75); font-variant-numeric:tabular-nums; }
   .sb-clk.run { color:#ffd27a; }
-  .sb-per { font:700 13px/1 var(--cond); letter-spacing:2px; color:var(--lav); text-transform:uppercase; border:1px solid #3a2f5c; border-radius:4px; padding:4px 7px; }
-  .sb-ext { font:14px var(--mono); color:var(--cyan); text-shadow:0 0 8px rgba(51,214,255,.6); }
+  .sb-per { font:700 calc(13px * var(--fs, 1))/1 var(--cond); letter-spacing:2px; color:var(--lav); text-transform:uppercase; border:1px solid #3a2f5c; border-radius:4px; padding:4px 7px; }
+  .sb-ext { font:calc(14px * var(--fs, 1)) var(--mono); color:var(--cyan); text-shadow:0 0 8px rgba(51,214,255,.6); }
   .sb-big { text-align:center; padding:10px 0 4px; }
   .sb-big .sb-clk { font-size:clamp(56px, 26cqw, 130px); }
-  .sb-big .sb-t { font:800 clamp(30px, 14cqw, 64px)/1 var(--cond); letter-spacing:4px; color:var(--tc, var(--orange)); text-shadow:0 0 16px var(--tc, var(--orange)); }
-  .sb-big .sb-s { font:14px var(--mono); color:var(--dim); margin-top:8px; }
-  .sb-tag { position:absolute; top:-1px; left:14px; font:700 11px/1 var(--cond); letter-spacing:2px; padding:3px 8px 4px; border-radius:0 0 6px 6px; background:#241d3a; color:var(--dim); }
+  .sb-big .sb-t { font:800 clamp(calc(30px * var(--fs, 1)), 14cqw, 64px)/1 var(--cond); letter-spacing:4px; color:var(--tc, var(--orange)); text-shadow:0 0 16px var(--tc, var(--orange)); }
+  .sb-big .sb-s { font:calc(14px * var(--fs, 1)) var(--mono); color:var(--dim); margin-top:8px; }
+  .sb-tag { position:absolute; top:-1px; left:14px; font:700 calc(11px * var(--fs, 1))/1 var(--cond); letter-spacing:2px; padding:3px 8px 4px; border-radius:0 0 6px 6px; background:#241d3a; color:var(--dim); }
   .sb-tag.on { background:var(--green); color:#000; }
   .sb-tag.live { background:var(--red); color:#fff; animation:sbBlink 1.4s infinite; }
   @keyframes sbBlink { 50% { opacity:.55; } }
   .sb-keys { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
   .sb-col { display:flex; flex-direction:column; gap:6px; min-width:0; }
-  .sb-col .hd { font:800 15px/1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--tc); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left:6px solid var(--tc); padding:6px 0 6px 8px; }
-  .sb-col .btn.pt { min-height:58px; font:26px/1 var(--mono); letter-spacing:0; justify-content:flex-end; padding:0 18px; border-radius:6px 22px 6px 22px; }
-  .sb-col .btn.mn { min-height:44px; font-size:15px; }
+  .sb-col .hd { font:800 calc(15px * var(--fs, 1))/1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--tc); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left:6px solid var(--tc); padding:6px 0 6px 8px; }
+  .sb-col .btn.pt { min-height:58px; font:calc(26px * var(--fs, 1))/1 var(--mono); letter-spacing:0; justify-content:flex-end; padding:0 18px; border-radius:6px 22px 6px 22px; }
+  .sb-col .btn.mn { min-height:44px; font-size:calc(15px * var(--fs, 1)); }
   .sb-two { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
   .sb-team { display:grid; grid-template-columns:minmax(0,1fr) 52px 84px; gap:8px; align-items:center; }
-  .sb-team input[type=number] { font:28px var(--mono); text-align:center; padding:4px; }
+  .sb-team input[type=number] { font:calc(28px * var(--fs, 1)) var(--mono); text-align:center; padding:4px; }
   .sb-stp { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; gap:4px; align-items:center; }
-  .sb-stp .btn { min-height:44px; padding:0; font-size:22px; }
-  .sb-stp b { text-align:center; font:24px var(--mono); color:var(--tc, var(--text)); }
-  .sb-lab { font:600 12px var(--cond); letter-spacing:1.5px; color:var(--label); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-stp .btn { min-height:44px; padding:0; font-size:calc(22px * var(--fs, 1)); }
+  .sb-stp b { text-align:center; font:calc(24px * var(--fs, 1)) var(--mono); color:var(--tc, var(--text)); }
+  .sb-lab { font:600 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; color:var(--label); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .sb-lab i { font-style:normal; color:var(--tc); }
   .sb-perrow { display:grid; grid-template-columns:56px minmax(0,1fr) 56px; gap:6px; align-items:center; }
-  .sb-perrow .v { text-align:center; font:700 18px var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--lav); }
-  .sb-cnt { font:22px var(--mono); color:var(--cyan); text-align:center; }
+  .sb-perrow .v { text-align:center; font:700 calc(18px * var(--fs, 1)) var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--lav); }
+  .sb-cnt { font:calc(22px * var(--fs, 1)) var(--mono); color:var(--cyan); text-align:center; }
   .sb-togo { display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px; align-items:center; }
-  .sb-poss .btn { display:block; line-height:48px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:15px; }
-  .sb-adj .btn { font-family:var(--mono); letter-spacing:0; font-size:15px; }
+  .sb-poss .btn { display:block; line-height:48px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:calc(15px * var(--fs, 1)); }
+  .sb-adj .btn { font-family:var(--mono); letter-spacing:0; font-size:calc(15px * var(--fs, 1)); }
   .sb-f1 { display:flex; flex-direction:column; gap:6px; }
   .sb-f1 .item { min-height:44px; }
   `);
@@ -108,7 +108,7 @@
       <div id="sbDowns" hidden>
         <div class="sub">Down and distance</div>
         <div class="seg" id="sbDown" style="margin-top:6px">${[1, 2, 3, 4].map(n => `<button class="btn" data-down="${n}" style="--c:var(--cyan)">${ORD[n]}</button>`).join('')}</div>
-        <div class="sb-togo" style="margin-top:6px"><span class="sb-lab">Yards to go</span><div class="sb-stp"><button class="btn" data-togo="-1">−</button><input type="number" id="sbTogo" min="0" max="99" inputmode="numeric" style="text-align:center;font:22px var(--mono)"><button class="btn" data-togo="1">+</button></div></div>
+        <div class="sb-togo" style="margin-top:6px"><span class="sb-lab">Yards to go</span><div class="sb-stp"><button class="btn" data-togo="-1">−</button><input type="number" id="sbTogo" min="0" max="99" inputmode="numeric" style="text-align:center;font:calc(22px * var(--fs, 1)) var(--mono)"><button class="btn" data-togo="1">+</button></div></div>
       </div>
       <div id="sbPossBox">
         <div class="sub">Ball</div>
@@ -180,7 +180,7 @@
       <label class="field">League<select id="sbLg"></select></label>
       <label class="field">Team<select id="sbTeam"><option value="">Pick a league first</option></select></label>
       <button class="btn c lg wide" id="sbFollow" style="--c:var(--cyan)">Follow this team</button>
-      <div class="read sm" style="--c:var(--cyan)"><span class="k">Status</span><span class="v" id="sbLiveSt" style="white-space:normal;font-size:16px">Pick a league and team.</span></div>
+      <div class="read sm" style="--c:var(--cyan)"><span class="k">Status</span><span class="v" id="sbLiveSt" style="white-space:normal;font-size:calc(16px * var(--fs, 1))">Pick a league and team.</span></div>
       <p class="note">Scores update every 10 seconds during the game. Every time your team scores, the wall celebrates in their colors.</p>`;
     $('sbLg').onchange = () => { teamsFor = ''; loadTeams(); syncBoards(); };
     $('sbFollow').onclick = async () => {
@@ -199,20 +199,20 @@
 
   // ------------------------------------------------------------------ 📊 Game Center: every live stat ESPN gives us
   GB.css(`
-  .sb-gc .sb-gline { font:600 13px var(--cond); letter-spacing:1.5px; text-transform:uppercase; color:var(--lav); }
-  .sb-gc .sb-last { background:#06050c; border-left:6px solid var(--amber); border-radius:0 12px 0 12px; padding:10px 12px; font:16px/1.35 var(--body); }
+  .sb-gc .sb-gline { font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; text-transform:uppercase; color:var(--lav); }
+  .sb-gc .sb-last { background:#06050c; border-left:6px solid var(--amber); border-radius:0 12px 0 12px; padding:10px 12px; font:calc(16px * var(--fs, 1))/1.35 var(--body); }
   .sb-gc .sb-sit { display:grid; grid-template-columns:auto minmax(0,1fr); gap:14px; align-items:center; }
   .sb-gc .sb-dia { width:110px; height:110px; }
-  .sb-gc .sb-cnt { display:grid; grid-template-columns:auto 1fr; gap:6px 10px; align-items:center; font:700 14px var(--cond); letter-spacing:1px; color:var(--dim); }
+  .sb-gc .sb-cnt { display:grid; grid-template-columns:auto 1fr; gap:6px 10px; align-items:center; font:700 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:1px; color:var(--dim); }
   .sb-gc .sb-dots { display:flex; gap:6px; } .sb-gc .sb-dots i { width:16px; height:16px; border-radius:50%; background:var(--dark2); }
-  .sb-gc .sb-who { font-size:14px; line-height:1.45; color:var(--text); } .sb-gc .sb-who small { color:var(--dim); }
-  .sb-gc .sb-ls { overflow-x:auto; } .sb-gc table { border-collapse:collapse; font:15px var(--mono); width:100%; min-width:max-content; }
+  .sb-gc .sb-who { font-size:calc(14px * var(--fs, 1)); line-height:1.45; color:var(--text); } .sb-gc .sb-who small { color:var(--dim); }
+  .sb-gc .sb-ls { overflow-x:auto; } .sb-gc table { border-collapse:collapse; font:calc(15px * var(--fs, 1)) var(--mono); width:100%; min-width:max-content; }
   .sb-gc td, .sb-gc th { padding:4px 6px; text-align:center; border-bottom:1px solid var(--line); }
-  .sb-gc th { font:600 12px var(--cond); color:var(--label); letter-spacing:1px; } .sb-gc td.t { text-align:left; font-family:var(--cond); font-weight:700; letter-spacing:1px; }
+  .sb-gc th { font:600 calc(12px * var(--fs, 1)) var(--cond); color:var(--label); letter-spacing:1px; } .sb-gc td.t { text-align:left; font-family:var(--cond); font-weight:700; letter-spacing:1px; }
   .sb-gc td.tot { color:var(--amber); }
   .sb-gc .sb-lead { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
-  .sb-gc .sb-lead div { font-size:13px; color:var(--dim); line-height:1.5; } .sb-gc .sb-lead b { color:var(--text); font-weight:600; }
-  .sb-gc .sb-down { font:44px/1 var(--mono); color:var(--amber); }
+  .sb-gc .sb-lead div { font-size:calc(13px * var(--fs, 1)); color:var(--dim); line-height:1.5; } .sb-gc .sb-lead b { color:var(--text); font-weight:600; }
+  .sb-gc .sb-down { font:calc(44px * var(--fs, 1))/1 var(--mono); color:var(--amber); }
   `);
   GB.panel('score', 35, el => {
     P.gc = el; el.classList.add('box', 'sb-gc'); el.style.setProperty('--c', 'var(--amber)'); el.hidden = true;
@@ -257,7 +257,7 @@
   GB.panel('score', 50, el => {
     P.f1 = el; el.classList.add('box'); el.style.setProperty('--c', 'var(--orange)'); el.hidden = true;
     el.innerHTML = `<div class="ph"><span>F1 running order</span><span class="r" id="sbF1R"></span></div>
-      <div class="read sm" style="--c:var(--orange)"><span class="k">Feed</span><span class="v" id="sbF1St" style="white-space:normal;font-size:16px">Connecting to the timing feed…</span></div>
+      <div class="read sm" style="--c:var(--orange)"><span class="k">Feed</span><span class="v" id="sbF1St" style="white-space:normal;font-size:calc(16px * var(--fs, 1))">Connecting to the timing feed…</span></div>
       <div class="sb-f1" id="sbF1List"></div>
       <p class="note">The wall shows the latest F1 session: driver codes in team colors, the lap, flags and safety car, tyres, gaps, pit stops and the fastest lap. It celebrates a new leader and the chequered flag.</p>
       <p class="note">Updates every few seconds during a session and once a minute between sessions. The free timing feed can run a little behind TV.</p>`;

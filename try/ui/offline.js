@@ -16,14 +16,14 @@
     padding:22px 20px 20px; display:flex; flex-direction:column; gap:14px; box-shadow:0 0 60px #9b3dff33; }
   #offScr .bar { display:flex; gap:6px; height:12px; } #offScr .bar i { border-radius:6px; background:var(--c); }
   #offScr canvas { width:100%; height:auto; aspect-ratio:16/7; border-radius:16px; background:#05040a; border:2px solid #2e2845; }
-  #offScr h2 { margin:0; font:800 28px/1.05 var(--cond); letter-spacing:2px; text-transform:uppercase; }
+  #offScr h2 { margin:0; font:800 calc(28px * var(--fs, 1))/1.05 var(--cond); letter-spacing:2px; text-transform:uppercase; }
   #offScr h2 span { color:var(--lav); }
   #offScr p { margin:0; color:var(--dim); line-height:1.45; }
   #offScr ul { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
-  #offScr li { display:flex; gap:12px; align-items:center; background:var(--dark2); border-radius:14px; padding:10px 12px; font:600 17px var(--cond); letter-spacing:.5px; }
-  #offScr li b { font-size:20px; width:28px; text-align:center; }
-  #offScr li small { display:block; font:400 13px var(--body); color:var(--dim); letter-spacing:0; }
-  #offScr .look { font:14px var(--mono); color:var(--cyan); letter-spacing:1px; display:flex; align-items:center; gap:10px; }
+  #offScr li { display:flex; gap:12px; align-items:center; background:var(--dark2); border-radius:14px; padding:10px 12px; font:600 calc(17px * var(--fs, 1)) var(--cond); letter-spacing:.5px; }
+  #offScr li b { font-size:calc(20px * var(--fs, 1)); width:28px; text-align:center; }
+  #offScr li small { display:block; font:400 calc(13px * var(--fs, 1)) var(--body); color:var(--dim); letter-spacing:0; }
+  #offScr .look { font:calc(14px * var(--fs, 1)) var(--mono); color:var(--cyan); letter-spacing:1px; display:flex; align-items:center; gap:10px; }
   #offScr .look i { width:10px; height:10px; border-radius:50%; background:var(--cyan); animation:offPing 1.4s ease-in-out infinite; }
   @keyframes offPing { 0%,100% { opacity:.25; transform:scale(.7); } 50% { opacity:1; transform:scale(1.15); } }
   #offScr .row { display:flex; gap:10px; } #offScr .row .btn { flex:1; }

@@ -4,21 +4,21 @@
   const {$, esc} = GB;
   GB.css(`
   .ov-reads { grid-template-columns:repeat(3, minmax(0,1fr)); }
-  .ov-reads .read .v { font-size:26px; } .ov-reads .read .v small { font-size:13px; }
-  @media (min-width: 700px) { .ov-reads .read .v { font-size:34px; } }
+  .ov-reads .read .v { font-size:calc(26px * var(--fs, 1)); } .ov-reads .read .v small { font-size:calc(13px * var(--fs, 1)); }
+  @media (min-width: 700px) { .ov-reads .read .v { font-size:calc(34px * var(--fs, 1)); } }
   .ov-list .item { min-height:52px; }
   .ov-arr { width:30px; height:30px; flex:none; display:grid; place-items:center; border-radius:50%; background:#0d2a1c; }
   .ov-arr svg { width:18px; height:18px; fill:var(--amber); transition:transform .6s; }
-  .ov-dist { font:18px/1 var(--mono); color:var(--amber); text-align:right; flex:none; }
-  .ov-dist small { display:block; font:600 11px var(--cond); letter-spacing:1.5px; color:var(--label); margin-top:3px; }
+  .ov-dist { font:calc(18px * var(--fs, 1))/1 var(--mono); color:var(--amber); text-align:right; flex:none; }
+  .ov-dist small { display:block; font:600 calc(11px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; color:var(--label); margin-top:3px; }
   .ov-iss { border:1px solid color-mix(in srgb, var(--cyan) 35%, transparent); border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
   .ov-iss .ov-ih { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 8px; }
-  .ov-iss .ov-ik { font:700 14px var(--cond); letter-spacing:2px; color:var(--cyan); }
-  .ov-iss .ov-iv { font:24px/1 var(--mono); color:var(--cyan); white-space:nowrap; }
+  .ov-iss .ov-ik { font:700 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:var(--cyan); }
+  .ov-iss .ov-iv { font:calc(24px * var(--fs, 1))/1 var(--mono); color:var(--cyan); white-space:nowrap; }
   .ov-iss.near { box-shadow:0 0 18px color-mix(in srgb, var(--cyan) 40%, transparent); }
-  .ov-st { font:13px var(--mono); color:var(--dim); }
+  .ov-st { font:calc(13px * var(--fs, 1)) var(--mono); color:var(--dim); }
   .ov-err { color:var(--red); } .ov-rate { color:var(--amber); }
-  .ov-empty { color:var(--dim); font-size:13px; padding:10px 4px; }
+  .ov-empty { color:var(--dim); font-size:calc(13px * var(--fs, 1)); padding:10px 4px; }
   `);
   const ARROW = '<svg viewBox="0 0 24 24"><path d="M12 2l7 19-7-4.5L5 21z"/></svg>';
   const kmi = n => n == null ? '–' : n >= 1000 ? (n / 1000).toFixed(1) + 'K' : String(n);

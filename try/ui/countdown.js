@@ -3,12 +3,12 @@
   'use strict';
   const {$, esc} = GB;
   GB.css(`
-  .cd-big { font:44px/1 var(--mono); color:var(--gold); text-align:center; padding:10px 0 2px; text-shadow:0 0 18px color-mix(in srgb, var(--gold) 55%, transparent); }
-  .cd-name { text-align:center; font:700 16px var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--lav); }
+  .cd-big { font:calc(44px * var(--fs, 1))/1 var(--mono); color:var(--gold); text-align:center; padding:10px 0 2px; text-shadow:0 0 18px color-mix(in srgb, var(--gold) 55%, transparent); }
+  .cd-name { text-align:center; font:700 calc(16px * var(--fs, 1)) var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--lav); }
   .cd-list .item { cursor:pointer; } .cd-list .item.on { box-shadow:inset 4px 0 0 var(--gold); }
   .cd-add { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
   .cd-add .wide2 { grid-column:span 2; }
-  @media (max-width: 520px) { .cd-big { font-size:34px; } }
+  @media (max-width: 520px) { .cd-big { font-size:calc(34px * var(--fs, 1)); } }
   `);
   const left = s => { if (s == null) return '–'; s = Math.max(0, Math.round(s)); const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
     return d ? `${d}d ${h}h ${String(m).padStart(2, '0')}m` : h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`; };

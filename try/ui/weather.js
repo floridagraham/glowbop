@@ -4,22 +4,22 @@
   const {$, esc} = GB;
   GB.css(`
   .wx-top { display:flex; align-items:center; gap:14px; min-width:0; }
-  .wx-em { font-size:46px; line-height:1; flex:none; }
-  .wx-temp { font:58px/1 var(--mono); color:var(--cyan); flex:none; text-shadow:0 0 18px color-mix(in srgb, var(--cyan) 45%, transparent); }
-  .wx-cond { min-width:0; } .wx-cond b { display:block; font:700 18px var(--cond); letter-spacing:1px; text-transform:uppercase; color:var(--text); line-height:1.15; overflow-wrap:anywhere; }
-  .wx-cond small { display:block; color:var(--dim); font-size:13px; }
+  .wx-em { font-size:calc(46px * var(--fs, 1)); line-height:1; flex:none; }
+  .wx-temp { font:calc(58px * var(--fs, 1))/1 var(--mono); color:var(--cyan); flex:none; text-shadow:0 0 18px color-mix(in srgb, var(--cyan) 45%, transparent); }
+  .wx-cond { min-width:0; } .wx-cond b { display:block; font:700 calc(18px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; color:var(--text); line-height:1.15; overflow-wrap:anywhere; }
+  .wx-cond small { display:block; color:var(--dim); font-size:calc(13px * var(--fs, 1)); }
   .wx-hrs { display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:6px; }
   .wx-hr { background:var(--dark2); border-radius:10px; padding:6px 2px; text-align:center; min-width:0; }
-  .wx-hr i { display:block; font-style:normal; font:600 12px var(--cond); color:var(--label); letter-spacing:1px; }
-  .wx-hr span { display:block; font-size:20px; line-height:1.3; } .wx-hr b { display:block; font:18px var(--mono); color:var(--text); }
-  .wx-hr em { display:block; font-style:normal; font-size:11px; color:var(--cyan); min-height:14px; }
-  .wx-err { color:var(--red); } .wx-loc { color:var(--lav); font:600 14px var(--cond); letter-spacing:1px; text-transform:uppercase; }
+  .wx-hr i { display:block; font-style:normal; font:600 calc(12px * var(--fs, 1)) var(--cond); color:var(--label); letter-spacing:1px; }
+  .wx-hr span { display:block; font-size:calc(20px * var(--fs, 1)); line-height:1.3; } .wx-hr b { display:block; font:calc(18px * var(--fs, 1)) var(--mono); color:var(--text); }
+  .wx-hr em { display:block; font-style:normal; font-size:calc(11px * var(--fs, 1)); color:var(--cyan); min-height:14px; }
+  .wx-err { color:var(--red); } .wx-loc { color:var(--lav); font:600 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; }
   .st-al { box-shadow:inset 4px 0 0 var(--stc, var(--amber)); padding-left:12px; }
   .st-al .tx b { color:var(--stc, var(--amber)); text-transform:uppercase; font-family:var(--cond); letter-spacing:1px; }
   .st-al .tx small { white-space:normal; }
-  .st-none { color:var(--dim); font-size:14px; padding:6px 0; }
-  .st-dist { font:20px var(--mono); color:var(--text); flex:none; text-align:right; } .st-dist small { display:block; font:11px var(--cond); color:var(--label); letter-spacing:1px; }
-  @media (max-width: 520px) { .wx-temp { font-size:46px; } .wx-em { font-size:38px; } .wx-hrs { gap:4px; } .wx-hr span { font-size:17px; } .wx-hr b { font-size:15px; } }
+  .st-none { color:var(--dim); font-size:calc(14px * var(--fs, 1)); padding:6px 0; }
+  .st-dist { font:calc(20px * var(--fs, 1)) var(--mono); color:var(--text); flex:none; text-align:right; } .st-dist small { display:block; font:calc(11px * var(--fs, 1)) var(--cond); color:var(--label); letter-spacing:1px; }
+  @media (max-width: 520px) { .wx-temp { font-size:calc(46px * var(--fs, 1)); } .wx-em { font-size:calc(38px * var(--fs, 1)); } .wx-hrs { gap:4px; } .wx-hr span { font-size:calc(17px * var(--fs, 1)); } .wx-hr b { font-size:calc(15px * var(--fs, 1)); } }
   `);
   const EM = {clear: ['☀️', '🌙'], partly: ['⛅', '☁️'], cloudy: ['☁️', '☁️'], rain: ['🌧️', '🌧️'], storm: ['⛈️', '⛈️'], snow: ['🌨️', '🌨️'], fog: ['🌫️', '🌫️']};
   const em = (k, day) => (EM[k] || EM.clear)[day === false ? 1 : 0];
@@ -124,7 +124,7 @@
       $('stSt')._k = sk;
       $('stSt').innerHTML = !on ? '<div class="st-none">Shows up when storm watch is on.</div>'
         : !st.length ? '<div class="st-none">No named storms right now.</div>'
-        : st.map(x => `<div class="item"><span style="font-size:24px">🌀</span><div class="tx"><b>${esc(x.kind)} ${esc(x.name)}</b><small>${x.wind_mph} mph winds</small></div>
+        : st.map(x => `<div class="item"><span style="font-size:calc(24px * var(--fs, 1))">🌀</span><div class="tx"><b>${esc(x.kind)} ${esc(x.name)}</b><small>${x.wind_mph} mph winds</small></div>
             <div class="st-dist">${Number(x.dist_mi).toLocaleString()}<small>MI ${esc(x.dir)}</small></div></div>`).join('');
     }
     $('stUp').textContent = on && f.updated ? `Checked ${hm(f.updated)} · every 2 min` : on && f.nhc_updated ? `Storms checked ${hm(f.nhc_updated)}` : '';

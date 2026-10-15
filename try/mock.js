@@ -708,8 +708,10 @@
   // ======================================================================= the DEMO banner
   document.addEventListener('DOMContentLoaded', () => {
     const bar = document.getElementById('demoBar'); if (!bar) return;
-    let hide = false; try { hide = sessionStorage.getItem('gb_demo_bar') === '0'; } catch (e) {}
-    if (hide) { bar.remove(); return; }
-    bar.querySelector('.dm-x').onclick = () => { bar.remove(); try { sessionStorage.setItem('gb_demo_bar', '0'); } catch (e) {} };
+    // ✕ EXIT: back to where they came from on glowbop.com (or the home page)
+    bar.querySelector('.dm-x').onclick = e => {
+      let same = false; try { same = !!document.referrer && new URL(document.referrer).origin === location.origin && !/\/try\/?$/.test(new URL(document.referrer).pathname); } catch (x) {}
+      if (same && history.length > 1) { e.preventDefault(); history.back(); }
+    };
   });
 })();
