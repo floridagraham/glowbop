@@ -34,7 +34,7 @@
   GB.awake = v => { on = v; GB.store.set('gb_awake', v ? '1' : '0'); v ? engage() : release(); paint(); };
   function paint() {
     const b = document.getElementById('awBtn'); if (!b) return;
-    b.classList.toggle('on', on); b.textContent = on ? '☀️ Screen stays on' : '🌙 Screen can sleep';
+    b.classList.toggle('on', on); GB.lbl(b, on ? 'sun' : 'moon', on ? 'Screen stays on' : 'Screen can sleep');
   }
   GB.panel('setup', 55, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--gold)');

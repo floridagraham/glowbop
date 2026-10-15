@@ -150,16 +150,60 @@
     if (a === 'confetti') { for (const side of [0, W - 1]) for (let i = 0; i < 40; i++) { const an = -Math.PI / 2 + (side ? -1 : 1) * (.45 + R() * .5), sp = 16 + R() * 12;
       P.push({x: side, y: H - 1, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1.6, g: 14, c: pickOne([[255, 61, 154], [51, 214, 255], [255, 204, 102], [60, 224, 138], [204, 153, 255], [255, 255, 255]])}); } }
   }
+  // 🎚️ build styles (same as dj.py build_frame): each ramps over 8 s, uses the look's colours, tops out white-hot
+  const BUILD_STYLES = ['rise', 'close', 'burst', 'spin', 'rainbow', 'zipper', 'heartbeat'], BSECS = 8;
+  const BG = (() => { const cx = (W - 1) / 2, cy = (H - 1) / 2, g = {ex: [], ring: [], rad: [], ang: [], dx: [], dy: []};
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = x - cx, dy = y - cy, ex = Math.min(x, W - 1 - x) / cx, ey = Math.min(y, H - 1 - y) / cy;
+      g.ex.push(ex); g.ring.push(Math.min(ex, ey)); g.rad.push(Math.hypot(dx / cx, dy / cy) / Math.SQRT2); g.ang.push(((Math.atan2(dy, dx) / 6.283) % 1 + 1) % 1); g.dx.push(dx); g.dy.push(dy); }
+    return g; })();
+  const bTurns = (el, v0, v1) => { const e = Math.min(el, BSECS); return v0 * e + (v1 - v0) * e ** 3 / (3 * BSECS * BSECS) + v1 * Math.max(0, el - BSECS); };
+  const bSoft = (v, w) => clamp(v / w + .5, 0, 1);
+  function djBuild(buf, t, el, style) {
+    const k = Math.min(1, el / BSECS), cols = lookCols(S.look), pal = u => palAt(cols, u);
+    let rate = 2 + 14 * k * k, pulse = .5 + .5 * Math.sin(t * rate * 6.283), wk = Math.pow(k, 1.6), dim = .6 * k;
+    const ac = k > .5 && pulse > .85;
+    if (style === 'rise' || !BUILD_STYLES.includes(style)) {
+      const top = H * (1 - k);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, c0 = pal(x / W + t * .4); for (let c = 0; c < 3; c++) buf[i + c] *= 1 - .55 * k;
+        const band = clamp(y - top + 1, 0, 1), lv = (.25 + .6 * k * pulse) * band;
+        for (let c = 0; c < 3; c++) buf[i + c] += lv * (c0[c] * (1 - k) + 255 * k);
+        if (R() < .01 + .05 * k) buf[i] = buf[i + 1] = buf[i + 2] = 255;
+        if (ac) for (let c = 0; c < 3; c++) buf[i + c] = Math.max(buf[i + c], 153 * k); }
+      for (let i = 0; i < buf.length; i++) buf[i] = Math.min(255, buf[i]);
+      return;
+    }
+    // per-style state
+    let arms = 1, rev = 0, env = 0;
+    if (style === 'spin') { arms = [1, 2, 3, 4, 6][Math.min(4, Math.floor(k * 5))]; rev = bTurns(el, .35, 2); }
+    if (style === 'rainbow') { rev = bTurns(el, .15, 1.6); wk = Math.pow(Math.max(0, (k - .55) / .45), 2); }
+    if (style === 'heartbeat') { const f = bTurns(el, 55 / 60, 170 / 60) % 1; env = Math.max(Math.exp(-f * 9), f >= .3 ? .75 * Math.exp(-(f - .3) * 9) : 0); pulse = env; dim = .35 + .4 * k; }
+    const hs = (.42 + .22 * k + .14 * env) * Math.min((W - 1) / 2, (H - 1) / 2);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const j = y * W + x, i = j * 3; let m = 0, lv = 0, rim = 0, col;
+      if (style === 'close' || style === 'zipper') { const d = style === 'close' ? BG.ring[j] : BG.ex[j], fr = k * 1.06;
+        m = bSoft(fr - d, .12); rim = k < .99 ? Math.exp(-(((d - fr) / .075) ** 2)) * (.6 + .4 * pulse) : 0; lv = m * (.3 + .6 * k * pulse);
+        col = style === 'close' ? pal(d * 1.2 - t * .5) : pal((x < (W - 1) / 2 ? 0 : .5) + y / H * .35 + d * .5 - t * .4); }
+      else if (style === 'burst') { const r = BG.rad[j], fr = .06 + k * 1.02, core = Math.exp(-((r / (.08 + .25 * k)) ** 2)) * (.4 + .6 * k);
+        m = bSoft(fr - r, .1); rim = k < .99 ? Math.exp(-(((r - fr) / .07) ** 2)) * (.6 + .4 * pulse) : 0; lv = m * (.35 + .6 * k * pulse);
+        col = pal(r * 1.6 - t * .6).map(v => v * (1 - core) + 255 * core); }
+      else if (style === 'spin') { const r = BG.rad[j], u = (((rev - BG.ang[j]) * arms) % 1 + 1) % 1, arm = (1 - u) ** 4, hub = Math.exp(-((r / (.06 + .12 * k)) ** 2));
+        const head = Math.exp(-((u / .06) ** 2)) + Math.exp(-(((1 - u) / .03) ** 2));
+        col = pal(r * .7 + u * .25 + t * .1).map(v => { v = v * (1 - .6 * head) + 153 * head; return v * (1 - hub) + 255 * hub; });
+        lv = clamp(.04 + .16 * k + (.7 + .3 * k) * arm + hub, 0, 1) * (.8 + .2 * pulse); m = clamp(.2 + arm, 0, 1); }
+      else if (style === 'rainbow') { col = hue((x / W + y / H * .6) * (1 + 1.5 * k) - rev, 1, 1); lv = .35 + .65 * k * (.65 + .35 * pulse); m = 1; }
+      else if (style === 'heartbeat') { const X = BG.dx[j] / hs, Y = -BG.dy[j] / hs + .12, v = (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3;
+        const mm = clamp(.5 - v * 6, 0, 1), glow = Math.exp(-BG.rad[j] * 3) * env * (.25 + .5 * k);
+        col = pal(.15 * Y + t * .05); lv = mm * (.55 + .45 * env) + glow * (1 - mm); m = Math.max(mm, glow); }
+      const keep = (1 - dim) * (1 - .5 * m);
+      for (let c = 0; c < 3; c++) { const cc = col[c] * (1 - wk) + 255 * wk; buf[i + c] = Math.min(255, buf[i + c] * keep + lv * cc + rim * (127 + .5 * cc)); }
+      if (R() < (.008 + .045 * k) * (.3 + .7 * m)) buf[i] = buf[i + 1] = buf[i + 2] = 255;
+      if (k > .5 && pulse > .85) for (let c = 0; c < 3; c++) buf[i + c] = Math.max(buf[i + c], 127 * k);
+    }
+  }
   function djApply(buf, t, dt) {
     const bi = Math.floor(beatPos); if (DJ.queue.length && bi !== DJ._lb) { const q = DJ.queue; DJ.queue = []; q.forEach(djFire); }
     DJ._lb = bi;
-    if (DJ.build != null) {                                        // rising wall of light, faster and whiter
-      const k = Math.min(1, (t - DJ.build) / 6), rate = 2 + 14 * k * k, pulse = .5 + .5 * Math.sin(t * rate * 6.283), top = H * (1 - k);
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3; for (let c = 0; c < 3; c++) buf[i + c] *= 1 - .55 * k;
-        if (y >= top) { const hh = (x / W + t / 2.5) % 1, col = [.5 + .5 * Math.cos(6.283 * hh), .5 + .5 * Math.cos(6.283 * (hh - .33)), .5 + .5 * Math.cos(6.283 * (hh - .66))];
-          const lv = (.3 + .6 * k * pulse) * 255; for (let c = 0; c < 3; c++) buf[i + c] = Math.max(buf[i + c], (col[c] * (1 - k) + k) * lv); }
-        if (R() < .01 + .05 * k) buf[i] = buf[i + 1] = buf[i + 2] = 255; }
-    }
+    if (DJ.build != null) djBuild(buf, t, t - DJ.build, DJ.bstyle || 'rise');   // 🎚️ the wind-up, in the style picked on the phone
     for (const r of DJ.rings) { r.r += dt * 26; for (let a = 0; a < 6.283; a += .12) put(buf, r.x + Math.cos(a) * r.r, r.y + Math.sin(a) * r.r * .9, r.c, Math.max(0, 1 - r.r / 30)); }
     DJ.rings = DJ.rings.filter(r => r.r < 30);
     for (const q of DJ.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= .97; q.vy = q.vy * .97 + q.g * dt; q.l -= dt * .9; if (q.l > 0) put(buf, q.x, q.y, q.c, Math.min(1, q.l * 1.4)); }
@@ -174,7 +218,7 @@
     if (DJ.flash > .01) { for (let i = 0; i < buf.length; i++) buf[i] = Math.max(buf[i], 255 * DJ.flash); DJ.flash *= Math.pow(.02, dt); }
     if (DJ.black) buf.fill(0);
   }
-  const djInfo = () => ({cue: DJ.cue, building: DJ.build != null, blackout: DJ.black, tap_bpm: DJ.tap_bpm ? Math.round(DJ.tap_bpm) : null,
+  const djInfo = () => ({cue: DJ.cue, building: DJ.build != null, build_style: DJ.bstyle || 'rise', blackout: DJ.black, tap_bpm: DJ.tap_bpm ? Math.round(DJ.tap_bpm) : null,
     queued: DJ.queue.slice(), strobing: now() < DJ.strobe});
 
   // ======================================================================= 🔤 text + logo layer
@@ -1272,7 +1316,7 @@
           if (b.hit === 'blackout') DJ.black = 'on' in b ? !!b.on : !DJ.black;
           else if (b.hit && b.snap === false) djFire(b.hit, b.beats);     // ⚡ instant pads fire right now; snapped ones wait for the beat
           else if (b.hit) DJ.queue.push(b.hit);
-          if ('build' in b) { if (b.build && DJ.build == null) DJ.build = t; else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
+          if ('build' in b) { if (b.build && DJ.build == null) { DJ.build = t; const st = String(b.style || 'rise'); DJ.bstyle = st === 'auto' ? pickOne(BUILD_STYLES.filter(x => x !== DJ.bstyle)) : BUILD_STYLES.includes(st) ? st : 'rise'; } else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
           if ('cue' in b) DJ.cue = b.cue && CAT.looks[b.cue] ? b.cue : null;
           if (b.tap) { DJ.taps = DJ.taps.filter(x => t - x < 3).concat([t]);
             if (DJ.taps.length >= 3) { const iv = DJ.taps.slice(-8).map((x, i, a) => i ? x - a[i - 1] : 0).slice(1).filter(v => v > .25 && v < 1.5).sort((a, c) => a - c);

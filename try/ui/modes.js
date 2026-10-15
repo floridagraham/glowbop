@@ -216,8 +216,8 @@
   const FIRE_STYLES = [['fireplace', '🔥', 'Fireplace'], ['campfire', '🏕️', 'Campfire'], ['bonfire', '🎇', 'Bonfire'],
                        ['candles', '🕯️', 'Candle wall'], ['torches', '🔦', 'Torch row'], ['pixel', '👾', 'Pixel flames'],
                        ['spirit', '👻', 'Spirit fire'], ['lava', '🌋', 'Lava rising'], ['dragon', '🐉', 'Dragon breath']];
-  const FIRE_COLORS = {classic: ['🔥', 'Classic'], blue: ['💙', 'Blue gas'], purple: ['💜', 'Purple'], rainbow: ['🌈', 'Rainbow'],
-                       green: ['💚', 'Green'], pink: ['🩷', 'Pink'], ice: ['🤍', 'Ice'], team: ['🎽', 'Team colors'], nightshift: ['🌙', 'Night shift']};
+  const FIRE_COLORS = {classic: ['fire', 'Classic'], blue: ['fire', 'Blue gas'], purple: ['fire', 'Purple'], rainbow: ['rainbow', 'Rainbow'],   // GB.svg icon, tinted by FIRE_TINT
+                       green: ['fire', 'Green'], pink: ['fire', 'Pink'], ice: ['freeze', 'Ice'], team: ['fire', 'Team colors'], nightshift: ['moon', 'Night shift']};
   const FIRE_TINT = {classic: 'var(--orange)', blue: 'var(--cyan)', purple: 'var(--violet)', rainbow: 'var(--gold)', green: 'var(--green)', pink: 'var(--pink)', ice: '#dfe8ff',
                      team: 'var(--pink)', nightshift: 'var(--peri)'};
   const FIRE_MSG = {fireplace: '🔥 Fireplace', campfire: '🏕️ Campfire', bonfire: '🎇 Bonfire', candles: '🕯️ Candle wall', torches: '🔦 Torch row',
@@ -286,9 +286,9 @@
     const box = $('mdFCol'); if (!box) return;
     const key = list.join(','); if (box._k === key) return; box._k = key; box.innerHTML = '';
     list.forEach(c => {
-      const [em, name] = FIRE_COLORS[c] || ['🔥', c];
+      const [em, name] = FIRE_COLORS[c] || ['fire', c];
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.fc = c; b.style.setProperty('--c', FIRE_TINT[c] || 'var(--orange)');
-      b.innerHTML = `<span class="em">${em}</span><span>${esc(name)}</span>`;
+      b.innerHTML = `<span class="em">${GB.svg(em)}</span><span>${esc(name)}</span>`;
       b.onclick = async () => {
         const body = {color: c, on: true};
         if (c === 'team') { body.team1 = $('mdFT1').value; body.team2 = $('mdFT2').value; }
@@ -334,7 +334,7 @@
       $('mdTxDrop').checked = !!s.drop_flash; if (s.drop_word) $('mdTxDropWord').value = s.drop_word;
       if (s.speed) { $('mdTxSpeed').value = Math.round(s.speed * 10); GB.paintRange($('mdTxSpeed')); }
       if (s.color && s.color.startsWith('#')) { $('mdTxColor').value = s.color; txColor = 'custom'; }
-      if (s.has_logo && !(lgRes && lgRes.name === s.logo_name)) $('mdLgName').textContent = '✅ ' + (s.logo_name || 'logo') + ' loaded';
+      if (s.has_logo && !(lgRes && lgRes.name === s.logo_name)) $('mdLgName').innerHTML = GB.svg('check') + ' ' + esc(s.logo_name || 'logo') + ' loaded';
       else if (!s.has_logo && !lgPixels) $('mdLgName').textContent = LG_HINT;
       renderText(); lgPaint();
     } catch (e) {}
@@ -862,7 +862,7 @@
         const c = document.createElement('button'); c.className = 'chip'; c.style.setProperty('--c', kind === 'logo' ? 'var(--pink)' : 'var(--gold)');
         const cur = kind === 'logo' ? s.has_logo && s.logo_name === p.name : s.text === p.text;
         c.classList.toggle('on', !!cur);
-        c.textContent = (p.builtin ? '✨ ' : kind === 'logo' ? '🖼️ ' : '🔤 ') + p.name;
+        c.innerHTML = GB.svg(p.builtin ? 'sparkle' : kind === 'logo' ? 'image' : 'text') + esc(p.name);
         c.onclick = () => { const on = kind === 'logo' ? (v === 'logo' || v === 'both') : (v === 'text' || v === 'both');
           if (kind === 'text') $('mdTxText').value = p.text || p.name;
           if (kind === 'logo') { lgSrc = null; lgRes = null; lgPixels = null; }

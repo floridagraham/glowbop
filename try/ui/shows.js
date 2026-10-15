@@ -16,8 +16,8 @@
     {id: 'text', label: 'TEXT', c: 'var(--lime)', hint: 'words on the wall'},
     {id: 'effect', label: 'FX', c: 'var(--lav)', hint: 'lock an effect'},
   ];
-  const HITS = {drop: ['💥', 'Drop', 'var(--pink)'], strobe: ['⚡', 'Strobe', '#ffffff'], flash: ['⚪', 'Flash', 'var(--gold)'],
-                fire: ['🔥', 'Fire burst', 'var(--orange)'], confetti: ['🎉', 'Confetti', 'var(--lav)'], blackout: ['⬛', 'Blackout', 'var(--peri)']};
+  const HITS = {drop: ['burst', 'Drop', 'var(--pink)'], strobe: ['bolt', 'Strobe', '#ffffff'], flash: ['sun', 'Flash', 'var(--gold)'],     // [GB.svg icon, name, colour]
+                fire: ['fire', 'Fire burst', 'var(--orange)'], confetti: ['confetti', 'Confetti', 'var(--lav)'], blackout: ['dark', 'Blackout', 'var(--peri)']};
   const SWATCH = ['#ff3d9a', '#ff2040', '#ff7a3d', '#ffcc33', '#b6ff3d', '#3ce08a', '#33d6ff', '#3d6bff', '#9b3dff', '#e45cff', '#ffffff', '#ffb0d0'];
   const LINES = ['HANDS UP', 'JUMP', "LET'S GO", 'MAKE SOME NOISE', 'ONE MORE', 'SING IT', 'DROP IT', 'PUT YOUR LIGHTS UP'];
   const SECCOL = {intro: '#6677ff', quiet: '#6677ff', outro: '#6677ff', groove: '#9b3dff', breakdown: '#33d6ff', build: '#ffb23d', peak: '#ff3d9a', drop: '#ff3d9a', silence: '#2a2540'};
@@ -91,7 +91,9 @@
   .ss-it.bo > span { text-shadow:none; }
   .ss-hit { position:absolute; top:4px; bottom:4px; width:30px; margin-left:-15px; touch-action:none; cursor:grab; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; z-index:1; }
   .ss-hit i { font-style:normal; width:28px; height:28px; border-radius:8px; transform:rotate(45deg); background:var(--c); display:flex; align-items:center; justify-content:center; box-shadow:0 0 10px var(--c); pointer-events:none; }
-  .ss-hit i em { transform:rotate(-45deg); font-style:normal; font-size:calc(15px * var(--fs, 1)); line-height:1; }
+  .ss-hit i em { transform:rotate(-45deg); font-style:normal; font-size:calc(15px * var(--fs, 1)); line-height:1; color:#000; display:flex; }
+  .ss-hit i em .ic { width:16px; height:16px; vertical-align:0; }
+  .bdg.has .ic { margin-right:3px; }
   .ss-hit .tail { position:absolute; left:15px; top:50%; height:6px; margin-top:-3px; background:repeating-linear-gradient(90deg, #fff 0 3px, transparent 3px 6px); opacity:.7; pointer-events:none; border-radius:3px; }
   .ss-hit.sel i { box-shadow:0 0 0 2px #000, 0 0 0 4px #fff, 0 0 18px #fff; }
   .ss-hit.drag { z-index:4; }
@@ -188,7 +190,7 @@
   function paintTop() {
     const on = $('ssOn'); if (!on) return;
     on.classList.toggle('on', S.on); GB.lbl(on, 'movie', S.on ? 'Song Shows: on' : 'Song Shows: off');
-    const r = $('ssRec'); r.classList.toggle('on', S.rec); r.innerHTML = `<span>${S.rec ? '● REC: ON' : '● Record'}</span>`;
+    const r = $('ssRec'); r.classList.toggle('on', S.rec); r.innerHTML = GB.svg('dot') + `<span>${S.rec ? 'REC: ON' : 'Record'}</span>`;
     $('ssRecNote').innerHTML = S.rec ? '<b>Recording.</b> While a song plays, every DJ pad, build drop, crowd line and look you pick lands on that song\'s timeline at that moment (snapped to the beat).'
       : 'Build a light show for a song once and it plays the same way every time that song comes on. Anywhere your show is empty, GlowBop keeps reacting live.';
   }
@@ -226,7 +228,7 @@
     const has = !!S.key; $('ssPick').hidden = !has;
     $('ssListBox').hidden = has && !S.listOpen;
     $('ssChange').textContent = S.listOpen ? 'Done' : 'Change';
-    if (has && S.song) { $('ssPickT').textContent = S.song.title || S.key; $('ssPickS').textContent = (S.song.artist || '') + (isCurrent() ? '  ·  ▶ NOW PLAYING' : ''); }
+    if (has && S.song) { $('ssPickT').textContent = S.song.title || S.key; $('ssPickS').textContent = (S.song.artist || '') + (isCurrent() ? '  ·  NOW PLAYING' : ''); }
   }
   function renderList() {
     const box = $('ssList'); if (!box) return;
@@ -241,7 +243,7 @@
       const it = document.createElement('div'); it.className = 'item' + (r.key === S.key ? ' on' : ''); it.tabIndex = 0; it.setAttribute('role', 'button');
       const sub = [r.artist, r.bpm ? r.bpm + ' BPM' : '', r.drops ? r.drops + (r.drops > 1 ? ' drops' : ' drop') : '', r.listens ? 'heard ' + r.listens + 'x' : ''].filter(Boolean).join(' · ');
       it.innerHTML = `<div class="tx"><b>${esc(r.title)}</b><small>${esc(sub)}</small></div>` +
-        (r.key === cur ? '<span class="bdg now">Now</span>' : '') + (r.has ? `<span class="bdg has">🎬 ${r.items}${r.enabled ? '' : ' · off'}</span>` : '<span class="bdg">No show</span>');
+        (r.key === cur ? '<span class="bdg now">Now</span>' : '') + (r.has ? `<span class="bdg has">${GB.svg('movie')}${r.items}${r.enabled ? '' : ' · off'}</span>` : '<span class="bdg">No show</span>');
       it.onclick = () => { select(r.key); S.listOpen = false; paintPick(); };
       it.onkeydown = e => { if (e.key === 'Enter') it.onclick(); };
       box.appendChild(it);
@@ -297,7 +299,7 @@
     if (!s) { m.innerHTML = '<span>Pick a song</span>'; return; }
     const bits = [];
     bits.push(s.bpm ? `<span>${Math.round(s.bpm)} BPM${s.bpm_src === 'lookup' ? ' (looked up)' : ''}</span>` : '<span class="warn">Tempo unknown: 120 BPM grid</span>');
-    bits.push(s.grid != null ? '<span>Bar grid ✓</span>' : '<span class="warn">Bar 1 not locked yet</span>');
+    bits.push(s.grid != null ? '<span>Bar grid ' + GB.svg('check') + '</span>' : '<span class="warn">Bar 1 not locked yet</span>');
     if (s.drops && s.drops.length) bits.push(`<span>${s.drops.length} drop${s.drops.length > 1 ? 's' : ''} on file</span>`);
     if (s.key_name) bits.push(`<span>${esc(s.key_name)}</span>`);
     if (s.mood) bits.push(`<span>${esc(s.mood)}</span>`);
@@ -443,8 +445,8 @@
     const x = i.t * pps(), sel = i.id === S.sel ? ' sel' : '', rec = i.rec ? ' rec' : '';
     const w = i.end != null ? Math.max(8, (i.end - i.t) * pps()) : 0;
     if (i.lane === 'hit' && i.hit !== 'blackout') {
-      const h = HITS[i.hit] || ['?', i.hit, '#fff'], tail = i.hit === 'strobe' ? `<span class="tail" style="width:${Math.max(0, (i.beats || 4) * BEAT() * pps() - 15).toFixed(1)}px"></span>` : '';
-      return `<div class="ss-hit${sel}" data-id="${i.id}" style="left:${x.toFixed(1)}px;--c:${h[2]}" title="${esc(h[1])} at ${tlabel(i.t)}">${tail}<i><em>${h[0]}</em></i></div>`;
+      const h = HITS[i.hit] || ['dot', i.hit, '#fff'], tail = i.hit === 'strobe' ? `<span class="tail" style="width:${Math.max(0, (i.beats || 4) * BEAT() * pps() - 15).toFixed(1)}px"></span>` : '';
+      return `<div class="ss-hit${sel}" data-id="${i.id}" style="left:${x.toFixed(1)}px;--c:${h[2]}" title="${esc(h[1])} at ${tlabel(i.t)}">${tail}<i><em>${GB.svg(h[0])}</em></i></div>`;
     }
     if (i.lane === 'bright') return '';
     let cls = 'ss-it', style = `left:${x.toFixed(1)}px;width:${w.toFixed(1)}px;`, lab = '';
@@ -452,7 +454,7 @@
     else if (i.lane === 'color') { style += `background:${colGrad(i.colors || ['#fff'])}`; lab = (i.colors || []).length + ' colour' + ((i.colors || []).length === 1 ? '' : 's'); }
     else if (i.lane === 'text') { cls += ' txt'; lab = '“' + i.text + '”'; }
     else if (i.lane === 'effect') { cls += ' fx'; lab = i.effect; }
-    else if (i.lane === 'hit') { cls += ' bo'; lab = '⬛ Blackout'; }
+    else if (i.lane === 'hit') { cls += ' bo'; lab = 'Blackout'; }
     return `<div class="${cls}${sel}${rec}" data-id="${i.id}" style="${style}" title="${esc(lab)} · ${tlabel(i.t)}"><span>${esc(lab)}</span><i class="rz" data-rz="1"></i></div>`;
   }
   function brightSVG(W, lh) {
@@ -585,10 +587,10 @@
   function rulerTap(t) {
     if (!isCurrent() || !S.now || !['player', 'app'].includes(S.now.src)) return GB.toast('📍 ' + tlabel(t));
     const s = GB.sheet('Bar ' + barOf(t).bar + ' · ' + GB.fmt(t), [
-      {label: '▶ Jump the music here', sub: 'the song skips to this bar', onclick: async () => {
+      {ic: 'play', label: 'Jump the music here', sub: 'the song skips to this bar', onclick: async () => {
         const ok = S.now.src === 'player' ? await GB.post('/api/music', {action: 'seek', pos: t}) : await GB.post('/api/media', {action: 'seek', pos: t});
         if (ok) GB.toast('⏩ ' + GB.fmt(t)); }},
-      {label: '📍 Just mark this spot', sub: 'new cues from the lane names land here', onclick: () => {}}]);
+      {ic: 'pin', label: 'Just mark this spot', sub: 'new cues from the lane names land here', onclick: () => {}}]);
     s.classList.add('ss-sheet');
   }
 
@@ -600,8 +602,8 @@
     let snap = snapshot(), changed = false;
     const touch = () => { if (!changed) { pushUndo(snap); changed = true; } markDirty(); render(); paintTools(); };
     sh.innerHTML = `<div style="--c:${L.c}"><div class="head"><b>${esc(L.label === 'FX' ? 'Effect' : L.label === 'HITS' ? 'Hit' : L.label)}</b><small id="ssEdT"></small></div><div id="ssEdBody"></div>
-      <div class="ss-step" id="ssEdPos"><span class="k">Move</span><button class="btn sm" data-n="-4">◀ Bar</button><b id="ssEdPosV"></b><button class="btn sm" data-n="4">Bar ▶</button>
-        <button class="btn sm" data-n="-1">◀ Beat</button><span></span><button class="btn sm" data-n="1">Beat ▶</button></div>
+      <div class="ss-step" id="ssEdPos"><span class="k">Move</span><button class="btn sm" data-n="-4">${GB.svg('left')}<span>Bar</span></button><b id="ssEdPosV"></b><button class="btn sm" data-n="4"><span>Bar</span>${GB.svg('right')}</button>
+        <button class="btn sm" data-n="-1">${GB.svg('left')}<span>Beat</span></button><span></span><button class="btn sm" data-n="1"><span>Beat</span>${GB.svg('right')}</button></div>
       <div class="ss-step" id="ssEdLen" hidden><span class="k">Length</span><button class="btn sm" data-n="-1">− Bar</button><b id="ssEdLenV"></b><button class="btn sm" data-n="1">+ Bar</button></div>
       <div class="grid3"><button class="btn danger" id="ssEdDel">${GB.svg('trash')}<span>Delete</span></button><button class="btn" id="ssEdDup">${GB.svg('add')}<span>Copy</span></button><button class="btn c" id="ssEdOk" style="--c:${L.c}">Done</button></div></div>`;
     document.body.appendChild(sh);
@@ -644,7 +646,7 @@
           fire: 'A fire explosion on top of the show.', confetti: 'A confetti cannon in the look\'s colours.', blackout: 'The wall goes dark, then comes back. Great right before a drop.'}[it.hit] || '';
         paintPos(); };
       Object.entries(HITS).forEach(([k, h]) => { const b = document.createElement('button'); b.className = 'tile'; b.dataset.k = k; b.style.setProperty('--c', h[2]);
-        b.innerHTML = `<span class="em">${h[0]}</span>${h[1]}`;
+        b.innerHTML = `<span class="em">${GB.svg(h[0])}</span>${h[1]}`;
         b.onclick = () => { it.hit = k; mark(); if (k === 'blackout') { if (it.end == null) it.end = +(it.t + BEAT()).toFixed(3); delete it.beats; } else { delete it.end; if (k === 'strobe') it.beats = it.beats || 4; else delete it.beats; } paintH(); touch(); };
         box.appendChild(b); });
       body.querySelectorAll('#ssEdBeats button').forEach(b => b.onclick = () => {

@@ -146,7 +146,7 @@
         <div class="seg" id="suShapeSeg"><button class="btn" data-sushape="flat">Flat wall</button><button class="btn" data-sushape="cylinder">Cylinder</button><button class="btn" data-sushape="box">Box</button><button class="btn" data-sushape="globe">Globe</button></div>
         <label class="field" id="suLidRow" hidden>Curtain on top (lid)<select id="suLid"></select></label>
         <p class="note" id="suShapeTip"></p>
-        <button class="btn c wide" id="suEarth" style="--c:var(--cyan)">🌍 Spin the real Earth</button>
+        <button class="btn c wide" id="suEarth" style="--c:var(--cyan)">${GB.svg('globe')}<span>Spin the real Earth</span></button>
       </div>`;
     el.querySelectorAll('[data-sulay]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/layout', {layout: b.dataset.sulay})) { GB.toast(b.textContent); loadLights(); } });
   });
@@ -158,7 +158,7 @@
       <p class="note">Turn, flip and order your curtains so pictures and words read the right way across the wall.</p>
       <button class="btn c wide" id="suLuStart" style="--c:var(--lav)">${lbl('map', 'Line up my curtains')}</button>
       <div id="suLu" class="su-inset su-lu" hidden>
-        <p class="note"><b>1.</b> Every curtain now shows its number and an arrow. <b>2.</b> Tap ⟳ / ⇋ until each arrow points <b>up</b> and the number reads right. <b>3.</b> Put them in the order they hang with ▲ ▼. <b>4.</b> Tap Lock.</p>
+        <p class="note"><b>1.</b> Every curtain now shows its number and an arrow. <b>2.</b> Tap ${GB.svg('refresh')} / ${GB.svg('swapH')} until each arrow points <b>up</b> and the number reads right. <b>3.</b> Put them in the order they hang with ${GB.svg('up')} ${GB.svg('down')}. <b>4.</b> Tap Lock.</p>
         <div class="su-opt" style="padding-left:0"><span>Hung</span><div class="seg"><button class="btn" data-sulua="row">Side by side</button><button class="btn" data-sulua="stack">Stacked</button><button class="btn" data-sulua="grid">Grid</button><button class="btn" data-sulua="overlap">Overlap</button></div></div>
         <p class="note" id="suOvNote" hidden>Overlapping: hang the curtains over each other, shifted so each bulb sits in a gap of the first curtain. Pick where each one sits (centered or top-left) and its half-gap shift below. Twice the bulbs in the same space = a sharper picture.</p>
         <div id="suGrid" class="su-grid" hidden>
@@ -254,16 +254,16 @@
   // 🧭 line-up wizard: number + arrow on every curtain, rotate / flip / order, lock
   function luOrder() { const ax = (LS.arrange || 'row') === 'stack' ? 1 : 0;
     return LS.devices.filter(d => d.is_grid && d.enabled).map((d, i) => ({d, i, k: d.pos ? d.pos[ax] * 100 + d.pos[1 - ax] : d.place ? d.place[ax] * 100 : 99999 + i})).sort((a, b) => a.k - b.k); }
-  const OVOFF = [['x', '→ Side', 'Shift sideways'], ['y', '↓ Down', 'Shift down'], ['xy', '↘ Diag', 'Shift diagonally']];
+  const OVOFF = [['x', 'arrowR', 'Side', 'Shift sideways'], ['y', 'arrowD', 'Down', 'Shift down'], ['xy', 'arrowDR', 'Diag', 'Shift diagonally']];
   function ovSeg(d, onId) {                                       // 🔀 the 3 half-gap shifts for an overlapping curtain
     const s = document.createElement('div'); s.className = 'seg';
-    OVOFF.forEach(([k, t, tip]) => { const b = btn((d.overlap || 'xy') === k ? 'on' : '', esc(t), null, {title: tip, ariaLabel: tip}); b.style.setProperty('--c', 'var(--peri)');
+    OVOFF.forEach(([k, ic, t, tip]) => { const b = btn((d.overlap || 'xy') === k ? 'on' : '', lbl(ic, t), null, {title: tip, ariaLabel: tip}); b.style.setProperty('--c', 'var(--peri)');
       b.onclick = async () => { if (await GB.post('/api/lights/overlap', {id: d.id, on: onId, off: k})) loadLights(); }; s.appendChild(b); });
     return s;
   }
   function ovAtSeg(d, onId) {                                     // 🎯 centered on the other curtain, or lined up at its top-left
     const s = document.createElement('div'); s.className = 'seg';
-    [['center', '🎯 Center'], ['corner', '◰ Top-left']].forEach(([k, t]) => { const b = btn((d.overlap_at || 'center') === k ? 'on' : '', esc(t)); b.style.setProperty('--c', 'var(--peri)');
+    [['center', 'center', 'Center'], ['corner', 'corner', 'Top-left']].forEach(([k, ic, t]) => { const b = btn((d.overlap_at || 'center') === k ? 'on' : '', lbl(ic, t)); b.style.setProperty('--c', 'var(--peri)');
       b.onclick = async () => { if (await GB.post('/api/lights/overlap', {id: d.id, on: onId, at: k})) loadLights(); }; s.appendChild(b); });
     return s;
   }
@@ -283,10 +283,10 @@
       r.innerHTML = `<div class="su-top"><span class="su-num" style="background:${DEVCOL[(n - 1) % DEVCOL.length]}">${n}</span>
         <div class="su-tx"><b>${esc(d.name)}</b><small>${d.gw}×${d.gh} · turned ${o.rot}°${o.flip ? ' · flipped' : ''}</small></div></div>`;
       const ctl = document.createElement('div'); ctl.className = 'seg';
-      [['⟲', 'Turn left', {rotate: -90}], ['⟳', 'Turn right', {rotate: 90}], ['⇋', 'Flip left/right', {flip: 'x'}], ['⇅', 'Flip upside down', {flip: 'y'}]].forEach(([t, tip, body]) => {
-        ctl.appendChild(btn('', t, async () => { if (await GB.post('/api/lights/orient', Object.assign({id: d.id, order: luOrder().map(x => x.d.id)}, body))) loadLights(); }, {title: tip, ariaLabel: tip})); });
-      [['▲', -1, 'Move up'], ['▼', 1, 'Move down']].forEach(([t, dir, tip]) => {
-        const b = btn('', t, async () => { const ids = luOrder().map(x => x.d.id), j = pos + dir; [ids[pos], ids[j]] = [ids[j], ids[pos]];
+      [['reset', 'Turn left', {rotate: -90}], ['refresh', 'Turn right', {rotate: 90}], ['swapH', 'Flip left/right', {flip: 'x'}], ['swapV', 'Flip upside down', {flip: 'y'}]].forEach(([t, tip, body]) => {
+        ctl.appendChild(btn('', GB.svg(t), async () => { if (await GB.post('/api/lights/orient', Object.assign({id: d.id, order: luOrder().map(x => x.d.id)}, body))) loadLights(); }, {title: tip, ariaLabel: tip})); });
+      [['up', -1, 'Move up'], ['down', 1, 'Move down']].forEach(([t, dir, tip]) => {
+        const b = btn('', GB.svg(t), async () => { const ids = luOrder().map(x => x.d.id), j = pos + dir; [ids[pos], ids[j]] = [ids[j], ids[pos]];
           if (await GB.post('/api/lights/arrange', {order: ids, how: LS.arrange || 'row'})) loadLights(); }, {title: tip, ariaLabel: tip});
         b.disabled = (dir < 0 ? pos === 0 : pos === ord.length - 1); if (LS.arrange !== 'grid') ctl.appendChild(b); });
       r.appendChild(ctl);
@@ -537,7 +537,7 @@
           <li>Tap <b style="font-family:inherit;color:var(--text);font-weight:700">Share → Add to Home Screen</b> to get the GlowBop app icon.</li>
         </ol>
       </div>
-      <div class="su-share"><button class="btn" id="suShare" style="--c:var(--green)">📤 Share link</button><button class="btn" id="suCopy" style="--c:var(--cyan)">📋 Copy link</button></div>
+      <div class="su-share"><button class="btn" id="suShare" style="--c:var(--green)">${GB.svg('share')}<span>Share link</span></button><button class="btn" id="suCopy" style="--c:var(--cyan)">${GB.svg('copy')}<span>Copy link</span></button></div>
       <p class="note">Not connecting? Make sure both are on the same Wi-Fi, turn off VPN on the phone, and if Windows asks, allow GlowBop on <b>private networks</b>. TikTok (Surplife) curtains talk to the computer over Bluetooth, so keep it within about 30 ft of them.</p>`;
     let link = '';
     GB.get('/api/link').then(j => { link = j.link; $('suLink').textContent = j.link; }).catch(() => {});
@@ -569,7 +569,7 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--amber)');
     el.innerHTML = `<div class="ph"><span>Something not working?</span></div>
       <p class="note" style="margin-top:0">Music won't play, a light dropped off, or a phone won't connect? Restart GlowBop right from here. It takes about 10 seconds and your song picks up where it left off.</p>
-      <div class="seg"><button class="btn c" id="suRestart" style="--c:var(--amber)">🔄 Restart GlowBop</button><button class="btn c" id="suReload" style="--c:var(--lav)">📱 Reload this screen</button></div>`;
+      <div class="seg"><button class="btn c" id="suRestart" style="--c:var(--amber)"><span>${GB.svg('refresh')}Restart GlowBop</span></button><button class="btn c" id="suReload" style="--c:var(--lav)"><span>${GB.svg('phone')}Reload this screen</span></button></div>`;
     let armed = 0;
     $('suRestart').onclick = async () => {
       if (Date.now() - armed > 4000) { armed = Date.now(); return GB.toast('Tap again to restart GlowBop'); }
@@ -582,7 +582,7 @@
   GB.panel('setup', 50, el => {
     el.id = 'helpPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--violet)');
     el.innerHTML = `<div class="ph"><span>Help &amp; feedback</span></div>
-      <div class="seg"><button class="btn" id="suFbBug" style="--c:var(--pink)">🐞 Report a bug</button><button class="btn" id="suFbReq" style="--c:var(--amber)">💡 Request a feature</button></div>
+      <div class="seg"><button class="btn" id="suFbBug" style="--c:var(--pink)"><span>${GB.svg('bug')}Report a bug</span></button><button class="btn" id="suFbReq" style="--c:var(--amber)"><span>${GB.svg('bulb')}Request a feature</span></button></div>
       <div id="suFbForm" class="su-box" hidden>
         <div class="sub" id="suFbTitle">Report a bug</div>
         <p class="note" id="suFbHint"></p>

@@ -21,7 +21,8 @@
   #offScr p { margin:0; color:var(--dim); line-height:1.45; }
   #offScr ul { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
   #offScr li { display:flex; gap:12px; align-items:center; background:var(--dark2); border-radius:14px; padding:10px 12px; font:600 calc(17px * var(--fs, 1)) var(--cond); letter-spacing:.5px; }
-  #offScr li b { font-size:calc(20px * var(--fs, 1)); width:28px; text-align:center; }
+  #offScr li b { font-size:calc(20px * var(--fs, 1)); width:28px; text-align:center; flex:0 0 auto; }
+  #offScr li b .ic { width:24px; height:24px; vertical-align:0; display:block; margin:0 auto; filter:drop-shadow(0 0 6px currentColor); }
   #offScr li small { display:block; font:400 calc(13px * var(--fs, 1)) var(--body); color:var(--dim); letter-spacing:0; }
   #offScr .look { font:calc(14px * var(--fs, 1)) var(--mono); color:var(--cyan); letter-spacing:1px; display:flex; align-items:center; gap:10px; }
   #offScr .look i { width:10px; height:10px; border-radius:50%; background:var(--cyan); animation:offPing 1.4s ease-in-out infinite; }
@@ -37,9 +38,9 @@
       <h2>Your lights are <span>taking a breather</span> 💤</h2>
       <p>We can't reach your GlowBop laptop right now. No worries, nothing is lost. The show picks right back up the second we find it.</p>
       <ul>
-        <li><b>📶</b><div>Same Wi-Fi as the laptop?<small>Phones love to jump to cellular. Check you're on your home Wi-Fi.</small></div></li>
-        <li><b>💻</b><div>Laptop awake?<small>If it went to sleep, wake it up. Plugged in is best during a show.</small></div></li>
-        <li><b>✨</b><div>GlowBop open on the laptop?<small>Look for the GlowBop icon by the clock. If it's not there, start GlowBop.</small></div></li>
+        <li><b style="color:var(--cyan)">${GB.svg('wifi')}</b><div>Same Wi-Fi as the laptop?<small>Phones love to jump to cellular. Check you're on your home Wi-Fi.</small></div></li>
+        <li><b style="color:var(--lav)">${GB.svg('laptop')}</b><div>Laptop awake?<small>If it went to sleep, wake it up. Plugged in is best during a show.</small></div></li>
+        <li><b style="color:var(--pink)">${GB.svg('sparkle')}</b><div>GlowBop open on the laptop?<small>Look for the GlowBop icon by the clock. If it's not there, start GlowBop.</small></div></li>
       </ul>
       <div class="look"><i></i><span id="offMsg">Looking for your laptop…</span></div>
       <div class="row"><button class="btn c" id="offTry" style="--c:var(--cyan)">Try again now</button><button class="btn c" id="offReload" style="--c:var(--lav)">Reload page</button></div>

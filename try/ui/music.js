@@ -25,6 +25,8 @@
   .mu-sty { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .mu-sty > span { font:calc(12px * var(--fs, 1))/1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
   .mu-sty .seg { flex:1; min-width:0; } .mu-sty .btn { min-height:34px; padding:4px 6px; font-size:calc(13px * var(--fs, 1)); --c:var(--gold); }
+  .mu-sty .btn { gap:4px; } .mu-sty .btn .ic { width:15px; height:15px; }
+  @media (max-width: 699px) { .mu-sty .btn { flex-direction:column; gap:2px; padding:4px 2px; } .mu-sty .btn .ic { width:16px; height:16px; } }
   .mu-np { display:flex; align-items:center; gap:14px; min-width:0; }
   .mu-art { width:88px; height:88px; flex:0 0 auto; border-radius:0 16px 0 16px; overflow:hidden; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(135deg, color-mix(in srgb, var(--pink) 35%, #000), color-mix(in srgb, var(--cyan) 30%, #000)); box-shadow:0 0 0 2px var(--violet), 0 0 22px color-mix(in srgb, var(--violet) 45%, transparent); }
@@ -129,7 +131,7 @@
       </div>
       <div class="mu-fam" id="muFam"></div>
       <div class="mu-sty" id="muSty" hidden><span>Light style</span><div class="seg">
-        <button class="btn" data-sty="auto">Auto</button><button class="btn" data-sty="epic">🎬 Epic</button><button class="btn" data-sty="dance">🪩 Dance</button><button class="btn" data-sty="chill">🌙 Chill</button></div></div>
+        <button class="btn" data-sty="auto">Auto</button><button class="btn" data-sty="epic">${GB.svg('movie')}<span>Epic</span></button><button class="btn" data-sty="dance">${GB.svg('disco')}<span>Dance</span></button><button class="btn" data-sty="chill">${GB.svg('moon')}<span>Chill</span></button></div></div>
       <div class="seg mu-opt">
         <button class="btn" id="muSleep" style="--c:var(--lav)"></button>
         <button class="btn" id="muParty" style="--c:var(--orange)"></button>

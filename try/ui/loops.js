@@ -8,10 +8,10 @@
 (function () {
   'use strict';
   const {$, esc} = GB;
-  const HITS = [['drop', '💥', 'Drop', 'var(--pink)'], ['strobe', '⚡', 'Strobe', '#ffffff'], ['flash', '⚪', 'Flash', 'var(--gold)'],
-                ['fire', '🔥', 'Fire', 'var(--orange)'], ['confetti', '🎉', 'Confetti', 'var(--lav)'], ['blackout', '⬛', 'Blackout', 'var(--peri)']];
+  const HITS = [['drop', 'burst', 'Drop', 'var(--pink)'], ['strobe', 'bolt', 'Strobe', '#ffffff'], ['flash', 'sun', 'Flash', 'var(--gold)'],     // icons: GB.svg names
+                ['fire', 'fire', 'Fire', 'var(--orange)'], ['confetti', 'confetti', 'Confetti', 'var(--lav)'], ['blackout', 'dark', 'Blackout', 'var(--peri)']];
   const BANKC = {A: 'var(--pink)', B: 'var(--cyan)', C: 'var(--lime)', D: 'var(--amber)'};
-  const LANE_EM = {look: '🎨', color: '🌈', text: '🔤', effect: '✨'};
+  const LANE_EM = {look: 'palette', color: 'rainbow', text: 'text', effect: 'sparkle'};
   let L = null, base = {pos: 0, bpm: 120, t: 0}, recMode = false, editMode = false, raf = 0, pollT = null, lpPro = true;
   const recBars = () => +GB.store.get('gb_lp_bars', '2') || 2;
 
@@ -77,6 +77,9 @@
   .lp-tabs .chip { min-height:36px; padding:0 12px; font-size:calc(13px * var(--fs, 1)); }
   .lp-steps { display:grid; grid-template-columns:calc(30px * var(--fs, 1)) repeat(16, minmax(0, 1fr)); gap:2px; user-select:none; -webkit-user-select:none; }
   .lp-steps .rl { display:flex; align-items:center; justify-content:center; font-size:calc(16px * var(--fs, 1)); }
+  .lp-steps .rl .ic { width:calc(18px * var(--fs, 1)); height:calc(18px * var(--fs, 1)); filter:drop-shadow(0 0 4px currentColor); }
+  .mloop .ic { width:calc(15px * var(--fs, 1)); height:calc(15px * var(--fs, 1)); }
+  .mloop.rec .ic { animation:lpRecP2 1s ease-in-out infinite; } @keyframes lpRecP2 { 50% { opacity:.35; } }
   .lp-steps .bn { font:calc(10px * var(--fs, 1))/1 var(--mono); color:var(--dim); text-align:left; padding:0 0 2px 2px; }
   .lp-cell { appearance:none; border:0; padding:0; min-width:0; height:calc(32px * var(--fs, 1)); border-radius:4px; background:var(--dark2); cursor:pointer; touch-action:manipulation; }
   .lp-cell.bs { box-shadow:inset 2px 0 0 #ffffff30; }
@@ -124,8 +127,8 @@
   GB.panel('dj', 75, el => {                                   // 🔒 Pro: under the fader board
     el.classList.add('box'); el.id = 'lpPanel';
     el.innerHTML = `<div class="ph"><span>Loop banks</span><span class="r" id="lpR">NOTHING PLAYING</span></div>
-      <div class="lp-top"><button class="btn sm" id="lpStop" disabled>⏹ Stop all</button><button class="btn sm" id="lpRec" style="--c:var(--red)">🔴 Record</button>
-        <span class="grow"></span><div class="lp-bars" id="lpBars" hidden></div><button class="btn sm" id="lpEdit" style="--c:var(--lav)">✏️ Edit</button></div>
+      <div class="lp-top"><button class="btn sm" id="lpStop" disabled><span>${GB.svg('stop')}Stop all</span></button><button class="btn sm" id="lpRec" style="--c:var(--red)">${GB.svg('dot')}<span>Record</span></button>
+        <span class="grow"></span><div class="lp-bars" id="lpBars" hidden></div><button class="btn sm" id="lpEdit" style="--c:var(--lav)">${GB.svg('edit')}<span>Edit</span></button></div>
       <div class="lp-beat"><div class="lp-dots" id="lpDots"><i class="d1"></i><i></i><i></i><i></i></div><span class="lp-pos" id="lpPos">BAR 1 · 1</span></div>
       <p class="lp-paused" id="lpPaused" hidden></p>
       <div class="lp-grid" id="lpGrid"><p class="note" style="grid-column:1/-1">Loading loops…</p></div>
@@ -152,10 +155,10 @@
     p.classList.toggle('recmode', recMode && !(L && L.rec)); p.classList.toggle('editmode', editMode);
     const rb = $('lpRec'), rec = L && L.rec;
     rb.classList.toggle('on', recMode || !!rec);
-    rb.textContent = rec ? '✕ Cancel rec' : recMode ? '🔴 Pick a slot' : '🔴 Record';
+    GB.lbl(rb, rec ? 'close' : 'dot', rec ? 'Cancel rec' : recMode ? 'Pick a slot' : 'Record');
     $('lpBars').hidden = !(recMode && !rec);
     $('lpBars').querySelectorAll('.btn').forEach(b => b.classList.toggle('on', +b.dataset.v === recBars()));
-    $('lpEdit').classList.toggle('on', editMode); $('lpEdit').textContent = editMode ? '✅ Done' : '✏️ Edit';
+    $('lpEdit').classList.toggle('on', editMode); GB.lbl($('lpEdit'), editMode ? 'check' : 'edit', editMode ? 'Done' : 'Edit');
     $('lpEdit').hidden = recMode && !rec && innerWidth < 700;
   }
 
@@ -229,7 +232,7 @@
     const st = $('lpStop'); if (st) st.disabled = !(n || L.queued.length || L.rec);
     document.querySelectorAll('#lpStopMode .btn').forEach(b => b.classList.toggle('on', b.dataset.v === L.settings.stop));
     document.querySelectorAll('#lpQuant .btn').forEach(b => b.classList.toggle('on', +b.dataset.v === +L.settings.quant));
-    const pz = $('lpPaused'); if (pz) { pz.hidden = !(L.why && n); pz.textContent = L.why ? '⏸ Loops ' + L.why + '. They come back in time with the music.' : ''; }
+    const pz = $('lpPaused'); if (pz) { pz.hidden = !(L.why && n); pz.innerHTML = L.why ? GB.svg('pause') + ' Loops ' + esc(L.why) + '. They come back in time with the music.' : ''; }
     paintTop();
   }
 
@@ -256,7 +259,7 @@
     c.hidden = !((n || rec) && GB.pro !== false && lp.pro !== false);
     if (c.hidden) return;
     c.classList.toggle('rec', !!rec);
-    c.innerHTML = rec ? '<span>🔴</span><span class="w">REC </span><b>' + esc(rec.id) + '</b>' : '<span>🔁</span><span class="w">LOOPS</span><b>' + n + '</b>';
+    c.innerHTML = rec ? GB.svg('dot') + '<span class="w">REC </span><b>' + esc(rec.id) + '</b>' : GB.svg('loop') + '<span class="w">LOOPS</span><b>' + n + '</b>';
     const what = rec ? 'Recording loop ' + rec.id : 'Loops playing: ' + (lp.names || []).join(', ');
     c.setAttribute('aria-label', what + '. Tap to stop all loops.'); c.title = what + '. Tap to stop all loops.';
   });
@@ -283,7 +286,7 @@
       <div class="lp-tabs" id="lpeTabs"></div>
       <div class="lp-steps" id="lpeSteps"></div>
       <div class="lp-other" id="lpeOther"></div>
-      <div class="row"><button class="btn" id="lpeL">◀ Nudge</button><button class="btn" id="lpeR">Nudge ▶</button><button class="btn" id="lpeClrBar">Clear bar</button></div>
+      <div class="row"><button class="btn" id="lpeL">${GB.svg('left')}<span>Nudge</span></button><button class="btn" id="lpeR"><span>Nudge</span>${GB.svg('right')}</button><button class="btn" id="lpeClrBar">Clear bar</button></div>
       <div class="row"><button class="btn" id="lpeCopy">Copy to…</button><button class="btn danger" id="lpeClear">Clear slot</button><button class="btn" id="lpeRestore">Starters</button></div>
       <div class="row"><button class="btn c" id="lpeSave" style="--c:var(--lime)">Save</button><button class="btn ghost" id="lpeCancel">Cancel</button></div></div>`;
     document.body.appendChild(s);
@@ -300,7 +303,7 @@
       q('#lpeCount').textContent = ed.ev.length + ' MOVE' + (ed.ev.length === 1 ? '' : 'S');
       let h = '<span></span>' + Array.from({length: 16}, (_, i) => `<span class="bn">${i % 4 === 0 ? (ed.bar * 4 + i / 4 + 1) : ''}</span>`).join('');
       HITS.forEach(([k, em, name, c]) => {
-        h += `<span class="rl" title="${name}" aria-hidden="true">${em}</span>`;
+        h += `<span class="rl" title="${name}" aria-hidden="true" style="color:${c}">${GB.svg(em)}</span>`;
         for (let i = 0; i < 16; i++) {
           const step = ed.bar * 16 + i, sb = step / 4;
           const here = hits.filter(e => e.hit === k && cellOf(e) % (ed.bars * 16) === step);
@@ -312,7 +315,7 @@
       q('#lpeSteps').innerHTML = h;
       q('#lpeSteps').querySelectorAll('.lp-cell').forEach(b => b.onclick = () => toggleCell(b.dataset.h, +b.dataset.s));
       const others = ed.ev.filter(e => e.lane !== 'hit');
-      q('#lpeOther').innerHTML = others.length ? 'Also in this loop: ' + others.map(e => `<span>${LANE_EM[e.lane] || ''} ${esc(e.look || e.effect || e.text || (e.colors || []).join(' ') || e.lane)} · beat ${(e.b + 1).toFixed(2).replace(/\.?0+$/, '')}</span>`).join('') + ' <button class="btn sm ghost" id="lpeOtherClr">Remove these</button>' : '';
+      q('#lpeOther').innerHTML = others.length ? 'Also in this loop: ' + others.map(e => `<span>${LANE_EM[e.lane] ? GB.svg(LANE_EM[e.lane]) : ''} ${esc(e.look || e.effect || e.text || (e.colors || []).join(' ') || e.lane)} · beat ${(e.b + 1).toFixed(2).replace(/\.?0+$/, '')}</span>`).join('') + ' <button class="btn sm ghost" id="lpeOtherClr">Remove these</button>' : '';
       const oc = q('#lpeOtherClr'); if (oc) oc.onclick = () => { ed.ev = ed.ev.filter(e => e.lane === 'hit'); paintEd(); };
     }
     function toggleCell(k, step) {

@@ -26,7 +26,7 @@
     el.innerHTML = `<div class="ph"><span>Arcade</span><span class="r" id="gmNow">PICK A GAME</span></div>
       <p class="note">Self-playing pixel games. They play themselves and speed up with the music. Tap one to put it on the wall, tap it again to turn it off.</p>
       <div class="tiles gm-tiles" id="gmTiles"></div>
-      <button class="btn c lg wide" id="gmAll" style="--c:var(--lime)">🕹️ Arcade marathon: every game, in turn</button>
+      <button class="btn c lg wide" id="gmAll" style="--c:var(--lime)">${GB.svg('game')}<span>Arcade marathon: every game, in turn</span></button>
       <p class="note">Tap the glowing game again (or <b>♫ Back to music</b> under the wall) to stop.</p>`;
     GAMES.forEach(([fx, em, name, desc, c]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.fx = fx; b.style.setProperty('--c', c);

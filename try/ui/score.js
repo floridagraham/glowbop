@@ -98,7 +98,7 @@
       </div>
       <div id="sbPerBox">
         <div class="sub">Period</div>
-        <div class="sb-perrow" style="margin-top:6px"><button class="btn" id="sbPm" aria-label="Previous period">◀</button><div class="v" id="sbPer">Half 1</div><button class="btn" id="sbPp" aria-label="Next period">▶</button></div>
+        <div class="sb-perrow" style="margin-top:6px"><button class="btn" id="sbPm" aria-label="Previous period">${GB.svg('left', ' style="width:26px;height:26px"')}</button><div class="v" id="sbPer">Half 1</div><button class="btn" id="sbPp" aria-label="Next period">${GB.svg('right', ' style="width:26px;height:26px"')}</button></div>
       </div>
       <div id="sbBase" hidden>
         <div class="sub">Count</div>

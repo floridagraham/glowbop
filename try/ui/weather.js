@@ -107,7 +107,7 @@
     if (!$('stAl')) return;
     const f = (s.feeds || {}).storm; if (!f) return;
     const on = !!f.enabled;
-    $('stTest').textContent = f.alerting ? '⏹ Stop the alert' : 'Test alert'; $('stTest').classList.toggle('on', !!f.alerting);
+    if (f.alerting) GB.lbl($('stTest'), 'stop', 'Stop the alert'); else $('stTest').textContent = 'Test alert'; $('stTest').classList.toggle('on', !!f.alerting);
     $('stR').textContent = f.alerting ? 'ALERTING' : on ? (f.warning ? 'WARNING ACTIVE' : 'WATCHING') : 'OFF';
     document.querySelectorAll('#stSw [data-on]').forEach(b => b.classList.toggle('on', (b.dataset.on === '1') === on));
     const al = f.alerts || [], ak = JSON.stringify([on, f.has_loc, f.us, al]);

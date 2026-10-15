@@ -76,7 +76,7 @@
   GB.proGate = (el, feature, opts) => {
     opts = opts || {};
     const card = document.createElement('div'); card.className = 'pro-card'; card.hidden = true;
-    card.innerHTML = `<div class="pro-top"><span class="pro-badge">🔒 Pro DJ</span><b>${GB.esc(feature)}</b></div>
+    card.innerHTML = `<div class="pro-top"><span class="pro-badge">${GB.svg('lock')}Pro DJ</span><b>${GB.esc(feature)}</b></div>
       <p class="note">${opts.pitch || GB.esc(feature) + ' is part of GlowBop Pro DJ.'}</p>
       <ul class="pro-list">${PRO_LIST.map(f => `<li class="${f === feature ? 'me' : ''}">${GB.esc(f)}</li>`).join('')}</ul>
       <button class="btn c wide pro-buy" style="--c:var(--orchid)">${GB.svg('star')}<span>Upgrade to Pro DJ</span></button>
@@ -97,7 +97,7 @@
     };
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') go.click(); });
     let chip = null;
-    if (ph && opts.chip !== false) { chip = document.createElement('span'); chip.className = 'pro-chip'; chip.textContent = '🎛️ PRO'; chip.hidden = true;
+    if (ph && opts.chip !== false) { chip = document.createElement('span'); chip.className = 'pro-chip'; chip.innerHTML = GB.svg('faders') + 'PRO'; chip.hidden = true;
       const r = ph.querySelector('.r'); if (r) ph.insertBefore(chip, r); else ph.appendChild(chip); }
     const paint = () => {
       const locked = GB.pro === false;
@@ -113,7 +113,7 @@
       const pg = PAGES.find(p => p.id === b.dataset.p); if (!pg || !pg.pro) return;
       let i = b.querySelector('.rail-lock');
       if (GB.pro !== false) { if (i) i.remove(); return; }                  // Pro: no badge clutter
-      if (!i) { i = document.createElement('i'); i.className = 'rail-lock'; i.textContent = '🔒'; i.setAttribute('aria-label', 'Pro DJ'); b.appendChild(i); }
+      if (!i) { i = document.createElement('i'); i.className = 'rail-lock'; i.innerHTML = GB.svg('lock'); i.setAttribute('aria-label', 'Pro DJ'); b.appendChild(i); }
     });
   }
 
@@ -165,8 +165,52 @@
     text: 'M5 4v3h5.5v12h3V7H19V4z',
     gear: 'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z',
     help: 'M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z',
+    // 🎨 icon pass: console glyphs that replace text arrows / emoji in controls. Same family as above: 24x24, solid fill, currentColor.
+    // A leading '~' mirrors the path left-right; a leading '!' draws it even-odd (for cut-out shapes).
+    left: 'M15.5 5.2c.8-.5 1.5 0 1.5.8v12c0 .8-.7 1.3-1.5.8L6.2 12.8c-.6-.4-.6-1.2 0-1.6z', right: 'M8.5 5.2C7.7 4.7 7 5.2 7 6v12c0 .8.7 1.3 1.5.8l9.3-6c.6-.4.6-1.2 0-1.6z',
+    up: 'M5.2 15.5c-.5.8 0 1.5.8 1.5h12c.8 0 1.3-.7.8-1.5l-6-9.3c-.4-.6-1.2-.6-1.6 0z', down: 'M5.2 8.5C4.7 7.7 5.2 7 6 7h12c.8 0 1.3.7.8 1.5l-6 9.3c-.4.6-1.2.6-1.6 0z',
+    arrowR: 'M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z', arrowD: 'M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z',
+    arrowDR: 'M19 9h-2v6.59L5.41 4 4 5.41 15.59 17H9v2h10V9z',
+    check: 'M9 16.2l-4.2-4.2-2.1 2.1L9 20.4 21.3 8.1l-2.1-2.1z', dot: 'M12 5a7 7 0 110 14 7 7 0 010-14z',
+    lock: 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z',
+    faders: 'M5 3h2v6h2v4H7v8H5v-8H3V9h2zm6 0h2v10h2v4h-2v4h-2v-4H9v-4h2zm6 0h2v3h2v4h-2v11h-2V10h-2V6h2z',
+    loop: 'M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z',
+    ovr: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z',
+    bolt: 'M7 2v11h3v9l7-12h-4l4-8z', burst: 'M14.3 0.7L14.6 8.2L19.1 7.3L16.5 11.1L22.8 14.2L15.8 14.6L17 19.5L12.9 16.5L9.7 23.3L9.4 15.8L4.9 16.7L7.5 12.9L1.7 9.9L8.2 9.4L7 4.5L11.1 7.5z',
+    sun: 'M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z',
+    confetti: 'M2.5 21.5L8 8l8 8zM14 2.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM19 1.6l1.4 1.4-2.8 2.8-1.4-1.4zm-6.6 4.6l1.9.6-1.2 3.6-1.9-.6zm5.4 5.4l.6 1.9 3.6-1.2-.6-1.9zM21 15a1.5 1.5 0 110 3 1.5 1.5 0 010-3z',
+    dark: 'M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm1 3v12h12V6z',
+    rainbow: 'M12 8C6.5 8 2 12.5 2 18h2.5a7.5 7.5 0 0115 0H22c0-5.5-4.5-10-10-10zm0 4.5c-3 0-5.5 2.5-5.5 5.5H9a3 3 0 016 0h2.5c0-3-2.5-5.5-5.5-5.5z',
+    freeze: 'M22 11h-4.17l3.24-3.24-1.41-1.42L15 11h-2V9l4.66-4.66-1.42-1.41L13 6.17V2h-2v4.17L7.76 2.93 6.34 4.34 11 9v2H9L4.34 6.34 2.93 7.76 6.17 11H2v2h4.17l-3.24 3.24 1.41 1.42L9 13h2v2l-4.66 4.66 1.42 1.41L11 17.83V22h2v-4.17l3.24 3.24 1.42-1.41L13 15v-2h2l4.66 4.66 1.41-1.42L17.83 13H22z',
+    ffwd: 'M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z',
+    refresh: 'M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z',
+    reset: '~M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z',
+    swapH: 'M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z', swapV: 'M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z',
+    center: 'M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm-7 7H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4z',
+    corner: 'M4 3h7v8H3V4a1 1 0 011-1zm9 0h7a1 1 0 011 1v7h-2V5h-6zM3 13h2v6h6v2H4a1 1 0 01-1-1zm16 0h2v7a1 1 0 01-1 1h-7v-2h6z',
+    globe: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z',
+    share: 'M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z',
+    copy: 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z',
+    phone: 'M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z',
+    bug: 'M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z',
+    game: 'M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z',
+    hand: 'M21 6.5V18c0 2.76-2.24 5-5 5h-4.6c-1.3 0-2.55-.52-3.47-1.44L2.5 16.1l1.1-1.1c.55-.55 1.42-.62 2.05-.16L8 16.6V5c0-.83.67-1.5 1.5-1.5S11 4.17 11 5v6h1V2.5c0-.83.67-1.5 1.5-1.5S15 1.67 15 2.5V11h1V3.5c0-.83.67-1.5 1.5-1.5S19 2.67 19 3.5V12h.5V6.5c0-.83.37-1.5.75-1.5s.75.67.75 1.5z',
+    mic: 'M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z',
+    dj: 'M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z',
+    warn: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
+    disco: '!M11.25 1h1.5v4h-1.5zM12 5a8 8 0 110 16 8 8 0 010-16zM5.2 9.2h13.6v1.2H5.2zm-1.15 3.75h15.9v1.2H4.05zm1.15 3.75h13.6v1.2H5.2z',
+    torch: 'M6 2h12v3H6zm0 5v1l2 3v11h8V11l2-3V7H6zm6 8.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z',
+    wind: 'M14.5 17c0 1.65-1.35 3-3 3s-3-1.35-3-3h2c0 .55.45 1 1 1s1-.45 1-1-.45-1-1-1H2v-2h9.5c1.65 0 3 1.35 3 3zM19 6.5C19 4.57 17.43 3 15.5 3S12 4.57 12 6.5h2c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S16.33 8 15.5 8H2v2h13.5c1.93 0 3.5-1.57 3.5-3.5zm-.5 4.5H2v2h16.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5v2c1.93 0 3.5-1.57 3.5-3.5S20.43 11 18.5 11z',
+    candle: 'M12 1.5c1.6 2.1 2.6 3.5 2.6 5A2.6 2.6 0 0112 9.1a2.6 2.6 0 01-2.6-2.6c0-1.5 1-2.9 2.6-5zM8 11h8v11H8z',
+    drum: '!M4 9c0-1.7 3.6-3 8-3s8 1.3 8 3v7c0 1.7-3.6 3-8 3s-8-1.3-8-3zm2.2.1c.7.8 3 1.6 5.8 1.6s5.1-.8 5.8-1.6c-.7-.8-3-1.6-5.8-1.6s-5.1.8-5.8 1.6zM2.6 2.4l1-1.1 7 5.2-1.6.3zm18.8 0l-1-1.1-7 5.2 1.6.3z',
+    wifi: 'M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z',
+    laptop: 'M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z',
+    image: 'M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z',
+    home: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',
   };
-  GB.svg = (n, extra) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"${extra || ''}><path d="${ICON[n] || ''}"/></svg>`;
+  GB.svg = (n, extra) => { let d = ICON[n] || '', a = '';
+    if (d[0] === '~') { d = d.slice(1); a = ' transform="matrix(-1 0 0 1 24 0)"'; } else if (d[0] === '!') { d = d.slice(1); a = ' fill-rule="evenodd"'; }
+    return `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"${extra || ''}><path${a} d="${d}"/></svg>`; };
   GB.css = text => { const st = document.createElement('style'); st.textContent = text; document.head.appendChild(st); };
   GB.lbl = (el, ic, text) => { el.innerHTML = (ic ? GB.svg(ic) : '') + '<span>' + GB.esc(text) + '</span>'; };
 
@@ -176,7 +220,7 @@
     s.innerHTML = `<div><div class="ph" style="--c:var(--lav)">${GB.esc(head)}</div></div>`;
     const box = s.firstChild;
     items.forEach(it => { const b = document.createElement('button'); b.className = 'btn wide'; b.style.justifyContent = 'flex-start';
-      b.innerHTML = GB.esc(it.label) + (it.sub ? ` <small style="opacity:.6;text-transform:none">${GB.esc(it.sub)}</small>` : '');
+      b.innerHTML = (it.ic ? GB.svg(it.ic) : '') + GB.esc(it.label) + (it.sub ? ` <small style="opacity:.6;text-transform:none">${GB.esc(it.sub)}</small>` : '');
       b.onclick = () => { s.remove(); it.onclick && it.onclick(); }; box.appendChild(b); });
     const c = document.createElement('button'); c.className = 'btn ghost wide'; c.textContent = 'Close'; c.onclick = () => s.remove(); box.appendChild(c);
     s.onclick = e => { if (e.target === s) s.remove(); };
@@ -340,7 +384,9 @@
         cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, r, 0, 6.283); cx.fill();
       }
       cx.font = "600 12px 'Saira Condensed', system-ui"; cx.textBaseline = 'top';
-      if (many) { cx.fillStyle = sel ? '#ff3d9a' : '#bbb'; cx.fillText((sel ? '▶ ' : '') + b.name.toUpperCase(), ox + 2, 2); }
+      if (many) { cx.fillStyle = sel ? '#ff3d9a' : '#bbb';                    // selected group: a drawn play marker (a ▶ glyph turns into an emoji on iOS)
+        if (sel) { cx.beginPath(); cx.moveTo(ox + 2, 3); cx.lineTo(ox + 9, 7.5); cx.lineTo(ox + 2, 12); cx.closePath(); cx.fill(); }
+        cx.fillText(b.name.toUpperCase(), ox + (sel ? 13 : 2), 2); }
       if ((b.devices || []).length > 1) b.devices.forEach((d, k) => {
         const col = DEVCOL[k % DEVCOL.length]; cx.strokeStyle = col + '88'; cx.lineWidth = 1;
         cx.strokeRect(ox + d.x0 * st + 0.5, top + d.y0 * st + 0.5, (d.x1 - d.x0 + 1) * st - 1, (d.y1 - d.y0 + 1) * st - 1);
@@ -385,19 +431,19 @@
     const hol = s.holiday && cat && cat.holidays && cat.holidays[s.holiday];
     if (s.power === false) return {c: 'var(--red)', t: 'Lights off', sub: 'tap Back to music to turn them on', btn: 1};
     const il = (s.override || {}).interlude;
-    if (il && il.on) return {c: 'var(--lav)', t: '🎙️ Interlude' + (il.look === 'text' && il.text ? ': ' + il.text : ''), sub: (il.auto_started ? 'the music stopped, it comes back by itself' : 'the wall is calm and ignores the music') + ' · tap to bring the show back', btn: 1, il: 1, act: async () => { if (await GB.post('/api/override', {interlude: false})) { GB.sfx('ok'); GB.toast('🎵 Back to the show'); } }};
-    if (s.dj && s.dj.blackout) return {c: 'var(--red)', t: '🎧 Blackout', sub: 'DJ mode: the wall is held dark', btn: 1};
-    if (s.dj && s.dj.tap_bpm) return {c: 'var(--red)', t: '🎧 DJ tempo ' + s.dj.tap_bpm + ' BPM', sub: 'the show follows your taps', btn: 1};
+    if (il && il.on) return {c: 'var(--lav)', ic: 'mic', t: 'Interlude' + (il.look === 'text' && il.text ? ': ' + il.text : ''), sub: (il.auto_started ? 'the music stopped, it comes back by itself' : 'the wall is calm and ignores the music') + ' · tap to bring the show back', btn: 1, il: 1, act: async () => { if (await GB.post('/api/override', {interlude: false})) { GB.sfx('ok'); GB.toast('🎵 Back to the show'); } }};
+    if (s.dj && s.dj.blackout) return {c: 'var(--red)', ic: 'dj', t: 'Blackout', sub: 'DJ mode: the wall is held dark', btn: 1};
+    if (s.dj && s.dj.tap_bpm) return {c: 'var(--red)', ic: 'dj', t: 'DJ tempo ' + s.dj.tap_bpm + ' BPM', sub: 'the show follows your taps', btn: 1};
     const fd = s.feeds || {};
-    if (fd.alert) return {c: 'var(--red)', t: '⚠️ ' + fd.alert, sub: 'storm watch alert on the wall', btn: 'Stop', act: async () => { if (await GB.post('/api/feeds', GB.withGroup({feed: 'storm', stop: true}))) GB.toast('Alert cleared from the wall'); }};
+    if (fd.alert) return {c: 'var(--red)', ic: 'warn', t: fd.alert, sub: 'storm watch alert on the wall', btn: 'Stop', act: async () => { if (await GB.post('/api/feeds', GB.withGroup({feed: 'storm', stop: true}))) GB.toast('Alert cleared from the wall'); }};
     if (fd.title) return {c: 'var(--green)', t: 'Live: ' + fd.title, sub: 'on the wall until you turn it off' + ((fd.watching || []).length ? ' · watching ' + fd.watching.join(', ') : ''), btn: 'Stop', act: async () => { if (await GB.post('/api/feeds', GB.withGroup({mode: 'off'}))) GB.toast('🎵 Back to the music show'); }};
-    if (s.scoreboard) return {c: 'var(--violet)', t: 'Scoreboard 🏟️', sub: 'on the wall until you turn it off', btn: 1};
-    if (s.fireplace && s.fireplace.on) { const fp = s.fireplace; return {c: 'var(--orange)', t: 'Fireplace 🔥', sub: (fp.color || 'classic') + (fp.mode === 'roar' ? ' · roaring' : ' · cozy') + (fp.dance ? ' · dancing with the music' : ''), btn: 'Put out', act: async () => { if (await GB.fire({on: false})) GB.toast('🎵 Fire is out. Back to the music show'); }}; }
+    if (s.scoreboard) return {c: 'var(--violet)', ic: 'trophy', t: 'Scoreboard', sub: 'on the wall until you turn it off', btn: 1};
+    if (s.fireplace && s.fireplace.on) { const fp = s.fireplace; return {c: 'var(--orange)', ic: 'fire', t: 'Fireplace', sub: (fp.color || 'classic') + (fp.mode === 'roar' ? ' · roaring' : ' · cozy') + (fp.dance ? ' · dancing with the music' : ''), btn: 'Put out', act: async () => { if (await GB.fire({on: false})) GB.toast('🎵 Fire is out. Back to the music show'); }}; }
     if (s.mirror) return {c: 'var(--cyan)', t: 'Screen mirror', sub: ({straight: 'TV style', beat: 'with the beat', ambient: 'ambient glow'}[s.mirror.style] || '') + ' · ' + (s.mirror.area === 'center' ? 'center zoom' : 'smart fill'), btn: 'Stop', act: async () => { if (await GB.control({mirror: null})) GB.toast('🎵 Back to the music show'); }};
     if (hol) return {c: 'var(--cyan)', t: 'Holiday: ' + hol.name + ' ' + hol.emoji, sub: 'only ' + hol.name + ' effects, cycling with the music', btn: 'Stop', act: async () => { if (await GB.control({holiday: null})) GB.toast('🎵 Back to the music show'); }};
     if (s.scene) return {c: 'var(--lav)', t: 'Scene: ' + s.scene.name, sub: `part ${s.scene.segment} of ${s.scene.segments}`, btn: 'Stop', act: async () => { if (await GB.post('/api/scene/stop', {})) GB.toast('🎵 Back to the music show'); }};
     const so = s.show || {};
-    if (so.active) return {c: 'var(--orchid)', t: '🎬 Song Show: ' + (so.title || 'this song'), sub: (so.pos != null ? GB.fmt(so.pos) + (so.dur ? ' / ' + GB.fmt(so.dur) : '') : 'on the beat') + (so.next ? ' · next: ' + (so.next.what || so.next.lane) + ' ' + GB.fmt(so.next.t) : ''), btn: 1};
+    if (so.active) return {c: 'var(--orchid)', ic: 'movie', t: 'Song Show: ' + (so.title || 'this song'), sub: (so.pos != null ? GB.fmt(so.pos) + (so.dur ? ' / ' + GB.fmt(so.dur) : '') : 'on the beat') + (so.next ? ' · next: ' + (so.next.what || so.next.lane) + ' ' + GB.fmt(so.next.t) : ''), btn: 1};
     if (s.locked) return {c: 'var(--amber)', t: 'Locked: ' + s.locked, sub: 'the show keeps this effect until you release it', btn: 'Release', act: GB.release};
     if (s.held_look) return {c: 'var(--amber)', t: (s.pinned ? 'Pinned look: ' : 'Look for this song: ') + s.held_look, sub: s.pinned ? 'stays until you release it' : 'shuffle resumes on the next song', btn: 'Release', act: GB.release};
     return {c: 'var(--green)', t: 'Music show · listening', sub: ((s.feeds && (s.feeds.watching || []).length) ? '📡 ' + s.feeds.watching.join(' + ') + ' · ' : '') + (s.shuffle ? 'shuffle on · ' : '') + (s.listening ? 'hearing ' + s.listening.replace(' [Loopback]', '') : 'reacts to whatever is playing')};
@@ -412,24 +458,25 @@
       $('rSec').textContent = (s.section || '–').toUpperCase();
       const hol = s.holiday && cat && cat.holidays && cat.holidays[s.holiday];
       $('rLook').textContent = gi ? gi.look : hol ? hol.emoji + ' ' + hol.name : (s.look || '–');
-      $('rEff').textContent = gi ? gi.effect : ((s.locked ? '🔒 ' : '') + (s.effect || '–'));
+      $('rEff').innerHTML = gi ? GB.esc(gi.effect) : ((s.locked ? GB.svg('lock') : '') + GB.esc(s.effect || '–'));
       const lit = Math.round(Math.min(1, (s.level || 0) * 1.2) * meterN);
       $('rMeter').querySelectorAll('i').forEach((el, i) => el.style.background = i < lit ? (i < 9 ? 'var(--cyan)' : i < 15 ? 'var(--violet)' : i < 20 ? 'var(--pink)' : 'var(--amber)') : '');
       const an = s.analysis || {};
-      $('rMore').textContent = [s.part ? 'Part: ' + s.part : '', an.key ? '🎼 ' + an.key : '', an.mood || '', an.known ? '🧠 known song' : '', s.calm > 0.5 ? '🌙 calm' : ''].filter(Boolean).join(' · ');
+      $('rMore').innerHTML = [s.part ? 'Part: ' + GB.esc(s.part) : '', an.key ? GB.svg('note') + GB.esc(an.key) : '', GB.esc(an.mood || ''), an.known ? GB.svg('check') + 'known song' : '', s.calm > 0.5 ? GB.svg('moon') + 'calm' : ''].filter(Boolean).join(' · ');
       const m = mode(s, cat), mb = $('modeBar');
-      mb.style.setProperty('--c', m.c); $('mT').textContent = m.t; $('mS').textContent = m.sub;
-      $('mBtn').hidden = !m.btn; modeAct = m.act; $('mBtn').firstElementChild.textContent = m.il ? '🎵 Back to the show' : '♫ Back to music';
+      mb.style.setProperty('--c', m.c); const tw = m.t.split(' ');                                      // the icon stays glued to the first word when the title wraps
+      $('mT').innerHTML = m.ic ? '<span class="nw">' + GB.svg(m.ic) + GB.esc(tw[0]) + '</span>' + GB.esc(tw.length > 1 ? ' ' + tw.slice(1).join(' ') : '') : GB.esc(m.t); $('mS').textContent = m.sub;
+      $('mBtn').hidden = !m.btn; modeAct = m.act; $('mBtn').innerHTML = GB.svg('note') + '<span>' + (m.il ? 'Back to the show' : 'Back to music') + '</span>';
       $('mBtn').setAttribute('aria-label', m.il ? 'End the interlude and bring the show back' : 'Turn it off and go back to the music show'); $('mBtn').dataset.il = m.il ? '1' : '';
       if (s.pro !== undefined) GB.setPro(s.pro);
       const fd = s.faders || {}, fc = $('mFad'), nUp = (fd.away || []).length + (fd.flash || []).length;
       if (fc) { fc.hidden = !(fd.active && GB.pro !== false); if (!fc.hidden) {
-        fc.innerHTML = '<span class="ic2">🎚️</span><span class="w">FADERS</span><b>' + ((fd.flash || []).length ? 'HOLD' : nUp) + '</b>';
+        fc.innerHTML = GB.svg('faders') + '<span class="w">FADERS</span><b>' + ((fd.flash || []).length ? 'HOLD' : nUp) + '</b>';
         fc.setAttribute('aria-label', 'Fader board: ' + (fd.away || []).join(', ') + ' away from default. Open it.'); fc.title = 'Faders away from default: ' + (fd.away || []).join(', '); } }
       const ov = s.override || {}, oc = $('mOvr');                   // 🚨 OVERRIDE ACTIVE: one tap releases them all
       if (oc) { oc.hidden = !(ov.active && GB.pro !== false); if (!oc.hidden) {
         const nm = (ov.keys || []).filter(k => k.on).map(k => k.label);
-        oc.innerHTML = '<span>⛔</span><span>OVERRIDE<span class="w2"> ACTIVE</span></span><b>' + nm.length + '</b>';
+        oc.innerHTML = GB.svg('ovr') + '<span>OVERRIDE<span class="w2"> ACTIVE</span></span><b>' + nm.length + '</b>';
         oc.setAttribute('aria-label', 'Override active: ' + nm.join(', ') + '. Tap to release all.'); oc.title = 'Override active: ' + nm.join(', ') + '. Tap to release all.'; } }
       renderGroups();
       GB.emit('status', s);

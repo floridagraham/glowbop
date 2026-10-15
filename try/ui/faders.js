@@ -9,19 +9,19 @@
   const ZONES = ['1 BEAT', '1/2', '1/4', '1/8'];
   const hueOf = v => (Math.max(1, v) - 1) / 99 * 0.92 * 360;                // same wheel as faders.py (stops at pink)
   const FADERS = [
-    {k: 'master', label: 'MASTER', name: 'Master brightness', c: 'var(--gold)', def: 100, fl: ['⬛', 'BLACKOUT', 'Hold for blackout'],
+    {k: 'master', label: 'MASTER', name: 'Master brightness', c: 'var(--gold)', def: 100, fl: ['dark', 'BLACKOUT', 'Hold for blackout'],
      fmt: v => Math.round(v) + '%'},
-    {k: 'speed', label: 'SPEED', name: 'Animation speed', c: 'var(--cyan)', def: 1, fl: ['⏩', '2X', 'Hold for double time'],
+    {k: 'speed', label: 'SPEED', name: 'Animation speed', c: 'var(--cyan)', def: 1, fl: ['ffwd', '2X', 'Hold for double time'],
      fmt: v => (v < 1 ? v.toFixed(2) : v.toFixed(1)) + '×',
      toPos: v => v <= 1 ? 0.5 * Math.log(v / 0.25) / Math.log(4) : 0.5 + 0.5 * Math.log(v) / Math.log(3),
      fromPos: p => p <= 0.5 ? 0.25 * Math.pow(4, p / 0.5) : Math.pow(3, (p - 0.5) / 0.5), step: 0.01},
-    {k: 'strobe', label: 'STROBE', name: 'Strobe, on the beat', c: '#ffffff', def: 0, fl: ['⚡', 'FULL', 'Hold for a full strobe'],
+    {k: 'strobe', label: 'STROBE', name: 'Strobe, on the beat', c: '#ffffff', def: 0, fl: ['bolt', 'FULL', 'Hold for a full strobe'],
      fmt: v => v <= 0 ? 'OFF' : ZONES[Math.min(3, Math.floor((v - 1e-9) / 25))]},
-    {k: 'color', label: 'COLOR', name: 'Colour wheel', c: 'var(--pink)', def: 0, fl: ['🌈', 'RAINBOW', 'Hold for a rainbow sweep'],
+    {k: 'color', label: 'COLOR', name: 'Colour wheel', c: 'var(--pink)', def: 0, fl: ['rainbow', 'RAINBOW', 'Hold for a rainbow sweep'],
      fmt: v => v <= 0 ? 'OFF' : `<i class="fd-sw" style="background:hsl(${hueOf(v).toFixed(0)},100%,55%)"></i>`},
-    {k: 'white', label: 'WHITE', name: 'Blend to white', c: 'var(--lav)', def: 0, fl: ['⚪', 'WHITE', 'Hold for full white'],
+    {k: 'white', label: 'WHITE', name: 'Blend to white', c: 'var(--lav)', def: 0, fl: ['sun', 'WHITE', 'Hold for full white'],
      fmt: v => v <= 0 ? 'OFF' : Math.round(v) + '%'},
-    {k: 'trails', label: 'TRAILS', name: 'Trails', c: 'var(--violet)', def: 0, fl: ['❄️', 'FREEZE', 'Hold to freeze the picture'],
+    {k: 'trails', label: 'TRAILS', name: 'Trails', c: 'var(--violet)', def: 0, fl: ['freeze', 'FREEZE', 'Hold to freeze the picture'],
      fmt: v => v <= 0 ? 'OFF' : Math.round(v) + '%'},
   ];
   FADERS.forEach(f => { f.toPos = f.toPos || (v => v / 100); f.fromPos = f.fromPos || (p => p * 100); f.step = f.step || 1; });
@@ -53,7 +53,9 @@
   .fd[data-k=color] .fd-fill { display:none; }
   .fd-fl { appearance:none; border:0; border-radius:10px; min-height:40px; padding:4px 2px; background:var(--dark); color:var(--text); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
     touch-action:none; -webkit-touch-callout:none; font:700 calc(10px * var(--fs, 1))/1 var(--cond); letter-spacing:.5px; }
-  .fd-fl .em { font-size:calc(18px * var(--fs, 1)); line-height:1; }
+  .fd-fl .em { font-size:calc(18px * var(--fs, 1)); line-height:1; display:flex; color:var(--c); }
+  .fd-fl .em .ic { width:1.1em; height:1.1em; vertical-align:0; filter:drop-shadow(0 0 5px var(--c)); }
+  .fd-fl.held .em { color:inherit; } .fd-fl.held .em .ic { filter:none; }
   .fd-fl .w { display:none; }
   .fd-fl.held { background:var(--c); color:#000; box-shadow:0 0 22px var(--c); }
   .fd[data-k=master] .fd-fl.held { background:#000; color:#fff; box-shadow:0 0 0 2px var(--gold) inset, 0 0 22px var(--gold); }
@@ -121,7 +123,7 @@
     el.innerHTML = `<div class="fd-lab">${f.label}</div><div class="fd-val"></div>
       <div class="fd-track" role="slider" tabindex="0" aria-orientation="vertical" aria-label="${esc(f.name)}" aria-valuemin="${f.k === 'speed' ? 0.25 : 0}" aria-valuemax="${f.k === 'speed' ? 3 : 100}">
         <div class="fd-rail"><div class="fd-ticks"></div><div class="fd-fill"></div>${marks}<div class="fd-cap"></div></div></div>
-      <button class="fd-fl" aria-label="${esc(f.fl[2])}" title="${esc(f.fl[2])}"><span class="em">${f.fl[0]}</span><span class="w">${f.fl[1]}</span></button>`;
+      <button class="fd-fl" aria-label="${esc(f.fl[2])}" title="${esc(f.fl[2])}"><span class="em">${GB.svg(f.fl[0])}</span><span class="w">${f.fl[1]}</span></button>`;
     host.appendChild(el);
     const d = FD[f.k] = {f, el, v: f.def, drag: null, until: 0, tapT: 0, tapY: 0};
     const tr = el.querySelector('.fd-track'), rail = el.querySelector('.fd-rail');
@@ -181,7 +183,7 @@
     el.innerHTML = `<div class="ph"><span>Fader board</span><span class="r" id="fdR">ALL AT DEFAULT</span></div>
       <div class="fd-board" id="fdBoard"></div>
       <div class="fd-foot"><p class="note">Drag a fader up or down (two fingers move two at once). Double-tap one to reset it. Hold the key under a fader for blackout, double time, full strobe, rainbow, full white or freeze.</p>
-        <button class="btn sm" id="fdReset" style="--c:var(--cyan)">↺ Reset all</button></div>`;
+        <button class="btn sm" id="fdReset" style="--c:var(--cyan)">${GB.svg('reset')}<span>Reset all</span></button></div>`;
     const host = el.querySelector('#fdBoard'); FADERS.forEach(f => build(f, host));
     $('fdReset').onclick = async () => {
       FADERS.forEach(f => { FD[f.k].v = f.def; FD[f.k].until = performance.now() + 900; paint(f.k); }); paintHead();

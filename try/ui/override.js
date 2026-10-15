@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   const {$, esc} = GB;
-  const ICON = {black: '⬛', white: '⚪', strobe: '⚡', disco: '🪩', house: '💡', color: '●', crowd: '🔦', logo: '🔤'};
+  const ICON = {black: 'dark', white: 'sun', strobe: 'bolt', disco: 'disco', house: 'bulb', color: 'dot', crowd: 'torch', logo: 'text'};   // GB.svg names
   const FADE_NAME = {0: 'SNAP', 0.25: '0.25 S', 1: '1 S'};
   const SWATCHES = ['#ff1a1a', '#ff7a1a', '#ffd21a', '#2bff5a', '#1ad9ff', '#1a4dff', '#8a2bff', '#ff2fa0', '#ffb46b', '#ffffff'];
   let K = [];                          // key configs from the engine
@@ -23,7 +23,12 @@
   .ov-key { appearance:none; border:0; position:relative; border-radius:0 16px 0 16px; background:var(--dark); color:var(--text); min-height:96px; padding:18px 6px 12px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; touch-action:none; -webkit-touch-callout:none; cursor:pointer;
     font:700 calc(15px * var(--fs, 1))/1.05 var(--cond); letter-spacing:1px; text-transform:uppercase; text-align:center; min-width:0; transition:background .08s, box-shadow .08s; }
-  .ov-key .em { font-size:calc(28px * var(--fs, 1)); line-height:1; }
+  .ov-key .em { font-size:calc(28px * var(--fs, 1)); line-height:1; display:flex; }
+  .ov-key .em .ic { width:1em; height:1em; vertical-align:0; color:var(--kc); filter:drop-shadow(0 0 6px var(--kc)); }
+  .ov-key[data-kind=black] .em .ic { color:var(--peri); filter:drop-shadow(0 0 6px var(--peri)); }
+  .ov-key.on .em .ic { color:inherit; filter:none; }
+  #ilBig .ic { width:26px; height:26px; }
+  .mov .ic { width:calc(16px * var(--fs, 1)); height:calc(16px * var(--fs, 1)); }
   .ov-key .em.dot { width:calc(26px * var(--fs, 1)); height:calc(26px * var(--fs, 1)); border-radius:50%; background:var(--kc); box-shadow:0 0 14px var(--kc); font-size:0; }
   .ov-key .lb { max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:clip; letter-spacing:.5px; font-size:min(1em, calc(15px * var(--fs, 1))); }
   #ovGrid { container-type:inline-size; } @container (max-width: 420px) { .ov-key .lb { font-size:calc(12px * var(--fs, 1)); letter-spacing:0; } }
@@ -122,7 +127,7 @@
   function keyHTML(k, i) {
     const dot = k.kind === 'color';
     return `<span class="sc">${i + 1}</span><span class="md ${k.mode}">${k.mode === 'latch' ? 'LATCH' : 'HOLD'}</span>
-      <span class="em${dot ? ' dot' : ''}">${dot ? '' : ICON[k.kind] || '●'}</span><span class="lb">${esc(k.label)}</span>${k.fade ? `<span class="fdt">${FADE_NAME[k.fade] || k.fade + ' S'}</span>` : ''}`;
+      <span class="em${dot ? ' dot' : ''}">${dot ? '' : GB.svg(ICON[k.kind] || 'dot')}</span><span class="lb">${esc(k.label)}</span>${k.fade ? `<span class="fdt">${FADE_NAME[k.fade] || k.fade + ' S'}</span>` : ''}`;
   }
   const KC = k => k.kind === 'black' ? '#000' : k.kind === 'white' ? '#ffffff' : k.kind === 'strobe' ? '#f4f2ff' : k.kind === 'logo' ? 'var(--gold)' : k.kind === 'disco' ? 'var(--orchid)' : k.kind === 'crowd' ? 'var(--cyan)' : (k.color || '#fff');
   function buildKeys() {
@@ -160,7 +165,7 @@
     let cfg = {mode: k.mode, fade: k.fade, color: k.color, label: k.label};
     s.innerHTML = `<div><div class="ph" style="--c:var(--lav)"><span>Key ${K.indexOf(k) + 1}: ${esc(k.label)}</span></div>
       <div class="sub">How it works</div>
-      <div class="row" data-g="mode"><button class="btn" data-v="hold">✋ Hold</button><button class="btn" data-v="latch">📌 Latch</button></div>
+      <div class="row" data-g="mode"><button class="btn" data-v="hold">${GB.svg('hand')}<span>Hold</span></button><button class="btn" data-v="latch">${GB.svg('pin')}<span>Latch</span></button></div>
       <p class="note" id="ovMNote"></p>
       <div class="sub">Fade in and out</div>
       <div class="row" data-g="fade"><button class="btn" data-v="0">Snap</button><button class="btn" data-v="0.25">0.25 s</button><button class="btn" data-v="1">1 s</button></div>
@@ -211,16 +216,16 @@
   GB.panel('ops', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--red)'); el.id = 'ovPanel';
     el.innerHTML = `<div class="ph"><span>Override keys</span><span class="r" id="ovR">NOTHING ON</span></div>
-      <div class="ov-top"><button class="btn sm" id="ovRelease" disabled>✋ Release all</button><span class="grow"></span><button class="btn sm" id="ovEdit" style="--c:var(--lav)">✏️ Edit keys</button></div>
+      <div class="ov-top"><button class="btn sm" id="ovRelease" disabled>${GB.svg('hand')}<span>Release all</span></button><span class="grow"></span><button class="btn sm" id="ovEdit" style="--c:var(--lav)">${GB.svg('edit')}<span>Edit keys</span></button></div>
       <div class="ov-grid" id="ovGrid"><p class="note">Loading keys…</p></div>
       <p class="note" id="ovNote">Hold a key and it takes over the whole wall, whatever is playing. Let go and the show comes back. LATCH keys stay on until you tap them again. Several at once: BLACKOUT wins, then WHITE, STROBE, DISCO, HOUSE, the colours, CROWD. On the laptop, keys 1 to 8 work too (0 releases everything).</p>`;
     $('ovRelease').onclick = releaseAll;
-    $('ovEdit').onclick = () => { edit = !edit; $('ovEdit').classList.toggle('on', edit); $('ovEdit').textContent = edit ? '✅ Done' : '✏️ Edit keys'; $('ovGrid').classList.toggle('edit', edit);
+    $('ovEdit').onclick = () => { edit = !edit; $('ovEdit').classList.toggle('on', edit); GB.lbl($('ovEdit'), edit ? 'check' : 'edit', edit ? 'Done' : 'Edit keys'); $('ovGrid').classList.toggle('edit', edit);
       if (edit) GB.toast('✏️ Tap a key to change it'); };
     GB.proGate(el, 'Override keys', {pitch: 'Big panic buttons that take over the whole wall in one touch: blackout, full white, strobe, house lights, your colours, a disco ball drop and a crowd sweep. Hold or latch, with smooth fades and laptop shortcuts.'});
   });
 
-  const IL_LOOKS = [['breathe', '🌬️', 'Breathing'], ['text', '🔤', 'Words'], ['glow', '🕯️', 'Warm glow'], ['look', '🎨', 'A look, slowed']];
+  const IL_LOOKS = [['breathe', 'wind', 'Breathing'], ['text', 'text', 'Words'], ['glow', 'candle', 'Warm glow'], ['look', 'palette', 'A look, slowed']];
   const AUTO = [[0, 'Off'], [5, '5 s'], [10, '10 s'], [20, '20 s'], [45, '45 s']];
   const RET = [['none', 'Fade'], ['flash', '+ Flash'], ['drop', '+ Drop']];
   async function toggleIL() {
@@ -233,10 +238,10 @@
   GB.panel('ops', 20, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)'); el.id = 'ilPanel';
     el.innerHTML = `<div class="ph"><span>Interlude</span><span class="r" id="ilR">OFF</span></div>
-      <button class="btn c wide" id="ilBig" style="--c:var(--lav)">🎙️ Start interlude</button>
+      <button class="btn c wide" id="ilBig" style="--c:var(--lav)">${GB.svg('mic')}<span>Start interlude</span></button>
       <p class="il-state" id="ilState"></p>
       <div class="sub">Interlude look</div>
-      <div class="tiles il-grid" id="ilLooks">${IL_LOOKS.map(([v, em, n]) => `<button class="tile" data-v="${v}" style="--c:var(--lav)"><span class="em">${em}</span>${n}</button>`).join('')}</div>
+      <div class="tiles il-grid" id="ilLooks">${IL_LOOKS.map(([v, em, n]) => `<button class="tile" data-v="${v}" style="--c:var(--lav)"><span class="em">${GB.svg(em)}</span>${n}</button>`).join('')}</div>
       <div class="il-row" id="ilTextRow"><input type="text" id="ilText" maxlength="40" placeholder="BE RIGHT BACK" autocomplete="off" aria-label="Interlude words"><button class="btn c" id="ilTextGo" style="--c:var(--lav)">Set</button></div>
       <div class="il-row" id="ilLookRow" hidden><select id="ilLook" aria-label="Look for the interlude"></select></div>
       <div class="sub">Coming back</div>
@@ -260,7 +265,7 @@
   });
   function paintIL() {
     if (!IL || !$('ilBig')) return;
-    const b = $('ilBig'); b.classList.toggle('on', !!IL.on); b.textContent = IL.on ? '🎵 Back to the show' : '🎙️ Start interlude';
+    const b = $('ilBig'); b.classList.toggle('on', !!IL.on); GB.lbl(b, IL.on ? 'note' : 'mic', IL.on ? 'Back to the show' : 'Start interlude');
     $('ilR').textContent = IL.on ? (IL.auto_started ? 'ON · MUSIC STOPPED' : 'ON') : (IL.auto ? 'AUTO AFTER ' + IL.auto + ' S' : 'OFF'); $('ilR').style.color = IL.on ? 'var(--lav)' : '';
     $('ilState').textContent = IL.on ? 'The wall is in interlude' + (IL.since ? ' since ' + new Date(IL.since * 1000).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) : '') + '. Tap Back to the show when you are ready.' : '';
     $('ilState').hidden = !IL.on;

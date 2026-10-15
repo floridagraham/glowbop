@@ -95,6 +95,17 @@ a { color:var(--cyan); }
 
 /* ---------------------------------------------------------------- buttons */
 button { font-family:inherit; cursor:pointer; }
+/* console icons (GB.svg): solid 24x24 glyphs in currentColor. Outside buttons they sit inline with the text, sized to it */
+.ic { width:1.1em; height:1.1em; fill:currentColor; flex:0 0 auto; vertical-align:-.16em; }
+.ic + span, .ic + b { margin-left:0; }
+.pro-badge .ic, .pro-chip .ic, .modebar .t b .ic, #rMore .ic, #rEff .ic { margin-right:.3em; }
+.pro-badge, .pro-chip { display:inline-flex; align-items:center; }
+.modebar .t b .nw { white-space:nowrap; }
+@media (max-width: 699px) { .modebar .t b .ic { display:none; } .modebar .t b .nw { white-space:normal; } }   /* phones: the title needs every pixel next to Back to music */
+.tile .em .ic { width:1.1em; height:1.1em; vertical-align:0; display:block; }
+.tile:not(.on) .em .ic { color:var(--c, currentColor); filter:drop-shadow(0 0 6px var(--c, transparent)); }
+.chip .ic { width:calc(16px * var(--fs, 1)); height:calc(16px * var(--fs, 1)); }
+.note .ic { color:var(--c, currentColor); }
 .btn { appearance:none; border:0; border-radius:999px; background:var(--dark); color:var(--text); font:700 calc(16px * var(--fs, 1))/1.05 var(--cond); letter-spacing:1px; text-transform:uppercase; min-height:48px; padding:0 18px; display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:transform .08s, filter .15s, background .15s; text-align:center; }
 .btn:active { transform:scale(.97); filter:brightness(1.2); }
 .btn:disabled { opacity:.45; }
@@ -103,6 +114,8 @@ button { font-family:inherit; cursor:pointer; }
 .btn.on { box-shadow:0 0 0 2px #fff inset, 0 0 16px color-mix(in srgb, var(--c, var(--cyan)) 60%, transparent); }
 .btn.ghost { background:transparent; box-shadow:inset 0 0 0 2px var(--dark); }
 .btn.sm { min-height:40px; font-size:calc(14px * var(--fs, 1)); padding:0 14px; }
+.btn.sm svg, .btn.sm .ic { width:17px; height:17px; }
+.btn span > .ic { vertical-align:-.22em; margin-right:.3em; }   /* icon inside the label: it flows with the first line when a narrow key wraps */
 .btn.lg { min-height:56px; font-size:calc(18px * var(--fs, 1)); }
 .btn.wide { width:100%; }
 .btn.danger { background:#3a0f1c; color:#ffc2cf; }
@@ -248,11 +261,12 @@ body.wallfull #hd, body.wallfull #rail { z-index:0; }
 .pro-chip { font:700 calc(11px * var(--fs, 1))/1 var(--cond); letter-spacing:1px; padding:4px 8px; border-radius:999px; background:color-mix(in srgb, var(--orchid) 22%, transparent); color:var(--orchid); white-space:nowrap; align-self:center; margin-left:auto; }
 .panel.pro-locked > :not(.ph):not(.pro-card) { display:none !important; }
 .panel.pro-preview > :not(.ph):not(.pro-card) { opacity:.6; }
-#rail button .rail-lock { position:absolute; top:5px; left:6px; font-style:normal; font-size:calc(11px * var(--fs, 1)); line-height:1; filter:grayscale(.3); }
+#rail button .rail-lock { position:absolute; top:5px; left:6px; font-style:normal; font-size:calc(12px * var(--fs, 1)); line-height:1; color:#000; opacity:.75; }
+#rail button .rail-lock .ic { display:block; vertical-align:0; }
 .mfad { appearance:none; border:0; flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; min-height:40px; padding:0 10px; border-radius:999px; cursor:pointer;
   background:color-mix(in srgb, var(--cyan) 14%, transparent); box-shadow:inset 0 0 0 2px var(--cyan); color:var(--cyan); font:700 calc(13px * var(--fs, 1))/1 var(--cond); letter-spacing:1px; }
 .mfad b { background:var(--cyan); color:#000; border-radius:999px; min-width:20px; padding:3px 6px; text-align:center; font-size:calc(12px * var(--fs, 1)); }
-.mfad .ic2 { font-size:calc(14px * var(--fs, 1)); }
+.mfad .ic { width:calc(16px * var(--fs, 1)); height:calc(16px * var(--fs, 1)); }
 @media (max-width: 699px) {          /* phones: a small badge on the mode bar's corner, so the title keeps its room */
   .modebar { position:relative; }
   .mfad .w { display:none; }
