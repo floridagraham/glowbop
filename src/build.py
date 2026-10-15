@@ -90,7 +90,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=4">
-<link rel="stylesheet" href="/assets/console.css?v=22">
+<link rel="stylesheet" href="/assets/console.css?v=23">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -150,6 +150,7 @@ WORKS = ('<div class="works reveal"><span class="wk">Works with</span>'
          '<a class="wb" href="/lights.html">Govee <i>testing</i></a>'
          '<a class="wb" href="/lights.html">DayBetter <i>testing</i></a>'
          '<a class="wb" href="/lights.html">Bluetooth pixel curtains <i>testing</i></a>'
+         '<a class="wb soonx" href="/lights.html">xLights houses <i>coming</i></a>'
          '<a class="wb more" href="/lights.html#soon">More on the way →</a></div>')
 
 FEATS = [
@@ -1301,12 +1302,12 @@ L = [
     ('soon', 'New · testing', 'DayBetter strips', 'DayBetter Bluetooth strip lights and light poles. Each strip glows one color at a time, picked from the show and pulsing with the beat.'),
     ('soon', 'Built in · testing', 'WLED', 'DIY strips and matrices running WLED, found on your Wi-Fi.'),
     ('soon', 'Built in · testing', 'Govee', 'Govee lights with LAN Control turned on. They show one color at a time.'),
+    ('soon', 'In the works · holidays 2026', 'xLights houses', 'Already run a holiday display with xLights? Point GlowBop at your show folder and it reads your props and controllers (Falcon, Kulp, HinksPix, ESPixelStick, FPP) and plays live, music-reactive shows on your whole house. Your mega tree, arches and roofline become zones. One tap hands it back to your schedule.'),
     ('soon', 'Coming soon', 'Light-only Christmas trees', 'Metal-frame cone trees made of addressable lights (Hello Fairy app).'),
     ('soon', 'Planned', 'More Bluetooth brands', 'Many low-cost Bluetooth strip brands share a few controllers. Tell us yours and we will add it.'),
 ]
 ROAD = [
     ('DJ and stage lights (DMX)', 'Moving heads, par cans, wash lights, strobes, pixel bars, DJ lasers and fog machines, through a USB DMX adapter or an Art-Net / sACN box.'),
-    ('Holiday pixel controllers', 'Falcon, Kulp and ESPixelStick controllers used by big holiday light shows, plus your xLights layouts.'),
     ('Philips Hue', 'Hue bulbs, strips and gradient bars through the Hue Bridge, in fast entertainment mode.'),
     ('Nanoleaf and LIFX', 'Nanoleaf panels and LIFX bulbs and strips on your Wi-Fi.'),
     ('More smart strips', 'Popular Wi-Fi and Bluetooth strip controllers, smart bulbs and TV light bars.'),

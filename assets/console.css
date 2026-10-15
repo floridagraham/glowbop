@@ -375,3 +375,5 @@ html,body{overflow-x:clip}
 .works .wb.ok{border-color:var(--green)} .works .wb.ok i{color:var(--green)}
 .works .wb.more{border-style:dashed;color:var(--cyan)}
 @media (max-width:600px){.works .wb{font-size:12px;padding:7px 10px}}
+
+.works .wb.soonx{border-color:var(--pink)} .works .wb.soonx i{color:var(--pink)}
