@@ -248,3 +248,7 @@ footer .fine{border-top:6px solid #1a1628}
 }
 /* phones: the menu key says CLOSE while the menu is open */
 .nav.con-hd.open .burger{background:var(--pink)}
+.founder{max-width:780px;margin:0 auto 26px;text-align:center;background:var(--card);border:2px solid var(--amber);border-left:12px solid var(--amber);border-radius:0 26px 0 26px;padding:20px 22px;box-shadow:0 0 50px -20px var(--amber)}
+.founder .tag{display:inline-block;background:var(--amber);color:#000;font:700 13px var(--cond);letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:0 8px 0 8px}
+.founder h3{font-size:30px;margin:10px 0 4px}.founder h3 b{color:var(--amber);font-family:var(--mono);font-size:38px}.founder h3 s{color:var(--dim);font-size:22px;margin-left:8px}
+.founder p{color:var(--dim);margin:0}
