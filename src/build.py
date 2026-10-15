@@ -206,8 +206,8 @@ home = f'''
 <section class="tight"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
   <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
-  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="fx-pixelfireworks,look-3d-depth,fire-rainbow-cozy,wave-serpent,look-neon-party,wave-bigwave,look-synthwave,fire-classic-roar,live-weather,look-3d-depth,shape-spinningglobe,fx-pixelfireworks,live-countdown,look-deep-space,wave-twinwaves,look-wild-elements,text-birthday,look-club-rig,fire-rainbow-cozy,score-soccer,holiday-christmas,fx-snakegame,holiday-halloween,fx-volcano" data-label="reelName" aria-label="GlowBop showreel"></canvas>
-  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">PixelFireworks</b></figcaption></figure>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="reelName" aria-label="GlowBop showreel"></canvas>
+  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
   <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
 </div></section>
 
@@ -403,8 +403,8 @@ SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('s
 features = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Features</span><h1>Everything <span class="grad">GlowBop</span> can do</h1>
 <p class="lead">A music light show, a holiday display, a scoreboard, live feeds and a sign, all run from one light-show console. Every section links to the step-by-step guide.</p></div></header>
 <section class="tight" style="padding-top:0"><div class="wrap">
-  <figure class="led real reel reveal" style="aspect-ratio:40/21"><canvas data-reel="wave-bigwave,fire-rainbow-cozy,look-3d-depth,wave-serpent,fx-pixelfireworks,live-nascar,look-club-rig,shape-spinningglobe,fx-tesseract,look-wild-elements,score-baseball,fx-laserweb,live-weather,look-retro-arcade,fx-volcano,live-overhead" data-label="featReel" aria-label="GlowBop showreel"></canvas>
-  <figcaption>🔴 Recorded from GlowBop · <b id="featReel">Big Wave</b></figcaption></figure>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="featReel" aria-label="GlowBop showreel"></canvas>
+  <figcaption>🔴 Recorded from GlowBop · <b id="featReel">Psychedelic</b></figcaption></figure>
   <div class="grid g4 showgrid" style="margin-top:16px">{''.join(f'<div class="gtile reveal">{clip(n, t)}<h3>{t}</h3></div>' for n, t in SHOW)}</div>
   <div class="toc" style="justify-content:center;margin-top:26px">{''.join(f'<a href="#{slug(e)}">{e}</a>' for _, _, e, _, _, _, l, _ in F2)}</div>
 </div></section>
