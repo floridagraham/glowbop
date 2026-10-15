@@ -188,10 +188,10 @@ TRY = """<figure class="tryframe reveal" id="tryLive" aria-label="The real GlowB
   <div class="tf-scr">
     <picture class="tf-poster"><source media="(max-width: 699px)" srcset="/img/try-poster-phone.webp"><source media="(orientation: portrait) and (max-width: 1023px)" srcset="/img/try-poster-tall.webp">
       <img src="/img/try-poster-wide.webp" alt="The GlowBop console on the DJ page: the live wall, Hold to build, the hit pads and the fader board" loading="lazy" decoding="async"></picture>
-    <iframe data-src="/try/?embed=1#dj" title="The real GlowBop console on a pretend light wall" loading="lazy" allow="fullscreen; autoplay" allowfullscreen inert tabindex="-1"></iframe>
-    <a class="tf-play" href="/try/#dj"><span class="tf-btn"><i aria-hidden="true">▶</i>Loading the real console…</span></a>
+    <iframe data-src="/try/?embed=1#music" title="The real GlowBop console on a pretend light wall" loading="lazy" allow="fullscreen; autoplay" allowfullscreen inert tabindex="-1"></iframe>
+    <a class="tf-play" href="/try/#music"><span class="tf-btn"><i aria-hidden="true">▶</i>Loading the real console…</span></a>
   </div>
-  <figcaption class="tf-cap"><span>Tap the pads. This is the real GlowBop console on a pretend wall.</span><a class="tf-full" href="/try/#dj">Full screen ⤢</a></figcaption>
+  <figcaption class="tf-cap"><span>Pick a song, then tap DJ to play the lights. This is the real GlowBop console on a pretend wall.</span><a class="tf-full" href="/try/#music">Full screen ⤢</a></figcaption>
 </figure>"""
 home = f'''
 <header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg.mp4" data-poster="/video/hero-bg.jpg" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback></video></div><div class="wrap">
