@@ -127,7 +127,7 @@ FEATS = [
     ('🎛️', 'A real light console', 'A new control panel for phone, iPad and laptop, with a live view of your wall and big colored keys.', '/guide/console.html', 1),
     ('🎨', '34 looks, 200+ effects', 'Neon Party, Deep Space, Retro Arcade, the new Big Wave and 3D Object looks and more.', '/guide/looks.html', 1),
     ('📡', 'Live feeds', 'Countdowns, weather, storm watch, and the planes and space station flying over your house.', '/guide/live-feeds.html', 1),
-    ('🏟️', 'Sports + live stats', 'Keep score yourself, follow your team with live game stats, or put golf, NASCAR and F1 leaderboards on the wall.', '/guide/scoreboard.html', 1),
+    ('🏟️', 'Sports + live stats', '44 leagues with live stats, from the NFL to the Bundesliga, college softball and cricket, plus golf, racing, tennis, UFC and F1 boards.', '/guide/scoreboard.html', 1),
     ('🌐', '3D shapes', 'Wrap your curtains around a cylinder, a box or a globe for a glowing art piece.', '/guide/shapes.html', 1),
     ('🧩', '1 to 8 curtains', 'Side by side, stacked, overlapping or a grid of rows and columns. Every show resizes to fit.', '/guide/lineup.html', 1),
     ('🎃', 'Holidays & mini-movies', 'Halloween, Christmas, New Year and more, with full animated scenes for the big nights.', '/guide/holidays.html'),
@@ -261,7 +261,7 @@ home = f'''
   <div class="feat reveal">
     <div><span class="eyebrow">Game day</span><h2>A scoreboard as big as your wall</h2>
       <p class="lead">Keep score at the field, follow your team live, or watch Formula 1 running order with tyres and pit stops.</p>
-      <ul class="ticks"><li><b>15 sports</b> plus a giant countdown clock.</li><li><b>Live stats</b>: the count, runners on base, batter and pitcher, the last play, down and distance.</li><li><b>Game Center</b> on your phone with the linescore and leaders.</li><li><b>Golf, NASCAR and F1</b> leaderboards with celebrations for a new leader.</li></ul>
+      <ul class="ticks"><li><b>44 live leagues</b>: pro, women's, college and world soccer, plus 18 sports for Game Day.</li><li><b>Live stats</b>: the count, runners on base, batter and pitcher, the last play, down and distance.</li><li><b>Game Center</b> on your phone with the linescore and leaders.</li><li><b>Golf, NASCAR, IndyCar, tennis, UFC and F1</b> boards with celebrations for a new leader, a set or a knockout.</li></ul>
       <a class="btn" href="/guide/scoreboard.html">Sports guide →</a></div>
     <div class="media"><div class="grid g2 mini">{clip('score-baseball', 'Baseball')}{clip('score-football', 'Football')}{clip('live-golf', 'Golf')}{clip('live-nascar', 'NASCAR')}</div></div>
   </div>
@@ -394,7 +394,7 @@ F2 = [
      ['Live preview of every curtain right on your phone.', 'Big keys sized for thumbs on every section.', 'Add it to your home screen and it opens like an app, with its own icon.', 'Works at the field too, over your phone\'s hotspot.'],
      '/guide/getting-started.html#phone', 'Phone setup'),
 ]
-ORDER = ['Big Wave', 'Looks', 'Retro Arcade', 'Wild Elements', '3D shapes', 'Fireplace', 'Holidays', 'Live feeds', 'Scoreboard', 'Formula 1',
+ORDER = ['Music show', 'Big Wave', 'Looks', 'Retro Arcade', 'Wild Elements', '3D shapes', 'Fireplace', 'Holidays', 'Live feeds', 'Scoreboard', 'Formula 1',
          'Music show', 'Epic mode', 'The console', 'Text & logos', 'Screen mirror', 'Multi-curtain', 'Phone remote']
 F2.sort(key=lambda f: ORDER.index(f[2]) if f[2] in ORDER else 99)
 SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('shape-spinningglobe', '3D spinning globe'), ('fx-pixelfireworks', 'Pixel fireworks'),
@@ -423,7 +423,7 @@ G = [
     ('looks', '🎨', 'Looks & effects', 'Looks, scenes, pinning, characters and transitions.'),
     ('holidays', '🎃', 'Holidays & mini-movies', 'Holiday buttons and the animated stories.'),
     ('fireplace', '🔥', 'Fireplace', 'One-tap fire in 7 colors, cozy or roaring.'),
-    ('scoreboard', '🏟️', 'Sports', 'Game Day, Live Fan with live stats, F1, golf, NASCAR and the countdown clock.'),
+    ('scoreboard', '🏟️', 'Sports', 'Game Day, Live Fan in 44 leagues, F1, golf, racing, tennis, UFC and the countdown clock.'),
     ('live-feeds', '📡', 'Live feeds', 'Countdowns, weather, storm watch and what\'s overhead.'),
     ('text-logos', '🔤', 'Text, logos & mirror', 'Messages, logos and mirroring your screen.'),
     ('groups', '🧩', 'Light groups', 'Run different shows on different lights.'),
@@ -503,7 +503,7 @@ guide('console', f'''
 <div class="card" style="--c:{RAILC['SCENES']}"><h3>{rk('SCENES')}</h3><p>Quick scenes, Describe a scene in your own words, and Screen mirror.</p></div>
 <div class="card" style="--c:{RAILC['HOLIDAY']}"><h3>{rk('HOLIDAY')}</h3><p>A button for every holiday and the mini-movies.</p></div>
 <div class="card" style="--c:{RAILC['FIRE']}"><h3>{rk('FIRE')}</h3><p>Light the fireplace in 7 colors, Cozy or Roaring.</p></div>
-<div class="card" style="--c:{RAILC['SPORTS']}"><h3>{rk('SPORTS')}</h3><p>Game Day, Live Fan with the Game Center, F1, golf and NASCAR leaderboards, and the countdown clock.</p></div>
+<div class="card" style="--c:{RAILC['SPORTS']}"><h3>{rk('SPORTS')}</h3><p>Game Day, Live Fan in 44 leagues with the Game Center, F1, golf, racing, tennis and UFC boards, and the countdown clock.</p></div>
 <div class="card" style="--c:{RAILC['LIVE']}"><h3>{rk('LIVE')}</h3><p>Pick a live feed: countdown, weather, storm watch, overhead.</p></div>
 <div class="card" style="--c:{RAILC['TEXT']}"><h3>{rk('TEXT')}</h3><p>Messages and your logo on top of the show.</p></div>
 <div class="card" style="--c:{RAILC['SETUP']}"><h3>{rk('SETUP')}</h3><p>Light setup, line-up and grid walls, 3D shapes, phone link, song lookup, license, screen, help.</p></div>
@@ -697,7 +697,7 @@ guide('fireplace', f"""
 {tip('<b>Good to know:</b> the fireplace stays lit until you put it out. The fire, the scoreboard and live feeds take turns: turning one on turns the others off. Text and logos still show on top of the flames.')}
 """, [('light', 'Light it'), ('colors', 'Colors'), ('mode', 'Cozy / Roaring'), ('music', 'Calm / Dance'), ('wall', 'Big walls')])
 
-SPORTS = 'Soccer, Football, Basketball, Baseball, Softball, Hockey, Lacrosse, Volleyball, Pickleball, Tennis, Rugby, Water polo, Cornhole, Other, plus a Countdown timer'
+SPORTS = 'Soccer, Football, Basketball, Baseball, Softball, Hockey, Field hockey, Lacrosse, Volleyball, Pickleball, Tennis, Rugby, Aussie rules, Cricket, Water polo, Cornhole, Other, plus a Countdown timer'
 guide('scoreboard', f'''
 <p>Tap {rk('SPORTS')} on the side rail and pick a mode: <span class="k">Game Day</span>, <span class="k">Live Fan</span>, <span class="k">F1</span>, <span class="k">⛳ Golf</span> or <span class="k">🏁 NASCAR</span>. <span class="k">Off</span> returns to the light show.</p>
 {pic('soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game')}
@@ -720,7 +720,12 @@ guide('scoreboard', f'''
 <p>Every score gets a celebration on the wall, and it doesn't always say "GOAL". Expect SCORE, TOUCHDOWN, a big burst of color and more.</p>
 {tip('<b>At the field:</b> bring the laptop, turn on your phone hotspot, connect the laptop to it, then open the remote link on your phone. Battery-powered curtains make this easy.')}
 <h2 id="live">Live Fan: follow a real game</h2>
-<ol><li>Tap <span class="k">Live Fan</span>, pick a <b>League</b> (pro or college), then your <b>Team</b>.</li>
+<ol><li>Tap <span class="k">Live Fan</span>, pick a <b>League</b>, then your <b>Team</b>. There are 44 leagues in five groups:
+<ul><li><b>🇺🇸 Pro:</b> NFL, NBA, MLB, NHL, MLS, UFL, CFL, Premier Lacrosse League, USL Championship.</li>
+<li><b>👩 Women:</b> WNBA, NWSL, England Women's Super League, Women's Champions League, Women's World Cup.</li>
+<li><b>🎓 College:</b> football, men's and women's basketball, baseball, softball, men's and women's hockey, men's and women's volleyball, men's and women's lacrosse, field hockey.</li>
+<li><b>🌍 World soccer:</b> Premier League, EFL Championship, La Liga, Bundesliga, Serie A, Ligue 1, Eredivisie, Primeira Liga, Liga MX, Saudi Pro League, Champions League, Europa League, Copa Libertadores, World Cup.</li>
+<li><b>🌏 More of the world:</b> AFL (Aussie rules), Rugby World Cup, FIBA Basketball World Cup, Indian Premier League cricket.</li></ul></li>
 <li>Tap <span class="k">Follow this team</span>.</li>
 <li>During the game the score updates <b>every 10 seconds</b>. When your team scores, the wall celebrates in their colors.</li></ol>
 <h3 id="stats">Live stats and the Game Center</h3>
@@ -739,16 +744,18 @@ guide('scoreboard', f'''
 <li>A gap bar, <b>purple</b> for the fastest lap, plus DRS and a rain indicator.</li>
 <li>Celebrations for <b>NEW LEADER</b>, <b>POLE</b>, <b>TOP TIME</b> and <b>WINNER</b>. Pit stops get a soft flash.</li></ul>
 <p>Works during practice, qualifying and the race, whenever a session is live.</p>
-<h2 id="boards">⛳ Golf and 🏁 NASCAR</h2>
-<p>Tap <span class="k">⛳ Golf</span> or <span class="k">🏁 NASCAR</span> under the scoreboard, or <span class="k">Show on the wall</span> in their panels further down the page.</p>
+<h2 id="boards">⛳ Golf, 🏁 Racing, 🎾 Tennis and 🥊 UFC</h2>
+<p>Tap <span class="k">⛳ Golf</span>, <span class="k">🏁 Racing</span>, <span class="k">🎾 Tennis</span> or <span class="k">🥊 UFC</span> under the scoreboard, or <span class="k">Show on the wall</span> in their panels further down the page.</p>
 <ul><li><b>Golf:</b> the tournament leaderboard. Under par shows red like on TV, over par blue. Pick a favorite player and they always get a glowing spot on the wall. A new leader sets off a celebration.</li>
-<li><b>NASCAR:</b> the running order with each car in its own color and the flag on top: green, caution, red, white for the last lap, checkered at the finish.</li></ul>
-<p>Both show the next event's start time when nothing is live.</p>
+<li><b>Racing:</b> NASCAR Cup, O'Reilly and Truck series, and IndyCar. The running order with each car in its own color and the flag on top: green, caution, red, white for the last lap, checkered at the finish.</li>
+<li><b>Tennis:</b> ATP and WTA singles. Each match shows both players, the games in every set, the current set glowing yellow and a ball dot by the server. Pick a favorite and they always get a spot; a set or match win sets off a celebration.</li>
+<li><b>UFC:</b> the card for the next or current event, red corner over blue. Live fights show the round and clock, finished ones the result (KO, SUB, DEC), and every finish sets off a celebration in the winner's color.</li></ul>
+<p>All of them show the next event's start time when nothing is live.</p>
 <div class="grid g2">{clip('live-golf', 'Golf: the leaderboard and a new leader')}{clip('live-nascar', 'NASCAR: caution, new leader, white flag, checkered (demo race)')}</div>
 <h2 id="timer">Countdown timer</h2>
 {clip('score-timer', 'a one-minute countdown')}
 <p>Pick <b>Countdown timer only</b> as the sport for a giant clock across the whole wall: halftime, a party countdown, New Year's Eve.</p>
-''', [('gameday', 'Game Day'), ('live', 'Live Fan'), ('stats', 'Live stats'), ('f1', 'F1'), ('boards', 'Golf & NASCAR'), ('timer', 'Countdown')])
+''', [('gameday', 'Game Day'), ('live', 'Live Fan'), ('stats', 'Live stats'), ('f1', 'F1'), ('boards', 'Golf, racing, tennis, UFC'), ('timer', 'Countdown')])
 
 guide('live-feeds', f'''
 <p>Live feeds bring the outside world onto your lights. Tap {rk('LIVE')}, then a big key to put that feed on the wall. Tap it again, or <span class="k">♫ Back to music</span> under the wall, to go back to the music show.</p>
