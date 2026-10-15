@@ -180,7 +180,7 @@ home = f'''
     <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="#try" style="--c:var(--cyan)">🎛️ Try the console</a></div>
     <div class="stats"><div><b>200+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
-  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
+  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
 </div></header>
 
 <section class="tight" id="try"><div class="wrap">
@@ -208,7 +208,7 @@ home = f'''
 <section class="tight"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
   <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
-  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="reelName" aria-label="GlowBop showreel"></canvas>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="reelName" aria-label="GlowBop showreel"></canvas>
   <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
   <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
 </div></section>
@@ -349,6 +349,8 @@ def media(scene, cap):
     if scene.startswith('!'):
         kind, img = scene[1:].split(':')
         return devframe(kind, img, cap)
+    if scene.startswith('~'): return (f'<figure class="led real reel" style="aspect-ratio:40/21"><canvas data-reel="{scene[1:]}" aria-label="{html.escape(cap)}"></canvas>'
+                                       f'<figcaption>🔴 Recorded from GlowBop · {html.escape(cap)}</figcaption></figure>')
     if scene.startswith('%'): return '<div class="grid g2 mini">' + ''.join(clip(n) for n in scene[1:].split(',')) + '</div>'
     return led(scene, cap, illus=True)
 
@@ -405,9 +407,11 @@ F2 = [
      'Turn the wall into a scoreboard. Keep score yourself from your phone, follow a real game, or watch a Grand Prix.',
      ['<b>Game Day:</b> 15 sports, clock that counts down or up, periods, timeouts, fouls, possession, undo.', '<b>Live Fan:</b> pick a league and team; scores update every 10 seconds and the wall celebrates in team colors.', '<b>Live stats:</b> the count, runners on base, batter and pitcher, the last play scrolling by, down and distance, plus a Game Center on your phone.', '<b>F1:</b> running order, tyres, pit stops, fastest lap, DRS and rain.', '<b>Countdown timer:</b> a huge clock for halftime, a party or New Year.'],
      '/guide/scoreboard.html', 'Scoreboard guide'),
-    ('#score-f1', 'The F1 board as the lead changes', 'Formula 1', 'Race day on your wall',
-     'The F1 board shows the top of the field with team colors and tyre dots, then celebrates a new leader, pole position or a fastest lap.',
-     ['Purple bar for the fastest lap, just like TV.', 'Pit stops get a soft flash, not a party.', 'Works for practice, qualifying and the race.'],
+    ('~score-f1,f1-win,f1-safety', 'Live F1: overtake, chequered flag, safety car', 'Formula 1', 'Race day on your wall',
+     'The running order lives on your wall in team colors, and every big moment of the race gets its own show: the overtake for the lead, the safety car, the chequered flag.',
+     ['<b>Live timing:</b> position, driver, team color tab, tyre dot and the lap count, updating every few seconds.', '<b>DRS attack bar:</b> a flashing bar grows under a driver as they close inside one second.',
+      '<b>NEW LEADER</b>, <b>WINNER</b> and <b>POLE</b> explode in the driver\'s team colors.', '<b>Purple</b> for the fastest lap, flashing yellow for the <b>safety car</b>, red flag, chequered flag and rain falling on the wall.',
+      'Pit stops get a soft flash. Works for practice, qualifying, sprints and the race.'],
      '/guide/scoreboard.html#f1', 'F1 board guide'),
     ('#text-birthday', 'Happy Birthday scrolling over a live show', 'Text & logos', 'Your words, your logo',
      'Put a message or a logo on top of the show. Great for birthdays, DJ sets, and businesses.',
@@ -435,7 +439,7 @@ SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('s
 features = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Features</span><h1>Everything <span class="grad">GlowBop</span> can do</h1>
 <p class="lead">A music light show, a holiday display, a scoreboard, live feeds and a sign, all run from one light-show console. Every section links to the step-by-step guide.</p></div></header>
 <section class="tight" style="padding-top:0"><div class="wrap">
-  <figure class="led real reel reveal" style="aspect-ratio:40/21"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="featReel" aria-label="GlowBop showreel"></canvas>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="featReel" aria-label="GlowBop showreel"></canvas>
   <figcaption>🔴 Recorded from GlowBop · <b id="featReel">Psychedelic</b></figcaption></figure>
   <div class="grid g4 showgrid" style="margin-top:16px">{''.join(f'<div class="gtile reveal">{clip(n, t)}<h3>{t}</h3></div>' for n, t in SHOW)}</div>
   <div class="toc" style="justify-content:center;margin-top:26px">{''.join(f'<a href="#{slug(e)}">{e}</a>' for _, _, e, _, _, _, l, _ in F2)}</div>
@@ -818,12 +822,14 @@ guide('scoreboard', f'''
 <div class="grid g2">{clip('score-baseball', 'Live baseball: a score, the new play, then the diamond')}{clip('score-football', 'Live football: down and distance, then a touchdown')}</div>
 {tip('GlowBop uses public score feeds and has backups for the major leagues. If a feed is slow, the board catches up on the next update.', 'warn')}
 <h2 id="f1">F1 live board 🏎️</h2>
-{clip('score-f1', 'the F1 board as the lead changes')}
+{clip('score-f1', 'DRS attack, the overtake, NEW LEADER, then a purple fastest lap')}
+<div class="grid g2">{clip('f1-win', 'Chequered flag: WINNER in team colors')}{clip('f1-safety', 'Safety car in the rain, a pit stop, back to green')}</div>
 {pic('f1-party', 'LED curtain wall showing a race running order at an F1 watch party')}
 <ul><li>Rows show position and driver code with a <b>team color tab</b>.</li>
 <li>A <b>tyre dot</b>: red soft, yellow medium, white hard.</li>
-<li>A gap bar, <b>purple</b> for the fastest lap, plus DRS and a rain indicator.</li>
-<li>Celebrations for <b>NEW LEADER</b>, <b>POLE</b>, <b>TOP TIME</b> and <b>WINNER</b>. Pit stops get a soft flash.</li></ul>
+<li>A flashing <b>DRS attack bar</b> grows under a driver closing inside one second.</li>
+<li><b>Purple</b> for the fastest lap holder, a flashing <b>yellow</b> flag stripe for the safety car, red for a red flag, a chequered stripe at the finish, and <b>rain</b> falling on the wall when it's wet.</li>
+<li>Celebrations in the driver's team colors for <b>NEW LEADER</b>, <b>POLE</b>, <b>TOP TIME</b>, <b>WINNER</b>, <b>FASTEST LAP</b> and <b>SAFETY CAR</b>. Pit stops get a soft flash with the stop time.</li></ul>
 <p>Works during practice, qualifying and the race, whenever a session is live.</p>
 <h2 id="boards">⛳ Golf, 🏁 Racing, 🎾 Tennis and 🥊 UFC</h2>
 <p>Tap <span class="k">⛳ Golf</span>, <span class="k">🏁 Racing</span>, <span class="k">🎾 Tennis</span> or <span class="k">🥊 UFC</span> under the scoreboard, or <span class="k">Show on the wall</span> in their panels further down the page.</p>
@@ -1170,7 +1176,7 @@ FIRST = ['fire-dragon', 'fire-campfire', 'fire-candles-rainbow', 'fire-lava', 'f
          'movie-halloweennight', 'movie-christmaseve', 'movie-newyearcountdown', 'movie-harvestday',
          'fire-rainbow-cozy', 'fire-purple-roar', 'fire-classic-roar', 'fire-blue-cozy',
          'wave-serpent', 'wave-bigwave', 'shape-spinningglobe', 'shape-barberspin',
-         'score-baseball', 'score-football', 'score-f1', 'live-nascar', 'live-overhead', 'live-storm', 'live-weather']
+         'score-baseball', 'score-football', 'score-f1', 'f1-win', 'f1-safety', 'live-nascar', 'live-overhead', 'live-storm', 'live-weather']
 _by = lambda g: sorted([k for k, v in CLIPS.items() if v['group'] == g], key=lambda k: FIRST.index(k) if k in FIRST else 999)
 GROUPS = [('New effects', '👾 Showstoppers', 'The newest effects: 3D shapes, laser webs, pixel fireworks, wild weather and self-playing retro games.', 'new'),
           ('Looks', '🎨 All 34 looks', 'Each look is a mood with its own colors and effects. These are 8-second slices with a drop halfway, exactly as the app plays them.', 'looks'),

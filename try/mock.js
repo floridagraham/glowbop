@@ -413,7 +413,7 @@
     else if (['playlist', 'album', 'tracks', 'artist_radio'].includes(a)) { const src = b.title || (b.artist && b.artist.name) || b.source || 'Demo mix';
       const list = (b.tracks && b.tracks.length ? b.tracks : fakeSongs(src, 6)).map(x => Object.assign({look: pickOne(Object.keys(CAT.looks))}, x));
       if (b.shuffle) list.sort(() => R() - .5); M.queue = list; M.idx = clamp(+b.start || 0, 0, list.length - 1); M.source = src; songChanged(); M.playing = true; }
-    else if (a === 'rate' || a === 'save') return LAPTOP('likes and saving to playlists (your YouTube Music sign-in)');
+    else if (a === 'rate' || a === 'save') return LAPTOP('liking and saving songs');
     else if (a === 'fav_add') { FAVS.push(b.fav); }
     else if (a === 'fav_remove') { FAVS = FAVS.filter(f => f.id !== b.id); }
     else if (a === 'family_set') {}
@@ -483,8 +483,8 @@
       if (src.recolor) recolor(buf, src.recolor, t, FIRE);
       if (src.fire && (FIRE.beat || FIRE.dance)) { const k = 1 + (FIRE.beat ? .35 * Math.pow(1 - beatPos % 1, 4) : 0) + (FIRE.dance ? .15 * Math.sin(beatPos * Math.PI / 2) : 0); for (let i = 0; i < buf.length; i++) buf[i] *= k; }
     } else if (src.kind === 'board') drawBoard(buf, t);
-    else if (src.kind === 'ticker') { const m = textMask(src.text, 13), span = W + m.w, x0 = Math.round(W - ((t - clipT0) * 11) % span);
-      for (let x = 0; x < W; x++) { put(buf, x, 2, src.color.map(v => v * .5)); put(buf, x, H - 3, src.color.map(v => v * .5)); }
+    else if (src.kind === 'ticker') { const m = textMask(src.text, 17), span = W + m.w, x0 = Math.round(W - ((t - clipT0) * 11) % span);
+      for (let x = 0; x < W; x++) { put(buf, x, 0, src.color.map(v => v * .6)); put(buf, x, H - 1, src.color.map(v => v * .6)); }
       stamp(buf, m, x0, ((H - m.h) / 2) | 0, () => [255, 255, 255]); }
     else if (src.kind === 'eye') eye(buf, t);
     if (src.holiday && HOL_NAME.text && (t % 14) < 4.2) {         // 🎂 the birthday name / 🏈 team name flies across now and then
@@ -553,7 +553,7 @@
     if ('shuffle' in b) S.shuffle = !!b.shuffle;
     if ('characters' in b) S.characters = !!b.characters;
     if ('transition' in b) S.transition = b.transition;
-    if ('mirror' in b && b.mirror) return LAPTOP('screen mirror (it shows the laptop screen)');
+    if ('mirror' in b && b.mirror) return LAPTOP('screen mirror');
     if (b.release) { S.held = null; S.pinned = false; S.locked = null; S.feature = null; }
     if ('lock_effect' in b) { S.locked = b.lock_effect || null; if (S.locked) { S.feature = null; bump('lock'); clearTakeovers(); } }
     if (b.look) { setLook(b.look, b.pin); S.feature = null; S.locked = null; clearTakeovers(); }
@@ -652,7 +652,7 @@
         case '/api/license': return LAPTOP('entering a license key');
         case '/api/keys': return LAPTOP('saving song lookup keys');
         case '/api/support': setTimeout(() => toast('Demo: nothing was sent. Reach us from the Contact page'), 2600); return ok({sent: true, ticket: 'GB-DEMO'});
-        case '/api/quit': return LAPTOP('quitting (it stops the app on the laptop)');
+        case '/api/quit': return LAPTOP('the Quit key');
         case '/api/music/signin': return LAPTOP('YouTube Music sign-in');
         case '/api/music/host': return ok();
         case '/api/lights/identify': S.flash[b.id] = now() + 1.6; return ok();
@@ -665,7 +665,7 @@
         case '/api/map/start': case '/api/map/show': case '/api/map/finish': case '/api/map/cancel': return LAPTOP('camera mapping');
         case '/api/effect': return LAPTOP('adding new effect code');
       }
-      if (path.startsWith('/api/lights/')) return LAPTOP('changing how your lights are hung');
+      if (path.startsWith('/api/lights/')) return LAPTOP('changing your light setup');
     }
     unhandled.push(method + ' ' + path); log('unhandled endpoint', method, path, b || '');
     return ok();
