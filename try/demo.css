@@ -1,0 +1,22 @@
+/* The try-it demo's own bits on top of the real console: the slim DEMO banner. */
+#demoBar { position:relative; z-index:6; display:flex; align-items:center; gap:10px; min-height:40px; margin:0 0 6px;
+  padding:6px 6px 6px 0; background:linear-gradient(90deg, #2a1300, #1b0718 55%, #12051c); border-bottom:2px solid #ff3d9a;
+  font:600 14px/1.25 'Saira Condensed', 'Arial Narrow', sans-serif; letter-spacing:.6px; color:#ffe2b8; }
+#demoBar .dm-tag { flex:0 0 auto; align-self:stretch; display:flex; align-items:center; padding:0 12px 0 14px; margin:-6px 0;
+  background:#ffb23d; color:#000; font:800 15px/1 'Saira Condensed', 'Arial Narrow', sans-serif; letter-spacing:3px; border-top-left-radius:20px; }
+#demoBar .dm-t { flex:1 1 auto; min-width:0; text-transform:uppercase; }
+#demoBar .dm-nw { white-space:nowrap; }
+#demoBar .dm-go { flex:0 0 auto; color:#000; background:#ff3d9a; text-decoration:none; text-transform:uppercase; font-weight:800; letter-spacing:1px;
+  padding:7px 12px; border-radius:0 12px 0 12px; box-shadow:0 0 14px rgba(255,61,154,.55); white-space:nowrap; }
+#demoBar .dm-go:active { filter:brightness(1.2); }
+#demoBar .dm-x { flex:0 0 auto; appearance:none; border:0; background:transparent; color:#ffb23d; font:700 18px/1 system-ui, sans-serif;
+  width:36px; height:36px; border-radius:50%; cursor:pointer; padding:0; }
+#demoBar .dm-x:hover { background:#ffffff14; }
+@media (max-width: 560px) {
+  #demoBar { flex-wrap:wrap; gap:4px 8px; font-size:13px; letter-spacing:.3px; padding:5px 4px 6px 0; }
+  #demoBar .dm-tag { font-size:13px; padding:0 9px 0 12px; border-top-left-radius:14px; }
+  #demoBar .dm-t { flex:1 1 calc(100% - 120px); }
+  #demoBar .dm-go { order:3; margin-left:auto; padding:5px 10px; font-size:13px; }
+  #demoBar .dm-x { order:2; width:32px; height:32px; }
+}
+body.wallfull #demoBar { display:none; }

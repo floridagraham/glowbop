@@ -74,7 +74,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=8">
+<link rel="stylesheet" href="/assets/console.css?v=9">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -104,7 +104,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=8"></script>
+<script src="/assets/site.js?v=9"></script>
 </body>
 </html>
 '''
@@ -1198,6 +1198,7 @@ shutil.copytree(os.path.join(HERE, 'assets'), os.path.join(OUT, 'assets'), dirs_
 shutil.copytree(os.path.join(HERE, 'img'), os.path.join(OUT, 'img'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(HERE, 'clips'), os.path.join(OUT, 'clips'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(HERE, 'download'), os.path.join(OUT, 'download'), dirs_exist_ok=True)
+shutil.copytree(os.path.join(HERE, 'try'), os.path.join(OUT, 'try'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('*.py', '__pycache__'))   # 🕹️ try-it demo: the real console on a pretend wall
 with open(os.path.join(OUT, 'PHOTOS.md'), 'w') as f:
     f.write('# Photo & video spots\n\nEach animated LED placeholder on the site is waiting for a real photo or clip. Send them over and they get swapped in.\n\n')
     for pth, cap in PHOTOS: f.write(f'- **{pth}**: {cap}\n')

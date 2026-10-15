@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GlowBop">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="ui/glowbop.png">
+<link rel="apple-touch-icon" href="ui/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="ui/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="167x167" href="ui/icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="ui/icon-152.png">
+<link rel="manifest" href="ui/manifest.webmanifest">
+<title>Try GlowBop · the real app, live in your browser</title>
+<meta name="description" content="Play with the real GlowBop console right now: looks, DJ pads, fire, holidays, sports and live feeds on a pretend light wall. No laptop and no lights needed.">
+<script>if(/\/try$/.test(location.pathname))location.replace(location.pathname+"/"+location.search+location.hash);</script>
+<link rel="stylesheet" href="demo.css">
+<script src="mock.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/app.css?v=1792039018">
+</head>
+<body>
+<div id="demoBar" role="note"><b class="dm-tag">DEMO</b><span class="dm-t">This is the real GlowBop console running on a <span class="dm-nw">pretend light wall.</span></span><a class="dm-go" href="/pricing.html">Get it for your lights&nbsp;→</a><button class="dm-x" type="button" aria-label="Hide this message">✕</button></div>
+<div id="licGate"><div class="box">
+  <img src="ui/glowbop.png" alt="">
+  <h2>Unlock GlowBop</h2>
+  <p>Paste the license key from your Polar email. It starts with <b>GLOWBOP-</b>.</p>
+  <input id="licKey" placeholder="GLOWBOP-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="License key">
+  <button class="btn c lg wide" id="licGo" style="--c:var(--pink)">Unlock</button>
+  <div id="licMsg" class="note"></div>
+  <p style="font-size:14px">No key yet? <a href="https://glowbop.com/pricing.html" target="_blank" rel="noopener">Start a 7-day free trial</a></p>
+</div></div>
+
+<div id="con">
+  <header id="hd">
+    <div class="elbow"><div class="gbsvg" id="gbLogo" role="img" aria-label="GlowBop"></div></div>
+    <div class="hr">
+      <div class="bars"><i style="--c:var(--amber);--w:30px"></i><i style="--c:var(--lav);--w:20px"></i><i class="grow" style="--c:var(--pink)"></i><b>GLOWBOP</b><i style="--c:var(--violet);--w:44px"></i><i style="--c:var(--cyan);--w:24px"></i></div>
+      <div class="line">
+        <div class="who"><span class="k">LIGHT SHOW CONSOLE</span><span class="v" id="ctext">CONNECTING…</span></div>
+        <button class="btn sm" id="sfx" aria-label="Console sounds"></button>
+      </div>
+    </div>
+  </header>
+
+  <nav id="rail" aria-label="Sections"></nav>
+
+  <div id="main">
+    <aside id="view" aria-label="Live wall">
+      <div class="panel">
+        <div class="ph" style="--c:var(--amber)"><span>Live wall</span><span class="r" id="wallInfo"></span></div>
+        <div class="grpbar" id="grpBar" hidden></div>
+        <div class="wallbox" id="wallBox"><canvas id="wall" width="400" height="240" aria-label="What your lights are showing right now"></canvas><button class="btn c fullx" style="--c:var(--amber)">Close</button></div>
+        <div class="seg">
+          <button class="btn c" id="wMirror" style="--c:var(--orange)">Mirror</button>
+          <button class="btn c" id="wFull" style="--c:var(--gold)">Full view</button>
+          <button class="btn c" id="wMap" style="--c:var(--peri)">Lights</button>
+        </div>
+      </div>
+      <div class="modebar" id="modeBar"><div class="t"><b id="mT">Connecting…</b><small id="mS"></small></div><button class="btn c" id="mBtn" hidden style="--c:var(--pink)" aria-label="Turn it off and go back to the music show"><span>♫ Back to music</span></button></div>
+      <div class="panel reads-panel">
+        <div class="reads">
+          <div class="read"><span class="k">Tempo</span><span class="v mono" id="rBpm">–</span></div>
+          <div class="read" style="--c:var(--pink)"><span class="k">Section</span><span class="v mono" id="rSec">–</span></div>
+          <div class="meter" id="rMeter" style="grid-column:span 2"></div>
+          <div class="read sm" style="--c:var(--amber)"><span class="k">Look</span><span class="v" id="rLook">–</span></div>
+          <div class="read sm" style="--c:var(--lav)"><span class="k">Effect</span><span class="v" id="rEff">–</span></div>
+          <div class="note mono" id="rMore" style="grid-column:span 2;font-size:12px"></div>
+        </div>
+      </div>
+    </aside>
+    <div id="pages"></div>
+  </div>
+
+  <footer id="ft">
+    <div class="elbow"></div>
+    <div class="bars">
+      <i style="--c:var(--amber);width:36px"></i>
+      <button class="grow" id="ftHelp" style="--c:var(--violet)">HELP &amp; FEEDBACK</button>
+      <i style="--c:var(--orange);width:28px"></i>
+      <span style="--c:var(--pink)">v1.0</span>
+    </div>
+  </footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="ui/core.js?v=1792039018"></script>
+<script>GB.local = false;</script>
+<script src="ui/sfx.js?v=1792039018"></script>
+<script src="ui/music.js?v=1792039018"></script>
+<script src="ui/show.js?v=1792039018"></script>
+<script src="ui/modes.js?v=1792039018"></script>
+<script src="ui/score.js?v=1792039018"></script>
+<script src="ui/setup.js?v=1792039018"></script>
+<script src="ui/feeds.js?v=1792039018"></script>
+<script src="ui/countdown.js?v=1792039018"></script>
+<script src="ui/weather.js?v=1792039018"></script>
+<script src="ui/boards.js?v=1792039018"></script>
+<script src="ui/overhead.js?v=1792039018"></script>
+<script src="ui/dj.js?v=1792039018"></script>
+<script src="ui/games.js?v=1792039018"></script>
+<script src="ui/offline.js?v=1792039018"></script>
+<script src="ui/awake.js?v=1792039018"></script>
+<script>GB.start();</script>
+</body>
+</html>

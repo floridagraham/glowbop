@@ -1,0 +1,1019 @@
+{
+"look-red-alert": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Red Alert",
+"group": "Looks",
+"desc": ""
+},
+"look-rainbow-riot": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Rainbow Riot",
+"group": "Looks",
+"desc": ""
+},
+"look-emerald-ocean": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Emerald Ocean",
+"group": "Looks",
+"desc": ""
+},
+"look-midnight-galaxy": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Midnight Galaxy",
+"group": "Looks",
+"desc": ""
+},
+"look-fairy-forest": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Fairy Forest",
+"group": "Looks",
+"desc": ""
+},
+"look-deep-sea": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Deep Sea",
+"group": "Looks",
+"desc": ""
+},
+"look-neon-party": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Neon Party",
+"group": "Looks",
+"desc": ""
+},
+"look-ice-palace": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Ice Palace",
+"group": "Looks",
+"desc": ""
+},
+"look-synthwave": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Synthwave",
+"group": "Looks",
+"desc": ""
+},
+"look-royal-gold": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Royal Gold",
+"group": "Looks",
+"desc": ""
+},
+"look-toxic-rave": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Toxic Rave",
+"group": "Looks",
+"desc": ""
+},
+"look-lava-lounge": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Lava Lounge",
+"group": "Looks",
+"desc": ""
+},
+"look-blue-sky": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Blue Sky",
+"group": "Looks",
+"desc": ""
+},
+"look-hyperspace": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Hyperspace",
+"group": "Looks",
+"desc": ""
+},
+"look-digital-matrix": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Digital Matrix",
+"group": "Looks",
+"desc": ""
+},
+"look-psychedelic": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Psychedelic",
+"group": "Looks",
+"desc": ""
+},
+"look-molten": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Molten",
+"group": "Looks",
+"desc": ""
+},
+"look-chaos": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Chaos",
+"group": "Looks",
+"desc": ""
+},
+"look-wild-card": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Wild Card",
+"group": "Looks",
+"desc": ""
+},
+"look-studio-54": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Studio 54",
+"group": "Looks",
+"desc": ""
+},
+"look-liquid-dreams": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Liquid Dreams",
+"group": "Looks",
+"desc": ""
+},
+"look-warehouse-rave": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Warehouse Rave",
+"group": "Looks",
+"desc": ""
+},
+"look-neon-grid": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Neon Grid",
+"group": "Looks",
+"desc": ""
+},
+"look-storm-sea": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Storm & Sea",
+"group": "Looks",
+"desc": ""
+},
+"look-mainstage": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Mainstage",
+"group": "Looks",
+"desc": ""
+},
+"look-deep-space": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Deep Space",
+"group": "Looks",
+"desc": ""
+},
+"look-hypnotic": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Hypnotic",
+"group": "Looks",
+"desc": ""
+},
+"look-club-rig": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Club Rig",
+"group": "Looks",
+"desc": ""
+},
+"look-3d-depth": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "3D Depth",
+"group": "Looks",
+"desc": ""
+},
+"look-dance-crew": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Dance Crew",
+"group": "Looks",
+"desc": ""
+},
+"look-retro-arcade": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Retro Arcade",
+"group": "Looks",
+"desc": ""
+},
+"look-wild-elements": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Wild Elements",
+"group": "Looks",
+"desc": ""
+},
+"fx-starroll": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "StarRoll",
+"group": "New effects",
+"desc": "Synthwave"
+},
+"fx-wiretorus": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "WireTorus",
+"group": "New effects",
+"desc": "3D Depth"
+},
+"fx-crystalgem": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "CrystalGem",
+"group": "New effects",
+"desc": "Hyperspace"
+},
+"fx-cubefield": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "CubeField",
+"group": "New effects",
+"desc": "Hyperspace"
+},
+"fx-atomorbit": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "AtomOrbit",
+"group": "New effects",
+"desc": "Deep Space"
+},
+"fx-tesseract": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "Tesseract",
+"group": "New effects",
+"desc": "Hyperspace"
+},
+"fx-laserweb": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "LaserWeb",
+"group": "New effects",
+"desc": "Warehouse Rave"
+},
+"fx-eqcity": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "EQCity",
+"group": "New effects",
+"desc": "Mainstage"
+},
+"fx-launchpad": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "LaunchPad",
+"group": "New effects",
+"desc": "Neon Party"
+},
+"fx-soundribbon": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "SoundRibbon",
+"group": "New effects",
+"desc": "Mainstage"
+},
+"fx-paintsplash": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "PaintSplash",
+"group": "New effects",
+"desc": "Neon Party"
+},
+"fx-crowdsurf": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "CrowdSurf",
+"group": "New effects",
+"desc": "Warehouse Rave"
+},
+"fx-rainonglass": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "RainOnGlass",
+"group": "New effects",
+"desc": "Storm & Sea"
+},
+"fx-volcano": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "Volcano",
+"group": "New effects",
+"desc": "Molten"
+},
+"fx-tornado": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "Tornado",
+"group": "New effects",
+"desc": "Storm & Sea"
+},
+"fx-waterfall": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "Waterfall",
+"group": "New effects",
+"desc": "Storm & Sea"
+},
+"fx-solarflare": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "SolarFlare",
+"group": "New effects",
+"desc": "Lava Lounge"
+},
+"fx-alienparade": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "AlienParade",
+"group": "New effects",
+"desc": "Retro Arcade"
+},
+"fx-breakout": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "Breakout",
+"group": "New effects",
+"desc": "Retro Arcade"
+},
+"fx-snakegame": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "SnakeGame",
+"group": "New effects",
+"desc": "Retro Arcade"
+},
+"fx-pongbattle": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "PongBattle",
+"group": "New effects",
+"desc": "Retro Arcade"
+},
+"fx-pixelfireworks": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "PixelFireworks",
+"group": "New effects",
+"desc": "Retro Arcade"
+},
+"fx-vectorrocks": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "VectorRocks",
+"group": "New effects",
+"desc": "Synthwave"
+},
+"holiday-christmas": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Christmas \ud83c\udf84",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-halloween": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Halloween \ud83c\udf83",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-july4": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "4th of July \ud83c\udf86",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-valentine": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Valentine's \ud83d\udc98",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-newyear": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "New Year's \ud83e\udd42",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-thanksgiving": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Thanksgiving \ud83e\udd83",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-stpatricks": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "St. Patrick's \u2618\ufe0f",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-birthday": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Birthday \ud83c\udf82",
+"group": "Holidays",
+"desc": ""
+},
+"holiday-gameday": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Game Day \ud83c\udfc8",
+"group": "Holidays",
+"desc": ""
+},
+"fire-classic-cozy": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Classic \u00b7 Cozy",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-classic-roar": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Classic \u00b7 Roaring",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-rainbow-cozy": {
+"w": 40,
+"h": 21,
+"n": 150,
+"fps": 15,
+"title": "Rainbow \u00b7 Cozy",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-blue-cozy": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Blue \u00b7 Cozy",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-purple-roar": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Purple \u00b7 Roaring",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-green-cozy": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Green \u00b7 Cozy",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-pink-cozy": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Pink \u00b7 Cozy",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-ice-cozy": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Ice \u00b7 Cozy",
+"group": "Fireplace",
+"desc": ""
+},
+"score-soccer": {
+"w": 40,
+"h": 21,
+"n": 150,
+"fps": 15,
+"title": "Game Day \u00b7 Soccer",
+"group": "Scoreboard",
+"desc": ""
+},
+"score-f1": {
+"w": 40,
+"h": 21,
+"n": 135,
+"fps": 15,
+"title": "F1 live board",
+"group": "Scoreboard",
+"desc": ""
+},
+"score-timer": {
+"w": 40,
+"h": 21,
+"n": 90,
+"fps": 15,
+"title": "Countdown clock",
+"group": "Scoreboard",
+"desc": ""
+},
+"text-birthday": {
+"w": 40,
+"h": 21,
+"n": 135,
+"fps": 15,
+"title": "Happy Birthday",
+"group": "Text & logos",
+"desc": ""
+},
+"text-beat": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Beat words",
+"group": "Text & logos",
+"desc": ""
+},
+"drop": {
+"w": 40,
+"h": 21,
+"n": 135,
+"fps": 15,
+"title": "The drop",
+"group": "Music",
+"desc": ""
+},
+"climax": {
+"w": 40,
+"h": 21,
+"n": 135,
+"fps": 15,
+"title": "Epic climax",
+"group": "Music",
+"desc": ""
+},
+"lineup": {
+"w": 80,
+"h": 21,
+"n": 60,
+"fps": 15,
+"title": "Line-up wizard",
+"group": "Setup",
+"desc": ""
+},
+"groups": {
+"w": 62,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Two groups",
+"group": "Setup",
+"desc": ""
+},
+"sparkle": {
+"w": 40,
+"h": 21,
+"n": 75,
+"fps": 15,
+"title": "Sparkle",
+"group": "Effects",
+"desc": ""
+},
+"movie-halloweennight": {
+"w": 40,
+"h": 21,
+"n": 240,
+"fps": 15,
+"title": "Halloween Night (movie)",
+"group": "Holidays",
+"desc": ""
+},
+"movie-harvestday": {
+"w": 40,
+"h": 21,
+"n": 240,
+"fps": 15,
+"title": "Harvest Day (movie)",
+"group": "Holidays",
+"desc": ""
+},
+"movie-christmaseve": {
+"w": 40,
+"h": 21,
+"n": 240,
+"fps": 15,
+"title": "Christmas Eve (movie)",
+"group": "Holidays",
+"desc": ""
+},
+"movie-newyearcountdown": {
+"w": 40,
+"h": 21,
+"n": 240,
+"fps": 15,
+"title": "New Year Countdown (movie)",
+"group": "Holidays",
+"desc": ""
+},
+"wave-bigwave": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Big Wave",
+"group": "Big Wave",
+"desc": ""
+},
+"wave-serpent": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Serpent",
+"group": "Big Wave",
+"desc": ""
+},
+"wave-twinwaves": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Twin Waves",
+"group": "Big Wave",
+"desc": ""
+},
+"wave-oceanswell": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Ocean Swell",
+"group": "Big Wave",
+"desc": ""
+},
+"shape-spinningglobe": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Spinning Globe",
+"group": "3D shapes",
+"desc": "globe"
+},
+"shape-barberspin": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Barber Spin",
+"group": "3D shapes",
+"desc": "cylinder"
+},
+"shape-risingrings": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Rising Rings",
+"group": "3D shapes",
+"desc": "cylinder"
+},
+"live-countdown": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Countdown",
+"group": "Live feeds",
+"desc": ""
+},
+"live-weather": {
+"w": 40,
+"h": 21,
+"n": 195,
+"fps": 15,
+"title": "Weather",
+"group": "Live feeds",
+"desc": ""
+},
+"score-baseball": {
+"w": 40,
+"h": 21,
+"n": 240,
+"fps": 15,
+"title": "Live Fan \u00b7 Baseball",
+"group": "Scoreboard",
+"desc": "Score, a new play, then the diamond with runners and the count"
+},
+"score-football": {
+"w": 40,
+"h": 21,
+"n": 180,
+"fps": 15,
+"title": "Live Fan \u00b7 Football",
+"group": "Scoreboard",
+"desc": "Down and distance, then a touchdown"
+},
+"score-basketball": {
+"w": 40,
+"h": 21,
+"n": 150,
+"fps": 15,
+"title": "Game Day \u00b7 Basketball",
+"group": "Scoreboard",
+"desc": ""
+},
+"score-hockey": {
+"w": 40,
+"h": 21,
+"n": 135,
+"fps": 15,
+"title": "Game Day \u00b7 Hockey",
+"group": "Scoreboard",
+"desc": ""
+},
+"live-nascar": {
+"w": 40,
+"h": 21,
+"n": 292,
+"fps": 15,
+"title": "NASCAR",
+"group": "Scoreboard",
+"desc": "Running order, caution, a new leader, the white flag and the checkered flag (demo race)"
+},
+"live-golf": {
+"w": 40,
+"h": 21,
+"n": 165,
+"fps": 15,
+"title": "Golf",
+"group": "Scoreboard",
+"desc": "The leaderboard, then a new leader celebration"
+},
+"live-overhead": {
+"w": 40,
+"h": 21,
+"n": 225,
+"fps": 15,
+"title": "Overhead now",
+"group": "Live feeds",
+"desc": "Planes flying over the house, then the space station passing (demo sky)"
+},
+"live-storm": {
+"w": 40,
+"h": 21,
+"n": 180,
+"fps": 15,
+"title": "Storm watch",
+"group": "Live feeds",
+"desc": "A warning flashes over the music show (test alert)"
+},
+"fire-campfire": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Campfire",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-bonfire": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Bonfire",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-candles": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Candle wall",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-torches": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Torch row",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-pixel": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Pixel flames",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-spirit": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Spirit fire",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-lava": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Lava rising",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-dragon": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Dragon breath",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-candles-rainbow": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Candle wall \u00b7 Rainbow",
+"group": "Fireplace",
+"desc": ""
+},
+"fire-campfire-team": {
+"w": 40,
+"h": 21,
+"n": 120,
+"fps": 15,
+"title": "Campfire \u00b7 Team colors",
+"group": "Fireplace",
+"desc": ""
+}
+}

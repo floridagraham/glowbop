@@ -174,7 +174,9 @@ footer .fine{border-top:6px solid #1a1628}
 .demo .ph{display:flex;justify-content:space-between;font:600 13px var(--cond);letter-spacing:2px;text-transform:uppercase;color:var(--c,var(--amber))}
 .demo .ph .r{font:13px var(--mono);color:var(--lav);letter-spacing:1px;text-transform:none}
 .demo .wallbox{border:3px solid var(--amber);border-radius:22px;background:#05040a;padding:8px;aspect-ratio:40/21}
-.demo .wallbox canvas{width:100%;height:100%;display:block}
+.demo .wallbox{position:relative;overflow:hidden}
+.demo .wallbox canvas{width:100%;height:100%;display:block;position:relative}
+.demo .wallbox canvas.glow{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);filter:blur(9px) saturate(1.5) brightness(1.25);opacity:.85;image-rendering:auto}
 .demo .mode{display:flex;align-items:center;gap:10px;background:var(--card2);border-left:8px solid var(--mc,var(--green));border-radius:0 14px 0 14px;padding:8px 12px;min-height:50px}
 .demo .mode b{font:700 16px var(--cond);letter-spacing:1.5px;text-transform:uppercase;display:block;line-height:1.1}
 .demo .mode small{color:var(--dim);font-size:13px}
@@ -271,3 +273,17 @@ footer .fine{border-top:6px solid #1a1628}
 .demo .dj-lines button:hover{background:var(--gold);color:#000}
 .demo .keys button.armed,.demo .keys button.auto{background:var(--kc,var(--c));color:#000;box-shadow:0 0 22px var(--kc,var(--c))}
 .demo .keys button.on[data-a="!blackout"]{background:#fff;color:#000}
+
+.demo button,.demo input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.demo .dj-build{-webkit-touch-callout:none}
+.demo .keys.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.demo .keys.k3 button{min-height:58px;font-size:13.5px}
+.demo .mu-extra{display:flex;flex-direction:column;gap:8px}
+.demo .mu-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.demo .mu-chip{appearance:none;border:0;border-radius:999px;background:var(--card2);color:var(--cyan);font:700 13px var(--cond);letter-spacing:1px;padding:10px 6px;cursor:pointer}
+.demo .mu-chip.on{background:var(--cyan);color:#000}
+.demo .mu-chip.hot{background:var(--pink);color:#000}
+.demo .mu-sl{display:grid;grid-template-columns:110px minmax(0,1fr) 62px;align-items:center;gap:10px;font:600 13px var(--cond);letter-spacing:1px;color:var(--text);text-transform:uppercase}
+.demo .mu-sl b{font:13px var(--mono);color:var(--amber);text-align:right}
+.demo .mu-sl input{width:100%;accent-color:var(--pink);height:28px}
+@media(max-width:420px){.demo .keys.k3{grid-template-columns:repeat(2,minmax(0,1fr))}.demo .mu-sl{grid-template-columns:92px minmax(0,1fr) 54px}}

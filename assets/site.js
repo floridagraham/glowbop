@@ -380,8 +380,9 @@
   const root = document.getElementById('demo'); if (!root) return;
   const T = [
     {id: 'music', label: 'MUSIC', c: 'var(--pink)', title: 'Show control', mode: ['Music show · listening', 'shuffle on · hearing Speakers', 'var(--green)'],
-     p: 'GlowBop hears whatever your computer plays and picks effects for every build-up and drop. Tap a key to feature one.',
-     k: [['🌊', 'Big Wave', 'wave-bigwave'], ['🐍', 'Serpent', 'wave-serpent'], ['🎉', 'Neon Party', 'look-neon-party'], ['🌆', 'Synthwave', 'look-synthwave'], ['💥', 'The drop', 'drop'], ['🎲', 'Surprise me', '*']]},
+     p: 'GlowBop hears whatever is playing and runs the show: a new effect on every drop, bigger on the loud parts. Tap a key to feature one.', music: true,
+     k: [['🌊', 'Big Wave', 'wave-bigwave'], ['🐍', 'Serpent', 'wave-serpent'], ['🎉', 'Neon Party', 'look-neon-party'], ['🌈', 'Rainbow Riot', 'look-rainbow-riot'], ['🚀', 'Hyperspace', 'look-hyperspace'], ['🌀', 'Psychedelic', 'look-psychedelic'],
+         ['🏭', 'Warehouse', 'look-warehouse-rave'], ['🔺', 'Laser web', 'fx-laserweb'], ['☀️', 'Solar flare', 'fx-solarflare'], ['🌆', 'Synthwave', 'look-synthwave'], ['🧊', '3D Depth', 'look-3d-depth'], ['🎲', 'Surprise me', '*']]},
     {id: 'dj', label: 'DJ', c: 'var(--red)', title: 'DJ mode', mode: ['DJ mode', 'hand-played, right on the beat', 'var(--red)'], dj: true,
      p: 'Play the lights by hand. Every pad lands on the next beat. Hold the big key to build, let go to drop.',
      k: [['💥', 'Drop', '!drop'], ['⚡', 'Strobe', '!strobe'], ['⚪', 'Flash', '!flash'], ['🔥', 'Fire burst', '!fire'], ['🎉', 'Confetti', '!confetti'], ['⬛', 'Blackout', '!blackout']]},
@@ -430,7 +431,7 @@
   const load = n => cache[n] || (cache[n] = new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
     const g = c.getContext('2d'); g.drawImage(im, 0, 0); res(g.getImageData(0, 0, im.width, im.height)); }; im.onerror = () => res(null); im.src = '/clips/' + n + '.png'; }));
   const cv = $('canvas'), g = cv.getContext('2d');
-  let tab = T[0], clip = 'wave-bigwave', t0 = performance.now(), vis = true, lastF = -1, sec = 0;
+  let tab = T[0], clip = 'wave-bigwave', t0 = performance.now(), clipT = 0, vis = true, lastF = -1, sec = 0;
   const rail = $('.d-rail');
   T.forEach(t => { const b = document.createElement('button'); b.textContent = t.label; b.style.setProperty('--c', t.c); b.onclick = () => { chirp('nav'); pick(t); }; rail.appendChild(b); });
   const tail = document.createElement('i'); tail.className = 'tail'; rail.appendChild(tail);
@@ -439,42 +440,79 @@
     tab = t; root.style.setProperty('--c', t.c);
     rail.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.textContent === t.label));
     $('.d-panel .ph span').textContent = t.title; $('.d-panel p').textContent = t.p;
-    const keys = $('.keys'); keys.innerHTML = '';
+    const keys = $('.keys'); keys.innerHTML = ''; keys.classList.toggle('k3', t.k.length > 8); stopAutoBuild();
     t.k.forEach(([em, name, cl], i) => { const b = document.createElement('button'); b.innerHTML = `<span class="em">${em}</span>${name}`; b.style.setProperty('--kc', t.c);
       b.dataset.a = cl; b.onclick = () => { chirp('tap'); if (cl[0] === '!') { human(); DJ.press(cl.slice(1), b); } else play(b, name, cl); }; keys.appendChild(b); });
-    const ex = $('.dj-extra'); if (ex) ex.remove();
+    root.querySelectorAll('.dj-extra,.mu-extra').forEach(x => x.remove());
+    if (t.music) {
+      const box = document.createElement('div'); box.className = 'mu-extra';
+      box.innerHTML = `<div class="mu-row"><button class="mu-chip" data-m="shuffle">🔀 SHUFFLE</button><button class="mu-chip" data-m="next">⏭ NEXT EFFECT</button><button class="mu-chip hot" data-m="drop">💥 DROP NOW</button></div>
+        <div class="ph" style="--c:var(--peri)"><span>Levels</span><span class="r" id="muLv"></span></div>
+        <label class="mu-sl"><span>☀️ Brightness</span><input type="range" min="20" max="100" value="${Math.round(LV.bri * 100)}" data-l="bri"><b></b></label>
+        <label class="mu-sl"><span>⏩ Speed</span><input type="range" min="40" max="200" value="${Math.round(LV.speed * 100)}" data-l="speed"><b></b></label>
+        <label class="mu-sl"><span>🎚️ Drops</span><input type="range" min="0" max="100" value="${Math.round(LV.drops * 100)}" data-l="drops"><b></b></label>`;
+      keys.after(box);
+      const paint = () => { box.querySelector('[data-m=shuffle]').classList.toggle('on', LV.shuffle); box.querySelector('[data-m=shuffle]').textContent = LV.shuffle ? '🔀 SHUFFLE ON' : '🔀 SHUFFLE OFF';
+        box.querySelectorAll('.mu-sl').forEach(l => { const i = l.querySelector('input'); l.querySelector('b').textContent = i.dataset.l === 'drops' ? ['CHILL', 'NORMAL', 'WILD'][Math.min(2, (i.value / 34) | 0)] : i.value + '%'; });
+        $('.mode small').textContent = (LV.shuffle ? 'shuffle on' : 'shuffle off') + ' · hearing Speakers'; };
+      box.querySelectorAll('.mu-chip').forEach(x => x.onclick = () => { human(); chirp('tap'); const m = x.dataset.m;
+        if (m === 'shuffle') { LV.shuffle = !LV.shuffle; note(LV.shuffle ? 'Shuffle on: a new effect on every drop' : 'Shuffle off: this effect stays'); }
+        if (m === 'next') musicNext(false);
+        if (m === 'drop') { DJ.press('drop', null); note('Drop on the next beat'); }
+        paint(); });
+      box.querySelectorAll('input').forEach(i => i.oninput = () => { LV[i.dataset.l] = i.value / 100; paint(); });
+      paint();
+    }
     if (t.dj) {
       const box = document.createElement('div'); box.className = 'dj-extra';
       box.innerHTML = `<button class="dj-build">HOLD TO BUILD</button><div class="dj-lines">${['HANDS UP', 'JUMP', 'MAKE SOME NOISE', 'ONE MORE'].map(w => `<button>${w}</button>`).join('')}</div>`;
       keys.after(box);
       const bb = box.querySelector('.dj-build');
-      const st = e => { e.preventDefault(); human(); chirp('nav'); DJ.build(true); bb.classList.add('held'); bb.textContent = 'BUILDING… LET GO!'; };
+      // hold to build: works with a finger, a mouse or a pen. The finger is captured, so sliding off or a scroll
+      // can't leave the build stuck on; it lets go by itself after 8 seconds anyway.
+      const st = e => { e.preventDefault(); human(); try { bb.setPointerCapture(e.pointerId); } catch (x) {} chirp('nav'); DJ.build(true); bb.classList.add('held'); bb.textContent = 'BUILDING… LET GO!'; };
       const en = () => { if (!DJ.st.build) return; DJ.build(false); bb.classList.remove('held'); bb.textContent = 'HOLD TO BUILD'; chirp('tap'); };
-      bb.addEventListener('pointerdown', st); bb.addEventListener('pointerup', en); bb.addEventListener('pointerleave', en); bb.addEventListener('contextmenu', e => e.preventDefault());
+      bb.addEventListener('pointerdown', st); ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => bb.addEventListener(ev, en));
+      bb.addEventListener('contextmenu', e => e.preventDefault()); bb.addEventListener('touchstart', e => e.preventDefault(), {passive: false}); bb.addEventListener('touchend', e => { e.preventDefault(); en(); }, {passive: false});
       box.querySelectorAll('.dj-lines button').forEach(x => x.onclick = () => { human(); chirp('tap'); DJ.say(x.textContent); });
       DJ.reset(); play(null, 'Neon Party', 'look-neon-party'); return;
     }
     DJ.reset();
     play(keys.children[k || 0], t.k[k || 0][1], t.k[k || 0][2]);
+    if (t.music) $('.mode small').textContent = (LV.shuffle ? 'shuffle on' : 'shuffle off') + ' · hearing Speakers';
   }
   function play(b, name, cl) {
     if (cl === '*') { const all = Object.keys(window.GB_CLIPS || {}).filter(n => /^(look|fx|wave)-/.test(n)); cl = all[(Math.random() * all.length) | 0]; name = (meta(cl) || {}).title || 'Surprise'; }
     if (b !== null) root.querySelectorAll('.keys button').forEach(x => x.classList.toggle('on', x === b));
-    clip = cl; t0 = performance.now(); lastF = -1; load(cl);
+    clip = cl; t0 = performance.now(); clipT = 0; lastF = -1; load(cl);
     const m = tab.mode; $('.mode').style.setProperty('--mc', m[2]);
     $('.mode b').textContent = ['live', 'holiday', 'score', 'games', 'fire'].includes(tab.id) ? m[0] + ': ' + name : m[0];
     $('.mode small').textContent = m[1];
     $('#dLook').textContent = name; $('#dEff').textContent = ((meta(cl) || {}).title || name).replace(/ ·.*/, '');
     $('.d-wall .ph .r').textContent = '840 BULBS · ' + name.toUpperCase();
   }
+  // 🎚️ the MUSIC page levels, and the self-running music show (a new effect on every drop while shuffle is on)
+  const LV = {bri: 1, speed: 1, drops: .5, shuffle: true};
+  const MPOOL = ['wave-bigwave', 'look-neon-party', 'look-rainbow-riot', 'look-hyperspace', 'look-psychedelic', 'look-warehouse-rave', 'fx-laserweb', 'fx-solarflare', 'look-synthwave', 'look-3d-depth',
+    'wave-serpent', 'look-hypnotic', 'look-chaos', 'look-toxic-rave', 'look-studio-54', 'fx-tesseract', 'fx-soundribbon', 'look-deep-space', 'look-mainstage', 'fx-eqcity'];
+  function musicNext(drop) {
+    const pool = MPOOL.filter(n => n !== clip && meta(n)); const n = pool[(Math.random() * pool.length) | 0]; if (!n) return;
+    const kb = [...root.querySelectorAll('.keys button')].find(x => x.dataset.a === n) || null;
+    root.querySelectorAll('.keys button').forEach(x => x.classList.toggle('on', x === kb));
+    play(kb === null ? null : kb, (meta(n) || {}).title || 'Next', n); if (kb === null) root.querySelectorAll('.keys button').forEach(x => x.classList.remove('on'));
+    if (drop) { DJ.st.flash = .9; DJ.st.rings.push({x: 20, y: 10, r: 0, c: [255, 255, 255]}); }
+  }
   // 🎧 the DJ engine of the demo: hits land on the next beat of a 128 BPM clock, drawn on top of the playing clip
+  let nextAuto = 0, autoBuild = null;
   const BEAT = 60000 / 128, SPECTACLE = ['look-psychedelic', 'look-3d-depth', 'look-rainbow-riot', 'look-hypnotic', 'fx-pixelfireworks', 'look-warehouse-rave', 'look-chaos', 'fx-tesseract', 'look-hyperspace', 'shape-barberspin'];
-  let lastHuman = 0; const human = () => { lastHuman = performance.now(); };
+  let lastHuman = 0; const human = () => { lastHuman = performance.now(); stopAutoBuild(); };
+  function stopAutoBuild() { if (!autoBuild) return; autoBuild = null; DJ.st.build = null; const bb = $('.dj-build'); if (bb) { bb.classList.remove('held'); bb.textContent = 'HOLD TO BUILD'; } }
   const DJ = {
-    st: {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: []},
-    reset() { this.st = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: []}; },
+    st: {flash: 0, strobe: 0, black: 0, build: null, parts: [], rings: [], word: null, queue: []},
+    reset() { this.st = {flash: 0, strobe: 0, black: 0, build: null, parts: [], rings: [], word: null, queue: []}; },
     press(a, btn) {
-      if (a === 'blackout') { this.st.black = !this.st.black; if (btn) btn.classList.toggle('on', this.st.black); note(this.st.black ? 'Blackout: tap again to bring it back' : 'Lights back'); return; }
+      if (a === 'blackout') { this.st.black = performance.now() + BEAT * 4; this.st.queue.push('flash'); this.st.bTo = true; if (btn) { btn.classList.add('armed'); setTimeout(() => btn.classList.remove('armed'), 500); } note('Blackout for one bar… then BANG'); return; }
+      this.st.black = 0;
       this.st.queue.push(a); if (btn) { btn.classList.add('armed'); setTimeout(() => btn.classList.remove('armed'), 500); }
       note({drop: 'Drop on the next beat', strobe: 'Strobe on the next beat', flash: 'Flash on the next beat', fire: 'Fire burst on the next beat', confetti: 'Confetti on the next beat'}[a]);
     },
@@ -485,7 +523,7 @@
       if (a === 'drop') {
         S.flash = 1; S.black = false; S.rings.push({x: w / 2, y: h / 2, r: 0, c: [255, 255, 255]});
         for (let i = 0; i < 70; i++) { const an = R() * 6.283, sp = 8 + R() * 22; P.push({x: w / 2, y: h / 2, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 0, c: [[255, 61, 154], [51, 214, 255], [255, 204, 102], [155, 61, 255]][(R() * 4) | 0]}); }
-        play(null, 'The drop', SPECTACLE[(R() * SPECTACLE.length) | 0]); $('#dSec').textContent = 'DROP';
+        if (tab.music) musicNext(false); else play(null, 'The drop', SPECTACLE[(R() * SPECTACLE.length) | 0]); $('#dSec').textContent = 'DROP';
       }
       if (a === 'flash') S.flash = 1;
       if (a === 'strobe') S.strobe = performance.now() + BEAT * 4;
@@ -496,7 +534,9 @@
     },
     apply(buf, w, h, now, dt) {
       const S = this.st;
-      const beatIdx = Math.floor(now / BEAT); if (S.queue.length && beatIdx !== this._lb) { S.queue.forEach(a => this.fire(a, w, h)); S.queue = []; }
+      const beatIdx = Math.floor(now / BEAT);
+      if (S.queue.length && beatIdx !== this._lb) { const keep = []; S.queue.forEach(a => { if (a === 'flash' && S.black > now) keep.push(a); else this.fire(a, w, h); }); S.queue = keep; }
+      if (S.build && now - S.build > 8000) { this.build(false); const bb = $('.dj-build'); if (bb) { bb.classList.remove('held'); bb.textContent = 'HOLD TO BUILD'; } }
       this._lb = beatIdx;
       const add = (x, y, c, k) => { x |= 0; y |= 0; if (x < 0 || y < 0 || x >= w || y >= h) return; const i = (y * w + x) * 3; buf[i] = Math.max(buf[i], c[0] * k); buf[i + 1] = Math.max(buf[i + 1], c[1] * k); buf[i + 2] = Math.max(buf[i + 2], c[2] * k); };
       if (S.build) {                                                  // rising wall of light, faster and whiter
@@ -519,8 +559,8 @@
       }
       if (S.strobe > now) { const on = Math.floor(now / 55) % 2 === 0; for (let i = 0; i < buf.length; i++) buf[i] = on ? 255 : buf[i] * .05; }
       if (S.flash > .01) { for (let i = 0; i < buf.length; i++) buf[i] = Math.max(buf[i], 255 * S.flash); S.flash *= Math.pow(.02, dt); }
-      if (S.black) for (let i = 0; i < buf.length; i++) buf[i] = 0;
-      return S.build || S.parts.length || S.rings.length || S.word || S.strobe > now || S.flash > .01 || S.black || S.queue.length;
+      if (S.black > now) for (let i = 0; i < buf.length; i++) buf[i] = 0;
+      return S.build || S.parts.length || S.rings.length || S.word || S.strobe > now || S.flash > .01 || S.black > now || S.queue.length;
     },
   };
   const masks = {};
@@ -534,9 +574,9 @@
   }
   let toastT = 0; function note(t) { const el = $('.hint'); if (!el || !t) return; el.textContent = '🎧 ' + t; toastT = performance.now(); }
   // 🤖 auto DJ: on the DJ tab, if nobody touches it, GlowBop plays a little set by itself
-  let nextAuto = 0, autoBuild = null;
   function autoDJ(now) {
-    if (!tab.dj || now - lastHuman < 7000) { $('.mode small').textContent = tab.mode[1]; return; }
+    if (!tab.dj) return;
+    if (now - lastHuman < 7000) { $('.mode small').textContent = tab.mode[1]; return; }
     $('.mode small').textContent = 'AUTO DJ · tap a pad to take over';
     if (autoBuild && now > autoBuild) { DJ.build(false); autoBuild = null; const bb = $('.dj-build'); if (bb) { bb.classList.remove('held'); bb.textContent = 'HOLD TO BUILD'; } nextAuto = now + 2600; return; }
     if (autoBuild || now < nextAuto) return;
@@ -548,19 +588,32 @@
     DJ.press(a, null); nextAuto = now + 1500 + Math.random() * 1600;
   }
   let pxBuf = null, lastNow = performance.now();
-  function draw(data, w, h, f, now, dt) {
+  // the glow layer: the same picture at one pixel per bulb, stretched and blurred by the browser under the bulbs
+  const gl = document.createElement('canvas'); gl.className = 'glow'; gl.setAttribute('aria-hidden', 'true'); cv.before(gl); const gg = gl.getContext('2d'); let gImg = null;
+  const GAM = new Float32Array(256); for (let i = 0; i < 256; i++) GAM[i] = 255 * Math.pow(i / 255, .78);   // LEDs pop: lift the mids
+  function draw(data, w, h, fpos, now, dt) {
     const r = cv.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W = Math.max(1, r.width * d | 0), H = Math.max(1, r.height * d | 0);
     if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    if (gl.width !== w || gl.height !== h) { gl.width = w; gl.height = h; gImg = null; } if (!gImg) gImg = gg.createImageData(w, h);
     if (!pxBuf || pxBuf.length !== w * h * 3) pxBuf = new Float32Array(w * h * 3);
-    const base = f * w * h * 4, px = data.data;
-    for (let i = 0, n = w * h; i < n; i++) { pxBuf[i * 3] = px[base + i * 4]; pxBuf[i * 3 + 1] = px[base + i * 4 + 1]; pxBuf[i * 3 + 2] = px[base + i * 4 + 2]; }
+    const n0 = data.height / h | 0, f0 = Math.floor(fpos) % n0, f1 = (f0 + 1) % n0, fr = reduce ? 0 : fpos - Math.floor(fpos), px = data.data, b0 = f0 * w * h * 4, b1 = f1 * w * h * 4, kb = LV.bri;
+    for (let i = 0, n = w * h; i < n; i++) for (let c = 0; c < 3; c++) pxBuf[i * 3 + c] = (px[b0 + i * 4 + c] * (1 - fr) + px[b1 + i * 4 + c] * fr) * kb;
     const busy = DJ.apply(pxBuf, w, h, now, dt);
-    const sx = W / w, sy = H / h, rad = Math.min(sx, sy) * 0.42;
-    g.fillStyle = '#05040a'; g.fillRect(0, 0, W, H); let sum = 0;
+    const sx = W / w, sy = H / h, rad = Math.min(sx, sy) * 0.43, gd = gImg.data;
+    g.clearRect(0, 0, W, H); let sum = 0;
+    g.fillStyle = 'rgba(40,32,58,.55)';                                              // the dark bulbs, all in one path
+    g.beginPath(); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 3; if (pxBuf[i] + pxBuf[i + 1] + pxBuf[i + 2] <= 30) { const cx = x * sx + sx / 2, cy = y * sy + sy / 2; g.moveTo(cx + rad * .5, cy); g.arc(cx, cy, rad * .5, 0, 6.283); } } g.fill();
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 3, R = Math.min(255, pxBuf[i]) | 0, G = Math.min(255, pxBuf[i + 1]) | 0, B = Math.min(255, pxBuf[i + 2]) | 0, lit = R + G + B > 24; sum += R + G + B;
-      g.fillStyle = lit ? `rgb(${R},${G},${B})` : '#16121f'; g.beginPath(); g.arc(x * sx + sx / 2, y * sy + sy / 2, lit ? rad : rad * 0.55, 0, 6.283); g.fill();
+      const i = (y * w + x) * 3, j = (y * w + x) * 4;
+      const R = GAM[Math.min(255, pxBuf[i]) | 0] | 0, G = GAM[Math.min(255, pxBuf[i + 1]) | 0] | 0, B = GAM[Math.min(255, pxBuf[i + 2]) | 0] | 0, s = R + G + B; sum += s;
+      gd[j] = R; gd[j + 1] = G; gd[j + 2] = B; gd[j + 3] = 255;
+      if (s <= 30) continue;
+      const cx = x * sx + sx / 2, cy = y * sy + sy / 2;
+      g.fillStyle = `rgb(${R},${G},${B})`; g.beginPath(); g.arc(cx, cy, rad, 0, 6.283); g.fill();
+      if (s > 420) { const m = Math.max(R, G, B) || 1, k = 255 / m, q = .72;            // the hot centre of a bright bulb
+        g.fillStyle = `rgba(${R * k * q + 255 * (1 - q) | 0},${G * k * q + 255 * (1 - q) | 0},${B * k * q + 255 * (1 - q) | 0},.8)`; g.beginPath(); g.arc(cx, cy, rad * .55, 0, 6.283); g.fill(); }
     }
+    gg.putImageData(gImg, 0, 0);
     return [sum / (w * h * 765), busy];
   }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -571,11 +624,14 @@
     autoDJ(now);
     if (toastT && now - toastT > 2500) { toastT = 0; const el = $('.hint'); if (el) el.textContent = '👈 Tap the colored rail to switch sections'; }
     const m = meta(clip); const data = await load(clip); if (!m || !data) return;
-    const f = reduce ? 0 : Math.floor((now - t0) / 1000 * (m.fps || 15)) % m.n; if (f === lastF && !busyLast) return; lastF = f;
-    const [lvl, busy] = draw(data, m.w, m.h, f, now, dt); busyLast = !!busy;
+    clipT += dt * LV.speed; const fpos = reduce ? 0 : clipT * (m.fps || 15) % m.n;
+    if (reduce && lastF === 0 && !busyLast) return; lastF = 0;
+    const [lvl, busy] = draw(data, m.w, m.h, fpos, now, dt); busyLast = !!busy;
     const lit = Math.round(Math.min(1, lvl * 3.2) * 24);
     meter.querySelectorAll('i').forEach((el, i) => el.style.background = i < lit ? (i < 9 ? 'var(--cyan)' : i < 15 ? 'var(--violet)' : i < 20 ? 'var(--pink)' : 'var(--amber)') : '');
-    const s = Math.floor(now / 4000) % 4; if (s !== sec && !(tab.dj && DJ.st.build)) { sec = s; $('#dSec').textContent = ['GROOVE', 'BUILD', 'DROP', 'BREAK'][s]; }
+    const s = Math.floor(now / 4000) % 4; if (s !== sec && !(tab.dj && DJ.st.build)) { sec = s; $('#dSec').textContent = ['GROOVE', 'BUILD', 'DROP', 'BREAK'][s];
+      if (tab.music && s === 2 && LV.shuffle && now - lastHuman > 6000 && Math.random() < .35 + .65 * LV.drops) musicNext(true);
+      if (tab.music && s === 2 && LV.drops > .66) DJ.st.queue.push(Math.random() < .5 ? 'confetti' : 'fire'); }
     if (tab.dj && DJ.st.build) $('#dSec').textContent = 'BUILD';
   }
   pick(T.find(t => t.dj) || T[0]); requestAnimationFrame(tick);
