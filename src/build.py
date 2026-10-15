@@ -21,25 +21,41 @@ def logo_svg():
             '<feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>' + dots + '</svg></span>')
 
 
+def vid(name, label='', cls='gbv', extra='', preload='none'):
+    """A GlowBop recording as a plain looping video (video/<name>.mp4, made by tools/render_videos.py).
+    Muted + playsinline so it plays on iPhone / iPad; site.js starts it when it scrolls into view."""
+    aria = f' aria-label="{html.escape(label)}"' if label else ' aria-hidden="true"'
+    return (f'<video class="{cls}" src="/video/{name}.mp4" poster="/video/{name}.jpg" muted loop playsinline webkit-playsinline '
+            f'preload="{preload}" disableremoteplayback{aria}{extra}></video>')
+
+
 def led(scene, caption, w=40, h=21, cls='', demo=False, illus=False):
+    # the browser-only scenes (live fire simulation, screen mirror) are recorded to video/sim-<scene>.mp4 (tools/record_sims.js)
+    v = vid('sim-' + scene, caption)
     if demo:
-        return (f'<figure class="led demo {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
-                f'<figcaption>🔴 Live · {html.escape(caption)}</figcaption></figure>')
+        return f'<figure class="led demo {cls}">{v}<figcaption>🔴 Live · {html.escape(caption)}</figcaption></figure>'
     if illus:
-        return (f'<figure class="led {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
-                f'<figcaption>🎨 Illustration · {html.escape(caption)}</figcaption></figure>')
+        return f'<figure class="led {cls}">{v}<figcaption>🎨 Illustration · {html.escape(caption)}</figcaption></figure>'
     PHOTOS.append((CUR[0], caption))
-    return (f'<figure class="led {cls}"><canvas data-scene="{scene}" data-w="{w}" data-h="{h}" aria-label="{html.escape(caption)}"></canvas>'
-            f'<figcaption>📷 Placeholder · {html.escape(caption)}</figcaption></figure>')
+    return f'<figure class="led {cls}">{v}<figcaption>📷 Placeholder · {html.escape(caption)}</figcaption></figure>'
 
 
 import json as _json
 CLIPS = _json.load(open(os.path.join(HERE, 'clips.json')))
+VIDEOS = _json.load(open(os.path.join(HERE, 'videos.json')))      # reel / hero playlists, shared with tools/render_videos.py
+
+
+def reel(key, label_id='', cap='GlowBop showreel'):
+    """A showreel video; its caption follows the clip on screen (cue times from video/reel-<key>.json)."""
+    cf = os.path.join(HERE, 'video', f'reel-{key}.json')
+    cues = open(cf).read().strip() if os.path.exists(cf) else '[]'
+    extra = f' data-cues="{html.escape(cues)}"' + (f' data-label="{label_id}"' if label_id else '')
+    return vid('reel-' + key, cap, extra=extra)
 
 
 def clip(name, caption=None, cls=''):
     m = CLIPS[name]; cap = caption or m['title']
-    return (f'<figure class="led real {cls}" style="aspect-ratio:{m['w']}/{m['h']}"><canvas data-clip="{name}" aria-label="{html.escape(cap)}"></canvas>'
+    return (f'<figure class="led real {cls}" style="aspect-ratio:{m['w']}/{m['h']}">{vid(name, cap)}'
             f'<figcaption>🔴 Recorded from GlowBop · {html.escape(cap)}</figcaption></figure>')
 
 
@@ -73,8 +89,8 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=13">
+<link rel="stylesheet" href="/assets/style.css?v=4">
+<link rel="stylesheet" href="/assets/console.css?v=14">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -104,7 +120,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=11"></script>
+<script src="/assets/site.js?v=12"></script>
 </body>
 </html>
 '''
@@ -155,7 +171,7 @@ def devframe(kind, img, alt, tag='', c='var(--amber)', cap=''):
     inner = f'<img src="/img/app/{img}.webp" alt="{html.escape(alt)}" loading="lazy">'
     if img in LIVEWALL:                      # the live wall in the screenshot plays a real recording, like the real app
         x, y, w, h = WALLR[img]
-        inner += f'<canvas class="wallov" data-clip="{LIVEWALL[img]}" style="left:{x}%;top:{y}%;width:{w}%;height:{h}%" aria-hidden="true"></canvas>'
+        inner += vid(LIVEWALL[img], cls='gbv wallov', extra=f' style="left:{x}%;top:{y}%;width:{w}%;height:{h}%"')
     base = '<div class="base"></div>' if kind == 'laptop' else ''
     t = f'<span class="tag" style="--c:{c}">{tag}</span>' if tag else ''
     fc = f'<figcaption>{cap}</figcaption>' if cap else ''
@@ -178,7 +194,7 @@ DEMO = f'''<div class="demo" id="demo" aria-label="Try the GlowBop console">
   </div>
 </div>'''
 home = f'''
-<header class="hero"><div class="wrap">
+<header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg.mp4" data-poster="/video/hero-bg.jpg" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback></video></div><div class="wrap">
   <div>
     <span class="pill">🎃 <b>Launching this Halloween</b> · 7-day free trial</span>
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
@@ -186,7 +202,7 @@ home = f'''
     <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn chase" href="/try/" style="--c:var(--cyan)">🎛️ Try the real app now</a></div>
     <div class="stats"><div><b>200+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
-  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
+  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><video class="gbv herov" src="/video/hero.mp4" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback aria-hidden="true"></video><span class="concept">Concept photo · real GlowBop patterns</span></figure>
 </div></header>
 {ticker()}
 
@@ -217,7 +233,7 @@ home = f'''
 <section class="tight"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
   <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
-  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="reelName" aria-label="GlowBop showreel"></canvas>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px">{reel('main', 'reelName')}
   <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
   <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
 </div></section>
@@ -352,13 +368,18 @@ def feat(i, scene, cap, eyebrow, title, lead, ticks, link, label):
 <div class="media">{media(scene, cap)}</div></div>'''
 
 
+def reelfor(names, cap):
+    key = next((k for k, r in VIDEOS['reels'].items() if ','.join(r['clips']) == names), None)
+    return reel(key, cap=cap) if key else vid(names.split(',')[0], cap)
+
+
 def media(scene, cap):
     if scene.startswith('@'): return pic(scene[1:], cap)
     if scene.startswith('#'): return clip(scene[1:], cap)
     if scene.startswith('!'):
         kind, img = scene[1:].split(':')
         return devframe(kind, img, cap)
-    if scene.startswith('~'): return (f'<figure class="led real reel" style="aspect-ratio:40/21"><canvas data-reel="{scene[1:]}" aria-label="{html.escape(cap)}"></canvas>'
+    if scene.startswith('~'): return (f'<figure class="led real reel" style="aspect-ratio:40/21">{reelfor(scene[1:], cap)}'
                                        f'<figcaption>🔴 Recorded from GlowBop · {html.escape(cap)}</figcaption></figure>')
     if scene.startswith('%'): return '<div class="grid g2 mini">' + ''.join(clip(n) for n in scene[1:].split(',')) + '</div>'
     return led(scene, cap, illus=True)
@@ -450,7 +471,7 @@ features = f'''<header class="pagehead"><div class="wrap center"><span class="ey
 <p class="lead">A music light show, a holiday display, a scoreboard, live feeds and a sign, all run from one light-show console. Every section links to the step-by-step guide.</p></div></header>
 {ticker()}
 <section class="tight" style="padding-top:0"><div class="wrap">
-  <figure class="led real reel reveal" style="aspect-ratio:40/21"><canvas data-reel="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,f1-win,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" data-label="featReel" aria-label="GlowBop showreel"></canvas>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21">{reel('main', 'featReel')}
   <figcaption>🔴 Recorded from GlowBop · <b id="featReel">Psychedelic</b></figcaption></figure>
   <div class="grid g4 showgrid" style="margin-top:16px">{''.join(f'<div class="gtile reveal">{clip(n, t)}<h3>{t}</h3></div>' for n, t in SHOW)}</div>
   <div class="toc" style="justify-content:center;margin-top:26px">{''.join(f'<a href="#{slug(e)}">{e}</a>' for _, _, e, _, _, _, l, _ in F2)}</div>
@@ -1237,6 +1258,7 @@ page('/404.html', 'Page not found · GlowBop', 'This page is not here.', f'''<se
 shutil.copytree(os.path.join(HERE, 'assets'), os.path.join(OUT, 'assets'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(HERE, 'img'), os.path.join(OUT, 'img'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(HERE, 'clips'), os.path.join(OUT, 'clips'), dirs_exist_ok=True)
+shutil.copytree(os.path.join(HERE, 'video'), os.path.join(OUT, 'video'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('*.tmp.mp4'))   # 🎬 recordings as MP4 (tools/render_videos.py)
 shutil.copytree(os.path.join(HERE, 'download'), os.path.join(OUT, 'download'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(HERE, 'try'), os.path.join(OUT, 'try'), dirs_exist_ok=True, ignore=shutil.ignore_patterns('*.py', '__pycache__'))   # 🕹️ try-it demo: the real console on a pretend wall
 with open(os.path.join(OUT, 'PHOTOS.md'), 'w') as f:
