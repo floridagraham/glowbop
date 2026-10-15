@@ -3,7 +3,7 @@
    Palette: logo neon (pink, violet, cyan) + console panel colors (amber, orange, lavender, gold, periwinkle)
    ========================================================================== */
 :root { --fs:1.12;
-  --pink:#ff3d9a; --violet:#9b3dff; --cyan:#33d6ff; --amber:#ffb23d; --orange:#ff7a3d; --lav:#cc99ff; --gold:#ffcc66; --peri:#6677ff; --green:#3ce08a; --red:#ff4d6d; --lime:#b6ff3d;
+  --pink:#ff3d9a; --violet:#9b3dff; --cyan:#33d6ff; --amber:#ffb23d; --orange:#ff7a3d; --lav:#cc99ff; --gold:#ffcc66; --peri:#6677ff; --green:#3ce08a; --red:#ff4d6d; --lime:#b6ff3d; --orchid:#e45cff;
   --bg:#000; --panel:#0a0812; --dark:#26213a; --dark2:#1a1628; --line:#2e2845; --text:#f4f2ff; --dim:#a9a3c8; --label:#9b8cff;
   --cond:'Saira Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
   --mono:'Share Tech Mono', ui-monospace, Menlo, Consolas, monospace;
@@ -40,7 +40,14 @@ a { color:var(--cyan); }
 #rail button { appearance:none; border:0; border-radius:0; background:var(--c); color:#000; font:700 calc(14px * min(var(--fs, 1), 1.08))/1 var(--cond); letter-spacing:1px; text-align:right; padding:0 8px 7px 0; min-height:58px; flex:1 0 58px; display:flex; align-items:flex-end; justify-content:flex-end; cursor:pointer; position:relative; transition:filter .15s; opacity:.82; }
 #rail button.on { opacity:1; box-shadow:inset -6px 0 0 #fff; }
 #rail button:active { filter:brightness(1.25); }
-#rail .tail { flex:3 0 60px; background:var(--peri); opacity:.55; border-bottom-left-radius:0; }
+/* 14 keys in 3 groups, sized from the screen height so the whole rail (down to SETUP) is on screen: a key never drops under
+   44px (the touch minimum) and MUSIC stays the big one. The tail soaks up whatever height is left. */
+#rail { --rk:clamp(44px, calc((100dvh - 232px) / 14.5), 58px); gap:4px; }
+#rail button { min-height:0; flex:0 0 var(--rk); }
+#rail button[data-p=music] { flex-basis:calc(var(--rk) * 1.5); }
+#rail .tail { flex:1 0 16px; background:var(--peri); opacity:.55; border-bottom-left-radius:0; }
+#rail .rail-sep { flex:0 0 14px; display:flex; align-items:flex-end; justify-content:flex-end; padding:0 8px 0 0; margin-top:2px; overflow:hidden;
+  font:700 9px/1 var(--cond); letter-spacing:1.5px; color:var(--label); opacity:.85; white-space:nowrap; pointer-events:none; }
 
 #main { grid-area:main; min-width:0; padding:8px 10px 24px 10px; display:flex; flex-direction:column; gap:var(--gap); }
 #view { display:flex; flex-direction:column; gap:var(--gap); min-width:0; }
@@ -64,7 +71,9 @@ a { color:var(--cyan); }
   #hd .bars { height:34px; }
   #hd .bars b { font-size:calc(26px * var(--fs, 1)); letter-spacing:5px; padding:0 16px; }
   #hd .line .who .k { font-size:calc(13px * var(--fs, 1)); } #hd .line .who .v { font-size:calc(15px * var(--fs, 1)); }
-  #rail button { font-size:calc(17px * min(var(--fs, 1), 1.08)); padding:0 12px 8px 0; min-height:60px; }
+  #rail { --rk:clamp(44px, calc((100dvh - 250px) / 14.5), 60px); gap:5px; }
+  #rail button { font-size:calc(17px * min(var(--fs, 1), 1.08)); padding:0 12px 8px 0; }
+  #rail .rail-sep { flex-basis:18px; font-size:11px; letter-spacing:2.5px; padding-right:12px; }
   #main { padding:12px 18px 28px; }
 }
 /* iPad landscape + the Windows window: wall on the left, page on the right */
@@ -222,3 +231,31 @@ body.wallfull #hd, body.wallfull #rail { z-index:0; }
 .gbsvg circle.tw { fill:#fff !important; filter:url(#gbGlow); }
 @media (min-width: 700px) { .gbsvg { width:66px; height:66px; border-radius:14px; } }
 .modebar #mBtn { min-height:46px; padding:0 16px; font-size:calc(15px * var(--fs, 1)); flex:0 0 auto; box-shadow:0 0 16px -2px var(--pink); }
+
+/* ---------------------------------------------------------------- 🎛️ Pro DJ gate (GB.proGate) + the mode bar's fader chip */
+.pro-card { display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:0 18px 0 18px; border:1px solid color-mix(in srgb, var(--orchid) 45%, var(--line));
+  background:radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--orchid) 22%, transparent) 0%, transparent 55%), radial-gradient(90% 120% at 0% 100%, color-mix(in srgb, var(--violet) 22%, transparent) 0%, transparent 60%), #0d0918; }
+.pro-top { display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
+.pro-top b { font:700 calc(20px * var(--fs, 1))/1.1 var(--cond); letter-spacing:1px; text-transform:uppercase; }
+.pro-badge { font:700 calc(12px * var(--fs, 1))/1 var(--cond); letter-spacing:1.5px; text-transform:uppercase; padding:6px 10px; border-radius:999px; background:linear-gradient(90deg, var(--orchid), var(--violet)); color:#000; white-space:nowrap; }
+.pro-list { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:6px; }
+.pro-list li { font:600 calc(13px * var(--fs, 1))/1 var(--cond); letter-spacing:.5px; padding:7px 10px; border-radius:999px; background:var(--dark2); color:var(--dim); }
+.pro-list li::before { content:'✓ '; color:var(--orchid); }
+.pro-list li.me { background:color-mix(in srgb, var(--orchid) 25%, var(--dark2)); color:var(--text); }
+.pro-key summary { cursor:pointer; color:var(--lav); font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; padding:6px 0; }
+.pro-keyrow { display:flex; gap:8px; margin-top:6px; } .pro-keyrow input { flex:1; min-width:0; font-family:var(--mono); }
+.pro-key .pro-msg { margin-top:6px; }
+.pro-chip { font:700 calc(11px * var(--fs, 1))/1 var(--cond); letter-spacing:1px; padding:4px 8px; border-radius:999px; background:color-mix(in srgb, var(--orchid) 22%, transparent); color:var(--orchid); white-space:nowrap; align-self:center; margin-left:auto; }
+.panel.pro-locked > :not(.ph):not(.pro-card) { display:none !important; }
+.panel.pro-preview > :not(.ph):not(.pro-card) { opacity:.6; }
+#rail button .rail-lock { position:absolute; top:5px; left:6px; font-style:normal; font-size:calc(11px * var(--fs, 1)); line-height:1; filter:grayscale(.3); }
+.mfad { appearance:none; border:0; flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; min-height:40px; padding:0 10px; border-radius:999px; cursor:pointer;
+  background:color-mix(in srgb, var(--cyan) 14%, transparent); box-shadow:inset 0 0 0 2px var(--cyan); color:var(--cyan); font:700 calc(13px * var(--fs, 1))/1 var(--cond); letter-spacing:1px; }
+.mfad b { background:var(--cyan); color:#000; border-radius:999px; min-width:20px; padding:3px 6px; text-align:center; font-size:calc(12px * var(--fs, 1)); }
+.mfad .ic2 { font-size:calc(14px * var(--fs, 1)); }
+@media (max-width: 699px) {          /* phones: a small badge on the mode bar's corner, so the title keeps its room */
+  .modebar { position:relative; }
+  .mfad .w { display:none; }
+  .mfad { position:absolute; top:-14px; right:14px; min-height:30px; padding:0 8px; background:#05040a; box-shadow:inset 0 0 0 2px var(--cyan), 0 0 12px -2px var(--cyan); z-index:2; }
+}
+.panel.pro-locked > .ph .r, .panel.pro-preview > .ph .r { visibility:hidden; }

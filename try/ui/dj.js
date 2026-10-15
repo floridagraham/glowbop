@@ -18,7 +18,10 @@
   #djTap { min-height:86px; font-size:calc(26px * var(--fs, 1)); letter-spacing:4px; touch-action:manipulation; }
   .dj-bpm { font:calc(44px * var(--fs, 1))/1 var(--mono); color:var(--cyan); text-align:center; }
   .dj-midi .item { cursor:pointer; }
-  @media (min-width: 700px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
+  .dj-pads .tile { min-width:0; padding:10px 4px; letter-spacing:.5px; }
+  .dj-pads .tile .nm { display:block; max-width:100%; overflow-wrap:anywhere; hyphens:manual; }
+  #djPadsPanel { container-type:inline-size; }
+  @container (min-width: 640px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
   `);
 
   // ------------------------------------------------------------------ hit pads
@@ -32,7 +35,7 @@
     else { GB.sfx('on'); if (await dj({hit: k, snap: snap()}) && src !== 'midi' && snap()) GB.toast(PADS.find(p => p[0] === k)[1] + ' on the next beat'); }
   }
   GB.panel('dj', 10, el => {
-    el.classList.add('box'); el.style.setProperty('--c', 'var(--red)');
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--red)'); el.id = 'djPadsPanel';
     el.innerHTML = `<div class="ph"><span>Hit pads</span><button class="btn" id="djSnap" style="--c:var(--cyan);min-height:34px;padding:4px 14px;font-size:calc(13px * var(--fs, 1))"></button></div>
       <div class="tiles dj-pads" id="djPads"></div>
       <p class="note" id="djSnapNote"></p>`;
@@ -43,7 +46,7 @@
     paintSnap();
     PADS.forEach(([k, em, name, c]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.k = k; b.style.setProperty('--c', c);
-      b.innerHTML = `<span class="em">${em}</span>${name}`;
+      b.innerHTML = `<span class="em">${em}</span><span class="nm">${name}</span>`;
       b.style.touchAction = 'manipulation';
       b.addEventListener('pointerdown', e => { if (learn || e.button > 0) return; e.preventDefault(); b._pd = Date.now(); hit(k); });  // fire on touch-down
       b.onclick = () => { if (learn || Date.now() - (b._pd || 0) < 800) return; hit(k); };            // keyboard / fallback

@@ -24,7 +24,9 @@
   GB.post = async (p, body) => {
     try {
       const r = await fetch(p, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body || {})});
-      const j = await r.json(); if (!r.ok || j.error) { GB.toast('⚠️ ' + (j.error || r.status)); GB.sfx('err'); return null; } return j;
+      const j = await r.json();
+      if (r.status === 402 && j.error === 'pro') { GB.toast('🔒 ' + (j.message || 'This is a GlowBop Pro DJ feature.')); GB.sfx('err'); GB.setPro(false); return null; }
+      if (!r.ok || j.error) { GB.toast('⚠️ ' + (j.error || r.status)); GB.sfx('err'); return null; } return j;
     } catch (e) { GB.toast('⚠️ Not connected'); GB.sfx('err'); return null; }
   };
   // 🧩 light groups: which group the buttons control ('' = all of them)
@@ -52,11 +54,68 @@
     if (s.power === false) jobs.push(GB.control({power: true}));
     const dj = s.dj || {};
     if (dj.blackout || dj.building || dj.tap_bpm || dj.cue) jobs.push(GB.post('/api/dj', GB.withGroup({reset: true})));
+    if (s.show && s.show.active) jobs.push(GB.post('/api/shows', {action: 'skip'}));      // 🎬 this song's show sits this play out
+    const ov = s.override || {};
+    if (ov.active || (ov.interlude && ov.interlude.on)) jobs.push(GB.post('/api/override', {release: true, interlude: false}));   // 🚨🎙️ overrides off, interlude over
+    const lp = s.loops || {};
+    if ((lp.running || []).length || lp.rec) jobs.push(GB.post('/api/loops', {stop_all: true}));                     // 🔁 loops stop
     await Promise.all(jobs);
     GB.sfx('ok'); GB.toast('🎵 Back to the music show');
     if (GB.feedsRefresh) GB.feedsRefresh(100);
   };
   GB.release = async () => { if (await GB.control({release: true, lock_effect: null})) GB.toast('🌊 Flowing with the music again'); };
+
+  // ------------------------------------------------------------- 🎛️ Pro DJ: Song Shows, Fader board, Override keys, Loop banks
+  // GB.pro: true / false (null until /api/license answers). GB.proGate(panelEl, feature, opts) swaps a Pro-only panel for an
+  // upgrade card on Home DJ installs and shows a small PRO chip on Pro ones. opts: {pitch, chip:false, preview:true (keep the
+  // panel's content visible, dimmed and read-only, under the card)}. GB.on('pro', fn) follows changes.
+  GB.pro = null; GB.buyPro = 'https://glowbop.com/pricing.html#pro';
+  GB.setPro = (v, lic) => { if (lic && lic.buy_pro) GB.buyPro = lic.buy_pro; v = v !== false; if (GB.pro === v) return; GB.pro = v; document.body.classList.toggle('not-pro', !v); paintRailPro(); GB.emit('pro', v); };
+  GB.loadPro = async () => { try { const r = await GB.get('/api/license'); GB.setPro(r.pro !== false, r); } catch (e) {} };
+  const PRO_LIST = ['Song Shows', 'Fader board', 'Override keys', 'Interlude', 'Loop banks'];
+  GB.proGate = (el, feature, opts) => {
+    opts = opts || {};
+    const card = document.createElement('div'); card.className = 'pro-card'; card.hidden = true;
+    card.innerHTML = `<div class="pro-top"><span class="pro-badge">🔒 Pro DJ</span><b>${GB.esc(feature)}</b></div>
+      <p class="note">${opts.pitch || GB.esc(feature) + ' is part of GlowBop Pro DJ.'}</p>
+      <ul class="pro-list">${PRO_LIST.map(f => `<li class="${f === feature ? 'me' : ''}">${GB.esc(f)}</li>`).join('')}</ul>
+      <button class="btn c wide pro-buy" style="--c:var(--orchid)">${GB.svg('star')}<span>Upgrade to Pro DJ</span></button>
+      <details class="pro-key"><summary>I have a Pro DJ key</summary>
+        <div class="pro-keyrow"><input type="text" placeholder="GBPRO-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Pro DJ key"><button class="btn c" style="--c:var(--orchid)">Unlock</button></div>
+        <p class="note pro-msg"></p></details>`;
+    const ph = el.querySelector(':scope > .ph');
+    if (ph && ph.nextSibling) el.insertBefore(card, ph.nextSibling); else el.appendChild(card);
+    card.querySelector('.pro-buy').onclick = () => { window.open(GB.buyPro, '_blank', 'noopener'); };
+    const inp = card.querySelector('input'), go = card.querySelector('.pro-keyrow .btn'), msg = card.querySelector('.pro-msg');
+    go.onclick = async () => {
+      const k = inp.value.trim(); if (!k) { msg.textContent = 'Paste your Pro DJ key first.'; return; }
+      go.disabled = true; msg.textContent = 'Checking with Polar…';
+      const r = await GB.post('/api/license', {key: k}); go.disabled = false;
+      if (!r) { msg.textContent = 'Not connected to GlowBop.'; return; }
+      msg.textContent = r.message || '';
+      if (r.pro) { GB.sfx('ok'); GB.toast('🎛️ Pro DJ unlocked'); GB.setPro(true, r); GB.emit('license', r); }
+    };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') go.click(); });
+    let chip = null;
+    if (ph && opts.chip !== false) { chip = document.createElement('span'); chip.className = 'pro-chip'; chip.textContent = '🎛️ PRO'; chip.hidden = true;
+      const r = ph.querySelector('.r'); if (r) ph.insertBefore(chip, r); else ph.appendChild(chip); }
+    const paint = () => {
+      const locked = GB.pro === false;
+      card.hidden = !locked; if (chip) chip.hidden = GB.pro !== true;
+      el.classList.toggle('pro-locked', locked && !opts.preview); el.classList.toggle('pro-preview', locked && !!opts.preview);
+      if (opts.onChange) opts.onChange(!locked);
+    };
+    GB.on('pro', paint); paint();
+    return {card, paint};
+  };
+  function paintRailPro() {
+    document.querySelectorAll('#rail button[data-p]').forEach(b => {
+      const pg = PAGES.find(p => p.id === b.dataset.p); if (!pg || !pg.pro) return;
+      let i = b.querySelector('.rail-lock');
+      if (GB.pro !== false) { if (i) i.remove(); return; }                  // Pro: no badge clutter
+      if (!i) { i = document.createElement('i'); i.className = 'rail-lock'; i.textContent = '🔒'; i.setAttribute('aria-label', 'Pro DJ'); b.appendChild(i); }
+    });
+  }
 
   // ------------------------------------------------------------- icons (24x24 paths)
   const ICON = GB.ICON = {
@@ -149,24 +208,36 @@
   }, true);
 
   // ------------------------------------------------------------- pages + rail
+  // the rail, by importance: PERFORM (what you reach for mid-song), VISUALS (everyday looks, most used first), SYSTEM (lights + app)
   const PAGES = GB.PAGES = [
-    {id: 'music', label: 'MUSIC', c: 'var(--pink)', big: 2},
-    {id: 'dj', label: 'DJ', c: 'var(--red)'},
-    {id: 'looks', label: 'LOOKS', c: 'var(--amber)'},
-    {id: 'games', label: 'GAMES', c: 'var(--lime)'},
-    {id: 'scenes', label: 'SCENES', c: 'var(--lav)'},
-    {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)'},
-    {id: 'fire', label: 'FIRE', c: 'var(--orange)'},
-    {id: 'score', label: 'SPORTS', c: 'var(--violet)'},
-    {id: 'feeds', label: 'LIVE', c: 'var(--green)'},
-    {id: 'text', label: 'TEXT', c: 'var(--gold)'},
-    {id: 'setup', label: 'SETUP', c: 'var(--peri)'},
+    {id: 'music', label: 'MUSIC', c: 'var(--pink)', big: 2, g: 'perform'},
+    {id: 'dj', label: 'DJ', c: 'var(--red)', g: 'perform'},
+    {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'perform'},
+    {id: 'ops', label: 'OVERRIDE', c: '#e9e6ff', pro: true, g: 'perform'},
+    {id: 'looks', label: 'LOOKS', c: 'var(--amber)', g: 'visuals'},
+    {id: 'scenes', label: 'SCENES', c: 'var(--lav)', g: 'visuals'},
+    {id: 'fire', label: 'FIRE', c: 'var(--orange)', g: 'visuals'},
+    {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},
+    {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
+    {id: 'score', label: 'SPORTS', c: 'var(--violet)', g: 'visuals'},
+    {id: 'feeds', label: 'LIVE', c: 'var(--green)', g: 'visuals'},
+    {id: 'text', label: 'TEXT', c: 'var(--gold)', g: 'visuals'},
+    {id: 'lights', label: 'LIGHTS', c: 'var(--peri)', g: 'system'},
+    {id: 'setup', label: 'SETUP', c: 'var(--dim)', g: 'system'},
   ];
+  const GROUPS = GB.RAIL_GROUPS = {perform: 'PERFORM', visuals: 'VISUALS', system: 'SYSTEM'};
+  // old or friendly links (#help, #sports, #light ...) land on the right page; values are [page, anchor]
+  const PAGE_ALIAS = {help: ['setup', 'helpPanel'], light: ['lights'], devices: ['lights'], map: ['lights'], groups: ['lights', 'grpPanel'],
+    sports: ['score'], live: ['feeds'], override: ['ops'], license: ['setup']};
   const panels = {};                        // pageId -> [{order, fn}]
   GB.panel = (page, order, fn) => { (panels[page] = panels[page] || []).push({order, fn}); };
   GB.page = 'music';
+  const pageOf = elId => { const a = elId && $(elId), pg = a && a.closest && a.closest('.page'); return pg ? pg.id.slice(3) : null; };
   GB.go = (id, anchor) => {
-    if (!PAGES.some(p => p.id === id)) id = 'music';
+    if (!PAGES.some(p => p.id === id)) {                     // not a page: an alias, or a panel id (#lightsPanel) whose page we find
+      const al = Object.prototype.hasOwnProperty.call(PAGE_ALIAS, id) ? PAGE_ALIAS[id] : null, pg = al ? null : pageOf(id);
+      if (al) { id = al[0]; anchor = anchor || al[1]; } else if (pg) { anchor = anchor || id; id = pg; } else id = 'music';
+    } else if (anchor) { const pg = pageOf(anchor); if (pg && pg !== id) id = pg; }   // a panel that moved pages (e.g. light setup -> LIGHTS)
     GB.page = id; store.set('gb_page', id);
     document.querySelectorAll('#rail button[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === id));
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p.id === 'pg-' + id));
@@ -179,9 +250,13 @@
   };
   function buildPages() {
     const rail = $('rail'), host = $('pages');
-    PAGES.forEach(p => {
-      const b = document.createElement('button'); b.dataset.p = p.id; b.textContent = p.label; b.style.setProperty('--c', p.c);
-      if (p.big) b.style.flexGrow = p.big; b.onclick = () => GB.go(p.id); rail.appendChild(b);
+    PAGES.forEach((p, i) => {
+      if (i && p.g !== PAGES[i - 1].g) {                          // a quiet labelled gap between the PERFORM / VISUALS / SYSTEM groups
+        const sep = document.createElement('div'); sep.className = 'rail-sep'; sep.dataset.g = p.g; sep.setAttribute('aria-hidden', 'true');
+        sep.innerHTML = '<span>' + GROUPS[p.g] + '</span>'; rail.appendChild(sep);
+      }
+      const b = document.createElement('button'); b.dataset.p = p.id; b.dataset.g = p.g; b.textContent = p.label; b.style.setProperty('--c', p.c);
+      b.onclick = () => GB.go(p.id); rail.appendChild(b);          // (MUSIC's bigger key: app.css, #rail button[data-p=music])
       const pg = document.createElement('section'); pg.className = 'page'; pg.id = 'pg-' + p.id; pg.setAttribute('aria-label', p.label); pg.style.setProperty('--c', p.c);
       host.appendChild(pg);
       (panels[p.id] || []).sort((a, b) => a.order - b.order).forEach(({fn}) => {
@@ -309,6 +384,8 @@
   function mode(s, cat) {
     const hol = s.holiday && cat && cat.holidays && cat.holidays[s.holiday];
     if (s.power === false) return {c: 'var(--red)', t: 'Lights off', sub: 'tap Back to music to turn them on', btn: 1};
+    const il = (s.override || {}).interlude;
+    if (il && il.on) return {c: 'var(--lav)', t: '🎙️ Interlude' + (il.look === 'text' && il.text ? ': ' + il.text : ''), sub: (il.auto_started ? 'the music stopped, it comes back by itself' : 'the wall is calm and ignores the music') + ' · tap to bring the show back', btn: 1, il: 1, act: async () => { if (await GB.post('/api/override', {interlude: false})) { GB.sfx('ok'); GB.toast('🎵 Back to the show'); } }};
     if (s.dj && s.dj.blackout) return {c: 'var(--red)', t: '🎧 Blackout', sub: 'DJ mode: the wall is held dark', btn: 1};
     if (s.dj && s.dj.tap_bpm) return {c: 'var(--red)', t: '🎧 DJ tempo ' + s.dj.tap_bpm + ' BPM', sub: 'the show follows your taps', btn: 1};
     const fd = s.feeds || {};
@@ -319,6 +396,8 @@
     if (s.mirror) return {c: 'var(--cyan)', t: 'Screen mirror', sub: ({straight: 'TV style', beat: 'with the beat', ambient: 'ambient glow'}[s.mirror.style] || '') + ' · ' + (s.mirror.area === 'center' ? 'center zoom' : 'smart fill'), btn: 'Stop', act: async () => { if (await GB.control({mirror: null})) GB.toast('🎵 Back to the music show'); }};
     if (hol) return {c: 'var(--cyan)', t: 'Holiday: ' + hol.name + ' ' + hol.emoji, sub: 'only ' + hol.name + ' effects, cycling with the music', btn: 'Stop', act: async () => { if (await GB.control({holiday: null})) GB.toast('🎵 Back to the music show'); }};
     if (s.scene) return {c: 'var(--lav)', t: 'Scene: ' + s.scene.name, sub: `part ${s.scene.segment} of ${s.scene.segments}`, btn: 'Stop', act: async () => { if (await GB.post('/api/scene/stop', {})) GB.toast('🎵 Back to the music show'); }};
+    const so = s.show || {};
+    if (so.active) return {c: 'var(--orchid)', t: '🎬 Song Show: ' + (so.title || 'this song'), sub: (so.pos != null ? GB.fmt(so.pos) + (so.dur ? ' / ' + GB.fmt(so.dur) : '') : 'on the beat') + (so.next ? ' · next: ' + (so.next.what || so.next.lane) + ' ' + GB.fmt(so.next.t) : ''), btn: 1};
     if (s.locked) return {c: 'var(--amber)', t: 'Locked: ' + s.locked, sub: 'the show keeps this effect until you release it', btn: 'Release', act: GB.release};
     if (s.held_look) return {c: 'var(--amber)', t: (s.pinned ? 'Pinned look: ' : 'Look for this song: ') + s.held_look, sub: s.pinned ? 'stays until you release it' : 'shuffle resumes on the next song', btn: 'Release', act: GB.release};
     return {c: 'var(--green)', t: 'Music show · listening', sub: ((s.feeds && (s.feeds.watching || []).length) ? '📡 ' + s.feeds.watching.join(' + ') + ' · ' : '') + (s.shuffle ? 'shuffle on · ' : '') + (s.listening ? 'hearing ' + s.listening.replace(' [Loopback]', '') : 'reacts to whatever is playing')};
@@ -340,7 +419,18 @@
       $('rMore').textContent = [s.part ? 'Part: ' + s.part : '', an.key ? '🎼 ' + an.key : '', an.mood || '', an.known ? '🧠 known song' : '', s.calm > 0.5 ? '🌙 calm' : ''].filter(Boolean).join(' · ');
       const m = mode(s, cat), mb = $('modeBar');
       mb.style.setProperty('--c', m.c); $('mT').textContent = m.t; $('mS').textContent = m.sub;
-      $('mBtn').hidden = !m.btn; modeAct = m.act;
+      $('mBtn').hidden = !m.btn; modeAct = m.act; $('mBtn').firstElementChild.textContent = m.il ? '🎵 Back to the show' : '♫ Back to music';
+      $('mBtn').setAttribute('aria-label', m.il ? 'End the interlude and bring the show back' : 'Turn it off and go back to the music show'); $('mBtn').dataset.il = m.il ? '1' : '';
+      if (s.pro !== undefined) GB.setPro(s.pro);
+      const fd = s.faders || {}, fc = $('mFad'), nUp = (fd.away || []).length + (fd.flash || []).length;
+      if (fc) { fc.hidden = !(fd.active && GB.pro !== false); if (!fc.hidden) {
+        fc.innerHTML = '<span class="ic2">🎚️</span><span class="w">FADERS</span><b>' + ((fd.flash || []).length ? 'HOLD' : nUp) + '</b>';
+        fc.setAttribute('aria-label', 'Fader board: ' + (fd.away || []).join(', ') + ' away from default. Open it.'); fc.title = 'Faders away from default: ' + (fd.away || []).join(', '); } }
+      const ov = s.override || {}, oc = $('mOvr');                   // 🚨 OVERRIDE ACTIVE: one tap releases them all
+      if (oc) { oc.hidden = !(ov.active && GB.pro !== false); if (!oc.hidden) {
+        const nm = (ov.keys || []).filter(k => k.on).map(k => k.label);
+        oc.innerHTML = '<span>⛔</span><span>OVERRIDE<span class="w2"> ACTIVE</span></span><b>' + nm.length + '</b>';
+        oc.setAttribute('aria-label', 'Override active: ' + nm.join(', ') + '. Tap to release all.'); oc.title = 'Override active: ' + nm.join(', ') + '. Tap to release all.'; } }
       renderGroups();
       GB.emit('status', s);
     } catch (e) {}
@@ -424,8 +514,10 @@
     });
     $('wFull').onclick = () => GB.setFull(true);
     $('wMirror').onclick = () => GB.go('scenes', 'mirrorPanel');
-    $('wMap').onclick = () => GB.go('setup', 'lightsPanel');
-    $('mBtn').onclick = () => GB.backToMusic();
+    $('wMap').onclick = () => GB.go('lights');                     // 💡 the LIGHTS page: find, group, arrange and map your lights
+    $('mBtn').onclick = () => ($('mBtn').dataset.il && modeAct) ? modeAct() : GB.backToMusic();
+    if ($('mOvr')) $('mOvr').onclick = async () => { if (GB.overrideRelease) return GB.overrideRelease(); if (await GB.post('/api/override', {release: true})) GB.toast('✅ Overrides released'); };
+    if ($('mFad')) $('mFad').onclick = () => GB.go('dj', 'fdPanel');
     document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && FULL) GB.setFull(false); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && FULL) GB.setFull(false); });
     let rz = null; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (PV.length) drawSetup(PV); }, 80); });
@@ -435,7 +527,7 @@
     const want = (location.hash || '').slice(1) || store.get('gb_page', 'music');
     GB.go(want);
     document.querySelectorAll('input[type=range]').forEach(GB.paintRange);
-    loadCatalog(); statusLoop(); frameLoop();
+    loadCatalog(); statusLoop(); frameLoop(); GB.loadPro(); GB.on('license', r => GB.setPro(r && r.pro, r));
     let uiv = null;                                               // 🔄 app files updated on the laptop? reload (unless you're typing)
     const verCheck = async () => { try { const v = (await GB.get('/api/uiver')).v;
       if (uiv == null) uiv = v; else if (v && v !== uiv) { const a = document.activeElement;

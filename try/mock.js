@@ -533,7 +533,7 @@
     const sc = S.scene ? {name: S.scene.name, segment: S.scene.i + 1, segments: S.scene.segs.length, effects: [S.scene.effects[S.scene.i]]} : null;
     return {bpm: DJ.tap_bpm || BPM, section: si.name, look: S.look, holiday: S.holiday, mirror: null, part: PARTS[si.name] + ' ' + (1 + (si.k >> 2) % 3),
       effect: src.label || S.effect, energy: si.name === 'drop' ? .86 : si.name === 'break' ? .32 : .58, transform: 'none', trail: .4, sparkle: .2,
-      brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, scoreboard: !!SB.s.on, fireplace: fp,
+      brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, pro: false, scoreboard: !!SB.s.on, fireplace: fp,
       feeds: {mode: fd.mode, title: fd.mode !== 'off' ? fd.feeds[fd.mode].title : '', watching: w, alert: FD.alert ? FD.alert.event : ''}, dj: djInfo(),
       shuffle: S.shuffle, characters: S.characters, held_look: S.held, pinned: S.pinned, calm: si.name === 'break' ? .6 : .2, grand: si.name === 'drop' ? .8 : .3,
       level: Math.round(lvl * 100) / 100, sparkles: S.sparkles, pace: S.pace, scene: sc, text: TX.s.show,
@@ -586,7 +586,7 @@
           devices: DEVS.map(d => ({id: d.id, name: d.name, x0: d.x0, x1: d.x0 + 19, y0: 0, y1: H - 1}))}]}};
         case '/api/frame': { const rgb = paint(); return {json: {w: W, h: H, rgb: rgb.match(/.{6}/g)}}; }
         case '/api/uiver': return {json: {v: 1}};
-        case '/api/license': return {json: {licensed: true, owner: false, key: 'GLOWBOP-DEMO', message: ''}};
+        case '/api/license': return {json: {licensed: true, owner: false, pro: false, plan: 'home', key: 'GLOWBOP-DEMO', message: '', buy: '/pricing.html', buy_pro: '/pricing.html#pro'}};
         case '/api/link': return {json: {link: 'http://192.168.0.42:8787'}};
         case '/api/lights': return {json: lightsInfo()};
         case '/api/music': return {json: musicState()};

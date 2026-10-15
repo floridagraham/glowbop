@@ -1,6 +1,8 @@
-/* GlowBop console: SETUP page.
-   Light setup (devices, groups, scan, add, layout, map, line-up wizard, camera mapping), license, song lookup,
-   phone remote, help & feedback, quit. Same engine endpoints and bodies as the old remote. */
+/* GlowBop console: the LIGHTS page and the SETUP page.
+   LIGHTS: your lights (find, add, flash, on/off, rename, remove, overlap, Bluetooth follow mode), light groups,
+   layout & shape (canvas / zones, flat / cylinder / box / globe, the Earth), line-up wizard, camera mapping.
+   SETUP: license, share the remote, something not working, help & feedback, song lookup, quit (+ screen, sounds, text size
+   from awake.js / sfx.js / below). Same engine endpoints and bodies as the old remote. */
 (function () {
   'use strict';
   const {$} = GB, esc = GB.esc;
@@ -78,16 +80,24 @@
     };
   };
 
-  // =================================================================== 1. LIGHT SETUP
+  // =================================================================== 1. LIGHTS page (was the top of SETUP)
   let LS = null, lsDirty = false, GE = null, renaming = null, camStream = null;
 
-  GB.panel('setup', 10, el => {
+  const applyRow = first => `<div class="row su-apply"${first ? ' id="suApply"' : ''} hidden><button class="btn c lg wide"${first ? ' id="suApplyBtn"' : ''} data-suapply style="--c:var(--amber)">${lbl('power', 'Apply & restart lights')}</button></div>`;
+  const showApply = () => document.querySelectorAll('.su-apply').forEach(r => r.hidden = !lsDirty);
+  document.addEventListener('click', async e => {
+    if (!e.target.closest || !e.target.closest('[data-suapply]')) return;
+    if (await GB.post('/api/lights/apply', {})) { GB.toast('🔄 Restarting the lights with your new setup…'); lsDirty = false; showApply(); setTimeout(loadLights, 9000); }
+  });
+
+  // 💡 1a. your lights: the list + find / add
+  GB.panel('lights', 10, el => {
     el.id = 'lightsPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--peri)');
     el.innerHTML = `
-      <div class="ph"><span>Light setup</span><span class="r" id="suCount"></span></div>
-      <p class="note">Find, add and map Twinkly, WLED and Govee lights, plus Surplife curtains and DayBetter strips over Bluetooth.</p>
+      <div class="ph"><span>Your lights</span><span class="r" id="suCount"></span></div>
+      <p class="note">Find and add Twinkly, WLED and Govee lights, plus Surplife curtains and DayBetter strips over Bluetooth.</p>
       <div class="list" id="suList"><p class="note">Loading…</p></div>
-      <div class="row" id="suApply" hidden><button class="btn c lg wide" id="suApplyBtn" style="--c:var(--amber)">${lbl('power', 'Apply & restart lights')}</button></div>
+      ${applyRow(true)}
 
       <div class="sub">Add lights</div>
       <div class="seg"><button class="btn c" id="suScan" style="--c:var(--cyan)">${lbl('search', 'Find my lights')}</button><button class="btn" id="suAddBtn">${lbl('add', 'Add by brand')}</button></div>
@@ -97,13 +107,35 @@
         <div class="su-addrow"><input type="search" id="suIp" placeholder="IP address, e.g. 192.168.0.50" aria-label="IP address" autocapitalize="off" spellcheck="false"><button class="btn c" id="suAddGo" style="--c:var(--cyan)">Add</button></div>
         <p class="note" id="suHelp"></p>
       </div>
+      <p class="note">Lights a beat behind a Bluetooth speaker? Set <a href="#music" id="suSyncGo"><b>Sync delay</b></a> on the MUSIC page while a song plays. It is saved per speaker.</p>`;
+    $('suScan').onclick = scan;
+    $('suAddBtn').onclick = () => { const a = $('suAdd'); a.hidden = !a.hidden; $('suAddBtn').classList.toggle('on', !a.hidden); $('suHelp').textContent = HELP[$('suBrand').value]; };
+    $('suBrand').onchange = () => $('suHelp').textContent = HELP[$('suBrand').value];
+    $('suAddGo').onclick = async () => {
+      const ip = $('suIp').value.trim(); if (!ip) return GB.toast('Type the light\'s IP address');
+      GB.toast('Checking ' + ip + '…');
+      if (await GB.post('/api/lights/add', {type: $('suBrand').value, ip})) { lsDirty = true; GB.toast('💡 Added'); $('suIp').value = ''; loadLights(); }
+    };
+    $('suIp').addEventListener('keydown', e => { if (e.key === 'Enter') $('suAddGo').click(); });
+    $('suSyncGo').onclick = e => { e.preventDefault(); GB.go('music', 'shDelay'); };
+  });
 
-      <div class="sub">Light groups</div>
+  // 🧩 1b. light groups
+  GB.panel('lights', 20, el => {
+    el.id = 'grpPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
+    el.innerHTML = `<div class="ph"><span>Light groups</span></div>
       <p class="note">Each group runs its own show.</p>
       <div class="seg"><button class="btn" id="suAll">${lbl('lists', 'All together')}</button><button class="btn" id="suEach">${lbl('shuffle', 'Each separate')}</button></div>
       <div id="suGrp" class="su-box"></div>
+      ${applyRow(false)}`;
+    $('suAll').onclick = () => { if (!LS) return; GE = {}; LS.devices.forEach(d => GE[d.id] = {g: 1}); saveGroups(); };
+    $('suEach').onclick = () => { if (!LS) return; GE = {}; LS.devices.slice(0, 4).forEach((d, i) => { GE[d.id] = {g: i + 1}; GE['_n' + (i + 1)] = d.name; }); LS.devices.slice(4).forEach(d => GE[d.id] = {g: 4}); saveGroups(); };
+  });
 
-      <div class="sub">Layout</div>
+  // 🗺️ 1c. layout + shape (flat wall, or wrapped round a cylinder / box / globe)
+  GB.panel('lights', 30, el => {
+    el.id = 'layoutPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
+    el.innerHTML = `<div class="ph"><span>Layout &amp; shape</span></div>
       <div class="seg"><button class="btn" data-sulay="canvas">One canvas</button><button class="btn" data-sulay="zones">Zones</button></div>
       <p class="note" id="suLayNote"></p>
       <canvas id="lsMap" class="su-map" width="400" height="420" aria-label="Map of where every light sits"></canvas>
@@ -115,8 +147,15 @@
         <label class="field" id="suLidRow" hidden>Curtain on top (lid)<select id="suLid"></select></label>
         <p class="note" id="suShapeTip"></p>
         <button class="btn c wide" id="suEarth" style="--c:var(--cyan)">🌍 Spin the real Earth</button>
-      </div>
-      <div class="sub">Line up my curtains</div>
+      </div>`;
+    el.querySelectorAll('[data-sulay]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/layout', {layout: b.dataset.sulay})) { GB.toast(b.textContent); loadLights(); } });
+  });
+
+  // 🧭 1d. line-up wizard
+  GB.panel('lights', 40, el => {
+    el.id = 'lineupPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
+    el.innerHTML = `<div class="ph"><span>Line up my curtains</span></div>
+      <p class="note">Turn, flip and order your curtains so pictures and words read the right way across the wall.</p>
       <button class="btn c wide" id="suLuStart" style="--c:var(--lav)">${lbl('map', 'Line up my curtains')}</button>
       <div id="suLu" class="su-inset su-lu" hidden>
         <p class="note"><b>1.</b> Every curtain now shows its number and an arrow. <b>2.</b> Tap ⟳ / ⇋ until each arrow points <b>up</b> and the number reads right. <b>3.</b> Put them in the order they hang with ▲ ▼. <b>4.</b> Tap Lock.</p>
@@ -130,9 +169,18 @@
         </div>
         <div id="suLuList" class="list"></div>
         <div class="seg"><button class="btn" id="suLuCancel">Cancel</button><button class="btn c" id="suLuLock" style="--c:var(--lav)">${lbl('unlock', 'Lock')}</button></div>
-      </div>
+      </div>`;
+    $('suLuStart').onclick = async () => { if (await GB.post('/api/lights/lineup', {on: true})) { GB.toast('🧭 Look at your curtains: numbers + arrows'); loadLights(); } };
+    $('suLuCancel').onclick = async () => { if (await GB.post('/api/lights/lineup', {on: false})) loadLights(); };
+    el.querySelectorAll('[data-sulua]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/arrange', {order: luOrder().map(x => x.d.id), how: b.dataset.sulua})) loadLights(); });
+    $('suLuLock').onclick = async () => { if (await GB.post('/api/lights/lock', {})) { GB.toast('🔒 Locked! Restarting the show for the new layout…'); setTimeout(loadLights, 6000); } };
+  });
 
-      <div class="sub">Map with camera</div>
+  // 📷 1e. camera mapping
+  GB.panel('lights', 50, el => {
+    el.id = 'camPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--peri)');
+    el.innerHTML = `<div class="ph"><span>Map with camera</span></div>
+      <p class="note">Point a phone or iPad camera at your lights and GlowBop works out where every bulb really sits. Best for strings and hand-hung lights.</p>
       <button class="btn c wide" id="suMapGo" style="--c:var(--peri)">${lbl('camera', 'Map with camera')}</button>
       <p class="note" id="suHttps" hidden></p>
       <div id="suCam" class="su-inset" hidden>
@@ -141,31 +189,11 @@
         <p class="note" id="suCamMsg"></p>
         <div class="seg"><button class="btn" id="suCamCancel">Cancel</button><button class="btn c" id="suCamStart" style="--c:var(--green)">${lbl('play', 'Start mapping')}</button></div>
       </div>`;
-
-    $('suAll').onclick = () => { if (!LS) return; GE = {}; LS.devices.forEach(d => GE[d.id] = {g: 1}); saveGroups(); };
-    $('suEach').onclick = () => { if (!LS) return; GE = {}; LS.devices.slice(0, 4).forEach((d, i) => { GE[d.id] = {g: i + 1}; GE['_n' + (i + 1)] = d.name; }); LS.devices.slice(4).forEach(d => GE[d.id] = {g: 4}); saveGroups(); };
-    el.querySelectorAll('[data-sulay]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/layout', {layout: b.dataset.sulay})) { GB.toast(b.textContent); loadLights(); } });
-    $('suScan').onclick = scan;
-    $('suAddBtn').onclick = () => { const a = $('suAdd'); a.hidden = !a.hidden; $('suAddBtn').classList.toggle('on', !a.hidden); $('suHelp').textContent = HELP[$('suBrand').value]; };
-    $('suBrand').onchange = () => $('suHelp').textContent = HELP[$('suBrand').value];
-    $('suAddGo').onclick = async () => {
-      const ip = $('suIp').value.trim(); if (!ip) return GB.toast('Type the light\'s IP address');
-      GB.toast('Checking ' + ip + '…');
-      if (await GB.post('/api/lights/add', {type: $('suBrand').value, ip})) { lsDirty = true; GB.toast('💡 Added'); $('suIp').value = ''; loadLights(); }
-    };
-    $('suIp').addEventListener('keydown', e => { if (e.key === 'Enter') $('suAddGo').click(); });
-    $('suApplyBtn').onclick = async () => { if (await GB.post('/api/lights/apply', {})) { GB.toast('🔄 Restarting the lights with your new setup…'); lsDirty = false; $('suApply').hidden = true; setTimeout(loadLights, 9000); } };
-    // line-up wizard
-    $('suLuStart').onclick = async () => { if (await GB.post('/api/lights/lineup', {on: true})) { GB.toast('🧭 Look at your curtains: numbers + arrows'); loadLights(); } };
-    $('suLuCancel').onclick = async () => { if (await GB.post('/api/lights/lineup', {on: false})) loadLights(); };
-    el.querySelectorAll('[data-sulua]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/arrange', {order: luOrder().map(x => x.d.id), how: b.dataset.sulua})) loadLights(); });
-    $('suLuLock').onclick = async () => { if (await GB.post('/api/lights/lock', {})) { GB.toast('🔒 Locked! Restarting the show for the new layout…'); setTimeout(loadLights, 6000); } };
-    // camera mapping
     $('suMapGo').onclick = camOpen;
     $('suCamCancel').onclick = async () => { await GB.post('/api/map/cancel', {}); stopCam(); };
     $('suCamStart').onclick = camRun;
-    loadLights();
   });
+  GB.on('ready', () => loadLights());
 
   async function loadLights() {
     try { LS = await GB.get('/api/lights'); } catch (e) { return setTimeout(loadLights, 3000); }
@@ -218,10 +246,10 @@
     });
     document.querySelectorAll('[data-sulay]').forEach(b => { b.classList.toggle('on', b.dataset.sulay === LS.layout); b.style.setProperty('--c', 'var(--peri)'); });
     $('suLayNote').textContent = LS.layout === 'zones' ? 'Zones: every light shows the whole effect on its own, all on the same beat.' : 'One canvas: all your lights together make one big picture, effects flow across them.';
-    $('suApply').hidden = !lsDirty;
+    showApply();
     drawLsMap(); renderLineup(); renderShape();
   }
-  GB.on('page', id => { if (id === 'setup' && LS && !renaming && !camStream) loadLights(); });
+  GB.on('page', id => { if (id === 'lights' && LS && !renaming && !camStream) loadLights(); });
 
   // 🧭 line-up wizard: number + arrow on every curtain, rotate / flip / order, lock
   function luOrder() { const ax = (LS.arrange || 'row') === 'stack' ? 1 : 0;
@@ -265,7 +293,7 @@
       if (LS.arrange === 'overlap' && pos > 0) ovRows(r, d, ord[0].d.id);
       box.appendChild(r);
     });
-    if (!ord.length) box.innerHTML = '<p class="note">No grid curtains yet (Twinkly curtains or Surplife Bluetooth curtains). Add them above first.</p>';
+    if (!ord.length) box.innerHTML = '<p class="note">No grid curtains yet (Twinkly curtains or Surplife Bluetooth curtains). Add them under Your lights first.</p>';
   }
 
   document.addEventListener('click', async e => {                     // 🌍 the real Earth turning on the wall (best wrapped round a globe or cylinder)
@@ -433,15 +461,31 @@
   // =================================================================== 2. LICENSE
   async function licLoad() {
     try { const r = await GB.get('/api/license');
-      $('suLicInfo').textContent = r.owner ? 'Owner copy: no key needed.' : r.licensed ? `Active on this computer (${r.key}).` : 'Not unlocked yet.';
+      $('suLicInfo').textContent = r.owner ? 'Owner copy: no key needed.' : r.licensed ? `${r.pro ? '🎛️ Pro DJ' : '🏠 Home DJ'} active on this computer (${r.key}).${r.pro ? '' : ' Want Song Shows, faders, override keys and interlude? Paste a Pro DJ key below, or get one at glowbop.com/pricing.'}` : 'Not unlocked yet.';
       $('suLicRow').hidden = !(!r.owner && r.licensed);
+      const kb = $('suLicKeyBox'); kb.hidden = !!r.owner;
+      $('suLicKeySum').textContent = !r.licensed ? 'Enter a license key' : r.pro ? 'Replace my license key' : 'Upgrade: paste a Pro DJ key';
+      if (r.licensed && !r.pro && !kb.dataset.seen) { kb.dataset.seen = '1'; kb.open = true; }
     } catch (e) {}
   }
   GB.panel('setup', 20, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--gold)');
     el.innerHTML = `<div class="ph"><span>License</span></div>
       <p class="note su-now" id="suLicInfo" style="color:var(--text)">–</p>
+      <details class="pro-key" id="suLicKeyBox" hidden><summary id="suLicKeySum">Enter a license key</summary>
+        <div class="pro-keyrow"><input type="text" id="suLicKey" placeholder="GBPRO-XXXX or GLOWBOP-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="License key"><button class="btn c" id="suLicGo" style="--c:var(--gold)">Use key</button></div>
+        <p class="note pro-msg" id="suLicMsg">A Pro DJ key unlocks Song Shows, the Fader board, Override keys and Interlude. It replaces the key on this computer.</p></details>
       <div id="suLicRow" hidden><button class="btn wide" id="suLicRemove">${lbl('unlock', 'Move my license to another computer')}</button></div>`;
+    const go = $('suLicGo'), inp = $('suLicKey'), msg = $('suLicMsg');
+    go.onclick = async () => {                                     // 🔑 same POST /api/license as the Pro DJ upgrade card
+      const k = inp.value.trim(); if (!k) { msg.textContent = 'Paste your key first.'; return; }
+      go.disabled = true; msg.textContent = 'Checking with Polar…';
+      const r = await GB.post('/api/license', {key: k}); go.disabled = false;
+      if (!r) { msg.textContent = 'Not connected to GlowBop.'; return; }
+      msg.textContent = r.message || '';
+      if (r.licensed) { inp.value = ''; GB.sfx('ok'); GB.toast(r.pro ? '🎛️ Pro DJ unlocked' : '🔑 Key saved'); GB.setPro(!!r.pro, r); GB.emit('license', r); }
+    };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') go.click(); });
     const b = $('suLicRemove'), idle = b.innerHTML;
     twice(b, 'Tap again to remove it from this computer', idle, async () => { await GB.post('/api/license', {remove: true}); GB.toast('License removed from this computer'); licLoad(); });
     licLoad();
@@ -449,7 +493,7 @@
   GB.on('license', licLoad);
 
   // =================================================================== 3. SONG LOOKUP
-  GB.panel('setup', 30, el => {
+  GB.panel('setup', 58, el => {                                  // niche, so it sits low on SETUP
     el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
     el.innerHTML = `<div class="ph"><span>Song lookup</span></div>
       <p class="note">Genre, tempo and key from the song's name.</p>
