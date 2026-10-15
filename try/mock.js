@@ -74,7 +74,7 @@
   function clock() { const t = now(); beatPos += (t - lastClock) * (DJ.tap_bpm || BPM) / 60; lastClock = t; return beatPos; }
   const SECS = ['groove', 'build', 'drop', 'break'];
   function sectionInfo() {
-    const b = clock(), bars = {chill: 16, normal: 8, hype: 4}[S.pace] || 8, k = Math.floor(b / 4 / bars);
+    clock(); const b = songPos() * BPM / 60, bars = {chill: 16, normal: 8, hype: 4}[S.pace] || 8, k = Math.floor(b / 4 / bars);   // the playing song's own bars
     if (DJ.build != null) return {name: 'build', k};
     if (forceSec && now() < forceSec.until) return {name: forceSec.name, k};
     return {name: SECS[k % 4], k};
@@ -134,17 +134,17 @@
   // ======================================================================= 🎧 DJ mode (same engine as the website's demo console)
   const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null};
   function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null}); }
-  function djFire(a) {
+  function djFire(a, beats, cue) {
     const P = DJ.parts;
     if (a === 'drop') {
       DJ.flash = 1; DJ.black = false; DJ.rings.push({x: W / 2, y: H / 2, r: 0, c: [255, 255, 255]});
       for (let i = 0; i < 70; i++) { const an = R() * 6.283, sp = 8 + R() * 22; P.push({x: W / 2, y: H / 2, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 0, c: pickOne([[255, 61, 154], [51, 214, 255], [255, 204, 102], [155, 61, 255]])}); }
       forceSec = {name: 'drop', until: now() + 8};
       if (DJ.cue) { setLook(DJ.cue, false); DJ.cue = null; S.feature = {clip: lookClip(S.look), name: S.look, until: 0}; }
-      else { const c = pickOne(SPECTACLE); S.feature = {clip: c, name: titleOf(c), until: now() + 24}; }
+      else if (!cue) { const c = pickOne(SPECTACLE); S.feature = {clip: c, name: titleOf(c), until: now() + 24}; }
     }
     if (a === 'flash') DJ.flash = 1;
-    if (a === 'strobe') DJ.strobe = now() + 4 * 60 / (DJ.tap_bpm || BPM);
+    if (a === 'strobe') DJ.strobe = Math.max(DJ.strobe, now() + (beats || 4) * 60 / (DJ.tap_bpm || BPM));
     if (a === 'fire') { for (let i = 0; i < 90; i++) { const an = -Math.PI / 2 + (R() - .5) * 1.6, sp = 10 + R() * 20; P.push({x: W / 2 + (R() - .5) * 6, y: H - 1, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 9, c: pickOne([[255, 90, 0], [255, 190, 30], [255, 40, 0], [255, 240, 160]])}); }
       DJ.rings.push({x: W / 2, y: H - 1, r: 0, c: [255, 120, 0]}); }
     if (a === 'confetti') { for (const side of [0, W - 1]) for (let i = 0; i < 40; i++) { const an = -Math.PI / 2 + (side ? -1 : 1) * (.45 + R() * .5), sp = 16 + R() * 12;
@@ -377,13 +377,13 @@
   }
 
   // ======================================================================= 🎵 music: GlowBop's own player, playing pretend songs
-  const SONGS = [['Neon Summer (Demo Mix)', 'The Glow Ups', 224, 'Neon Party'], ['Midnight Circuit', 'Pixel Hearts', 201, 'Synthwave'], ['Bass Lanterns', 'DJ Lumen', 238, 'Warehouse Rave'],
-    ['Velvet Laser', 'Aurora Club', 212, 'Club Rig'], ['Starlight Freeway', 'Synth Coast', 196, 'Deep Space'], ['Heatwave Hands Up', 'Bop Machine', 187, 'Mainstage'],
-    ['Ocean Drive Lights', 'Miami Pulse', 205, 'Big Wave'], ['After Hours Arcade', 'Retro Pilots', 179, 'Retro Arcade']];
-  const track = (x, i) => ({id: 'demo' + i, title: x[0], artist: x[1], dur: x[2], artist_id: 'artist' + i, look: x[3]});
+  const SONGS = [['Neon Summer (Demo Mix)', 'The Glow Ups', 224, 'Neon Party', 124], ['Midnight Circuit', 'Pixel Hearts', 201, 'Synthwave', 118], ['Bass Lanterns', 'DJ Lumen', 238, 'Warehouse Rave', 128],
+    ['Velvet Laser', 'Aurora Club', 212, 'Club Rig', 122], ['Starlight Freeway', 'Synth Coast', 196, 'Deep Space', 110], ['Heatwave Hands Up', 'Bop Machine', 187, 'Mainstage', 128],
+    ['Ocean Drive Lights', 'Miami Pulse', 205, 'Big Wave', 120], ['After Hours Arcade', 'Retro Pilots', 179, 'Retro Arcade', 126]];
+  const track = (x, i) => ({id: 'demo' + i, title: x[0], artist: x[1], dur: x[2], artist_id: 'artist' + i, look: x[3], bpm: x[4]});
   const M = {queue: SONGS.map(track), idx: 0, pos: 37, playing: true, volume: 70, party: false, sleep_at: 0, crossfade: 6, source: 'Demo mix', recent: []};
   function songChanged() {
-    const t = M.queue[M.idx]; M.pos = 0; M.recent = [t].concat(M.recent.filter(x => x.id !== t.id)).slice(0, 8);
+    const t = M.queue[M.idx]; M.pos = 0; M.posAt = now(); BPM = songBpm(t); knowSong(t); M.recent = [t].concat(M.recent.filter(x => x.id !== t.id)).slice(0, 8);
     if (!S.pinned) { S.held = null; if (S.shuffle) S.look = t.look && CAT.looks[t.look] ? t.look : S.look; S.lookK = 0; }
   }
   function musicState() { const t = M.queue[M.idx] || null, lo = Math.max(0, M.idx - 3);
@@ -397,10 +397,10 @@
       ({id: 'q' + slug(w) + i, title: tt, artist: pickOne(['The Glow Ups', 'Pixel Hearts', 'DJ Lumen', 'Aurora Club']), dur: 170 + i * 13, artist_id: 'artist' + (i % 4)})); }
   function musicCmd(b) {
     const a = b.action, t = b.track;
-    if (a === 'toggle') M.playing = !M.playing;
+    if (a === 'toggle') { M.pos = songPos(); M.posAt = now(); M.playing = !M.playing; }
     else if (a === 'next') { M.idx = (M.idx + 1) % M.queue.length; songChanged(); M.playing = true; }
     else if (a === 'prev') { if (M.pos > 5) M.pos = 0; else { M.idx = (M.idx - 1 + M.queue.length) % M.queue.length; songChanged(); } }
-    else if (a === 'seek') M.pos = clamp(+b.pos || 0, 0, (M.queue[M.idx] || {}).dur || 0);
+    else if (a === 'seek') { M.pos = clamp(+b.pos || 0, 0, (M.queue[M.idx] || {}).dur || 0); M.posAt = now(); }
     else if (a === 'volume') M.volume = clamp(+b.volume || 0, 0, 100);
     else if (a === 'shuffle') { const cur = M.queue[M.idx], rest = M.queue.filter((x, i) => i !== M.idx).sort(() => R() - .5); M.queue = [cur].concat(rest); M.idx = 0; }
     else if (a === 'party') M.party = !!b.on;
@@ -428,10 +428,565 @@
   const DEV_ON = {};
   function lightsInfo() {
     const pts = DEVS.map(d => { const x = [], y = []; for (let r = 0; r < H; r++) for (let c = 0; c < 20; c++) { x.push(d.x0 + c); y.push(r); } return {id: d.id, x, y, group: 'g1'}; });
-    return {layout: 'canvas', canvas: [W, H], https: '', locked: true, arrange: 'row', grid_shape: null, shape: null, lineup: false, mapping: false, points: pts,
+    return {layout: 'canvas', canvas: [W, H], https: '', locked: true, arrange: 'row', grid_shape: null, shape: null, lineup: LINEUP.on, mapping: false, points: pts,
       groups: [{id: 'g1', name: 'Main', w: W, h: H, layout: 'canvas', devices: DEVS.map(d => d.id)}],
       devices: DEVS.map(d => ({id: d.id, type: 'twinkly', brand: 'Twinkly', ip: d.ip, name: d.name, n: 420, enabled: DEV_ON[d.id] !== false, mapped: false, grid: true, connected: true,
         orient: {rot: 0, flip: false}, place: null, pos: [d.x0, 0], gw: 20, gh: H, is_grid: true, overlap_on: null, overlap: 'xy', overlap_at: 'center'}))};
+  }
+
+  // ======================================================================= 🎛️ Pro DJ: the demo is a Pro DJ install (fader board, override keys, loops, Song Shows)
+  const HOLD = 1.2;                                                 // momentary keys let go by themselves this long after their last refresh
+  const curBpm = () => DJ.tap_bpm || BPM;
+  const bad = m => { const e = new Error(m); e.bad = true; return e; };
+  const num = (x, d) => { const v = Number(x); return isFinite(v) ? v : d; };
+  const mix = (a, b, k) => a + (b - a) * k;
+  function palAt(cols, u) { u = ((u % 1) + 1) % 1; const n = cols.length, f = u * n, i = Math.floor(f) % n, k = f - Math.floor(f), a = cols[i], b = cols[(i + 1) % n]; return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; }
+  const lookCols = n => ((ENG.look_colors || {})[n] || ['#ff3d9a', '#33d6ff', '#9b3dff']).map(hexRGB);
+  const lum3 = (b, i) => Math.max(b[i], b[i + 1], b[i + 2]);
+
+  // ----------------------------------------------------------------------- 🎚️ fader board (faders.py)
+  const FDEF = {master: 100, speed: 1, strobe: 0, color: 0, white: 0, trails: 0};
+  const FRANGE = {master: [0, 100], speed: [0.25, 3], strobe: [0, 100], color: [0, 100], white: [0, 100], trails: [0, 100]};
+  const FFLASH = ['master', 'speed', 'strobe', 'color', 'white', 'trails'];
+  const FA = {v: Object.assign({}, FDEF), flash: {}, rev: 0, prev: null, frozen: null};
+  const fHeld = k => (FA.flash[k] || 0) > wall();
+  const fAway = () => Object.keys(FDEF).filter(k => Math.abs(FA.v[k] - FDEF[k]) > 1e-6);
+  const colorHue = v => (Math.max(1, v) - 1) / 99 * 0.92;
+  const hueRGB = h => { h = (((h % 1) + 1) % 1) * 6; return [clamp(Math.abs(h - 3) - 1, 0, 1), clamp(2 - Math.abs(h - 2), 0, 1), clamp(2 - Math.abs(h - 4), 0, 1)]; };
+  function strobeDiv(v, bpm) { if (v <= 0) return 0; let d = [1, 2, 4, 8][Math.min(3, Math.floor((v - 1e-9) / 25))];
+    while (d > 1 && 60 / Math.max(40, bpm) / d < 3 / 40) d >>= 1; return d; }
+  function fadersInfo() {
+    const v = FA.v, away = fAway(), fl = FFLASH.filter(fHeld);
+    return {values: Object.assign({}, v), defaults: Object.assign({}, FDEF), away, pro: true, active: !!(away.length || fl.length), flash: fl, rev: FA.rev,
+      strobe_rate: v.strobe > 0 ? {1: '1 BEAT', 2: '1/2 BEAT', 4: '1/4 BEAT', 8: '1/8 BEAT'}[strobeDiv(v.strobe, curBpm())] : null,
+      color_hex: v.color > 0 ? '#' + hueRGB(colorHue(v.color)).map(c => HEX[Math.round(c * 255)]).join('') : null};
+  }
+  function fadersSet(b) {
+    const changed = [], v = Object.assign({}, FA.v), r = b.reset;
+    if (r === true || r === 'all') { Object.assign(v, FDEF); FA.flash = {}; changed.push('reset'); }
+    else if (typeof r === 'string' && r in FDEF) { v[r] = FDEF[r]; changed.push(r); }
+    Object.entries(FRANGE).forEach(([k, [lo, hi]]) => { if (b[k] == null) return; const x = Number(b[k]);
+      if (!isFinite(x)) throw bad(`${k}: a number from ${lo} to ${hi}`); v[k] = Math.round(clamp(x, lo, hi) * 1000) / 1000; changed.push(k); });
+    if (b.flash != null) { if (!FFLASH.includes(b.flash)) throw bad('flash: ' + FFLASH.join(', '));
+      if (b.on !== false) FA.flash[b.flash] = wall() + HOLD; else delete FA.flash[b.flash]; changed.push('flash:' + b.flash); }
+    if (!changed.length) throw bad('send fader values (' + Object.keys(FDEF).join(', ') + '), reset or flash');
+    FA.v = v; FA.rev++; return changed;
+  }
+  const fSpeed = () => fHeld('speed') ? Math.min(4, FA.v.speed * 2) : FA.v.speed;
+  const fMaster = () => fHeld('master') ? 0 : FA.v.master >= 100 ? 1 : Math.pow(FA.v.master / 100, 1.6);
+  function fadersLook(buf, t, busy) {                               // TRAILS -> COLOR -> WHITE -> STROBE (music show, DJ, Song Show only)
+    if (busy) { FA.prev = FA.frozen = null; return; }
+    const v = FA.v, n = buf.length;
+    if (fHeld('trails')) { if (!FA.frozen) FA.frozen = buf.slice(); else buf.set(FA.frozen); } else FA.frozen = null;
+    const w = v.trails / 100;
+    if (w > 0) { const p = FA.prev; if (p) { const k = 0.6 + 0.37 * w; for (let i = 0; i < n; i++) buf[i] = Math.max(buf[i], p[i] * k); } FA.prev = buf.slice(); } else FA.prev = null;
+    const c = v.color, rb = fHeld('color');
+    if (c > 0 || rb) { const tint = rb ? null : hueRGB(colorHue(c));
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, l = lum3(buf, i), tn = tint || hueRGB(x / W + y / H * 0.35 + t * 0.6);
+        for (let ch = 0; ch < 3; ch++) buf[i + ch] = l * tn[ch] * 0.88 + buf[i + ch] * 0.12; } }
+    if (fHeld('white')) buf.fill(255);
+    else if (v.white > 0) { const k = v.white / 100; for (let i = 0; i < n; i += 3) { const l = lum3(buf, i); for (let ch = 0; ch < 3; ch++) buf[i + ch] = buf[i + ch] * (1 - k) + l * k; } }
+    const sv = fHeld('strobe') ? 60 : v.strobe;
+    if (sv > 0) { const d = strobeDiv(sv, curBpm()), on = (beatPos * d) % 1 < 0.34, tn = c > 0 ? hueRGB(colorHue(c)) : [1, 1, 1];
+      for (let i = 0; i < n; i += 3) for (let ch = 0; ch < 3; ch++) buf[i + ch] = on ? Math.max(buf[i + ch], tn[ch] * 0.95 * 255) : buf[i + ch] * 0.06; }
+  }
+
+  // ----------------------------------------------------------------------- 🚨 override keys + 🎙️ interlude (overrides.py)
+  const OV_KEYS = [{id: 'blackout', kind: 'black', label: 'BLACKOUT', mode: 'hold', fade: 0}, {id: 'white', kind: 'white', label: 'WHITE', mode: 'hold', fade: 0},
+    {id: 'strobe', kind: 'strobe', label: 'STROBE', mode: 'hold', fade: 0}, {id: 'house', kind: 'house', label: 'HOUSE', mode: 'latch', fade: 1, color: '#ffb46b'},
+    {id: 'red', kind: 'color', label: 'RED', mode: 'hold', fade: 0, color: '#ff1a1a'}, {id: 'blue', kind: 'color', label: 'BLUE', mode: 'hold', fade: 0, color: '#1a4dff'},
+    {id: 'pink', kind: 'color', label: 'PINK', mode: 'hold', fade: 0, color: '#ff2fa0'}, {id: 'crowd', kind: 'crowd', label: 'CROWD', mode: 'hold', fade: 0.25},
+    {id: 'logo', kind: 'logo', label: 'LOGO', mode: 'hold', fade: 0}];
+  const PRIO = ['black', 'white', 'strobe', 'logo', 'house', 'color', 'crowd'], FADES = [0, 0.25, 1], IL_LOOKS = ['breathe', 'text', 'glow', 'look'], IL_RET = ['none', 'flash', 'drop'];
+  const OV = {keys: OV_KEYS.map(k => Object.assign({}, k)), il: {look: 'breathe', text: 'BE RIGHT BACK', look_name: '', auto: 0, ret: 'flash', fade_in: 2, fade_out: 1.5},
+    held: {}, latched: new Set(), lv: {}, ilOn: false, ilAuto: false, ilLv: 0, ilSince: null, retPending: false, quietT: null, loudT: null, rev: 0, ilT: 0};
+  const ovOnIds = () => OV.keys.filter(k => OV.latched.has(k.id) || (OV.held[k.id] || 0) > wall()).map(k => k.id);
+  function ovInfo() {
+    const on = ovOnIds();
+    return {pro: true, keys: OV.keys.map(k => Object.assign({}, k, {on: on.includes(k.id), latched: OV.latched.has(k.id)})), on, latched: on.filter(i => OV.latched.has(i)),
+      active: !!on.length, priority: PRIO, hold: HOLD, fades: FADES, rev: OV.rev,
+      interlude: Object.assign({}, OV.il, {on: OV.ilOn, auto_started: OV.ilAuto, since: OV.ilSince, level: Math.round(OV.ilLv * 100) / 100, looks: IL_LOOKS})};
+  }
+  const normHex = s => { s = String(s || '').trim().replace(/^#/, '').toLowerCase(); if (s.length === 3) s = s.replace(/./g, c => c + c);
+    if (!/^[0-9a-f]{6}$/.test(s)) throw bad('color: #rrggbb'); return '#' + s; };
+  function ilApply(b) {
+    if ('look' in b) { if (!IL_LOOKS.includes(b.look)) throw bad('look: ' + IL_LOOKS.join(', ')); OV.il.look = b.look; }
+    if (b.text != null) OV.il.text = String(b.text).toUpperCase().split(/\s+/).filter(Boolean).join(' ').slice(0, 40);
+    if ('look_name' in b) OV.il.look_name = String(b.look_name || '').slice(0, 40);
+    if ('auto' in b) { const v = Number(b.auto || 0); if (!isFinite(v)) throw bad('auto: seconds of silence (0 = off)'); OV.il.auto = Math.round(clamp(v, 0, 600)); }
+    if ('ret' in b) { if (!IL_RET.includes(b.ret)) throw bad('ret: ' + IL_RET.join(', ')); OV.il.ret = b.ret; }
+  }
+  function ilSet(on, auto) {
+    if (on && !OV.ilOn) { OV.ilOn = true; OV.ilAuto = auto; OV.ilSince = wall(); OV.retPending = false; }
+    else if (!on && OV.ilOn) { OV.ilOn = false; OV.ilAuto = false; OV.ilSince = null; OV.retPending = OV.il.ret !== 'none'; }
+    else if (on && OV.ilOn && !auto) OV.ilAuto = false;
+  }
+  function ovSet(b) {
+    const changed = [], byid = Object.fromEntries(OV.keys.map(k => [k.id, k])), t = wall();
+    if (b.release) { OV.held = {}; OV.latched.clear(); changed.push('release'); }
+    const kid = 'key' in b ? b.key : b.toggle;
+    if (kid != null) {
+      const k = byid[kid]; if (!k) throw bad('key: ' + Object.keys(byid).join(', '));
+      const on = ('toggle' in b && !('key' in b)) ? !(OV.latched.has(kid) || OV.held[kid] > t) : b.on !== false;
+      if (k.mode === 'latch' || b.latch) { if (on) OV.latched.add(kid); else { OV.latched.delete(kid); delete OV.held[kid]; } }
+      else if (on) OV.held[kid] = t + HOLD; else { delete OV.held[kid]; OV.latched.delete(kid); }
+      changed.push((on ? 'on:' : 'off:') + kid);
+    }
+    if (b.config && typeof b.config === 'object') Object.entries(b.config).forEach(([id, c]) => {
+      const k = byid[id]; if (!k || !c || typeof c !== 'object') throw bad('config: {key id: {mode, fade, color, label}}');
+      const was = k.mode;
+      if ('mode' in c) { if (!['hold', 'latch'].includes(c.mode)) throw bad('mode: hold or latch'); k.mode = c.mode; }
+      if ('fade' in c) { const f = Number(c.fade); if (!isFinite(f)) throw bad('fade: 0, 0.25 or 1'); k.fade = FADES.reduce((a, x) => Math.abs(x - f) < Math.abs(a - f) ? x : a, 0); }
+      if (c.color != null && ['color', 'house'].includes(k.kind)) k.color = normHex(c.color);
+      if (c.label != null) { const lb = String(c.label).toUpperCase().split(/\s+/).filter(Boolean).join(' ').slice(0, 12); if (lb) k.label = lb; }
+      if (was === 'latch' && k.mode === 'hold') OV.latched.delete(id);
+      changed.push('config:' + id);
+    });
+    if (b.interlude_cfg && typeof b.interlude_cfg === 'object') { ilApply(b.interlude_cfg); changed.push('interlude_cfg'); }
+    if ('interlude' in b) { const v = b.interlude; let on;
+      if (v && typeof v === 'object') { ilApply(v); on = v.on !== false; } else on = v === 'toggle' ? !OV.ilOn : !!v;
+      ilSet(on, false); changed.push('interlude:' + (on ? 'on' : 'off')); }
+    if (!changed.length) throw bad('send key + on, toggle, release, config, interlude or interlude_cfg');
+    OV.rev++; return changed;
+  }
+  function ovTick(dt) {                                             // auto-interlude (the demo song paused = silence), fades, the return hit
+    const t = now(), silent = !M.playing || !S.power;
+    if (silent) { OV.loudT = null; if (OV.quietT == null) OV.quietT = t; } else { OV.quietT = null; if (OV.loudT == null) OV.loudT = t; }
+    if (OV.il.auto > 0 && !OV.ilOn && OV.quietT != null && t - OV.quietT >= OV.il.auto) { ilSet(true, true); OV.rev++; }
+    else if (OV.ilOn && OV.ilAuto && OV.loudT != null && t - OV.loudT >= 0.6) { ilSet(false, true); OV.rev++; }
+    const wt = wall(); Object.keys(OV.held).forEach(k => { if (OV.held[k] <= wt) delete OV.held[k]; });
+    const on = ovOnIds();
+    OV.keys.forEach(k => { const tg = on.includes(k.id) ? 1 : 0; let cur = OV.lv[k.id] || 0; const f = k.fade;
+      cur = f <= 0 ? tg : tg > cur ? Math.min(tg, cur + dt / f) : Math.max(tg, cur - dt / f);
+      if (cur <= 0) delete OV.lv[k.id]; else OV.lv[k.id] = cur; });
+    OV.ilLv = OV.ilOn ? Math.min(1, OV.ilLv + dt / OV.il.fade_in) : Math.max(0, OV.ilLv - dt / OV.il.fade_out);
+    if (OV.retPending) { OV.retPending = false; djFire(OV.il.ret); }
+  }
+  function ilPic(t) {                                               // 🎙️ the calm interlude picture (0-255, before brightness)
+    const out = new Float32Array(N * 3), look = OV.il.look;
+    if (look === 'glow') { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const v = (0.22 + 0.05 * Math.sin(t * 0.5 + x / (W - 1) * 2.2) * Math.cos(t * 0.37 + y / (H - 1) * 1.7)) * 255, i = (y * W + x) * 3;
+      out[i] = v; out[i + 1] = v * 0.5; out[i + 2] = v * 0.18; } return out; }
+    if (look === 'look' && OV.il.look_name && CAT.looks[OV.il.look_name]) {
+      const c = clipNow(lookClip(OV.il.look_name));
+      if (c) { OV.ilT += 0; const f = Math.floor(t * 0.35 * c.fps) % c.n, base = f * c.w * c.h * 4;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const j = base + ((y % c.h) * c.w + (x % c.w)) * 4, i = (y * W + x) * 3; out[i] = c.px[j] * 0.6; out[i + 1] = c.px[j + 1] * 0.6; out[i + 2] = c.px[j + 2] * 0.6; }
+        return out; }
+    }
+    const cols = lookCols(S.look), breath = 0.5 + 0.5 * Math.sin(t * 2 * Math.PI / 7), txt = look === 'text';
+    const col = new Float32Array(N * 3);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const c = palAt(cols, x / (W - 1) * 0.55 + y / (H - 1) * 0.25 + t * 0.025), i = (y * W + x) * 3, k = txt ? 0.06 + 0.04 * breath : 0.14 + 0.36 * breath;
+      for (let ch = 0; ch < 3; ch++) { col[i + ch] = c[ch]; out[i + ch] = c[ch] * k; } }
+    const msg = (OV.il.text || '').trim();
+    if (txt && msg) {
+      const m = textMask(msg, H), lift = 0.55 + 0.15 * Math.sin(t * 2 * Math.PI / 7);
+      const x0 = m.w > W - 2 ? Math.round(W - (t * 3) % (W + m.w + 6)) : Math.round((W - m.w) / 2 + Math.sin(t * 0.35) * Math.min(2, (W - m.w) / 2));
+      stamp(out, m, x0, Math.max(0, ((H - m.h) / 2) | 0), (X, Y) => { const i = (Y * W + X) * 3; return [0, 1, 2].map(ch => clamp(col[i + ch] * 0.6 + 102, 0, 255) * lift); });
+    }
+    return out;
+  }
+  function keyPic(k, t, heldCol) {
+    const out = new Float32Array(N * 3), kind = k.kind;
+    const fill = c => { for (let i = 0; i < N * 3; i += 3) { out[i] = c[0]; out[i + 1] = c[1]; out[i + 2] = c[2]; } };
+    if (kind === 'white') fill([255, 255, 255]);
+    else if (kind === 'strobe') { if (Math.floor(wall() * 12) % 2 === 0) fill(heldCol ? hexRGB(heldCol.color) : [255, 255, 255]); }
+    else if (kind === 'color' || kind === 'house') fill(hexRGB(k.color));
+    else if (kind === 'crowd') { const cols = lookCols(S.look);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3; let best = [10, 10, 10];
+        [0.45, -0.33].forEach((sp, n) => { const c = ((t * sp + n * 0.5) % 1 + 1) % 1, xs = x / W + (y / H - 0.5) * 0.25 * (n ? 1 : -1);
+          const d = Math.abs((((xs - c + 0.5) % 1) + 1) % 1 - 0.5), beam = Math.pow(clamp(1 - d / 0.11, 0, 1), 1.5), pc = palAt(cols, c + n * 0.4);
+          for (let ch = 0; ch < 3; ch++) best[ch] = Math.max(best[ch], beam * (pc[ch] * 0.5 + 127)); });
+        out[i] = best[0]; out[i + 1] = best[1]; out[i + 2] = best[2]; } }
+    else if (kind === 'logo') {
+      const s = TX.s, L = TX.logo;
+      if (L && (['logo', 'both'].includes(s.show) || !String(s.text || '').trim())) {
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const j = ((y * L.h / H | 0) * L.w + (x * L.w / W | 0)) * 3, i = (y * W + x) * 3; out[i] = L.rgb[j] || 0; out[i + 1] = L.rgb[j + 1] || 0; out[i + 2] = L.rgb[j + 2] || 0; }
+      } else { const msg = String(s.text || 'GLOWBOP').toUpperCase().trim() || 'GLOWBOP', m = textMask(msg, H);
+        stamp(out, m, m.w > W - 2 ? Math.round(W - (t * 12) % (W + m.w + 4)) : ((W - m.w) / 2) | 0, Math.max(0, ((H - m.h) / 2) | 0), () => [255, 255, 255]); }
+    }
+    return out;
+  }
+  function ovApply(out, t, bri, mm) {                               // 🚨 the very last thing, on every mode (even lights off)
+    if (!Object.keys(OV.lv).length) return;
+    const order = OV.keys.slice().sort((a, b) => (PRIO.indexOf(b.kind) - PRIO.indexOf(a.kind)) || (OV.keys.indexOf(b) - OV.keys.indexOf(a)));
+    const heldCol = OV.keys.find(k => k.kind === 'color' && (OV.lv[k.id] || 0) > 0.5);
+    order.forEach(k => { const lv = OV.lv[k.id] || 0; if (lv <= 0) return;
+      const pic = keyPic(k, t, heldCol), sc = k.kind === 'black' ? 0 : ['white', 'strobe'].includes(k.kind) ? bri : bri * mm;
+      for (let i = 0; i < out.length; i++) out[i] = out[i] * (1 - lv) + pic[i] * sc * lv; });
+  }
+
+  // ----------------------------------------------------------------------- 🎬🔁 cues shared by Song Shows and loops: look / effect / colour lock / words / blackout
+  function cueStep(layer, act, busy, endsIn) {                      // a new look / effect span starts: switch to it (the DJ can still change it after)
+    const seen = layer.seen || (layer.seen = {});
+    if (busy) { layer.seen = {}; return; }
+    const L = act.look, E = act.effect;
+    if (L && L.id !== seen.look && CAT.looks[L.look]) { seen.look = L.id; setLook(L.look, false); S.held = null; S.feature = null; S.locked = null; }
+    if (!L) seen.look = null;
+    if (E && E.id !== seen.effect) { seen.effect = E.id; const c = effectClip(E.effect) || lookClip(S.look, S.lookK + 1); S.feature = {clip: c, name: E.effect, until: now() + Math.max(1, endsIn(E)), vary: 1}; }
+    if (!E) seen.effect = null;
+  }
+  function cueColor(buf, act) {                                     // colour lock: the show's shapes, painted in 1-3 colours
+    const it = act.color; if (!it) return; const cols = (it.colors || []).map(hexRGB); if (!cols.length) return;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, l = lum3(buf, i) / 255, c = cols.length === 1 ? cols[0] : palAt(cols, x / W * (cols.length - 1) / cols.length + now() * 0.04);
+      for (let ch = 0; ch < 3; ch++) buf[i + ch] = c[ch] * l * 0.9 + buf[i + ch] * 0.1; }
+  }
+  function cueText(buf, act, t) {
+    const it = act.text; if (!it || !it.text) return;
+    const m = textMask(String(it.text).toUpperCase(), H), el = t - (it._t0 || (it._t0 = t)), hh = el / 0.7;
+    const col = [0.5 + 0.5 * Math.cos(6.283 * hh), 0.5 + 0.5 * Math.cos(6.283 * (hh - 0.33)), 0.5 + 0.5 * Math.cos(6.283 * (hh - 0.66))].map(v => 120 + 135 * v);
+    const x0 = m.w > W ? Math.round(W - ((el * 14) % (W + m.w))) : Math.round((W - m.w) / 2);
+    stamp(buf, m, x0, Math.max(0, ((H - m.h) / 2) | 0), () => col, 0.35);
+  }
+
+  // ----------------------------------------------------------------------- 🔁 loop banks (loops.py): beat-locked phrases of DJ moves
+  const SLOT_IDS = [].concat(...'ABCD'.split('').map(b => [1, 2, 3, 4].map(i => b + i)));
+  const LBARS = [1, 2, 4, 8], QUANTS = [0.25, 0.125], HIT_TYPES = ['drop', 'strobe', 'flash', 'fire', 'confetti', 'blackout'], SPAN_LANES = ['look', 'color', 'text', 'effect'];
+  function cleanEvent(e, Lb) {
+    if (!e || typeof e !== 'object') return null;
+    const lane = e.lane || 'hit'; if (lane !== 'hit' && !SPAN_LANES.includes(lane)) return null;
+    let b = Number(e.b); if (!isFinite(b)) return null; b = Math.round((((b % Lb) + Lb) % Lb) * 1e4) / 1e4; if (b >= Lb) b = 0;
+    const ln = Number(e.len), o = {lane, b};
+    if (lane === 'hit') { if (!HIT_TYPES.includes(e.hit)) return null; o.hit = e.hit;
+      if (e.hit === 'strobe') o.beats = Math.round(clamp(num(e.beats, 4) || 4, 0.125, 32) * 1e4) / 1e4;
+      if (e.hit === 'blackout') o.len = Math.round(clamp(isFinite(ln) ? ln : 1, 0.125, Lb) * 1e4) / 1e4; }
+    else { o.len = Math.round(clamp(isFinite(ln) ? ln : Lb, 0.125, Lb) * 1e4) / 1e4;
+      if (lane === 'look') { o.look = String(e.look || '').slice(0, 40); if (!o.look) return null; }
+      if (lane === 'effect') { o.effect = String(e.effect || '').slice(0, 40); if (!o.effect) return null; }
+      if (lane === 'text') { o.text = String(e.text || '').trim().slice(0, 40); if (!o.text) return null; }
+      if (lane === 'color') { o.colors = (e.colors || []).filter(c => /^#?[0-9a-f]{6}$/i.test(c)).slice(0, 3).map(c => '#' + c.replace('#', '').toLowerCase()); if (!o.colors.length) return null; } }
+    if (e.skip1) o.skip1 = true;
+    return o;
+  }
+  function cleanSlot(s) {
+    s = s && typeof s === 'object' ? s : {}; let bars = parseInt(s.bars, 10) || 1; if (!LBARS.includes(bars)) bars = LBARS.reduce((a, x) => Math.abs(x - bars) < Math.abs(a - bars) ? x : a, 1);
+    const evs = (s.events || []).slice(0, 1024).map(e => cleanEvent(e, bars * 4)).filter(Boolean).sort((a, c) => a.b - c.b || (a.lane < c.lane ? -1 : 1));
+    return {name: String(s.name || '').split(/\s+/).filter(Boolean).join(' ').slice(0, 18), bars, events: evs.slice(0, 512)};
+  }
+  function lpStarters() {
+    const h = (b, hit, k) => Object.assign({lane: 'hit', b, hit}, k || {}), r = n => Array.from({length: n}, (_, i) => i), S0 = {};
+    S0.A1 = {name: 'Four on the floor', bars: 1, events: r(4).map(b => h(b, 'flash'))};
+    S0.A2 = {name: 'Offbeat strobe', bars: 1, events: r(4).map(b => h(b + 0.5, 'strobe', {beats: 0.25}))};
+    S0.A3 = {name: 'Build riser', bars: 8, events: [0, 2, 4, 6].map(b => h(b, 'flash')).concat(r(8).map(b => h(8 + b, 'flash')), r(16).map(b => h(16 + b * 0.5, 'flash')),
+      r(16).map(b => h(24 + b * 0.25, 'flash')), [h(28, 'strobe', {beats: 3}), h(31, 'blackout', {len: 1}), h(0, 'drop', {skip1: true})])};
+    S0.A4 = {name: 'Drop hits', bars: 2, events: [h(0, 'drop'), h(2, 'confetti'), h(4, 'fire'), h(6, 'flash'), h(7, 'flash')]};
+    S0.B1 = {name: 'Color chase', bars: 4, events: ['#ff1a4a', '#1a6bff', '#2bff7a', '#ff2fd0'].map((c, i) => ({lane: 'color', b: i * 4, len: 4, colors: [c]})).concat(r(4).map(i => h(i * 4, 'flash')))};
+    S0.B2 = {name: 'Flash roll', bars: 1, events: [2, 2.5, 3, 3.25, 3.5, 3.75].map(b => h(b, 'flash'))};
+    S0.B3 = {name: 'Blackout chops', bars: 1, events: r(4).map(b => h(b + 0.5, 'blackout', {len: 0.5}))};
+    S0.B4 = {name: 'Fire and confetti', bars: 4, events: [h(0, 'fire'), h(8, 'confetti')]};
+    Object.keys(S0).forEach(k => { S0[k] = cleanSlot(S0[k]); }); return S0;
+  }
+  const LP = {slots: {}, settings: {quant: 0.25, stop: 'bar'}, run: {}, rec: null, fired: 0, rev: 0, act: {}, layer: {}};
+  SLOT_IDS.forEach(id => { LP.slots[id] = cleanSlot({}); }); Object.assign(LP.slots, lpStarters());
+  const barAfter = h => { const H0 = Math.floor(h / 4) * 4; return h - H0 <= 0.2 ? H0 : H0 + 4; };
+  const pubEv = e => { const o = {}; Object.keys(e).forEach(k => { if (k[0] !== '_') o[k] = e[k]; }); return o; };
+  function lpStart(sid, at) {
+    Object.keys(LP.run).forEach(o => { const r = LP.run[o]; if (o !== sid && o[0] === sid[0]) { if (r.state === 'queued' || at <= (r.S == null ? at : r.S)) delete LP.run[o];
+      else { r.stop_at = r.state === 'stopping' ? Math.min(r.stop_at, at) : at; r.state = 'stopping'; } } });
+    LP.run[sid] = {state: 'playing', at, S: at, p0: at - 1e-6}; LP.rev++;
+  }
+  function lpFire(sid, r, hi, muted) {
+    const lo = r.p0; r.p0 = Math.max(lo, hi); if (hi <= lo || hi - lo > 1.5 || muted) return;
+    const s = LP.slots[sid]; if (!s) return; const Lb = s.bars * 4;
+    s.events.forEach(e => { if (e.lane !== 'hit' || e.hit === 'blackout') return;
+      const k1 = Math.floor((hi - r.S - e.b) / Lb), k0 = Math.floor((lo - r.S - e.b) / Lb);
+      if (k1 <= k0 || k1 < 0 || (k1 === 0 && e.skip1) || e._nf === k1) return;
+      djFire(e.hit, e.beats, true); LP.fired++; });
+  }
+  function lpSpans(P) {
+    const act = {}, spb = 60 / curBpm();
+    Object.keys(LP.run).forEach(sid => { const r = LP.run[sid]; if (!['playing', 'stopping'].includes(r.state) || P < r.S || (r.state === 'stopping' && P >= r.stop_at)) return;
+      const s = LP.slots[sid]; if (!s) return; const Lb = s.bars * 4, rel = P - r.S, local = rel % Lb, cyc = Math.floor(rel / Lb);
+      s.events.forEach((e, i) => { const blk = e.lane === 'hit' && e.hit === 'blackout'; if (e.lane === 'hit' && !blk) return;
+        if (rel < e.b || (cyc === 0 && e.skip1)) return; const d = (((local - e.b) % Lb) + Lb) % Lb; if (d >= e.len) return;
+        const t0 = (P - d) * spb, it = Object.assign({}, e, {id: 'L' + sid + '.' + i + (e.lane === 'text' ? '.' + cyc : ''), t: t0, end: t0 + e.len * spb}), L = blk ? 'blackout' : e.lane;
+        if (!act[L] || it.t >= act[L].t) act[L] = it; }); });
+    return act;
+  }
+  function lpRecTick(P) {
+    const r = LP.rec; if (!r) return; const s = LP.slots[r.id], Lb = s.bars * 4;
+    if (r.state === 'armed' && P >= r.at) { r.state = 'recording'; r.S = r.at; r.end = r.at + Lb; s.events = s.events.filter(e => e._early); s.events.forEach(e => { delete e._early; }); lpStart(r.id, r.at); }
+    if (['recording', 'overdub'].includes(r.state) && P >= r.end) lpRecDone(true);
+  }
+  function lpRecDone(keep) {
+    const r = LP.rec; LP.rec = null; if (!r) return; const s = LP.slots[r.id], Lb = s.bars * 4;
+    if (keep && r.bo) s.events.push({lane: 'hit', hit: 'blackout', b: r.bo[0], len: Math.max(LP.settings.quant, Lb - r.bo[0])});
+    if (keep) { s.events.sort((a, c) => a.b - c.b); s.events.length = Math.min(s.events.length, 512);
+      if (r.n) setTimeout(() => toast('🔁 ' + r.id + ' recorded ' + r.n + ' move' + (r.n === 1 ? '' : 's') + ': it loops now'), 50); }
+    else { s.events = r.backup; if (r.mode === 'fresh') { s.name = r.old_name; delete LP.run[r.id]; } }
+    LP.rev++;
+  }
+  function lpTick() {
+    const P = clock(), muted = OV.ilOn;
+    lpRecTick(P);
+    Object.keys(LP.run).forEach(sid => { const r = LP.run[sid]; if (r.state === 'queued' && P >= r.at) Object.keys(LP.run).forEach(o => { const x = LP.run[o];
+      if (o !== sid && o[0] === sid[0] && ['playing', 'stopping'].includes(x.state)) { x.stop_at = x.state === 'stopping' ? Math.min(x.stop_at, r.at) : r.at; x.state = 'stopping'; } }); });
+    Object.keys(LP.run).forEach(sid => { const r = LP.run[sid]; if (!['playing', 'stopping'].includes(r.state)) return;
+      lpFire(sid, r, r.state === 'stopping' ? Math.min(P, r.stop_at - 1e-6) : P, muted);
+      if (r.state === 'stopping' && P >= r.stop_at) { delete LP.run[sid]; LP.rev++; } });
+    Object.keys(LP.run).forEach(sid => { const r = LP.run[sid]; if (r.state === 'queued' && P >= r.at) { lpStart(sid, r.at); lpFire(sid, LP.run[sid], P, muted); } });
+    LP.act = muted ? {} : lpSpans(P);
+  }
+  function lpObserve(kind, b) {                                     // 🔴 recording: DJ pads (and look / effect picks) land in the loop, on the grid
+    const r = LP.rec; if (!r || !b) return; const s = LP.slots[r.id], Lb = s.bars * 4, step = LP.settings.quant, P = clock();
+    const S0 = r.state === 'armed' ? r.at : r.S, rel = P - S0; if (rel < -0.5) return;
+    let q = Math.max(0, b.snap ? Math.ceil(rel - 0.05) : Math.round(rel / step) * step), cyc = Math.floor(q / Lb), bq = Math.round((q - cyc * Lb) * 1e4) / 1e4;
+    if (bq >= Lb) { bq = 0; cyc++; }
+    const T = S0 + cyc * Lb + bq, nf = T > P - 1e-6 ? cyc : null, add = [];
+    if (kind === 'dj') { const h = b.hit;
+      if (h === 'blackout') { if (b.on !== false) r.bo = [bq, cyc]; else if (r.bo) { const [b0, c0] = r.bo; r.bo = null; add.push({lane: 'hit', hit: 'blackout', b: b0, len: Math.max(step, Math.min(Lb, (cyc * Lb + bq) - (c0 * Lb + b0)))}); } }
+      else if (HIT_TYPES.includes(h)) add.push(h === 'strobe' ? {lane: 'hit', hit: h, b: bq, beats: num(b.beats, 4) || 4} : {lane: 'hit', hit: h, b: bq});
+      if (b.build === false && !b.cancel) add.push({lane: 'hit', hit: 'drop', b: bq});
+      if (b.say) add.push({lane: 'text', b: bq, len: Math.min(Lb, 3 * curBpm() / 60), text: String(b.say).slice(0, 40)}); }
+    else if (kind === 'control') { if (b.look) add.push({lane: 'look', b: bq, len: Lb - bq, look: b.look}); if (b.feature) add.push({lane: 'effect', b: bq, len: Lb - bq, effect: b.feature}); }
+    add.forEach(e => { const c = cleanEvent(e, Lb); if (!c) return;
+      if (c.lane === 'hit' && c.hit !== 'blackout' && s.events.some(o => o.lane === 'hit' && o.hit === c.hit && Math.abs(o.b - c.b) < 1e-6)) return;
+      if (c.lane === 'hit' && c.hit !== 'blackout' && nf != null) c._nf = nf;
+      if (r.state === 'armed') c._early = true;
+      if (['look', 'effect'].includes(c.lane)) s.events.forEach(o => { if (o.lane === c.lane && o.b < c.b && c.b < o.b + o.len) o.len = Math.round((c.b - o.b) * 1e4) / 1e4; });
+      s.events.push(c); r.n++; });
+    s.events.sort((a, c) => a.b - c.b); LP.rev++;
+  }
+  function loopsSet(b) {
+    const changed = [], heard = clock();
+    const slot = k => { const sid = b[k]; if (!LP.slots[sid]) throw bad(k + ': a slot id, A1 to D4'); return sid; };
+    if (b.stop_all) { LP.run = {}; if (LP.rec) lpRecDone(LP.rec.state !== 'armed'); changed.push('stop_all'); }
+    ['toggle', 'launch', 'stop'].forEach(k => { if (!(k in b)) return;
+      const sid = slot(k), r = LP.run[sid], at_once = !!b.now || LP.settings.stop === 'now';
+      if (k !== 'launch' && LP.rec && LP.rec.id === sid && LP.rec.state === 'armed') { lpRecDone(false); changed.push('record:cancel'); return; }
+      const go = k === 'launch' || (k === 'toggle' && (!r || r.state === 'stopping'));
+      if (go) {
+        if (r && r.state === 'stopping') { r.state = 'playing'; delete r.stop_at; changed.push('keep:' + sid); }
+        else if (r) changed.push('already:' + sid);
+        else { if (!LP.slots[sid].events.length) throw bad(sid + ' is empty: record into it first');
+          Object.keys(LP.run).forEach(o => { if (o[0] === sid[0] && LP.run[o].state === 'queued') delete LP.run[o]; });
+          LP.run[sid] = {state: 'queued', at: barAfter(heard)}; changed.push('launch:' + sid); }
+      } else if (!r) changed.push('idle:' + sid);
+      else if (r.state === 'queued' || at_once) { delete LP.run[sid]; changed.push('stop:' + sid); if (LP.rec && LP.rec.id === sid) lpRecDone(LP.rec.state !== 'armed'); }
+      else { r.state = 'stopping'; r.stop_at = Math.max(barAfter(heard), r.S + 1e-3); changed.push('stopping:' + sid); }
+    });
+    if ('record' in b) { const v = b.record;
+      if (v === false || v == null) { if (LP.rec) { lpRecDone(false); changed.push('record:cancel'); } }
+      else { if (!LP.slots[v]) throw bad('record: a slot id, A1 to D4'); if (LP.rec) throw bad('already recording ' + LP.rec.id);
+        const s = LP.slots[v];
+        if ('bars' in b) { const bars = parseInt(b.bars, 10); if (!LBARS.includes(bars)) throw bad('bars: 1, 2, 4 or 8'); if (bars !== s.bars) { s.bars = bars; s.events = s.events.filter(e => e.b < bars * 4); } }
+        const r = LP.run[v], backup = s.events.map(e => Object.assign({}, e));
+        if (r && ['playing', 'stopping'].includes(r.state)) { r.state = 'playing'; delete r.stop_at; LP.rec = {id: v, state: 'overdub', mode: 'overdub', at: heard, S: r.S, end: heard + s.bars * 4, n: 0, backup, bo: null}; }
+        else { delete LP.run[v]; LP.rec = {id: v, state: 'armed', mode: 'fresh', at: barAfter(heard), n: 0, backup, bo: null, old_name: s.name}; if (!s.name) s.name = 'Take ' + v; }
+        changed.push('record:' + v); } }
+    if ('save' in b) { const sid = slot('save'), c = cleanSlot(b.slot); if (LP.rec && LP.rec.id === sid) throw bad(sid + ' is recording');
+      LP.slots[sid] = c; changed.push('save:' + sid); if (!c.events.length) delete LP.run[sid]; }
+    if ('clear' in b) { const sid = slot('clear'); if (LP.rec && LP.rec.id === sid) LP.rec = null; LP.slots[sid] = cleanSlot({}); delete LP.run[sid]; changed.push('clear:' + sid); }
+    if ('copy' in b) { const src = slot('copy'), dst = slot('to'); if (src === dst) throw bad('copy: pick another slot');
+      const c = cleanSlot(Object.assign({}, LP.slots[src], {events: LP.slots[src].events.map(pubEv)})); c.name = (c.name || src).slice(0, 14) + ' (2)';
+      LP.slots[dst] = c; delete LP.run[dst]; changed.push('copy:' + src + '>' + dst); }
+    if (b.settings && typeof b.settings === 'object') { const st = b.settings;
+      if ('quant' in st) { if (!QUANTS.includes(Number(st.quant))) throw bad('quant: 0.25 or 0.125 (a 1/4 or 1/8 beat)'); LP.settings.quant = Number(st.quant); }
+      if ('stop' in st) { if (!['bar', 'now'].includes(st.stop)) throw bad('stop: bar or now'); LP.settings.stop = st.stop; }
+      changed.push('settings'); }
+    if (b.restore) { Object.entries(lpStarters()).forEach(([sid, s]) => { if (LP.rec && LP.rec.id === sid) return; LP.slots[sid] = s; delete LP.run[sid]; }); changed.push('restore'); }
+    if (!changed.length) throw bad('send toggle, launch, stop, stop_all, record, save, clear, copy, settings or restore');
+    LP.rev++; return changed;
+  }
+  function loopsInfo(full) {
+    const P = clock(), rr = LP.rec, st = sid => (LP.run[sid] || {}).state;
+    return {pro: true, ok: !OV.ilOn, why: OV.ilOn ? 'paused for the interlude' : '', bpm: Math.round(curBpm() * 100) / 100, pos: Math.round(P * 1e4) / 1e4,
+      bar: Math.floor(P / 4) + 1, beat: Math.floor(P % 4) + 1, src: DJ.tap_bpm ? 'tap' : M.playing ? 'music' : 'free', live: !!M.playing || !!DJ.tap_bpm, delay_beats: 0,
+      settings: Object.assign({}, LP.settings), running: SLOT_IDS.filter(s => ['playing', 'stopping'].includes(st(s))), queued: SLOT_IDS.filter(s => st(s) === 'queued'),
+      slots: SLOT_IDS.map(sid => { const s = LP.slots[sid], r = LP.run[sid] || {};
+        const d = {id: sid, bank: sid[0], name: s.name, bars: s.bars, count: s.events.length, state: r.state || 'idle', S: r.S == null ? null : r.S, at: r.at == null ? null : r.at, stop_at: r.stop_at == null ? null : r.stop_at};
+        if (full) d.events = s.events.map(pubEv); return d; }),
+      rec: rr ? {id: rr.id, state: rr.state, mode: rr.mode, at: rr.at, S: rr.S == null ? null : rr.S, end: rr.end == null ? null : rr.end, n: rr.n} : null,
+      banks: ['A', 'B', 'C', 'D'], per_bank: 4, bars: LBARS, quants: QUANTS, hits: HIT_TYPES, fired: LP.fired, rev: LP.rev};
+  }
+  function loopsBrief() { const run = SLOT_IDS.filter(s => LP.run[s]);
+    return {pro: true, running: run, names: run.map(s => LP.slots[s].name || s), rec: LP.rec ? {id: LP.rec.id, state: LP.rec.state} : null, paused: OV.ilOn && !!run.length, rev: LP.rev}; }
+
+  // ----------------------------------------------------------------------- 🎬 Song Shows (songshow.py): a timeline per song, driving the wall while it plays
+  const SH = {on: true, rec: false, shows: {}, rev: {}, skip: null, key: null, prev: null, fired: new Set(), act: {}, due: [], mult: 1, ok: false, why: 'starting', layer: {}, known: {}};
+  const songKey = tr => (String(tr.artist || '') + ' | ' + String(tr.title || '')).toLowerCase().replace(/\s+/g, ' ').trim();
+  const KEYS = ['A minor', 'F# minor', 'C major', 'E minor', 'D minor', 'G major', 'B minor', 'A major'];
+  function knowSong(tr) { if (!tr || !tr.title) return; const k = songKey(tr); if (!SH.known[k]) SH.known[k] = {key: k, tr, listens: 2 + (Object.keys(SH.known).length * 3) % 9, last: wall() - Object.keys(SH.known).length * 3600}; return k; }
+  const songBpm = tr => (tr && tr.bpm) || 124;
+  function songSections(dur, bpm) {                                 // the demo songs' shape: 8-bar groove / build / drop / break, like the wall's own sections
+    const sec = 8 * 4 * 60 / bpm, out = [], names = ['groove', 'build', 'peak', 'breakdown'];
+    for (let k = 0; k * sec < dur; k++) out.push([Math.round(k * sec * 100) / 100, names[k % 4]]);
+    return out;
+  }
+  function songFacts(key) {
+    const kn = SH.known[key] || {}, tr = kn.tr || {}, show = SH.shows[key] || {}, [a0, t0] = key.split(' | ');
+    const bpm = songBpm(tr), dur = tr.dur || null, sections = dur ? songSections(dur, bpm) : [];
+    const drops = sections.filter(s => s[1] === 'peak' && s[0] > 0 && s[0] < dur - 16 * 60 / bpm).map(s => [s[0], 3, 3]);
+    const i = Math.abs(key.split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7));
+    return {key, title: tr.title || show.title || (t0 || key).replace(/\b\w/g, c => c.toUpperCase()), artist: tr.artist || show.artist || (a0 || '').replace(/\b\w/g, c => c.toUpperCase()),
+      bpm, bpm_src: 'memory', grid: 0, dur, drops, sections, key_name: KEYS[i % KEYS.length], mood: ['bright', 'dark', 'bright', 'neutral'][i % 4], epic: tr.look === 'Big Wave' || tr.look === 'Deep Space' ? 0.7 : 0.3,
+      genres: ['dance', 'electronic'], style: 'dance', listens: kn.listens || 0};
+  }
+  function hsv(h, s, v) { h = ((h % 1) + 1) % 1; const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), u = v * (1 - (1 - f) * s);
+    return [[v, u, p], [q, v, p], [p, v, u], [p, q, v], [u, p, v], [v, p, q]][i % 6]; }
+  const rgbHex = c => '#' + c.map(v => HEX[clamp(Math.round(v * 255), 0, 255)]).join('');
+  function keyColors(key, mood) {
+    const PC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'], m = /^\s*([A-G][#b]?)/.exec(key || ''), root = m ? PC.indexOf(m[1]) : -1, minor = /min|\bm\b/.test(key || '');
+    const h = root >= 0 ? ((root * 7) % 12) / 12 : {dark: 0.7, bright: 0.08}[mood] || 0.52, s2 = minor ? 0.06 : -0.07;
+    return [hsv(h, 1, 1), hsv(h + s2 * 2, 0.9, minor ? 0.8 : 1), hsv(h - s2, 0.35, 1)].map(rgbHex);
+  }
+  const LOOK_SETS = {dark: [['Deep Space', 'Midnight Galaxy', 'Deep Sea', 'Hypnotic', 'Storm & Sea'], ['Hyperspace', 'Neon Grid', 'Digital Matrix', 'Ice Palace'], ['Warehouse Rave', 'Club Rig', 'Red Alert', 'Toxic Rave', 'Molten']],
+    bright: [['Liquid Dreams', 'Blue Sky', 'Lava Lounge', 'Fairy Forest', 'Emerald Ocean'], ['Synthwave', 'Royal Gold', 'Psychedelic'], ['Mainstage', 'Neon Party', 'Studio 54', 'Rainbow Riot', 'Retro Arcade']],
+    neutral: [['Liquid Dreams', 'Deep Space', 'Lava Lounge', 'Midnight Galaxy', 'Hypnotic'], ['Hyperspace', 'Synthwave', 'Neon Grid'], ['Mainstage', 'Club Rig', 'Neon Party', 'Warehouse Rave', '3D Depth']],
+    epic: [['Midnight Galaxy', 'Blue Sky', 'Deep Space', 'Liquid Dreams'], ['Hyperspace', 'Storm & Sea'], ['Big Wave', 'Hyperspace', 'Storm & Sea', 'Deep Space']]};
+  const SH_LINES = {dark: ["LET'S GO", 'JUMP', 'MAKE SOME NOISE'], bright: ['HANDS UP', 'JUMP', 'SING IT'], neutral: ['HANDS UP', "LET'S GO", 'ONE MORE'], epic: ['SING IT', 'HANDS UP']};
+  function draftShow(song, variant) {                               // auto-draft (songshow.draft): looks per section, hits on the drops, a brightness curve, a crowd line
+    const bpm = song.bpm || 120, P = 60 / bpm, BAR = 4 * P, g = (song.grid || 0) % BAR, r3 = x => Math.round(x * 1000) / 1000;
+    const bar = t => r3(g + Math.round((t - g) / BAR) * BAR), beat = t => r3(g + Math.round((t - g) / P) * P);
+    let dur = song.dur || 0, drops = [];
+    (song.drops || []).forEach(d => { const tb = bar(d[0]); if (!drops.some(x => Math.abs(tb - x) < 4 * BAR)) drops.push(tb); });
+    const basis = drops.length ? 'memory' : 'guess';
+    if (dur <= 0) dur = drops.length ? drops[drops.length - 1] + 40 * BAR : 64 * BAR + 120;
+    if (!drops.length) { for (let t = g + 40 * BAR; t < dur - 24 * BAR; t += 40 * BAR) drops.push(bar(t)); if (!drops.length && dur > 24 * BAR) drops.push(bar(dur * 0.4)); }
+    drops = drops.filter(d => d >= 2 * BAR && d < dur - 2 * BAR).sort((a, b) => a - b);
+    const mood = ['dark', 'bright'].includes(song.mood) ? song.mood : 'neutral', epic = (song.epic || 0) > 0.55, ls = LOOK_SETS[epic ? 'epic' : mood];
+    const rot = xs => { xs = xs.filter(x => CAT.looks[x]); const o = variant % xs.length; return xs.slice(o).concat(xs.slice(0, o)); };
+    const calm = rot(ls[0]), build_l = rot(ls[1]), drop_l = rot(ls[2]);
+    const efx = xs => xs.filter(x => CAT.effects[x]), bfx = efx(['WarpSpeed', 'TunnelRush', 'Hyperjump', 'ShapeTunnel']), cfx = efx(['Aurora', 'LavaFlow', 'OceanWaves', 'InkBloom', 'LiquidMelt', 'Bioluminescence', 'SkyClouds']);
+    const segs = []; let prev = 0;
+    drops.forEach((D, i) => { const gap = D - prev, blen = gap >= 16 * BAR ? 8 * BAR : Math.max(2 * BAR, gap > 4 * BAR ? bar(gap / 2) : BAR), B = Math.max(prev, D - blen);
+      if (B - prev >= 2 * BAR) segs.push([i === 0 ? 'intro' : 'breakdown', prev, B]); else if (segs.length && B > prev) segs[segs.length - 1][2] = B;
+      if (D > B) segs.push(['build', B, D]);
+      const nxt = i + 1 < drops.length ? drops[i + 1] : dur; let dl;
+      if (i + 1 < drops.length) { dl = Math.max(4 * BAR, Math.min(32 * BAR, Math.round((nxt - D - 8 * BAR) * 0.55 / (4 * BAR)) * 4 * BAR)); dl = Math.min(dl, Math.max(BAR, nxt - D - 2 * BAR)); }
+      else { dl = Math.max(4 * BAR, Math.min(32 * BAR, (dur - D) - 8 * BAR)); dl = Math.min(dl, dur - D); }
+      segs.push(['drop', D, Math.min(nxt, D + dl < dur ? bar(D + dl) : dur)]); prev = segs[segs.length - 1][2]; });
+    if (dur - prev > BAR) segs.push([drops.length ? 'outro' : 'intro', prev, dur]); else if (segs.length) segs[segs.length - 1][2] = dur;
+    const big = drops.length > 1 ? drops[1] : drops[0], items = [], bp = [[0, 40]]; let n = 0, dk = 0, bk = 0;
+    const add = o => { n++; o.id = 'a' + variant + 'x' + n; o.auto = true; ['t', 'end'].forEach(k => { if (k in o) o[k] = r3(o[k]); }); items.push(o); };
+    const pickLine = (xs, k) => xs[(variant + k) % xs.length];
+    segs.forEach(([kind, s, e]) => {
+      const lookn = kind === 'build' ? build_l[dk % build_l.length] : kind === 'drop' ? drop_l[dk % drop_l.length] : kind === 'breakdown' ? calm[(1 + bk) % calm.length] : calm[0];
+      const last = items[items.length - 1];
+      if (last && last.lane === 'look' && last.look === lookn && Math.abs(last.end - s) < 0.01) last.end = r3(e); else add({lane: 'look', t: s, end: e, look: lookn});
+      if (kind === 'intro') bp.push([s, 40], [Math.max(s, e - P), 72]);
+      else if (kind === 'build') { bp.push([s, 60], [Math.max(s, e - P), 100]); if (bfx.length) add({lane: 'effect', t: s, end: e, effect: bfx[(dk + variant) % bfx.length]}); }
+      else if (kind === 'drop') { const D = s, isbig = D === big, burst = mood === 'dark' ? 'fire' : 'confetti';
+        bp.push([s, 100], [Math.max(s, e - P / 2), 100]); add({lane: 'hit', t: D, hit: 'drop'});
+        if (epic) add({lane: 'hit', t: beat(D - 2 * P), hit: 'flash'});
+        else if (isbig && D - BAR >= 0) { add({lane: 'hit', t: D - BAR, hit: 'strobe', beats: 3}); add({lane: 'hit', t: D - P, end: D, hit: 'blackout'}); }
+        else if (D - BAR >= 0) add({lane: 'hit', t: D - BAR, hit: 'strobe', beats: 4});
+        if (isbig) { if (!epic) add({lane: 'hit', t: D, hit: burst}); const tt = D + (epic ? P : BAR); add({lane: 'text', t: tt, end: tt + 2 * BAR, text: pickLine(SH_LINES[epic ? 'epic' : mood], dk)}); }
+        for (let k = 8; D + k * BAR < e - 2 * BAR; k += 8) add({lane: 'hit', t: D + k * BAR, hit: k === 8 && !isbig && !epic ? burst : 'flash'});
+        dk++; }
+      else if (kind === 'breakdown') { bp.push([s, 100], [s + 2 * P, 65], [Math.max(s + 2 * P, e - P), 65]);
+        add({lane: 'color', t: s, end: e, colors: keyColors(song.key_name, mood).slice(0, 2 + (variant % 2))});
+        if (cfx.length) add({lane: 'effect', t: s, end: Math.min(e, s + 8 * BAR), effect: cfx[(bk + variant) % cfx.length]}); bk++; }
+      else if (kind === 'outro') bp.push([s, 100], [dur, 18]);
+    });
+    const pts = [];
+    bp.sort((a, b) => a[0] - b[0]).forEach(([t, v]) => { t = r3(clamp(t, 0, dur)); if (pts.length && Math.abs(pts[pts.length - 1][0] - t) < 0.02) pts[pts.length - 1] = [t, v]; else pts.push([t, v]); });
+    pts.filter((p, i) => i === 0 || i === pts.length - 1 || !(pts[i - 1][1] === p[1] && p[1] === pts[i + 1][1])).forEach(([t, v]) => add({lane: 'bright', t, v}));
+    return {items, meta: {basis, bpm: Math.round(bpm * 100) / 100, grid: g, dur: Math.round(dur * 100) / 100, drops, variant, segments: segs.map(([k, s, e]) => [k, Math.round(s * 100) / 100, Math.round(e * 100) / 100])}};
+  }
+  const SH_LANES = ['look', 'hit', 'color', 'bright', 'text', 'effect'];
+  function cleanItem(it) {
+    if (!it || !SH_LANES.includes(it.lane)) return null; const t = Number(it.t); if (!isFinite(t)) return null;
+    const o = {id: String(it.id || Math.random().toString(36).slice(2, 10)).slice(0, 16), lane: it.lane, t: Math.round(Math.max(0, t) * 1000) / 1000}, L = it.lane;
+    if (it.rec) o.rec = true; if (it.auto) o.auto = true;
+    let end = it.end == null ? null : Number(it.end); if (!isFinite(end)) end = null;
+    if (SPAN_LANES.includes(L) || (L === 'hit' && it.hit === 'blackout')) { if (end == null || end <= o.t + 0.05) end = o.t + (L === 'hit' ? 1 : 8); o.end = Math.round(end * 1000) / 1000; }
+    if (L === 'look') { o.look = String(it.look || '').slice(0, 40); if (!o.look) return null; }
+    else if (L === 'hit') { if (!HIT_TYPES.includes(it.hit)) return null; o.hit = it.hit; if (it.hit === 'strobe') o.beats = clamp(parseInt(it.beats, 10) || 4, 1, 32); }
+    else if (L === 'color') { o.colors = (it.colors || []).filter(c => /^#?[0-9a-f]{6}$/i.test(c)).slice(0, 3).map(c => '#' + c.replace('#', '').toLowerCase()); if (!o.colors.length) return null; }
+    else if (L === 'bright') o.v = clamp(Math.round(num(it.v, 100)), 0, 100);
+    else if (L === 'text') { o.text = String(it.text || '').trim().slice(0, 40); if (!o.text) return null; }
+    else if (L === 'effect') { o.effect = String(it.effect || '').slice(0, 40); if (!o.effect) return null; }
+    return o;
+  }
+  function cleanShow(key, b, old) {
+    old = old || {}; const src = Array.isArray(b.items) ? b.items : (old.items || []);
+    const items = src.map(cleanItem).filter(Boolean).sort((a, c) => SH_LANES.indexOf(a.lane) - SH_LANES.indexOf(c.lane) || a.t - c.t).slice(0, 2000);
+    const dr = 'draft' in b ? b.draft : old.draft;
+    return {version: 1, key, title: String(b.title || old.title || '').slice(0, 120), artist: String(b.artist || old.artist || '').slice(0, 120),
+      enabled: 'enabled' in b ? !!b.enabled : old.enabled !== false, items, updated: Math.round(wall() * 10) / 10, draft: dr && typeof dr === 'object' ? dr : null};
+  }
+  const shSave = (key, show) => { SH.shows[key] = show; SH.rev[key] = (SH.rev[key] || 0) + 1; return SH.rev[key]; };
+  function songPos() { return M.pos + (M.playing ? Math.min(0.5, now() - (M.posAt || now())) : 0); }
+  function shTick(busy) {
+    const cur = M.queue[M.idx], key = cur ? knowSong(cur) : null, pos = cur ? songPos() : null, t = now();
+    if (key !== SH.key) { SH.key = key; SH.fired = new Set(); SH.prev = null; SH.act = {}; SH.layer = {}; if (SH.skip !== key) SH.skip = null; }
+    const show = SH.shows[key], items = (show && show.items) || [];
+    let why = null;
+    if (OV.ilOn) why = 'paused for the interlude'; else if (!SH.on) why = 'Song Shows are off'; else if (!key) why = 'nothing playing';
+    else if (!show || !items.length) why = 'no show for this song yet'; else if (show.enabled === false) why = "this song's show is switched off";
+    else if (SH.skip === key) why = 'skipped for this play'; else if (!M.playing) why = 'paused';
+    SH.why = why || ''; SH.ok = !why; SH.mult = 1; SH.due = [];
+    if (!SH.ok) { SH.act = {}; SH.prev = pos; return; }
+    const prev = SH.prev; SH.prev = pos;
+    const seek = prev == null || pos < prev - 0.05 || pos - prev > 0.75;
+    if (seek) SH.fired = new Set(items.filter(i => i.lane === 'hit' && i.t < pos - 0.3).map(i => i.id));
+    const act = {}, bright = [];
+    items.forEach(it => { const L = it.lane;
+      if (L === 'bright') { bright.push(it); return; }
+      if (L === 'hit') { if (it.hit === 'blackout' && it.end != null) { if (it.t <= pos && pos < it.end) act.blackout = it; return; }
+        if (SH.fired.has(it.id)) return; if (it.t <= pos && (pos - it.t <= 0.3 || (!seek && it.t > prev))) { SH.fired.add(it.id); SH.due.push(it); } return; }
+      if (it.t <= pos && pos < (it.end || it.t) && (!act[L] || it.t >= act[L].t)) act[L] = it; });
+    if (bright.length) { bright.sort((a, b) => a.t - b.t);
+      if (pos < bright[0].t) SH.mult = 1; else if (pos >= bright[bright.length - 1].t) SH.mult = bright[bright.length - 1].v / 100;
+      else for (let i = 0; i + 1 < bright.length; i++) { const a = bright[i], b = bright[i + 1]; if (a.t <= pos && pos < b.t) { SH.mult = (a.v + (b.v - a.v) * (pos - a.t) / Math.max(1e-6, b.t - a.t)) / 100; break; } } }
+    SH.act = act;
+    if (!busy) SH.due.forEach(h => djFire(h.hit, h.beats, true));
+    cueStep(SH.layer, act, busy, it => it.end - pos);
+  }
+  function shInfo() {
+    const cur = M.queue[M.idx], key = SH.key, show = SH.shows[key] || {}, pos = cur ? songPos() : null; let next = null;
+    if (SH.ok && pos != null) { const up = (show.items || []).filter(i => i.lane !== 'bright' && i.t > pos);
+      if (up.length) { const n = up.reduce((a, b) => b.t < a.t ? b : a); next = {t: n.t, lane: n.lane, what: n.hit || n.look || n.effect || n.text || ''}; } }
+    return {on: SH.on, rec: SH.rec, key, title: cur ? cur.title : null, artist: cur ? cur.artist : null, pos: pos == null ? null : Math.round(pos * 100) / 100, src: cur ? 'player' : 'none', exact: !!cur,
+      playing: !!(cur && M.playing), dur: cur ? cur.dur : null, has: !!(show.items && show.items.length), enabled: SH.shows[key] ? show.enabled !== false : false, active: SH.ok, why: SH.why,
+      items: (show.items || []).length, rev: SH.rev[key] || 0, next, look: (SH.act.look || {}).look || null, bright: SH.ok ? Math.round(SH.mult * 100) : null, pro: true};
+  }
+  function shList() {
+    const out = {};
+    Object.values(SH.known).forEach(k => { const f = k.tr; out[k.key] = {key: k.key, title: f.title, artist: f.artist, listens: k.listens, last: k.last, bpm: songBpm(f), drops: songFacts(k.key).drops.length, has: false, items: 0, enabled: false, dur: f.dur}; });
+    Object.entries(SH.shows).forEach(([k, s]) => { const r = out[k] || (out[k] = {key: k, title: s.title, artist: s.artist, listens: 0, last: 0, bpm: null, drops: 0, dur: null});
+      Object.assign(r, {has: !!s.items.length, items: s.items.length, enabled: s.enabled !== false, updated: s.updated}); });
+    return Object.values(out).sort((a, b) => (!a.has - !b.has) || (b.last - a.last));
+  }
+  function shObserve(kind, b) {                                     // 🔴 record mode: DJ moves land on the playing song's timeline
+    if (!SH.rec || !b) return; const cur = M.queue[M.idx]; if (!cur || !M.playing) return;
+    const key = knowSong(cur), P = 60 / songBpm(cur), pos = Math.round(songPos() / P) * P, add = [];
+    if (kind === 'dj') { const h = b.hit;
+      if (h === 'blackout') { if (b.on !== false) SH.boStart = pos; else if (SH.boStart != null) { add.push({lane: 'hit', hit: 'blackout', t: SH.boStart, end: Math.max(pos, SH.boStart + P)}); SH.boStart = null; } }
+      else if (HIT_TYPES.includes(h)) add.push({lane: 'hit', hit: h, t: pos, beats: parseInt(b.beats, 10) || 4});
+      if (b.build === false && !b.cancel) add.push({lane: 'hit', hit: 'drop', t: pos});
+      if (b.say) add.push({lane: 'text', t: pos, end: pos + 3, text: String(b.say).slice(0, 40)}); }
+    else if (kind === 'control') { if (b.look) add.push({lane: 'look', t: pos, end: pos + 32 * P, look: b.look}); if (b.feature) add.push({lane: 'effect', t: pos, end: pos + 32 * P, effect: b.feature}); }
+    if (!add.length) return;
+    const show = SH.shows[key] || {items: [], enabled: true, title: cur.title, artist: cur.artist}, items = (show.items || []).slice();
+    add.forEach(it => { it.rec = true; it.id = 'r' + Math.random().toString(36).slice(2, 9);
+      if (['look', 'effect'].includes(it.lane)) { items.forEach(o => { if (o.lane === it.lane && o.t < it.t && it.t < (o.end || 0)) o.end = it.t; });
+        const nx = items.filter(o => o.lane === it.lane && o.t > it.t).map(o => o.t); if (nx.length) it.end = Math.min(it.end, Math.min(...nx)); }
+      items.push(it); SH.fired.add(it.id); });
+    shSave(key, cleanShow(key, Object.assign({}, show, {items}), show));
+  }
+  function showsPost(b) {
+    const act = b.action, key = b.key || SH.key;
+    if (act === 'global') { SH.on = !!b.on; return {json: {ok: true, on: SH.on}}; }
+    if (act === 'record') { SH.rec = !!b.on; return {json: {ok: true, rec: SH.rec}}; }
+    if (act === 'skip') { SH.skip = SH.key; return {json: {ok: true}}; }
+    if (act === 'unskip') { SH.skip = null; return {json: {ok: true}}; }
+    if (!key) return {status: 400, json: {error: 'which song? (key)'}};
+    const old = SH.shows[key] || null;
+    if (act === 'save') { const show = cleanShow(key, b, old); return {json: {ok: true, rev: shSave(key, show), items: show.items.length}}; }
+    if (act === 'delete') { delete SH.shows[key]; SH.rev[key] = (SH.rev[key] || 0) + 1; return {json: {ok: true, rev: SH.rev[key]}}; }
+    if (act === 'enable') { if (!old) return {status: 404, json: {error: 'no show for that song yet'}};
+      const show = cleanShow(key, Object.assign({}, old, {enabled: !!b.on}), old); if (b.on && SH.skip === key) SH.skip = null;
+      return {json: {ok: true, rev: shSave(key, show), enabled: show.enabled}}; }
+    if (act === 'autodraft') { const f = songFacts(key), variant = parseInt(b.variant != null ? b.variant : old ? ((old.draft || {}).variant == null ? -1 : old.draft.variant) + 1 : 0, 10) || 0;
+      let {items, meta} = draftShow(f, variant);
+      if (b.replace === false && old) items = old.items.filter(i => !i.auto).concat(items);
+      const show = cleanShow(key, {items, enabled: true, title: f.title, artist: f.artist, draft: meta}, old);
+      return {json: {ok: true, rev: shSave(key, show), show, draft: meta}}; }
+    return {status: 400, json: {error: 'action: save, delete, autodraft, enable, global, record or skip'}};
+  }
+  function showsSeed() {                                            // every demo song comes with a ready-made show to look at, edit and watch
+    SONGS.forEach((x, i) => { const tr = M.queue.find(q => q.title === x[0]); if (!tr) return; const k = knowSong(tr), f = songFacts(k), d = draftShow(f, i % 3);
+      shSave(k, cleanShow(k, {items: d.items, enabled: true, title: f.title, artist: f.artist, draft: d.meta}, null)); });
   }
 
   // ======================================================================= what is on the wall right now
@@ -460,49 +1015,73 @@
       const fx = (S.holFx && S.holFx.length ? S.holFx : h.fx.map(f => f.name)); return {clip: c, label: fx[si.k % fx.length], holiday: h}; }
     if (k === 'scene') { const sc = S.scene, seg = sc.segs[sc.i] || {}; return {clip: sc.clips[sc.i] || 'look-neon-party', label: sc.effects[sc.i] || sc.name}; }
     if (S.locked) return {clip: effectClip(S.locked) || lookClip(S.look, S.lookK), label: S.locked};
-    if (S.feature && (S.feature.until === 0 || S.feature.until > t)) return {clip: S.feature.clip || lookClip(S.look, S.lookK), label: S.feature.name};
+    if (S.feature && (S.feature.until === 0 || S.feature.until > t)) return {clip: S.feature.clip || lookClip(S.look, S.lookK), label: S.feature.name, vary: S.feature.vary};
     if (S.cameo > t) return {kind: 'eye', label: 'Eyeball'};
     const lc = lookClip(S.look, S.lookK), lk = LOOK_SET[S.look];
     return {clip: lc, label: lk ? titleOf(lc) : S.effect};
   }
 
   // ======================================================================= painting one frame
-  let buf = new Float32Array(N * 3), curClip = null, clipT0 = now(), lastT = now(), spk = new Float32Array(N), lastLevel = 0, lastSrc = {label: ''};
+  let buf = new Float32Array(N * 3), curClip = null, clipV0 = 0, VT = 0, lastT = now(), spk = new Float32Array(N), lastLevel = 0, lastSrc = {label: ''};
   const HEX = []; for (let i = 0; i < 256; i++) HEX.push(i.toString(16).padStart(2, '0'));
+  // a mode with its own picture and pace owns the wall: faders' looks, Song Show cues and loop spans stay out of the way (like the engine)
+  const takeover = () => !S.power || FD.s.mode !== 'off' || !!SB.s.on || !!(FIRE && FIRE.on) || !!S.holiday || !!S.scene;
   function paint() {
     const t = now(), dt = Math.min(.25, t - lastT); lastT = t; clock();
+    const busy = takeover();
+    ovTick(dt); lpTick(); shTick(busy); cueStep(LP.layer, busy ? {} : LP.act, busy, it => (it.end - it.t));
+    const sp = busy ? 1 : fSpeed(), vdt = Math.min(.25, dt * sp); VT += dt * sp;      // 🎚️ SPEED: the animations' own clock
     const si = followShow(), src = source(t, si); lastSrc = src;
     buf.fill(0);
     if (src.clip) {
-      if (src.clip !== curClip) { curClip = src.clip; clipT0 = t; }
+      if (src.clip !== curClip) { curClip = src.clip; clipV0 = VT; }
       let c = clipNow(src.clip);
       if (!c && lastGood) c = lastGood;                             // still downloading: keep the last picture going
-      if (c) { lastGood = c; const f = Math.floor((t - clipT0) * c.fps * (src.speed || 1)) % c.n, base = f * c.w * c.h * 4;
-        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const j = base + ((y % c.h) * c.w + (x % c.w)) * 4, i = (y * W + x) * 3;
-          buf[i] = c.px[j]; buf[i + 1] = c.px[j + 1]; buf[i + 2] = c.px[j + 2]; } }
+      if (c) { lastGood = c; const f = Math.floor((VT - clipV0) * c.fps * (src.speed || 1)) % c.n, base = f * c.w * c.h * 4, fl = src.vary && src.vary % 2;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const xx = fl ? W - 1 - x : x, j = base + ((y % c.h) * c.w + (xx % c.w)) * 4, i = (y * W + x) * 3;
+          buf[i] = c.px[j]; buf[i + 1] = c.px[j + 1]; buf[i + 2] = c.px[j + 2]; }
+        if (src.vary) { const r = src.vary % 3; if (r) for (let i = 0; i < N * 3; i += 3) { const R0 = buf[i], G0 = buf[i + 1], B0 = buf[i + 2];   // another effect of the same look: same recording, flipped + recoloured
+          if (r === 1) { buf[i] = B0; buf[i + 1] = R0; buf[i + 2] = G0; } else { buf[i] = G0; buf[i + 1] = B0; buf[i + 2] = R0; } } } }
       if (src.recolor) recolor(buf, src.recolor, t, FIRE);
       if (src.fire && (FIRE.beat || FIRE.dance)) { const k = 1 + (FIRE.beat ? .35 * Math.pow(1 - beatPos % 1, 4) : 0) + (FIRE.dance ? .15 * Math.sin(beatPos * Math.PI / 2) : 0); for (let i = 0; i < buf.length; i++) buf[i] *= k; }
     } else if (src.kind === 'board') drawBoard(buf, t);
-    else if (src.kind === 'ticker') { const m = textMask(src.text, 17), span = W + m.w, x0 = Math.round(W - ((t - clipT0) * 11) % span);
+    else if (src.kind === 'ticker') { const m = textMask(src.text, 17), span = W + m.w, x0 = Math.round(W - ((VT - clipV0) * 11) % span);
       for (let x = 0; x < W; x++) { put(buf, x, 0, src.color.map(v => v * .6)); put(buf, x, H - 1, src.color.map(v => v * .6)); }
       stamp(buf, m, x0, ((H - m.h) / 2) | 0, () => [255, 255, 255]); }
-    else if (src.kind === 'eye') eye(buf, t);
+    else if (src.kind === 'eye') eye(buf, VT);
+    if (!busy) { cueColor(buf, SH.act); cueColor(buf, LP.act); }    // 🎬🔁 colour lock
     if (src.holiday && HOL_NAME.text && (t % 14) < 4.2) {         // 🎂 the birthday name / 🏈 team name flies across now and then
       const m = textMask(HOL_NAME.text, H), el = (t % 14) / 4.2; stamp(buf, m, Math.round(W - el * (W + m.w)), ((H - m.h) / 2) | 0, (x) => HOL_NAME.cols[x < W / 2 ? 0 : 1], .3); }
-    if (FD.alert) { if (FD.alert.until < t) FD.alert = null; else { const c = clipNow('live-storm'); if (c) { const f = Math.floor(t * c.fps) % c.n, base = f * c.w * c.h * 4;
-      for (let i = 0; i < N; i++) { const j = base + i * 4; buf[i * 3] = c.px[j]; buf[i * 3 + 1] = c.px[j + 1]; buf[i * 3 + 2] = c.px[j + 2]; } } } }
     if (S.power) textOverlay(buf, t, si);
     // ✨ sparkles: auto = a few on the drops, lots = always glittering
     const want = S.sparkles === 'lots' ? .012 : S.sparkles === 'auto' && si.name === 'drop' ? .004 : 0;
-    for (let i = 0; i < N; i++) { if (want && R() < want) spk[i] = 1; if (spk[i] > .02) { const v = spk[i] * 255; buf[i * 3] = Math.max(buf[i * 3], v); buf[i * 3 + 1] = Math.max(buf[i * 3 + 1], v); buf[i * 3 + 2] = Math.max(buf[i * 3 + 2], v); spk[i] *= Math.pow(.004, dt); } else spk[i] = 0; }
-    if (S.power) djApply(buf, t, dt);
+    for (let i = 0; i < N; i++) { if (want && R() < want) spk[i] = 1; if (spk[i] > .02) { const v = spk[i] * 255; buf[i * 3] = Math.max(buf[i * 3], v); buf[i * 3 + 1] = Math.max(buf[i * 3 + 1], v); buf[i * 3 + 2] = Math.max(buf[i * 3 + 2], v); spk[i] *= Math.pow(.004, vdt); } else spk[i] = 0; }
+    if (S.power) djApply(buf, t, vdt);
+    if (!busy) { cueText(buf, SH.act, t); cueText(buf, LP.act, t); if (SH.act.blackout || LP.act.blackout) buf.fill(0); }
+    fadersLook(buf, t, busy);                                       // 🎚️ trails, colour, white, strobe
+    if (SH.ok && !busy && SH.mult !== 1) for (let i = 0; i < buf.length; i++) buf[i] *= SH.mult;   // 🎬 the show's brightness curve
+    if (OV.ilLv > 0 && S.power) { const pic = ilPic(t), k = OV.ilLv * OV.ilLv * (3 - 2 * OV.ilLv); for (let i = 0; i < buf.length; i++) buf[i] = buf[i] * (1 - k) + pic[i] * k; }
+    if (FD.alert) { if (FD.alert.until < t) FD.alert = null; else { const c = clipNow('live-storm'); if (c) { const f = Math.floor(t * c.fps) % c.n, base = f * c.w * c.h * 4;
+      for (let i = 0; i < N; i++) { const j = base + i * 4; buf[i * 3] = c.px[j]; buf[i * 3 + 1] = c.px[j + 1]; buf[i * 3 + 2] = c.px[j + 2]; } } } }
     // a curtain switched off in Setup is dark; Flash lights one up white
     DEVS.forEach(d => { const off = DEV_ON[d.id] === false, fl = S.flash[d.id] > t; if (!off && !fl) return;
       for (let y = 0; y < H; y++) for (let x = d.x0; x < d.x0 + 20; x++) { const i = (y * W + x) * 3, v = off ? 0 : (Math.floor(t * 6) % 2 ? 255 : 30); buf[i] = buf[i + 1] = buf[i + 2] = v; } });
-    const k = S.power ? S.brightness / 100 : 0; let out = '', sum = 0;
-    for (let i = 0; i < N * 3; i++) { const v = clamp(Math.round(buf[i] * k), 0, 255); sum += v; out += HEX[v]; }
+    if (LINEUP.on) lineup(buf, t);
+    const bri = S.brightness / 100, mm = fMaster(), k = (S.power ? bri : 0) * mm;    // the app's brightness x 🎚️ MASTER (and its blackout key)
+    for (let i = 0; i < N * 3; i++) buf[i] *= k;
+    ovApply(buf, t, bri, mm);                                        // 🚨 override keys, last of all
+    let out = '', sum = 0;
+    for (let i = 0; i < N * 3; i++) { const v = clamp(Math.round(buf[i]), 0, 255); sum += v; out += HEX[v]; }
     lastLevel = sum / (N * 3 * 255);
     return out;
+  }
+  // 🧭 line-up: a big number + an arrow on each curtain so you can tell them apart (LIGHTS page)
+  const LINEUP = {on: false};
+  function lineup(buf, t) {
+    DEVS.forEach((d, n) => { const col = n ? [51, 214, 255] : [255, 61, 154];
+      for (let y = 0; y < H; y++) for (let x = d.x0; x < d.x0 + 20; x++) { const i = (y * W + x) * 3; buf[i] *= .15; buf[i + 1] *= .15; buf[i + 2] *= .15; if (x === d.x0 || x === d.x0 + 19 || y === 0 || y === H - 1) put(buf, x, y, col.map(v => v * .5)); }
+      tiny(buf, String(n + 1), d.x0 + 7, 3, col, 2);
+      const ax = d.x0 + 4 + Math.floor((t * 6) % 12); for (let k = 0; k < 3; k++) { put(buf, ax - k, 16 - k, [255, 255, 255]); put(buf, ax - k, 16 + k, [255, 255, 255]); } });
   }
   let lastGood = null;
   function eye(buf, t) {                                            // 👁️ the Eyeball key: an eye that looks around and blinks
@@ -516,13 +1095,14 @@
   let FIRE = null, lastTick = now();
   function tick() {
     const t = now(), dt = t - lastTick; lastTick = t;
-    if (M.playing) { M.pos += dt; const cur = M.queue[M.idx]; if (cur && M.pos >= cur.dur) { M.idx = (M.idx + 1) % M.queue.length; songChanged(); } }
+    if (M.playing) { M.pos += dt; M.posAt = t; const cur = M.queue[M.idx]; if (cur && M.pos >= cur.dur) { M.idx = (M.idx + 1) % M.queue.length; songChanged(); } }
     if (M.sleep_at && wall() > M.sleep_at) { M.sleep_at = 0; M.playing = false; }
     const s = SB.s; if (s && s.running) { const c = cfg(); s.clock += c.dir === 'up' ? dt : -dt; if (s.clock <= 0 && c.dir === 'down') { s.clock = 0; s.running = false; } }
     if (s && s.on && s.mode === 'live' && s.live && wall() - SB.liveT > 45) { SB.liveT = wall();                   // the followed game moves on
       if (R() < .5) { const side = R() < .6 ? 'home' : 'away', p = {football: pickOne([3, 7]), basketball: pickOne([2, 3]), baseball: 1}[s.leagues_sport[s.league]] || 1; s.live[side].score += p; DJ.queue.push('confetti'); } }
     if (S.scene) { const sc = S.scene, seg = sc.segs[sc.i] || {}; if (t - sc.t0 > Math.min(30, +seg.seconds || 30)) { sc.i = (sc.i + 1) % sc.segs.length; sc.t0 = t; } }
     if (S.feature && S.feature.until && S.feature.until < t) S.feature = null;
+    lpTick();
   }
 
   // ======================================================================= status (what /api/status returns)
@@ -531,9 +1111,9 @@
     const lvl = S.power ? clamp(lastLevel * 2.2 * (.65 + .35 * beat) + R() * .08, 0, 1) : 0;
     const fp = Object.assign({}, ENG.fire, FIRE), fd = FD.s, w = Object.values(fd.feeds).filter(f => f.kind === 'watch' && f.enabled).map(f => f.title);
     const sc = S.scene ? {name: S.scene.name, segment: S.scene.i + 1, segments: S.scene.segs.length, effects: [S.scene.effects[S.scene.i]]} : null;
-    return {bpm: DJ.tap_bpm || BPM, section: si.name, look: S.look, holiday: S.holiday, mirror: null, part: PARTS[si.name] + ' ' + (1 + (si.k >> 2) % 3),
+    return {bpm: DJ.tap_bpm || BPM, section: si.name, look: S.look, faders: fadersInfo(), override: ovInfo(), loops: loopsBrief(), show: shInfo(), holiday: S.holiday, mirror: null, part: PARTS[si.name] + ' ' + (1 + (si.k >> 2) % 3),
       effect: src.label || S.effect, energy: si.name === 'drop' ? .86 : si.name === 'break' ? .32 : .58, transform: 'none', trail: .4, sparkle: .2,
-      brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, pro: false, scoreboard: !!SB.s.on, fireplace: fp,
+      brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, pro: true, scoreboard: !!SB.s.on, fireplace: fp,
       feeds: {mode: fd.mode, title: fd.mode !== 'off' ? fd.feeds[fd.mode].title : '', watching: w, alert: FD.alert ? FD.alert.event : ''}, dj: djInfo(),
       shuffle: S.shuffle, characters: S.characters, held_look: S.held, pinned: S.pinned, calm: si.name === 'break' ? .6 : .2, grand: si.name === 'drop' ? .8 : .3,
       level: Math.round(lvl * 100) / 100, sparkles: S.sparkles, pace: S.pace, scene: sc, text: TX.s.show,
@@ -544,6 +1124,15 @@
 
   // ======================================================================= /api/control
   function control(b) {
+    lpObserve('control', b); shObserve('control', b);
+    if (['look+', 'look-', 'effect+', 'effect-'].includes(b.step) && !S.scene) {        // 🎛️ DJ skip buttons: the next / previous look or effect
+      const st = b.step, dir = st.endsWith('+') ? 1 : -1; S.holiday = null; S.locked = null;
+      if (st.startsWith('look')) { const names = Object.keys(CAT.looks), i = names.indexOf(S.look); setLook(names[((i + dir) % names.length + names.length) % names.length], false); S.feature = null; S.held = S.look; }
+      else { const lk = CAT.looks[S.look] || {mid: [], high: [], low: []}, pool = [];
+        [].concat(lk.mid, lk.high, lk.low).forEach(c => { if (!pool.includes(c)) pool.push(c); });
+        const cur = S.feature ? S.feature.name : S.effect, i = pool.indexOf(cur), n = ((i + dir) % pool.length + pool.length) % pool.length, c = pool[n] || S.effect;
+        S.effect = c; S.feature = {clip: effectClip(c) || lookClip(S.look, S.lookK), name: c, until: now() + 40, vary: n % 6}; }
+    }
     if ('delay' in b) S.delay = clamp(+b.delay || 0, 0, 1000);
     if ('power' in b) S.power = !!b.power;
     if ('brightness' in b) S.brightness = clamp(Math.round(+b.brightness), 5, 100);
@@ -578,6 +1167,7 @@
   async function handle(method, path, q, b) {
     await ready;
     const ok = (o) => ({json: Object.assign({ok: true}, o || {})});
+    const pro = fn => { try { return {json: fn()}; } catch (e) { if (e.bad) return {status: 400, json: {error: e.message}}; throw e; } };
     if (method === 'GET') {
       switch (path) {
         case '/api/status': return {json: status()};
@@ -586,7 +1176,7 @@
           devices: DEVS.map(d => ({id: d.id, name: d.name, x0: d.x0, x1: d.x0 + 19, y0: 0, y1: H - 1}))}]}};
         case '/api/frame': { const rgb = paint(); return {json: {w: W, h: H, rgb: rgb.match(/.{6}/g)}}; }
         case '/api/uiver': return {json: {v: 1}};
-        case '/api/license': return {json: {licensed: true, owner: false, pro: false, plan: 'home', key: 'GLOWBOP-DEMO', message: '', buy: '/pricing.html', buy_pro: '/pricing.html#pro'}};
+        case '/api/license': return {json: {licensed: true, owner: false, pro: true, plan: 'pro', key: 'GLOWBOP-DEMO', message: '', buy: '/pricing.html', buy_pro: '/pricing.html#pro'}};
         case '/api/link': return {json: {link: 'http://192.168.0.42:8787'}};
         case '/api/lights': return {json: lightsInfo()};
         case '/api/music': return {json: musicState()};
@@ -597,6 +1187,13 @@
         case '/api/score/teams': { const lg = q.get('league') || 'nfl', ts = TEAMS[lg];
           return {json: ts ? {teams: ts.map(x => ({id: x[0], name: x[1], abbr: x[0], color: x[2]}))} : {teams: [], error: 'In the demo, teams load for the NFL, NBA, MLB, NHL, MLS and Premier League'}}; }
         case '/api/fire': return {json: Object.assign({}, ENG.fire, FIRE)};
+        case '/api/faders': return {json: fadersInfo()};
+        case '/api/override': return {json: ovInfo()};
+        case '/api/loops': return {json: loopsInfo(q.get('lite') !== '1')};
+        case '/api/shows': return {json: {on: SH.on, rec: SH.rec, now: shInfo(), songs: shList()}};
+        case '/api/shows/now': return {json: shInfo()};
+        case '/api/shows/one': { const key = q.get('key'); if (!key) return {status: 400, json: {error: 'which song? (key)'}};
+          return {json: {key, show: SH.shows[key] || null, rev: SH.rev[key] || 0, song: songFacts(key), looks: ENG.look_colors || {}, effects: Object.keys(CAT.effects).sort(), hits: HIT_TYPES, now: shInfo()}}; }
         case '/api/feeds': return {json: feedsInfo()};
         case '/api/support': return {json: {ready: true, pending: 0, version: 'demo'}};
         case '/api/music/search': ytToast(); return {json: {results: fakeSongs(q.get('q'), 6)}};
@@ -611,6 +1208,15 @@
     } else {
       switch (path) {
         case '/api/control': return control(b);
+        case '/api/faders': return pro(() => Object.assign(fadersInfo(), {ok: true, changed: fadersSet(b)}));
+        case '/api/override': return pro(() => { const ch = ovSet(b); return Object.assign(ovInfo(), {ok: true, changed: ch}); });
+        case '/api/loops': return pro(() => { const ch = loopsSet(b); return Object.assign(loopsInfo(true), {ok: true, changed: ch}); });
+        case '/api/shows': return showsPost(b);
+        case '/api/restart': return LAPTOP('restarting the light engine');
+        case '/api/lights/lineup': LINEUP.on = !!b.on; LINEUP.until = now() + 60; return ok();
+        case '/api/lights/arrange': if (b.how && b.how !== 'row') return LAPTOP('hanging curtains ' + ({stack: 'stacked', grid: 'in a grid', overlap: 'overlapped'}[b.how] || 'another way'));
+          if (b.order && b.order[0] === DEVS[1].id) return LAPTOP('swapping the curtains around'); return ok();
+        case '/api/lights/lock': LINEUP.on = false; setTimeout(() => toast('🔒 Layout locked (in the demo nothing restarts)'), 60); return ok();
         case '/api/scene': { const segs = (b.segments || []).slice(0, 12); if (!segs.length) return {status: 400, json: {error: 'a scene needs segments'}};
           const effs = segs.map(sg => sg.effect || (sg.layers || []).map(l => l.effect).join(' + ') || sg.look || b.name);
           const clips = segs.map(sg => (sg.look && !sg.effect ? lookClip(sg.look) : null) || effectClip(sg.effect || ((sg.layers || [])[0] || {}).effect) || (sg.look ? lookClip(sg.look) : pickOne(SPECTACLE)));
@@ -636,7 +1242,9 @@
           TX.t0 = now(); return ok(); }
         case '/api/dj': {
           const t = now();
+          lpObserve('dj', b); shObserve('dj', b);
           if (b.hit === 'blackout') DJ.black = 'on' in b ? !!b.on : !DJ.black;
+          else if (b.hit && b.snap === false) djFire(b.hit, b.beats);     // ⚡ instant pads fire right now; snapped ones wait for the beat
           else if (b.hit) DJ.queue.push(b.hit);
           if ('build' in b) { if (b.build && DJ.build == null) DJ.build = t; else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
           if ('cue' in b) DJ.cue = b.cue && CAT.looks[b.cue] ? b.cue : null;
@@ -688,6 +1296,14 @@
   try { if (navigator.requestMIDIAccess) navigator.requestMIDIAccess = () => { setTimeout(() => toast('💻 In the demo, DJ controllers need the GlowBop laptop app'), 80);
     return Promise.resolve({inputs: new Map(), onstatechange: null}); }; } catch (e) {}
 
+  // the phone-link QR code and other app images live on the laptop: the demo shows its own little picture instead of a broken image
+  try { const d = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+    const QR = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="10" fill="#fff"/>' +
+      '<text x="60" y="52" text-anchor="middle" font-family="Arial Narrow,Arial,sans-serif" font-weight="700" font-size="15" fill="#000">ON THE LAPTOP</text>' +
+      '<text x="60" y="74" text-anchor="middle" font-family="Arial Narrow,Arial,sans-serif" font-size="12" fill="#444">your phone link QR</text></svg>');
+    Object.defineProperty(HTMLImageElement.prototype, 'src', {configurable: true, enumerable: d.enumerable, get() { return d.get.call(this); },
+      set(v) { if (/^\/api\/qr\.svg/.test(String(v))) v = QR; else if (/^\/api\//.test(String(v))) v = ''; d.set.call(this, v); }}); } catch (e) {}
+
   window.__demoWall = () => ({clip: lastSrc.clip || lastSrc.kind || '', label: lastSrc.label || ''});   // handy for tests
 
   // ======================================================================= start
@@ -700,6 +1316,7 @@
     TX.presets = [{name: 'HAPPY BIRTHDAY JACK', kind: 'text', text: 'HAPPY BIRTHDAY JACK *', mode: 'scroll', color: 'rainbow'}, {name: 'LETS DANCE', kind: 'text', text: 'LETS DANCE', mode: 'beat', color: 'look'}];
     FD.s = JSON.parse(JSON.stringify(FEEDS0));
     S.effect = pickOne(CAT.looks[S.look].mid);
+    BPM = songBpm(M.queue[M.idx]); M.posAt = now(); showsSeed();
     ['look-neon-party', 'live-storm'].forEach(loadClip);
     setInterval(tick, 250);
     log('pretend engine running: ' + Object.keys(CLIPS).length + ' recorded clips, ' + Object.keys(CAT.looks).length + ' looks');

@@ -22,6 +22,13 @@
   .dj-pads .tile .nm { display:block; max-width:100%; overflow-wrap:anywhere; hyphens:manual; }
   #djPadsPanel { container-type:inline-size; }
   @container (min-width: 640px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
+  .dj-skip { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; margin-top:10px; }
+  .dj-skip .btn { min-height:58px; padding:6px 4px; font-size:calc(14px * var(--fs, 1)); letter-spacing:1px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; line-height:1.1; touch-action:manipulation; }
+  .dj-skip .btn b { font-size:calc(20px * var(--fs, 1)); line-height:1; }
+  .dj-skip .btn.hit { background:var(--c); color:#000; box-shadow:0 0 22px var(--c); }
+  .dj-now { display:flex; justify-content:space-between; gap:10px; margin-top:8px; font:calc(13px * var(--fs, 1))/1.3 var(--mono); color:var(--dim); }
+  .dj-now span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dj-now b { color:var(--text); font-weight:400; }
   `);
 
   // ------------------------------------------------------------------ hit pads
@@ -38,7 +45,21 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--red)'); el.id = 'djPadsPanel';
     el.innerHTML = `<div class="ph"><span>Hit pads</span><button class="btn" id="djSnap" style="--c:var(--cyan);min-height:34px;padding:4px 14px;font-size:calc(13px * var(--fs, 1))"></button></div>
       <div class="tiles dj-pads" id="djPads"></div>
+      <div class="dj-skip" id="djSkip">
+        <button class="btn" data-st="look-" style="--c:var(--gold)"><b>◀</b>LOOK</button>
+        <button class="btn" data-st="look+" style="--c:var(--gold)"><b>▶</b>NEXT LOOK</button>
+        <button class="btn" data-st="effect-" style="--c:var(--cyan)"><b>◀</b>EFFECT</button>
+        <button class="btn" data-st="effect+" style="--c:var(--cyan)"><b>▶</b>NEXT EFFECT</button>
+      </div>
+      <div class="dj-now"><span>Look: <b id="djNowLook">-</b></span><span>Effect: <b id="djNowFx">-</b></span></div>
       <p class="note" id="djSnapNote"></p>`;
+    el.querySelectorAll('#djSkip .btn').forEach(b => {
+      const go = async () => { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); GB.sfx('tap'); await GB.control({step: b.dataset.st}); };
+      b.addEventListener('pointerdown', e => { if (e.button > 0) return; e.preventDefault(); b._pd = Date.now(); go(); });
+      b.onclick = () => { if (Date.now() - (b._pd || 0) < 800) return; go(); };
+    });
+    GB.on('status', st => { const l = el.querySelector('#djNowLook'), f = el.querySelector('#djNowFx');
+      if (l && st) l.textContent = st.look || '-'; if (f && st) f.textContent = st.effect || '-'; });
     const paintSnap = () => { const on = snap(); const s = el.querySelector('#djSnap'); s.classList.toggle('on', on); s.textContent = on ? '🥁 SNAP TO BEAT: ON' : '⚡ INSTANT';
       el.querySelector('#djSnapNote').textContent = on ? 'Snap to beat: every pad waits for the next beat, so it always lands on time. Blackout holds the wall dark until you tap it again.'
         : 'Instant: pads fire the moment you touch them. Turn on Snap to beat to land every hit on the next beat. Blackout holds the wall dark until you tap it again.'; };
@@ -55,7 +76,7 @@
   });
 
   // ------------------------------------------------------------------ build + tap tempo
-  GB.panel('dj', 20, el => {
+  GB.panel('dj', 3, el => {                                    // 🔝 Build & drop sits at the very top of the DJ page
     el.classList.add('box'); el.style.setProperty('--c', 'var(--pink)');
     el.innerHTML = `<div class="ph"><span>Build &amp; drop</span><span class="r">HOLD, THEN LET GO</span></div>
       <button class="btn c wide" id="djBuild" style="--c:var(--pink)">HOLD TO BUILD</button>

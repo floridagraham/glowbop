@@ -121,7 +121,7 @@
   const heardNow = () => { if (!L) return 0; const dt = Math.min(2, (performance.now() - base.t) / 1000); return base.pos + dt * base.bpm / 60 - (L.delay_beats || 0); };
 
   // ------------------------------------------------------------------ the panel
-  GB.panel('dj', 12, el => {
+  GB.panel('dj', 75, el => {                                   // 🔒 Pro: under the fader board
     el.classList.add('box'); el.id = 'lpPanel';
     el.innerHTML = `<div class="ph"><span>Loop banks</span><span class="r" id="lpR">NOTHING PLAYING</span></div>
       <div class="lp-top"><button class="btn sm" id="lpStop" disabled>⏹ Stop all</button><button class="btn sm" id="lpRec" style="--c:var(--red)">🔴 Record</button>

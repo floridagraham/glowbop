@@ -24,17 +24,30 @@
   GB.panel('games', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--lime)');
     el.innerHTML = `<div class="ph"><span>Arcade</span><span class="r" id="gmNow">PICK A GAME</span></div>
-      <p class="note">Self-playing pixel games. They play themselves and speed up with the music. Tap one to put it on the wall.</p>
+      <p class="note">Self-playing pixel games. They play themselves and speed up with the music. Tap one to put it on the wall, tap it again to turn it off.</p>
       <div class="tiles gm-tiles" id="gmTiles"></div>
       <button class="btn c lg wide" id="gmAll" style="--c:var(--lime)">🕹️ Arcade marathon: every game, in turn</button>
-      <p class="note">Tap <b>♫ Back to music</b> under the wall to stop.</p>`;
+      <p class="note">Tap the glowing game again (or <b>♫ Back to music</b> under the wall) to stop.</p>`;
     GAMES.forEach(([fx, em, name, desc, c]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.fx = fx; b.style.setProperty('--c', c);
       b.innerHTML = `<span class="em">${em}</span>${name}<small>${desc}</small>`;
-      b.onclick = async () => { if (await GB.control({lock_effect: fx})) { GB.sfx('on'); GB.toast(em + ' ' + name + ' on the wall'); } };
+      b.onclick = async () => {
+        if (b.classList.contains('on')) {                              // second tap: game off, back to the music show
+          b.classList.remove('on');
+          if (await GB.control({release: true, lock_effect: null})) { GB.sfx('off'); GB.toast(em + ' ' + name + ' off, back to the music'); }
+          return;
+        }
+        if (await GB.control({lock_effect: fx})) { b.classList.add('on'); GB.sfx('on'); GB.toast(em + ' ' + name + ' on the wall (tap again to stop)'); }
+      };
       el.querySelector('#gmTiles').appendChild(b);
     });
     el.querySelector('#gmAll').onclick = async () => {
+      const all = el.querySelector('#gmAll');
+      if (all.classList.contains('on')) {                              // second tap: marathon off
+        all.classList.remove('on');
+        if (await GB.control({release: true, lock_effect: null})) { GB.sfx('off'); GB.toast('🕹️ Arcade marathon off, back to the music'); }
+        return;
+      }
       await GB.control({lock_effect: null});
       if (await GB.control({look: 'Retro Arcade', pin: true})) { GB.sfx('on'); GB.toast('🕹️ Arcade marathon'); }
     };

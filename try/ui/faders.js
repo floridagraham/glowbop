@@ -37,13 +37,13 @@
   .fd-val { font:calc(12px * var(--fs, 1))/1 var(--mono); color:var(--text); text-align:center; height:calc(14px * var(--fs, 1)); display:flex; align-items:center; justify-content:center; white-space:nowrap; }
   .fd.away .fd-val { color:var(--c); text-shadow:0 0 8px var(--c); }
   .fd-sw { display:inline-block; width:calc(14px * var(--fs, 1)); height:calc(14px * var(--fs, 1)); border-radius:50%; box-shadow:0 0 8px currentColor, 0 0 0 2px #fff4; }
-  .fd-track { position:relative; height:230px; border-radius:10px; background:var(--dark2); box-shadow:inset 0 0 0 1px var(--line); touch-action:none; cursor:ns-resize; outline:none; overflow:hidden; }
+  .fd-track { position:relative; height:170px; border-radius:10px; background:var(--dark2); box-shadow:inset 0 0 0 1px var(--line); touch-action:none; cursor:ns-resize; outline:none; overflow:hidden; }
   .fd-track:focus-visible { box-shadow:inset 0 0 0 2px var(--c); }
   .fd-rail { position:absolute; left:0; right:0; top:16px; bottom:16px; }
   .fd-rail::before { content:''; position:absolute; inset:0 calc(50% - 3px); border-radius:3px; background:#06050c; }
   .fd-ticks { position:absolute; inset:0 4px; background:repeating-linear-gradient(0deg, #ffffff22 0 1px, transparent 1px 10%); pointer-events:none; }
   .fd-fill { position:absolute; left:calc(50% - 3px); right:calc(50% - 3px); bottom:0; border-radius:3px; background:var(--c); box-shadow:0 0 12px var(--c); }
-  .fd-cap { position:absolute; left:3px; right:3px; height:30px; margin-bottom:-15px; border-radius:7px; background:linear-gradient(#f4f2ff, #b9b4d6); box-shadow:0 2px 8px #000c, 0 0 0 1px #000; pointer-events:none; }
+  .fd-cap { position:absolute; left:3px; right:3px; height:26px; margin-bottom:-13px; border-radius:7px; background:linear-gradient(#f4f2ff, #b9b4d6); box-shadow:0 2px 8px #000c, 0 0 0 1px #000; pointer-events:none; }
   .fd-cap::after { content:''; position:absolute; left:18%; right:18%; top:calc(50% - 1.5px); height:3px; border-radius:2px; background:var(--c); box-shadow:0 0 6px var(--c); }
   .fd-cap::before { content:''; position:absolute; inset:0; border-radius:7px; background:repeating-linear-gradient(0deg, transparent 0 4px, #0002 4px 5px); }
   .fd.moving .fd-cap, .fd-track:active .fd-cap { box-shadow:0 2px 8px #000c, 0 0 0 1px #000, 0 0 18px var(--c); }
@@ -51,7 +51,7 @@
   .fd-zl { position:absolute; left:3px; font:calc(9px * var(--fs, 1))/1 var(--mono); color:var(--dim); pointer-events:none; margin-bottom:-5px; }
   .fd[data-k=color] .fd-rail::before { inset:0 calc(50% - 4px); width:auto; opacity:.9; background:linear-gradient(0deg, #06050c 0 1%, ${[0, 40, 80, 120, 160, 200, 240, 280, 331].map((h, i) => `hsl(${h},100%,50%) ${(1 + i / 8 * 99).toFixed(1)}%`).join(', ')}); }
   .fd[data-k=color] .fd-fill { display:none; }
-  .fd-fl { appearance:none; border:0; border-radius:10px; min-height:46px; padding:4px 2px; background:var(--dark); color:var(--text); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  .fd-fl { appearance:none; border:0; border-radius:10px; min-height:40px; padding:4px 2px; background:var(--dark); color:var(--text); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
     touch-action:none; -webkit-touch-callout:none; font:700 calc(10px * var(--fs, 1))/1 var(--cond); letter-spacing:.5px; }
   .fd-fl .em { font-size:calc(18px * var(--fs, 1)); line-height:1; }
   .fd-fl .w { display:none; }
@@ -64,16 +64,16 @@
   #fdPanel .ph .r.up { color:var(--cyan); }
   @media (min-width: 700px) {
     .fd-board { gap:10px; }
-    .fd-track { height:300px; }
+    .fd-track { height:220px; }
     .fd-lab { font-size:calc(13px * var(--fs, 1)); letter-spacing:1.5px; }
     .fd-val { font-size:calc(14px * var(--fs, 1)); height:calc(16px * var(--fs, 1)); }
-    .fd-fl { min-height:56px; }
+    .fd-fl { min-height:48px; }
     .fd-fl .w { display:block; }
     .fd-cap { left:6px; right:6px; }
     .fd-zl { left:6px; font-size:calc(10px * var(--fs, 1)); }
   }
-  @media (min-width: 1000px) and (min-aspect-ratio: 1/1) { .fd-track { height:270px; } .fd-board { gap:8px; } }
-  @media (min-width: 1000px) and (min-aspect-ratio: 1/1) and (max-height: 820px) { .fd-track { height:220px; } }
+  @media (min-width: 1000px) and (min-aspect-ratio: 1/1) { .fd-track { height:200px; } .fd-board { gap:8px; } }
+  @media (min-width: 1000px) and (min-aspect-ratio: 1/1) and (max-height: 820px) { .fd-track { height:170px; } }
   `);
 
   // ------------------------------------------------------------------ sending: ~30 posts a second at most, newest value wins
@@ -176,7 +176,7 @@
     r.classList.toggle('up', !!up.length);
     const b = $('fdReset'); if (b) b.disabled = !up.length;
   }
-  GB.panel('dj', 7, el => {
+  GB.panel('dj', 70, el => {                                   // 🔒 Pro tools sit below the Home DJ panels
     el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)'); el.id = 'fdPanel';
     el.innerHTML = `<div class="ph"><span>Fader board</span><span class="r" id="fdR">ALL AT DEFAULT</span></div>
       <div class="fd-board" id="fdBoard"></div>

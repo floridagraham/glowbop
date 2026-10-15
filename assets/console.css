@@ -371,3 +371,20 @@ table.cmp tr.grp span{font-size:14px;color:var(--lav)}
 
 .tierjump{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}.tierjump a{background:var(--card);border:1px solid #ffffff22;border-radius:0 14px 0 14px;padding:9px 18px;font:700 15px var(--cond);letter-spacing:1px;text-transform:uppercase;color:#fff;text-decoration:none}.tierjump a:hover{border-color:var(--amber)}
 .tierh{font-size:clamp(30px,5vw,46px);scroll-margin-top:90px}.plans.pro .plan{border-color:#a855f755}.plans.pro .plan h3::before{content:"🎛️ PRO ";font-size:.7em;color:#c084fc;letter-spacing:2px}
+
+/* Pro DJ: the small tag next to Pro-only features, and the home page teaser strip */
+.protag{display:inline-block;font:700 11px/1.5 var(--cond);letter-spacing:1.5px;text-transform:uppercase;color:#000;background:#c084fc;padding:1px 8px;border-radius:0 6px 0 6px;vertical-align:middle;margin-left:6px;white-space:nowrap;box-shadow:0 0 12px rgba(192,132,252,.45)}
+h2 .protag,h3 .protag{font-size:12px}
+.prostrip{position:relative;border-radius:0 40px 0 40px;border:1px solid #a855f755;border-left:14px solid #c084fc;padding:40px clamp(18px,4vw,48px);
+  background:radial-gradient(circle at 88% 18%,rgba(192,132,252,.22),transparent 55%),radial-gradient(circle at 8% 90%,rgba(51,214,255,.12),transparent 50%),var(--card)}
+.prostrip h2{margin-top:8px}.prostrip .lead{max-width:62ch}
+.prostrip .prochips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:24px 0}
+.prostrip .prochips a{display:block;background:#0d0b16;border:1px solid var(--line);border-top:4px solid var(--c,#c084fc);border-radius:0 14px 0 14px;padding:14px 14px 12px;color:var(--text);text-decoration:none}
+.prostrip .prochips a:hover{filter:brightness(1.2);text-decoration:none}
+.prostrip .prochips b{display:block;font:700 19px/1.15 var(--cond);letter-spacing:1px;text-transform:uppercase}
+.prostrip .prochips span{display:block;font-size:14px;color:var(--dim);margin-top:4px;line-height:1.4}
+@media(max-width:900px){.prostrip .prochips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.prostrip .prochips{grid-template-columns:1fr}.prostrip{border-left-width:8px}}
+.railgrp{margin:22px 0 6px;font:700 14px var(--cond);letter-spacing:3px;color:var(--label);text-transform:uppercase}
+table.cmp tr.grp.pro th{background:linear-gradient(90deg,rgba(192,132,252,.32),rgba(155,61,255,.12) 40%,rgba(0,0,0,0));border-top-color:#c084fc}
+@media(max-width:600px){.dev.laptop .base{margin:0}}
