@@ -237,7 +237,7 @@ footer .fine{border-top:6px solid #1a1628}
 @media(max-width:900px){.showgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .showgrid{max-width:980px;margin-left:auto;margin-right:auto}
 .dev .scr{position:relative}
-.dev .wallov{position:absolute;display:block;pointer-events:none}
+.dev .wallov{position:absolute;display:block;pointer-events:none;object-fit:fill;background:#05040a}
 /* iPad portrait and small laptops: the colored keys stay on screen (a second row), no hidden menu */
 @media(min-width:700px) and (max-width:1040px){
   .nav.con-hd .burger{display:none!important}
@@ -293,8 +293,7 @@ footer .fine{border-top:6px solid #1a1628}
   .hero{min-height:100svh;padding-top:30svh}
   .hero::before{display:none}
   .hero-bg{display:block;position:absolute;left:0;right:0;top:0;height:100svh;z-index:0;overflow:hidden;background:#05040a;pointer-events:none}
-  .hero-bg canvas{position:absolute;inset:0;width:100%;height:100%}
-  .hero-bg canvas.glow{filter:blur(16px) saturate(1.6) brightness(1.3);opacity:.95;transform:scale(1.08)}
+  .hero-bg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.08) 22%,rgba(0,0,0,.55) 42%,rgba(0,0,0,.72) 70%,#000 100%)}
   .hero .wrap{z-index:1}
   .hero .lead,.hero h1{text-shadow:0 2px 14px #000,0 0 30px #000}
@@ -341,15 +340,19 @@ table.cmp tr.grp span{font-size:14px;color:var(--lav)}
   -webkit-background-clip:text;background-clip:text;color:transparent;animation:usflowx 4s linear infinite}
 .plan.best .tag,.founder .tag{background:linear-gradient(90deg,var(--amber),var(--pink));color:#000;box-shadow:0 0 16px rgba(255,61,154,.8)}
 
-/* 2. glint: a quick flash of light sweeps across the main buttons every few seconds */
-@keyframes gbglint{0%,72%{transform:translateX(-160%) skewX(-22deg)}88%,100%{transform:translateX(260%) skewX(-22deg)}}
-.btn.primary,.btn.chase{position:relative;overflow:hidden;isolation:isolate}
-.btn.primary::after,.btn.chase::after{content:"";position:absolute;top:-10%;bottom:-10%;left:0;width:42%;pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15) 30%,rgba(255,255,255,.85) 50%,rgba(255,255,255,.15) 70%,transparent);
-  animation:gbglint 4.5s ease-in-out infinite;mix-blend-mode:screen}
-.btn.chase{background:#0d0b16;color:#fff;border:0;box-shadow:inset 0 0 0 2px rgba(51,214,255,.6),0 0 22px -6px rgba(51,214,255,.7)}
-.btn.chase::after{animation-delay:1.2s}
-@media(prefers-reduced-motion:reduce){.btn.primary::after,.btn.chase::after{animation:none;opacity:0}}
+/* 2. GlowBop flash-over: every few seconds a band of LED dots in our colors washes across the main buttons
+   (pink → violet → cyan → amber), and the button's glow pulses through the same colors as it passes */
+@keyframes gbwash{0%,58%{transform:translateX(-120%)}86%,100%{transform:translateX(120%)}}
+@keyframes gbwashglow{0%,56%{box-shadow:0 0 26px -6px rgba(255,61,154,.8)}64%{box-shadow:0 0 34px 0 rgba(155,61,255,.95)}72%{box-shadow:0 0 38px 2px rgba(51,214,255,.95)}80%{box-shadow:0 0 34px 0 rgba(255,178,61,.9)}90%,100%{box-shadow:0 0 26px -6px rgba(255,61,154,.8)}}
+.btn.primary,.btn.chase{position:relative;overflow:hidden;isolation:isolate;animation:gbwashglow 6.5s ease-in-out infinite}
+.btn.primary::after,.btn.chase::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent 0%,var(--pink) 18%,var(--violet) 36%,var(--cyan) 54%,var(--amber) 72%,transparent 90%);
+  -webkit-mask-image:radial-gradient(circle,#000 1.6px,transparent 2.1px);mask-image:radial-gradient(circle,#000 1.6px,transparent 2.1px);
+  -webkit-mask-size:6px 6px;mask-size:6px 6px;opacity:.95;z-index:-1;filter:brightness(1.4) drop-shadow(0 0 3px #fff);
+  animation:gbwash 6.5s cubic-bezier(.45,0,.35,1) infinite}
+.btn.chase{background:#0d0b16;color:#fff;border:0;box-shadow:inset 0 0 0 2px rgba(51,214,255,.6)}
+.btn.chase::after{animation-delay:3.2s}.btn.chase{animation-delay:3.2s}
+@media(prefers-reduced-motion:reduce){.btn.primary::after,.btn.chase::after{animation-duration:14s}}
 
 /* 4. LED ticker strip: dot-matrix letters scrolling like a real wall */
 @keyframes tickrun{to{transform:translateX(-50%)}}
