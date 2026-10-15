@@ -103,17 +103,20 @@
   const ifr = f.querySelector('iframe'), go = f.querySelector('.tf-play');
   let ready = false, want = false;
   const load = () => { if (!ifr.getAttribute('src')) ifr.setAttribute('src', ifr.dataset.src); };
-  const live = () => {
+  const live = (scroll = true) => {
     f.classList.remove('loading'); f.classList.add('live'); ifr.removeAttribute('inert'); ifr.removeAttribute('tabindex');
+    if (!scroll) return;                                          // went live by itself: don't move the page
     // the whole console on screen, just under the sticky menu bar
     const nav = document.querySelector('.nav'), nb = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0, r = f.querySelector('.tf-scr').getBoundingClientRect();
     if (r.top < nb + 4 || r.bottom > innerHeight) scrollBy({top: r.top - nb - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
     try { ifr.focus({preventScroll: true}); } catch (e) {}
   };
-  ifr.addEventListener('load', () => { if (!ifr.getAttribute('src')) return; ready = true; f.classList.add('ready'); if (want) live(); });
+  // loaded = live straight away: no extra tap, visitors just start touching the console
+  ifr.addEventListener('load', () => { if (!ifr.getAttribute('src')) return; ready = true; f.classList.add('ready'); live(want); });
   go.addEventListener('click', e => { e.preventDefault(); want = true; load(); if (ready) live(); else f.classList.add('loading'); });
+  document.querySelectorAll('a[href="#tryLive"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); want = true; load(); if (ready) live(); else { f.classList.add('loading'); f.scrollIntoView({behavior: 'smooth', block: 'start'}); } }));
   if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); load(); } }, {rootMargin: '300px 0px'});
+    const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); load(); } }, {rootMargin: '600px 0px'});
     io.observe(f);
   }
 })();

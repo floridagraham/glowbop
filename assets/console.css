@@ -354,3 +354,9 @@ h2 .protag,h3 .protag{font-size:12px}
 .railgrp{margin:22px 0 6px;font:700 14px var(--cond);letter-spacing:3px;color:var(--label);text-transform:uppercase}
 table.cmp tr.grp.pro th{background:linear-gradient(90deg,rgba(192,132,252,.32),rgba(155,61,255,.12) 40%,rgba(0,0,0,0));border-top-color:#c084fc}
 @media(max-width:600px){.dev.laptop .base{margin:0}}
+
+.btn.herotry{font-size:clamp(17px,2.2vw,22px);padding:16px 30px;box-shadow:0 0 0 3px #fff3,0 0 34px var(--pink);animation:herotry 2.4s ease-in-out infinite}
+@keyframes herotry{0%,100%{box-shadow:0 0 0 3px #fff3,0 0 26px var(--pink)}50%{box-shadow:0 0 0 3px #fff6,0 0 52px var(--pink)}}
+@media (prefers-reduced-motion:reduce){.btn.herotry{animation:none}}
+.tryframe.ready .tf-play{display:none}
+#tryLive{scroll-margin-top:90px}

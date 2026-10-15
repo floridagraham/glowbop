@@ -90,7 +90,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=4">
-<link rel="stylesheet" href="/assets/console.css?v=17">
+<link rel="stylesheet" href="/assets/console.css?v=18">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -120,7 +120,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=13"></script>
+<script src="/assets/site.js?v=14"></script>
 </body>
 </html>
 '''
@@ -189,7 +189,7 @@ TRY = """<figure class="tryframe reveal" id="tryLive" aria-label="The real GlowB
     <picture class="tf-poster"><source media="(max-width: 699px)" srcset="/img/try-poster-phone.webp"><source media="(orientation: portrait) and (max-width: 1023px)" srcset="/img/try-poster-tall.webp">
       <img src="/img/try-poster-wide.webp" alt="The GlowBop console on the DJ page: the live wall, Hold to build, the hit pads and the fader board" loading="lazy" decoding="async"></picture>
     <iframe data-src="/try/?embed=1#dj" title="The real GlowBop console on a pretend light wall" loading="lazy" allow="fullscreen; autoplay" allowfullscreen inert tabindex="-1"></iframe>
-    <a class="tf-play" href="/try/#dj"><span class="tf-btn"><i aria-hidden="true">▶</i>Play with the real console</span></a>
+    <a class="tf-play" href="/try/#dj"><span class="tf-btn"><i aria-hidden="true">▶</i>Loading the real console…</span></a>
   </div>
   <figcaption class="tf-cap"><span>Tap the pads. This is the real GlowBop console on a pretend wall.</span><a class="tf-full" href="/try/#dj">Full screen ⤢</a></figcaption>
 </figure>"""
@@ -199,7 +199,7 @@ home = f'''
     <span class="pill">🎃 <b>Launching this Halloween</b> · 7-day free trial</span>
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop. Run it all from a light-show console on your phone, iPad or laptop.</p>
-    <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn chase" href="/try/" style="--c:var(--cyan)">🎛️ Try the real app now</a></div>
+    <div class="btns"><a class="btn primary herotry" href="#tryLive">🎛️ Play the live demo ↓</a><a class="btn" href="{WAIT}">✉️ Join the launch list</a></div>
     <div class="stats"><div><b>200+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
   <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><video class="gbv herov" src="/video/hero.mp4" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback aria-hidden="true"></video><span class="concept">Concept photo · real GlowBop patterns</span></figure>
