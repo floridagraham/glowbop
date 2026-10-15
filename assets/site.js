@@ -382,15 +382,21 @@
     {id: 'music', label: 'MUSIC', c: 'var(--pink)', title: 'Show control', mode: ['Music show · listening', 'shuffle on · hearing Speakers', 'var(--green)'],
      p: 'GlowBop hears whatever your computer plays and picks effects for every build-up and drop. Tap a key to feature one.',
      k: [['🌊', 'Big Wave', 'wave-bigwave'], ['🐍', 'Serpent', 'wave-serpent'], ['🎉', 'Neon Party', 'look-neon-party'], ['🌆', 'Synthwave', 'look-synthwave'], ['💥', 'The drop', 'drop'], ['🎲', 'Surprise me', '*']]},
+    {id: 'dj', label: 'DJ', c: 'var(--red)', title: 'Hit pads', mode: ['DJ mode', 'hand-played, right on the beat', 'var(--red)'],
+     p: 'Play the lights by hand. Every pad lands on the next beat. Hold to build, let go to drop.',
+     k: [['💥', 'Drop', 'drop'], ['🎆', 'Fireworks', 'fx-pixelfireworks'], ['🔥', 'Fire burst', 'fire-bonfire'], ['🔤', 'Crowd line', 'text-beat'], ['⚡', 'Strobe', 'look-club-rig'], ['🎲', 'Surprise', '*']]},
     {id: 'looks', label: 'LOOKS', c: 'var(--amber)', title: 'Looks', mode: ['Pinned look', 'stays until you release it', 'var(--amber)'],
      p: 'A look is a mood: colors plus effects for calm, medium and loud moments. 32 of them, plus 200+ effects.',
      k: [['🌌', 'Deep Space', 'look-deep-space'], ['🕹️', 'Retro Arcade', 'look-retro-arcade'], ['🔦', 'Club Rig', 'look-club-rig'], ['🧊', '3D Depth', 'look-3d-depth'], ['🌋', 'Wild Elements', 'look-wild-elements'], ['🎪', 'Mainstage', 'look-mainstage']]},
+    {id: 'games', label: 'GAMES', c: '#b6ff3d', title: 'Arcade', mode: ['Game on', 'plays itself, speeds up with the music', '#b6ff3d'],
+     p: 'Self-playing pixel games. Tap one and it plays on the wall, speeding up with the music.',
+     k: [['🧱', 'Breakout', 'fx-breakout'], ['🐍', 'Snake', 'fx-snakegame'], ['🏓', 'Pong', 'fx-pongbattle'], ['👾', 'Alien parade', 'fx-alienparade'], ['☄️', 'Space rocks', 'fx-vectorrocks'], ['🎆', 'Fireworks', 'fx-pixelfireworks']]},
     {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', title: 'Holidays', mode: ['Holiday', 'only holiday effects, cycling with the music', 'var(--cyan)'],
      p: 'Each holiday gets its own button, plus wide-screen mini-movies for the big nights.',
      k: [['🎃', 'Halloween', 'holiday-halloween'], ['🧙', 'Halloween Night', 'movie-halloweennight'], ['🎄', 'Christmas', 'holiday-christmas'], ['🛷', 'Christmas Eve', 'movie-christmaseve'], ['🎆', 'New Year', 'movie-newyearcountdown'], ['🇺🇸', 'July 4th', 'holiday-july4']]},
     {id: 'fire', label: 'FIRE', c: 'var(--orange)', title: 'Fireplace', mode: ['Fireplace 🔥', 'cozy · flames that never loop', 'var(--orange)'],
-     p: 'One tap lights a fire across the whole wall. 7 colors, Cozy or Roaring.',
-     k: [['🔥', 'Classic', 'fire-classic-cozy'], ['🌋', 'Roaring', 'fire-classic-roar'], ['🌈', 'Rainbow', 'fire-rainbow-cozy'], ['💙', 'Blue gas', 'fire-blue-cozy'], ['💜', 'Purple', 'fire-purple-roar'], ['🤍', 'Ice', 'fire-ice-cozy']]},
+     p: 'One tap lights a fire across the whole wall. Nine styles, from a cozy fireplace to dragon breath, in nine colors.',
+     k: [['🏕️', 'Campfire', 'fire-campfire'], ['🐉', 'Dragon breath', 'fire-dragon'], ['🌈', 'Rainbow fire', 'fire-rainbow-cozy'], ['🕯️', 'Candle wall', 'fire-candles'], ['🌋', 'Lava rising', 'fire-lava'], ['👻', 'Spirit fire', 'fire-spirit']]},
     {id: 'score', label: 'SPORTS', c: 'var(--violet)', title: 'Scoreboard', mode: ['Scoreboard', 'game day · live stats', 'var(--violet)'],
      p: 'Keep score at the field, follow your team live with real game stats, or put golf, NASCAR and F1 leaderboards on the wall.',
      k: [['⚾', 'Baseball live', 'score-baseball'], ['🏈', 'Football live', 'score-football'], ['🏀', 'Basketball', 'score-basketball'], ['🏒', 'Hockey', 'score-hockey'], ['⛳', 'Golf', 'live-golf'], ['🏁', 'NASCAR', 'live-nascar'], ['🏎️', 'F1 board', 'score-f1']]},
@@ -409,8 +415,12 @@
   let actx = null, snd = true;
   try { snd = localStorage.getItem('gb_demo_snd') !== '0'; } catch (e) {}
   const SC = {tap: [[0, 1568, .045], [.05, 2093, .04]], nav: [[0, 1319, .05], [.055, 1047, .05], [.11, 1568, .06]]};
+  const STEPS = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2];
+  const vary = k => { const base = SC[k][0][1] * [0.75, 0.84, 1, 1, 1.12, 1.26][(Math.random() * 6) | 0], n = SC[k].length + (Math.random() < .3 ? 1 : 0) - (SC[k].length > 2 && Math.random() < .25 ? 1 : 0);
+    const gap = .05 * (.8 + Math.random() * .45), d0 = SC[k][0][2] * (.85 + Math.random() * .35), up = Math.random() < .6; let ix = []; for (let i = 0; i < n; i++) ix.push((Math.random() * 6) | 0);
+    ix.sort((x, y) => up ? x - y : y - x); return ix.map((s, i) => [i * gap, base * STEPS[s], i === n - 1 ? d0 * 1.3 : d0]); };
   const chirp = k => { if (!snd) return; try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
-    const t0 = actx.currentTime + .005; SC[k].forEach(([dt, f, d]) => { const o = actx.createOscillator(), g = actx.createGain(), fl = actx.createBiquadFilter(), t = t0 + dt;
+    const t0 = actx.currentTime + .005; vary(k).forEach(([dt, f, d]) => { const o = actx.createOscillator(), g = actx.createGain(), fl = actx.createBiquadFilter(), t = t0 + dt;
       o.type = 'square'; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = 2600; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.05, t + .004);
       g.gain.setValueAtTime(.05, t + d - .012); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(fl); fl.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + d + .02); }); } catch (e) {} };
   const sb = document.createElement('button'); sb.className = 'd-snd'; const paintS = () => sb.textContent = snd ? '🔊 SOUND' : '🔇 MUTED';
@@ -439,7 +449,7 @@
     root.querySelectorAll('.keys button').forEach(x => x.classList.toggle('on', x === b));
     clip = cl; t0 = performance.now(); lastF = -1; load(cl);
     const m = tab.mode; $('.mode').style.setProperty('--mc', m[2]);
-    $('.mode b').textContent = tab.id === 'live' || tab.id === 'holiday' || tab.id === 'score' ? m[0] + ': ' + name : m[0];
+    $('.mode b').textContent = ['live', 'holiday', 'score', 'games', 'fire'].includes(tab.id) ? m[0] + ': ' + name : m[0];
     $('.mode small').textContent = m[1];
     $('#dLook').textContent = name; $('#dEff').textContent = ((meta(cl) || {}).title || name).replace(/ ·.*/, '');
     $('.d-wall .ph .r').textContent = '840 BULBS · ' + name.toUpperCase();

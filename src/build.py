@@ -104,7 +104,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=6"></script>
+<script src="/assets/site.js?v=7"></script>
 </body>
 </html>
 '''
@@ -131,7 +131,9 @@ FEATS = [
     ('🌐', '3D shapes', 'Wrap your curtains around a cylinder, a box or a globe for a glowing art piece.', '/guide/shapes.html', 1),
     ('🧩', '1 to 8 curtains', 'Side by side, stacked, overlapping or a grid of rows and columns. Every show resizes to fit.', '/guide/lineup.html', 1),
     ('🎃', 'Holidays & mini-movies', 'Halloween, Christmas, New Year and more, with full animated scenes for the big nights.', '/guide/holidays.html'),
-    ('🔥', 'Cozy fireplace', 'Just the fire, flickering like the real thing. 7 colors, Cozy or Roaring.', '/guide/fireplace.html'),
+    ('🔥', 'Nine kinds of fire', 'Fireplace, campfire, bonfire, candles, torches, pixel flames, spirit fire, lava and dragon breath.', '/guide/fireplace.html', 1),
+    ('🎧', 'DJ mode', 'Hit pads that land on the beat, hold-to-build drops, cue the next look, tap tempo and crowd lines.', '/guide/dj.html', 1),
+    ('🕹️', 'Arcade games', 'Breakout, Snake, Pong, Alien parade and more, playing themselves on your wall.', '/guide/looks.html#games', 1),
     ('🔤', 'Text & logos', 'Party messages, names, your DJ logo. Scroll it, flash it on every drop.', '/guide/text-logos.html'),
     ('📺', 'Screen mirror', 'Put the game, a movie or a music video right on the lights.', '/guide/text-logos.html#mirror'),
     ('📱', 'Phone, iPad, laptop', 'Scan a QR code and the console opens in your browser. Nothing to install, turns sideways on iPad.', '/guide/getting-started.html#phone'),
@@ -267,7 +269,7 @@ home = f'''
   </div>
   <div class="feat flip reveal">
     <div><span class="eyebrow">Holidays & fire</span><h2>Mini-movies and a fireplace</h2>
-      <p class="lead">Each holiday has its own button, with full wide-screen stories for Halloween, Thanksgiving, Christmas and New Year. Or light a fire across the whole wall in 7 colors.</p>
+      <p class="lead">Each holiday has its own button, with full wide-screen stories for Halloween, Thanksgiving, Christmas and New Year. Or light a fire across the whole wall: nine styles from a cozy fireplace to dragon breath.</p>
       <a class="btn" href="/guide/holidays.html">See the holidays →</a></div>
     <div class="media"><div class="grid g2 mini">{clip('movie-halloweennight')}{clip('movie-christmaseve')}{clip('fire-rainbow-cozy')}{clip('fire-classic-roar')}</div></div>
   </div>
@@ -353,10 +355,14 @@ F2 = [
      'A look is a mood: its colors plus a set of effects for calm, medium and loud parts. GlowBop shuffles through them as the music changes.',
      ['Neon Party, Deep Space, Synthwave, Warehouse Rave, Mainstage, Club Rig, Royal Gold and more.', '<b>3D Depth</b> tunnels, spinning cubes and disco spheres.', '<b>Dance Crew</b> pixel characters you can switch on or off.', '<b>Describe a scene</b> in words and GlowBop builds it.', '<b>Pin</b> an effect you love, or hit <b>Surprise me</b>.'],
      '/guide/looks.html', 'Looks guide'),
-    ('%fx-breakout,fx-snakegame,fx-pongbattle,fx-alienparade', 'Retro Arcade effects', 'Retro Arcade', 'Games that play themselves',
-     'Brick breaker, snake, pong, alien parades and 8-bit fireworks, all playing themselves across your wall and speeding up with the music.',
-     ['<b>Breakout</b>: bricks burst into sparks.', '<b>Snake</b>: a rainbow snake hunts glowing food.', '<b>Pong</b>: the ball smashes on the beat.', '<b>Pixel fireworks</b> and <b>vector space rocks</b>.'],
-     '/gallery.html#new', 'See them in the gallery'),
+    ('%fx-breakout,fx-snakegame,fx-pongbattle,fx-alienparade', 'Arcade games', 'Games', 'Games that play themselves',
+     'GAMES has its own key on the rail. Tap a game and it plays itself across your wall, speeding up with the music. Or start the Arcade marathon and GlowBop plays them all in turn.',
+     ['<b>8 games:</b> Breakout, Snake, Pong, Alien parade, Space rocks, Block drop, Light cycles and Game of life.', '<b>Breakout</b>: bricks burst into sparks. <b>Snake</b>: a rainbow snake hunts glowing food.', '<b>Pong</b>: the ball smashes on the beat.', '<b>♫ Back to music</b> under the wall ends the game.'],
+     '/guide/looks.html#games', 'Games in the guide'),
+    ('%drop,fx-pixelfireworks,look-club-rig,text-beat', 'DJ mode', 'DJ mode', 'Play the lights like a club lighting tech',
+     'DJ has its own key on the rail. The music show keeps running, and you add moves on top, by hand, right on the beat.',
+     ['<b>Hit pads</b>: Drop, Strobe, Flash, Fire burst, Confetti, all landing on the next beat. <b>Blackout</b> holds the wall dark.', '<b>Hold to build</b>: the wall winds up brighter and faster; let go and it drops.', '<b>Cue the next look</b> to come in on the next drop.', '<b>Tap tempo</b> when the room is too loud, and <b>crowd lines</b> like HANDS UP in big letters.', '<b>DJ controller</b>: plug a USB pad controller into the laptop and teach it every pad.'],
+     '/guide/dj.html', 'DJ mode guide'),
     ('%fx-volcano,fx-tornado,fx-rainonglass,fx-solarflare', 'Wild Elements effects', 'Wild Elements', 'Weather and nature, wired to the beat',
      'A volcano that erupts on the drop, a tornado that wanders across the wall, rain on the window, a waterfall and the surface of the sun.',
      ['<b>Volcano</b>: lava bombs fly on the drop.', '<b>Tornado</b>: debris spins faster as the song builds.', '<b>Rain on glass</b>, <b>Waterfall</b>, <b>Solar flare</b>.'],
@@ -365,9 +371,9 @@ F2 = [
      'Holidays live in their own section, away from the normal shuffle. Tap one and the wall plays only that holiday until you stop it.',
      ['Halloween, Christmas, Thanksgiving, New Year, Valentine\'s, St. Patrick\'s, Birthday and Game Day.', '<b>Wide-screen mini-movies:</b> Halloween Night, Harvest Day, Christmas Eve and New Year Countdown.', 'Jack-o\'-lanterns, bats, ghosts, a haunted house, sleigh rides, fireworks, a ball drop and more.', 'Choose which holiday effects are in the rotation.'],
      '/guide/holidays.html', 'Holidays guide'),
-    ('%fire-rainbow-cozy,fire-classic-roar,fire-purple-roar,fire-blue-cozy', 'Fireplace colors', 'Fireplace', 'Just the fire, no fireplace',
+    ('%fire-campfire,fire-dragon,fire-candles,fire-lava', 'Fire styles', 'Fireplace', 'Nine kinds of fire',
      'Light a fire on your wall with one tap. GlowBop simulates real flames live, so the fire never loops and never looks the same twice.',
-     ['<b>7 colors:</b> Classic, Blue gas, Purple, Rainbow, Green, Pink and Ice.', '<b>Cozy:</b> tall, relaxing flames with the odd small flare.', '<b>Roaring:</b> wild flicker, big whooshes and bursts of sparks.', '<b>Dance:</b> the flames swell gently with the beat of your music.', 'One long fire across every curtain on the wall.'],
+     ['<b>9 styles:</b> Fireplace, Campfire, Bonfire, Candle wall, Torch row, Pixel flames, Spirit fire, Lava rising and Dragon breath.', '<b>9 colors:</b> Classic, Blue gas, Purple, Rainbow, Green, Pink, Ice, <b>Team colors</b> (your two colors) and <b>Night shift</b> (slowly drifts through the colors all night).', '<b>Cozy</b> or <b>Roaring</b>, and <b>Dance</b> so the flames swell with your music.', '<b>Flare on the beat:</b> every kick sends the flames up, and loud parts blow gusts of wind through them.'],
      '/guide/fireplace.html', 'Fireplace guide'),
     ('%score-baseball,score-football,live-golf,live-nascar', 'Sports', 'Scoreboard', 'Game Day, Live Fan and F1',
      'Turn the wall into a scoreboard. Keep score yourself from your phone, follow a real game, or watch a Grand Prix.',
@@ -394,7 +400,7 @@ F2 = [
      ['Live preview of every curtain right on your phone.', 'Big keys sized for thumbs on every section.', 'Add it to your home screen and it opens like an app, with its own icon.', 'Works at the field too, over your phone\'s hotspot.'],
      '/guide/getting-started.html#phone', 'Phone setup'),
 ]
-ORDER = ['Music show', 'Big Wave', 'Looks', 'Retro Arcade', 'Wild Elements', '3D shapes', 'Fireplace', 'Holidays', 'Live feeds', 'Scoreboard', 'Formula 1',
+ORDER = ['Music show', 'DJ mode', 'Big Wave', 'Looks', 'Games', 'Wild Elements', '3D shapes', 'Fireplace', 'Holidays', 'Live feeds', 'Scoreboard', 'Formula 1',
          'Music show', 'Epic mode', 'The console', 'Text & logos', 'Screen mirror', 'Multi-curtain', 'Phone remote']
 F2.sort(key=lambda f: ORDER.index(f[2]) if f[2] in ORDER else 99)
 SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('shape-spinningglobe', '3D spinning globe'), ('fx-pixelfireworks', 'Pixel fireworks'),
@@ -420,9 +426,10 @@ G = [
     ('lineup', '🧭', 'Line up your curtains', 'Rotate, flip, order and lock up to 8 curtains, in a row or a grid.'),
     ('shapes', '🌐', '3D shapes', 'Wrap curtains around a cylinder, a box or a globe.'),
     ('music', '🔊', 'Music show', 'How the show follows a song, Epic mode, sync and song lookup.'),
-    ('looks', '🎨', 'Looks & effects', 'Looks, scenes, pinning, characters and transitions.'),
+    ('dj', '🎧', 'DJ mode', 'Hit pads, build and drop, cue, tap tempo, crowd lines and DJ controllers.'),
+    ('looks', '🎨', 'Looks, effects & games', 'Looks, scenes, pinning, the arcade games and transitions.'),
     ('holidays', '🎃', 'Holidays & mini-movies', 'Holiday buttons and the animated stories.'),
-    ('fireplace', '🔥', 'Fireplace', 'One-tap fire in 7 colors, cozy or roaring.'),
+    ('fireplace', '🔥', 'Fireplace', 'Nine fire styles, nine colors, cozy or roaring, flare on the beat.'),
     ('scoreboard', '🏟️', 'Sports', 'Game Day, Live Fan in 44 leagues, F1, golf, racing, tennis, UFC and the countdown clock.'),
     ('live-feeds', '📡', 'Live feeds', 'Countdowns, weather, storm watch and what\'s overhead.'),
     ('text-logos', '🔤', 'Text, logos & mirror', 'Messages, logos and mirroring your screen.'),
@@ -446,7 +453,7 @@ def guide(slug, body, toc=()):
 def tip(t, kind=''): return f'<div class="tip {kind}">{t}</div>'
 
 
-RAILC = dict(MUSIC='var(--pink)', LOOKS='var(--amber)', SCENES='var(--lav)', HOLIDAY='var(--cyan)', FIRE='var(--orange)', SPORTS='var(--violet)', LIVE='var(--green)', TEXT='var(--gold)', SETUP='var(--peri)')
+RAILC = dict(MUSIC='var(--pink)', DJ='var(--red)', GAMES='var(--lime)', LOOKS='var(--amber)', SCENES='var(--lav)', HOLIDAY='var(--cyan)', FIRE='var(--orange)', SPORTS='var(--violet)', LIVE='var(--green)', TEXT='var(--gold)', SETUP='var(--peri)')
 def rk(name): return f'<span class="k rail" style="--c:{RAILC[name]}">{name}</span>'
 
 
@@ -499,10 +506,12 @@ guide('console', f'''
 <p>The colored keys down the left side are the sections. Tap one and its controls slide in. The white edge shows where you are.</p>
 <div class="grid g3" style="margin:18px 0">
 <div class="card" style="--c:{RAILC['MUSIC']}"><h3>{rk('MUSIC')}</h3><p>Now Playing, Show control (power, next effect, shuffle, surprise me) and Levels: pace, sparkles, brightness, blend and sync.</p></div>
-<div class="card" style="--c:{RAILC['LOOKS']}"><h3>{rk('LOOKS')}</h3><p>All 34 looks, Feature an effect, and Transitions.</p></div>
+<div class="card" style="--c:{RAILC['DJ']}"><h3>{rk('DJ')}</h3><p>Hit pads, hold to build, cue the next look, tap tempo, crowd lines and DJ controllers.</p></div>
+<div class="card" style="--c:{RAILC['LOOKS']}"><h3>{rk('LOOKS')}</h3><p>All the looks, Feature an effect, and Transitions.</p></div>
+<div class="card" style="--c:{RAILC['GAMES']}"><h3>{rk('GAMES')}</h3><p>Eight self-playing arcade games and the Arcade marathon.</p></div>
 <div class="card" style="--c:{RAILC['SCENES']}"><h3>{rk('SCENES')}</h3><p>Quick scenes, Describe a scene in your own words, and Screen mirror.</p></div>
 <div class="card" style="--c:{RAILC['HOLIDAY']}"><h3>{rk('HOLIDAY')}</h3><p>A button for every holiday and the mini-movies.</p></div>
-<div class="card" style="--c:{RAILC['FIRE']}"><h3>{rk('FIRE')}</h3><p>Light the fireplace in 7 colors, Cozy or Roaring.</p></div>
+<div class="card" style="--c:{RAILC['FIRE']}"><h3>{rk('FIRE')}</h3><p>Nine fire styles in nine colors, Cozy or Roaring, with flare on the beat.</p></div>
 <div class="card" style="--c:{RAILC['SPORTS']}"><h3>{rk('SPORTS')}</h3><p>Game Day, Live Fan in 44 leagues with the Game Center, F1, golf, racing, tennis and UFC boards, and the countdown clock.</p></div>
 <div class="card" style="--c:{RAILC['LIVE']}"><h3>{rk('LIVE')}</h3><p>Pick a live feed: countdown, weather, storm watch, overhead.</p></div>
 <div class="card" style="--c:{RAILC['TEXT']}"><h3>{rk('TEXT')}</h3><p>Messages and your logo on top of the show.</p></div>
@@ -618,6 +627,33 @@ guide('music', f'''
 ''', [('how', 'How it works'), ('controls', 'Controls'), ('sync', 'Sync'), ('epic', 'Epic mode'), ('memory', 'Song memory'), ('lookup', 'Song lookup')])
 
 LOOKS = ['Red Alert', 'Rainbow Riot', 'Emerald Ocean', 'Midnight Galaxy', 'Fairy Forest', 'Deep Sea', 'Neon Party', 'Ice Palace', 'Synthwave', 'Royal Gold', 'Toxic Rave', 'Lava Lounge', 'Blue Sky', 'Hyperspace', 'Digital Matrix', 'Psychedelic', 'Molten', 'Chaos', 'Wild Card', 'Studio 54', 'Liquid Dreams', 'Warehouse Rave', 'Neon Grid', 'Storm & Sea', 'Mainstage', 'Deep Space', 'Hypnotic', 'Club Rig', '3D Depth', 'Dance Crew', 'Retro Arcade', 'Wild Elements', '3D Object', 'Big Wave']
+guide('dj', f'''
+<p>DJ mode puts the lights in your hands. The music show keeps running underneath, and you add moves on top, the way a lighting tech runs a club. Tap {rk('DJ')} on the side rail.</p>
+{clip('drop', 'a hand-played drop')}
+<h2 id="pads">Hit pads</h2>
+<p>Six big pads. Every one lands on the <b>next beat</b>, so even a late tap looks perfectly on time.</p>
+<ul><li><span class="k">💥 Drop</span>: a full drop move, with a new effect and a color change.</li>
+<li><span class="k">⚡ Strobe</span>: four beats of white strobe.</li>
+<li><span class="k">⚪ Flash</span>: one big white flash.</li>
+<li><span class="k">🔥 Fire burst</span> and <span class="k">🎉 Confetti</span>: a blast over the show for a couple of seconds.</li>
+<li><span class="k">⬛ Blackout</span>: holds the wall dark until you tap it again. Great right before a drop.</li></ul>
+<h2 id="build">Hold to build</h2>
+<p>Press and <b>hold</b> <span class="k">Hold to build</span>. A wall of light rises from the floor, flickering faster and turning white-hot. <b>Let go</b> and it drops. Slide your finger off the key to cancel.</p>
+{tip('<b>Pro move:</b> Blackout for one bar, then hold Build through the last bars of the build-up and let go right on the drop.', 'pink')}
+<h2 id="cue">Cue the next look</h2>
+<p>Tap a look in <b>Cue the next look</b>. It waits, then comes in on the next drop, yours or the music's. Tap it again to clear the cue.</p>
+<h2 id="tap">Tap tempo</h2>
+<p>Room too loud, or a song with no clear kick? Tap <span class="k">TAP</span> four times or more on the beat and the whole show locks to your tapping. <span class="k">Back to automatic tempo</span> hands the beat back to the music.</p>
+<h2 id="crowd">Crowd lines</h2>
+<p>Big words flashed across the wall for three seconds: <b>HANDS UP</b>, <b>JUMP</b>, <b>MAKE SOME NOISE</b> and more. Type your own, like your DJ name; GlowBop keeps your last six.</p>
+<h2 id="controller">DJ controllers</h2>
+<ol><li>Plug a USB DJ controller or MIDI pad into the laptop.</li>
+<li>Open GlowBop in <b>Chrome or Edge on the laptop</b>, tap {rk('DJ')} and then <span class="k">Connect a controller</span>.</li>
+<li>Tap a pad name in the list, then hit the button on your controller. Repeat for every pad, Build and Tap.</li></ol>
+{tip('Phones and iPads can\'t talk to DJ controllers. Use the laptop for the controller and your phone for everything else; both work at the same time.', 'warn')}
+<p><span class="k">♫ Back to music</span> under the wall clears a blackout, tap tempo or a cued look.</p>
+''', [('pads', 'Hit pads'), ('build', 'Build & drop'), ('cue', 'Cue'), ('tap', 'Tap tempo'), ('crowd', 'Crowd lines'), ('controller', 'Controllers')])
+
 guide('looks', f'''
 <h2 id="looks">What a look is</h2>
 <p>A look is a mood: a color palette plus a set of effects for calm, medium and loud moments. During a song GlowBop picks effects from the current look, and moves to a new look at drops or when the song changes.</p>
@@ -630,7 +666,7 @@ guide('looks', f'''
 <ul><li><b>3D Depth:</b> tunnels, spinning cubes, disco spheres and black holes that look like they go deep into the wall.</li>
 <li><b>Club Rig:</b> moving-head beams, laser scans and strobe banks, like a real club ceiling.</li>
 <li><b>Dance Crew:</b> pixel characters that dance to the beat. Turn them on or off with <span class="k">Characters</span>.</li>
-<li><b>Retro Arcade:</b> self-playing pixel games: brick breaker, snake, pong, alien parades and 8-bit fireworks.</li>
+<li><b>Retro Arcade:</b> the self-playing pixel games now live under their own GAMES key (below).</li>
 <li><b>Wild Elements:</b> rain on the window, a volcano that erupts on the drop, a tornado, a waterfall and the surface of the sun.</li></ul>
 <div class="grid g2">{clip('look-retro-arcade', 'Retro Arcade')}{clip('look-wild-elements', 'Wild Elements')}{clip('fx-tesseract', 'Tesseract, a 4D cube')}{clip('look-club-rig', 'Club Rig')}</div>
 <h2 id="wave">Big Wave 🌊</h2>
@@ -638,13 +674,19 @@ guide('looks', f'''
 <ul><li><b>Big Wave:</b> a giant glowing wave that rolls and crests on the beat.</li><li><b>Serpent:</b> a smooth snake with a glowing head that swims the length of your wall.</li><li><b>Twin Waves:</b> two waves crossing, with sparkles on the crest.</li><li><b>Ocean Swell:</b> a slow, deep swell for calm songs.</li></ul>
 <div class="grid g2">{clip('wave-bigwave', 'Big Wave')}{clip('wave-serpent', 'Serpent')}{clip('wave-twinwaves', 'Twin Waves')}{clip('wave-oceanswell', 'Ocean Swell')}</div>
 <p><a href="/gallery.html">See all 34 looks and the newest effects in the gallery →</a></p>
+<h2 id="games">Arcade games 🕹️</h2>
+<p>The self-playing games have their own key, {rk('GAMES')}. Tap a game and it plays on the wall, speeding up with the music:</p>
+<ul><li><b>Breakout</b>, <b>Snake</b>, <b>Pong</b>, <b>Alien parade</b>, <b>Space rocks</b>, <b>Block drop</b>, <b>Light cycles</b> and <b>Game of life</b>.</li>
+<li><span class="k">🕹️ Arcade marathon</span> plays every game in turn.</li>
+<li><span class="k">♫ Back to music</span> under the wall ends it.</li></ul>
+<div class="grid g2">{clip('fx-breakout', 'Breakout')}{clip('fx-snakegame', 'Snake')}{clip('fx-pongbattle', 'Pong')}{clip('fx-alienparade', 'Alien parade')}</div>
 <h2 id="scenes">Quick scenes and Describe a scene</h2>
 <p>Under {rk('SCENES')}, <b>Quick scenes</b> are one-tap presets. <b>Describe a scene</b> lets you type what you want ("slow purple ocean with gold sparkles") and tap <span class="k">Play it</span>. GlowBop picks matching effects and colors from your words.</p>
 <h2 id="feature">Feature an effect</h2>
 <p>Love one effect? <b>Feature</b> it for the current part of the song, or <span class="k">Pin</span> it to keep it on. Tap <span class="k">Let the show flow again</span> to go back to normal.</p>
 <h2 id="transitions">Transitions</h2>
 <p>Choose how one effect hands over to the next: quick cuts for high-energy sets, long fades for a chill night.</p>
-''', [('looks', 'Looks'), ('3d', '3D & club'), ('wave', 'Big Wave'), ('scenes', 'Scenes'), ('feature', 'Feature'), ('transitions', 'Transitions')])
+''', [('looks', 'Looks'), ('3d', '3D & club'), ('wave', 'Big Wave'), ('games', 'Arcade games'), ('scenes', 'Scenes'), ('feature', 'Feature'), ('transitions', 'Transitions')])
 
 guide('holidays', f'''
 <p>Holidays have their own section, {rk('HOLIDAY')}, so they don't pop up in the middle of a July pool party. Tap a holiday and the wall plays <b>only that holiday</b> until you stop it.</p>
@@ -681,21 +723,34 @@ guide('fireplace', f"""
 <li>Tap <span class="k">Light the fire</span>. The mode bar turns orange and says <b>FIREPLACE 🔥</b>.</li>
 <li>To stop, tap <span class="k">Put out fire</span>, or <span class="k">♫ Back to music</span> under the live wall from any section.</li></ol>
 {led('fireplace', 'the same fire simulation the app runs, right in your browser', demo=True)}
-<h2 id="colors">7 colors</h2>
-<div class="toc"><span class="k">🔥 Classic</span> <span class="k">💙 Blue gas</span> <span class="k">💜 Purple</span> <span class="k">🌈 Rainbow</span> <span class="k">💚 Green</span> <span class="k">🩷 Pink</span> <span class="k">🤍 Ice</span></div>
+<h2 id="styles">9 fire styles</h2>
+<div class="grid g2">{clip('fire-campfire', 'Campfire')}{clip('fire-bonfire', 'Bonfire')}{clip('fire-candles', 'Candle wall')}{clip('fire-torches', 'Torch row')}{clip('fire-pixel', 'Pixel flames')}{clip('fire-spirit', 'Spirit fire')}{clip('fire-lava', 'Lava rising')}{clip('fire-dragon', 'Dragon breath')}</div>
+<ul><li><b>🔥 Fireplace:</b> the classic: tall flames with a white-hot core and floating embers.</li>
+<li><b>🏕️ Campfire:</b> crossed logs, glowing coals and a cone of flame. Wide walls get two.</li>
+<li><b>🎇 Bonfire:</b> a huge blaze that roars up on the drop.</li>
+<li><b>🕯️ Candle wall:</b> rows of candles, each flickering on its own.</li>
+<li><b>🔦 Torch row:</b> torches on a brick wall lit by their own flicker.</li>
+<li><b>👾 Pixel flames:</b> chunky 8-bit cartoon fire.</li>
+<li><b>👻 Spirit fire:</b> slow, ghostly blue flames with curling wisps.</li>
+<li><b>🌋 Lava rising:</b> molten lava with popping bubbles, rising and falling.</li>
+<li><b>🐉 Dragon breath:</b> embers, then a jet of fire blasts across the wall.</li></ul>
+<h2 id="colors">9 colors</h2>
+<div class="toc"><span class="k">🔥 Classic</span> <span class="k">💙 Blue gas</span> <span class="k">💜 Purple</span> <span class="k">🌈 Rainbow</span> <span class="k">💚 Green</span> <span class="k">🩷 Pink</span> <span class="k">🤍 Ice</span> <span class="k">🏟️ Team colors</span> <span class="k">🌙 Night shift</span></div>
+<p><b>Team colors</b> lets you pick any two colors (great for game day). <b>Night shift</b> slowly drifts from classic to purple, blue and green over the night.</p>
 {pic('purple-fire-party', 'Purple and pink fire on an LED curtain at a house party')}
 <p>Rainbow drifts slowly through every color across the wall and keeps a white-hot core. Green is great for Halloween and St. Patrick's, Pink for Valentine's, Ice for a ghostly winter look.</p>
 <div class="grid g2">{clip('fire-rainbow-cozy', 'Rainbow')}{clip('fire-blue-cozy', 'Blue gas')}{clip('fire-purple-roar', 'Purple, Roaring')}{clip('fire-ice-cozy', 'Ice')}</div>
 <h2 id="mode">Cozy or Roaring</h2>
 <ul><li><span class="k">🛋️ Cozy</span>: tall, relaxing flames that reach up the wall, with a small flare now and then.</li>
 <li><span class="k">🔥 Roaring</span>: fast, wild flicker with big whooshes of flame every few seconds and bursts of sparks.</li></ul>
-<h2 id="music">Calm or Dance</h2>
+<h2 id="music">Calm, Dance or Flare on the beat</h2>
 <ul><li><span class="k">🕯️ Calm</span>: the fire ignores the music. Perfect for a quiet night.</li>
-<li><span class="k">💃 Dance</span>: the flames swell gently with the beat. Fire that grooves.</li></ul>
+<li><span class="k">💃 Dance</span>: the flames swell gently with the beat. Fire that grooves.</li>
+<li><b>Flare on the beat</b>: every kick sends the flames up with a burst of sparks, and when the music is loud, gusts of wind sweep through the fire.</li></ul>
 <h2 id="wall">On a big wall</h2>
 <p>With several curtains, GlowBop builds one long bed of fire across all of them, like a modern linear fireplace. Stacked curtains get taller flames.</p>
 {tip('<b>Good to know:</b> the fireplace stays lit until you put it out. The fire, the scoreboard and live feeds take turns: turning one on turns the others off. Text and logos still show on top of the flames.')}
-""", [('light', 'Light it'), ('colors', 'Colors'), ('mode', 'Cozy / Roaring'), ('music', 'Calm / Dance'), ('wall', 'Big walls')])
+""", [('light', 'Light it'), ('styles', 'Styles'), ('colors', 'Colors'), ('mode', 'Cozy / Roaring'), ('music', 'With music'), ('wall', 'Big walls')])
 
 SPORTS = 'Soccer, Football, Basketball, Baseball, Softball, Hockey, Field hockey, Lacrosse, Volleyball, Pickleball, Tennis, Rugby, Aussie rules, Cricket, Water polo, Cornhole, Other, plus a Countdown timer'
 guide('scoreboard', f'''
@@ -1063,7 +1118,7 @@ Q = [
     ('Can I play music from my phone?', 'GlowBop listens on the computer, so play the music on the computer and send it to your speakers. Bluetooth speakers work; use the Sync slider to line them up.'),
     ('Does it need a microphone or a dongle?', 'No. It listens to the computer\'s own sound, so room noise and talking don\'t throw it off.'),
     ('Do I need to install an app on my phone?', 'No. Scan the QR code and the remote opens in your phone\'s browser. Add it to your home screen for an app icon.'),
-    ('Can it just be a fireplace?', 'Yes. Tap 🔥 Light the fire and the whole wall becomes flickering flames, no fireplace frame or logs. Pick from 7 colors and Cozy or Roaring. See the <a href="/guide/fireplace.html">Fireplace guide</a>.'),
+    ('Can it just be a fireplace?', 'Yes. Tap 🔥 Light the fire and the whole wall becomes flickering flames, no fireplace frame or logs. Pick from 9 styles (campfire, candles, torches, lava, dragon breath and more), 9 colors and Cozy or Roaring. See the <a href="/guide/fireplace.html">Fireplace guide</a>.'),
     ('Can I use it outside or at a game?', 'Yes. At home, use your Wi-Fi. At a field, connect the laptop to your phone\'s hotspot. Battery-powered curtains make this easy.'),
     ('How many curtains can I connect?', 'Up to 4 as one wall, side by side or stacked. You can also split lights into groups that each run their own show.'),
     ('Will it slow down my computer?', 'GlowBop is light. A normal laptop runs the show and music at the same time. Plug in for long parties.'),
@@ -1083,7 +1138,7 @@ def gal_section(title, sub, names, anchor):
 
 
 _by = lambda g: [k for k, v in CLIPS.items() if v['group'] == g]
-FIRST = ['fx-pixelfireworks', 'fx-tesseract', 'fx-laserweb', 'fx-crystalgem', 'fx-volcano', 'fx-solarflare', 'fx-atomorbit', 'fx-wiretorus', 'fx-tornado',
+FIRST = ['fire-dragon', 'fire-campfire', 'fire-candles-rainbow', 'fire-lava', 'fire-bonfire', 'fire-spirit', 'fire-torches', 'fire-pixel', 'fire-candles', 'fire-campfire-team', 'fx-pixelfireworks', 'fx-tesseract', 'fx-laserweb', 'fx-crystalgem', 'fx-volcano', 'fx-solarflare', 'fx-atomorbit', 'fx-wiretorus', 'fx-tornado',
          'look-3d-depth', 'look-club-rig', 'look-neon-party', 'look-deep-space', 'look-psychedelic', 'look-hyperspace', 'look-wild-elements', 'look-retro-arcade',
          'look-mainstage', 'look-synthwave', 'look-warehouse-rave', 'look-rainbow-riot',
          'movie-halloweennight', 'movie-christmaseve', 'movie-newyearcountdown', 'movie-harvestday',
@@ -1095,7 +1150,7 @@ GROUPS = [('New effects', '👾 Showstoppers', 'The newest effects: 3D shapes, l
           ('Looks', '🎨 All 34 looks', 'Each look is a mood with its own colors and effects. These are 8-second slices with a drop halfway, exactly as the app plays them.', 'looks'),
           ('Big Wave', '🌊 Big Wave', 'The newest family of effects: waves that roll, a serpent that swims and an ocean swell.', 'wave'),
           ('Holidays', '🎃 Holidays', 'Every holiday has its own button. Four of them play full wide-screen mini-movies.', 'holidays'),
-          ('Fireplace', '🔥 Fireplace', 'Just the fire, simulated live so it never repeats. 7 colors, Cozy or Roaring.', 'fireplace'),
+          ('Fireplace', '🔥 Fireplace', 'Nine styles of fire, simulated live so it never repeats: campfire, bonfire, candles, torches, pixel, spirit, lava, dragon breath and the classic fireplace.', 'fireplace'),
           ('3D shapes', '🌐 3D shapes', 'Effects made for curtains wrapped around a cylinder, a box or a globe. Shown here unrolled, flat.', 'shapes'),
           ('Scoreboard', '🏟️ Sports', 'Game Day for every sport, Live Fan with live stats, golf, NASCAR, the F1 board and the giant countdown clock.', 'scoreboard'),
           ('Live feeds', '📡 Live feeds', 'Countdown, weather, storm watch and overhead, recorded with demo data.', 'live'),
