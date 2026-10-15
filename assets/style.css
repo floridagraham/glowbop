@@ -196,3 +196,15 @@ footer .fine{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 
 .launchban img{display:block;width:100%;height:auto}
 .livehero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .9s}
 .livehero canvas.on{opacity:1}
+/* support page */
+.sup-tabs{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.sup-tabs button{flex:1 1 200px;font:700 16px 'DM Sans';color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer}
+.sup-tabs button.on{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink) inset;background:#2a1630}
+.sup label{display:block;font-weight:700;font-size:15px;margin-top:14px}
+.sup input,.sup textarea,.sup select{display:block;width:100%;box-sizing:border-box;margin-top:6px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:16px 'DM Sans'}
+.sup input:focus,.sup textarea:focus,.sup select:focus{outline:none;border-color:var(--cyan)}
+.sup textarea{resize:vertical;min-height:130px}
+.sup .btn{margin-top:18px}
+.sup .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.sup-msg{color:var(--amber);font-weight:700;margin:12px 0 0;min-height:1em}
+.sup-done h2{margin:0 0 6px}.sup-ticket{font:800 30px Sora;margin:6px 0}

@@ -349,3 +349,99 @@
   }
   if ('IntersectionObserver' in window) start();
 })();
+
+// ✨ sparkle logo: random LEDs of the SVG Curtain Burst glint white (same as the app)
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('.gbsvg').forEach(host => {
+    const lit = [...host.querySelectorAll('circle[data-l]')]; if (!lit.length) return;
+    const tick = () => { const n = 1 + (Math.random() < 0.6 ? 1 : 0);
+      for (let k = 0; k < n; k++) { const el = lit[(Math.random() * lit.length) | 0]; el.classList.add('tw'); setTimeout(() => el.classList.remove('tw'), 260); }
+      setTimeout(tick, 250 + Math.random() * 450); };
+    tick();
+  });
+})();
+
+// 🎛️ Try-it console on the home page: a working mini copy of the GlowBop app. The rail switches sections, the keys
+// put real recordings from the GlowBop engine on the little wall, just like the real app does on your lights.
+(() => {
+  const root = document.getElementById('demo'); if (!root) return;
+  const T = [
+    {id: 'music', label: 'MUSIC', c: 'var(--pink)', title: 'Show control', mode: ['Music show · listening', 'shuffle on · hearing Speakers', 'var(--green)'],
+     p: 'GlowBop hears whatever your computer plays and picks effects for every build-up and drop. Tap a key to feature one.',
+     k: [['🌊', 'Big Wave', 'wave-bigwave'], ['🐍', 'Serpent', 'wave-serpent'], ['🎉', 'Neon Party', 'look-neon-party'], ['🌆', 'Synthwave', 'look-synthwave'], ['💥', 'The drop', 'drop'], ['🎲', 'Surprise me', '*']]},
+    {id: 'looks', label: 'LOOKS', c: 'var(--amber)', title: 'Looks', mode: ['Pinned look', 'stays until you release it', 'var(--amber)'],
+     p: 'A look is a mood: colors plus effects for calm, medium and loud moments. 32 of them, plus 200+ effects.',
+     k: [['🌌', 'Deep Space', 'look-deep-space'], ['🕹️', 'Retro Arcade', 'look-retro-arcade'], ['🔦', 'Club Rig', 'look-club-rig'], ['🧊', '3D Depth', 'look-3d-depth'], ['🌋', 'Wild Elements', 'look-wild-elements'], ['🎪', 'Mainstage', 'look-mainstage']]},
+    {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', title: 'Holidays', mode: ['Holiday', 'only holiday effects, cycling with the music', 'var(--cyan)'],
+     p: 'Each holiday gets its own button, plus wide-screen mini-movies for the big nights.',
+     k: [['🎃', 'Halloween', 'holiday-halloween'], ['🧙', 'Halloween Night', 'movie-halloweennight'], ['🎄', 'Christmas', 'holiday-christmas'], ['🛷', 'Christmas Eve', 'movie-christmaseve'], ['🎆', 'New Year', 'movie-newyearcountdown'], ['🇺🇸', 'July 4th', 'holiday-july4']]},
+    {id: 'fire', label: 'FIRE', c: 'var(--orange)', title: 'Fireplace', mode: ['Fireplace 🔥', 'cozy · flames that never loop', 'var(--orange)'],
+     p: 'One tap lights a fire across the whole wall. 7 colors, Cozy or Roaring.',
+     k: [['🔥', 'Classic', 'fire-classic-cozy'], ['🌋', 'Roaring', 'fire-classic-roar'], ['🌈', 'Rainbow', 'fire-rainbow-cozy'], ['💙', 'Blue gas', 'fire-blue-cozy'], ['💜', 'Purple', 'fire-purple-roar'], ['🤍', 'Ice', 'fire-ice-cozy']]},
+    {id: 'score', label: 'SCORE', c: 'var(--violet)', title: 'Scoreboard', mode: ['Scoreboard', 'game day · live stats', 'var(--violet)'],
+     p: 'Keep score at the field, follow your team live with real game stats, or put F1 on the wall.',
+     k: [['⚽', 'Game Day', 'score-soccer'], ['🏎️', 'F1 board', 'score-f1'], ['⏱️', 'Countdown clock', 'score-timer']]},
+    {id: 'live', label: 'LIVE', c: 'var(--green)', title: 'Pick a live feed', mode: ['Live', 'on the wall until you turn it off', 'var(--green)'],
+     p: 'Things from the outside world, live on your lights: countdowns, weather, storm watch, golf, NASCAR and what\'s flying overhead.',
+     k: [['🎉', 'Countdown', 'live-countdown'], ['🌦️', 'Weather', 'live-weather'], ['🎆', 'Fireworks', 'fx-pixelfireworks']]},
+    {id: '3d', label: '3D', c: 'var(--lav)', title: '3D shapes', mode: ['Wrapped wall', 'cylinder · globe · box', 'var(--lav)'],
+     p: 'Bend your curtains around a cylinder, a box or a globe. GlowBop wraps the picture seamlessly and plays effects made for 3D.',
+     k: [['🌍', 'Spinning globe', 'shape-spinningglobe'], ['💈', 'Barber spin', 'shape-barberspin'], ['⭕', 'Rising rings', 'shape-risingrings'], ['🌊', 'Ocean swell', 'wave-oceanswell'], ['〰️', 'Twin waves', 'wave-twinwaves']]},
+    {id: 'text', label: 'TEXT', c: 'var(--gold)', title: 'Text & logos', mode: ['Text over the show', 'scroll · beat words · on drop', 'var(--gold)'],
+     p: 'Put a name, a message or your logo on top of the show. Flash a word on every drop.',
+     k: [['🎂', 'Birthday', 'text-birthday'], ['🥁', 'Beat words', 'text-beat'], ['✨', 'Sparkle', 'sparkle']]},
+  ];
+  const $ = s => root.querySelector(s), meta = n => (window.GB_CLIPS || {})[n];
+  const cache = {};
+  const load = n => cache[n] || (cache[n] = new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+    const g = c.getContext('2d'); g.drawImage(im, 0, 0); res(g.getImageData(0, 0, im.width, im.height)); }; im.onerror = () => res(null); im.src = '/clips/' + n + '.png'; }));
+  const cv = $('canvas'), g = cv.getContext('2d');
+  let tab = T[0], clip = 'wave-bigwave', t0 = performance.now(), vis = true, lastF = -1, sec = 0;
+  const rail = $('.d-rail');
+  T.forEach(t => { const b = document.createElement('button'); b.textContent = t.label; b.style.setProperty('--c', t.c); b.onclick = () => pick(t); rail.appendChild(b); });
+  const tail = document.createElement('i'); tail.className = 'tail'; rail.appendChild(tail);
+  const meter = $('.meter'); for (let i = 0; i < 24; i++) meter.appendChild(document.createElement('i'));
+  function pick(t, k) {
+    tab = t; root.style.setProperty('--c', t.c);
+    rail.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.textContent === t.label));
+    $('.d-panel .ph span').textContent = t.title; $('.d-panel p').textContent = t.p;
+    const keys = $('.keys'); keys.innerHTML = '';
+    t.k.forEach(([em, name, cl], i) => { const b = document.createElement('button'); b.innerHTML = `<span class="em">${em}</span>${name}`; b.style.setProperty('--kc', t.c);
+      b.onclick = () => play(b, name, cl); keys.appendChild(b); });
+    play(keys.children[k || 0], t.k[k || 0][1], t.k[k || 0][2]);
+  }
+  function play(b, name, cl) {
+    if (cl === '*') { const all = Object.keys(window.GB_CLIPS || {}).filter(n => /^(look|fx|wave)-/.test(n)); cl = all[(Math.random() * all.length) | 0]; name = (meta(cl) || {}).title || 'Surprise'; }
+    root.querySelectorAll('.keys button').forEach(x => x.classList.toggle('on', x === b));
+    clip = cl; t0 = performance.now(); lastF = -1; load(cl);
+    const m = tab.mode; $('.mode').style.setProperty('--mc', m[2]);
+    $('.mode b').textContent = tab.id === 'live' || tab.id === 'holiday' ? m[0] + ': ' + name : m[0];
+    $('.mode small').textContent = m[1];
+    $('#dLook').textContent = name; $('#dEff').textContent = ((meta(cl) || {}).title || name).replace(/ ·.*/, '');
+    $('.d-wall .ph .r').textContent = '840 BULBS · ' + name.toUpperCase();
+  }
+  function draw(data, w, h, f) {
+    const r = cv.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W = Math.max(1, r.width * d | 0), H = Math.max(1, r.height * d | 0);
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    const sx = W / w, sy = H / h, rad = Math.min(sx, sy) * 0.42, base = f * w * h * 4, px = data.data;
+    g.fillStyle = '#05040a'; g.fillRect(0, 0, W, H); let sum = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = base + (y * w + x) * 4, R = px[i], G = px[i + 1], B = px[i + 2], lit = R + G + B > 24; sum += R + G + B;
+      g.fillStyle = lit ? `rgb(${R},${G},${B})` : '#16121f'; g.beginPath(); g.arc(x * sx + sx / 2, y * sy + sy / 2, lit ? rad : rad * 0.55, 0, 6.283); g.fill();
+    }
+    return sum / (w * h * 765);
+  }
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => vis = e.isIntersecting)).observe(root);
+  async function tick(now) {
+    requestAnimationFrame(tick); if (!vis) return;
+    const m = meta(clip); const data = await load(clip); if (!m || !data) return;
+    const f = reduce ? 0 : Math.floor((now - t0) / 1000 * (m.fps || 15)) % m.n; if (f === lastF) return; lastF = f;
+    const lvl = draw(data, m.w, m.h, f);
+    const lit = Math.round(Math.min(1, lvl * 3.2) * 24);
+    meter.querySelectorAll('i').forEach((el, i) => el.style.background = i < lit ? (i < 9 ? 'var(--cyan)' : i < 15 ? 'var(--violet)' : i < 20 ? 'var(--pink)' : 'var(--amber)') : '');
+    const s = Math.floor(now / 4000) % 4; if (s !== sec) { sec = s; $('#dSec').textContent = ['GROOVE', 'BUILD', 'DROP', 'BREAK'][s]; }
+  }
+  pick(T[0]); requestAnimationFrame(tick);
+})();
