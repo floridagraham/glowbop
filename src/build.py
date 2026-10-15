@@ -170,7 +170,7 @@ home = f'''
     <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="#try" style="--c:var(--cyan)">🎛️ Try the console</a></div>
     <div class="stats"><div><b>200+</b>effects</div><div><b>34</b>looks</div><div><b>6</b>live feeds</div><div><b>1–8</b>curtains</div></div>
   </div>
-  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="wave-bigwave,look-neon-party,fire-classic-roar,look-3d-depth,wave-serpent,fx-pixelfireworks,look-deep-space,look-synthwave,look-wild-elements,look-club-rig,look-mainstage,fx-laserweb" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
+  <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="fx-pixelfireworks,look-3d-depth,fire-rainbow-cozy,fx-tesseract,look-club-rig,fx-laserweb,look-neon-party,wave-serpent,look-deep-space,fire-classic-roar,look-wild-elements,look-mainstage,look-synthwave,wave-bigwave" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
 </div></header>
 
 <section class="tight" id="try"><div class="wrap">
@@ -198,8 +198,8 @@ home = f'''
 <section class="tight"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
   <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
-  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="wave-bigwave,look-synthwave,wave-serpent,look-neon-party,fire-classic-roar,live-weather,look-3d-depth,shape-spinningglobe,fx-pixelfireworks,live-countdown,look-deep-space,wave-twinwaves,look-wild-elements,text-birthday,look-club-rig,fire-rainbow-cozy,score-soccer,holiday-christmas,fx-snakegame,holiday-halloween,fx-volcano" data-label="reelName" aria-label="GlowBop showreel"></canvas>
-  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Big Wave</b></figcaption></figure>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><canvas data-reel="fx-pixelfireworks,look-3d-depth,fire-rainbow-cozy,wave-serpent,look-neon-party,wave-bigwave,look-synthwave,fire-classic-roar,live-weather,look-3d-depth,shape-spinningglobe,fx-pixelfireworks,live-countdown,look-deep-space,wave-twinwaves,look-wild-elements,text-birthday,look-club-rig,fire-rainbow-cozy,score-soccer,holiday-christmas,fx-snakegame,holiday-halloween,fx-volcano" data-label="reelName" aria-label="GlowBop showreel"></canvas>
+  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">PixelFireworks</b></figcaption></figure>
   <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
 </div></section>
 
