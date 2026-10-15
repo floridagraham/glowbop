@@ -11,7 +11,14 @@
       g.clearRect(0, 0, 64, 64); g.filter = `hue-rotate(${deg}deg)`; g.drawImage(img, 0, 0, 64, 64); link.href = c.toDataURL('image/png'); }, 420); };
     img.src = '/icon.png';
   })();
-  if (bt) bt.onclick = () => nav.classList.toggle('open');
+  // ☰ phone menu: the key reads CLOSE while open; tapping a link, outside the menu, or Escape closes it
+  const setMenu = on => { nav.classList.toggle('open', on); if (bt) { bt.textContent = on ? 'CLOSE ✕' : 'MENU'; bt.setAttribute('aria-expanded', on); } };
+  if (bt) bt.onclick = e => { e.stopPropagation(); setMenu(!nav.classList.contains('open')); };
+  if (nav) {
+    nav.querySelectorAll('ul a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('click', e => { if (nav.classList.contains('open') && !nav.contains(e.target)) setMenu(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+  }
 
   const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }

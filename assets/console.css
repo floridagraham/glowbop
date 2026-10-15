@@ -236,3 +236,15 @@ footer .fine{border-top:6px solid #1a1628}
 .showgrid{max-width:980px;margin-left:auto;margin-right:auto}
 .dev .scr{position:relative}
 .dev .wallov{position:absolute;display:block;pointer-events:none}
+/* iPad portrait and small laptops: the colored keys stay on screen (a second row), no hidden menu */
+@media(min-width:700px) and (max-width:1040px){
+  .nav.con-hd .burger{display:none!important}
+  .con-r .row{flex-wrap:wrap;row-gap:8px}
+  .nav.con-hd ul{display:flex;position:static;flex-direction:row;flex-wrap:nowrap;order:3;width:100%;padding:0;background:none;box-shadow:none;gap:5px}
+  .nav.con-hd ul li{flex:1 1 0;min-width:0}
+  .nav.con-hd ul a{height:42px;font-size:14px;min-width:0;padding:0 8px 6px 4px;letter-spacing:1px}
+  .nav.con-hd ul li:first-child a{border-radius:21px 0 0 21px}
+  .nav.con-hd ul li:last-child a{border-radius:0}
+}
+/* phones: the menu key says CLOSE while the menu is open */
+.nav.con-hd.open .burger{background:var(--pink)}
