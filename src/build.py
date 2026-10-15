@@ -74,7 +74,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=6">
+<link rel="stylesheet" href="/assets/console.css?v=7">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -178,7 +178,7 @@ home = f'''
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop. Run it all from a light-show console on your phone, iPad or laptop.</p>
     <div class="btns"><a class="btn primary" href="{WAIT}">✉️ Join the launch list</a><a class="btn" href="#try" style="--c:var(--cyan)">🎛️ Try the console</a></div>
-    <div class="stats"><div><b>200+</b>effects</div><div><b>34</b>looks</div><div><b>6</b>live feeds</div><div><b>1–8</b>curtains</div></div>
+    <div class="stats"><div><b>200+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
   <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><canvas data-hero="look-psychedelic,fire-rainbow-cozy,look-hypnotic,look-rainbow-riot,look-3d-depth,shape-barberspin,look-warehouse-rave,fx-pixelfireworks,look-dance-crew,look-retro-arcade,look-neon-party,look-wild-elements,look-chaos,look-hyperspace,look-toxic-rave,fx-tesseract,score-baseball,live-nascar,score-football,live-golf,score-f1,look-midnight-galaxy,look-liquid-dreams,look-lava-lounge,wave-serpent,look-royal-gold,look-wild-card,look-synthwave,fx-laserweb,shape-spinningglobe,look-club-rig,wave-bigwave,fire-classic-roar,fx-volcano,look-studio-54" aria-hidden="true"></canvas><span class="concept">Concept photo · real GlowBop patterns</span></figure>
 </div></header>
@@ -223,6 +223,12 @@ home = f'''
   </div>
 </div></section>
 
+<section class="tight"><div class="wrap">
+  <div class="center reveal"><span class="eyebrow" style="--c:var(--gold)">By the numbers</span><h2>A ton of light show in one app</h2></div>
+  <div class="nums"><div class="num reveal" style="--c:var(--pink)"><b>227</b><span>effects</span></div><div class="num reveal" style="--c:var(--amber)"><b>34</b><span>looks</span></div><div class="num reveal" style="--c:var(--violet)"><b>44</b><span>live sports leagues</span></div><div class="num reveal" style="--c:var(--lav)"><b>18</b><span>Game Day sports</span></div><div class="num reveal" style="--c:var(--orange)"><b>9</b><span>fire styles</span></div><div class="num reveal" style="--c:var(--cyan)"><b>9</b><span>holidays + 4 mini-movies</span></div><div class="num reveal" style="--c:var(--lime)"><b>8</b><span>arcade games</span></div><div class="num reveal" style="--c:var(--green)"><b>6</b><span>live feeds</span></div><div class="num reveal" style="--c:var(--red)"><b>6</b><span>DJ hit pads</span></div><div class="num reveal" style="--c:var(--gold)"><b>8</b><span>curtains in one wall</span></div><div class="num reveal" style="--c:var(--peri)"><b>3</b><span>3D shapes</span></div><div class="num reveal" style="--c:var(--lav)"><b>4</b><span>console sound styles</span></div></div>
+  <div class="cloud reveal"><a href="/guide/music.html">Build-up & drop detection</a><a href="/guide/music.html#epic">Epic mode for movie music</a><a href="/guide/music.html#memory">Song memory</a><a href="/guide/music.html#sync">Bluetooth speaker sync</a><a href="/guide/dj.html#pads">DJ hit pads</a><a href="/guide/dj.html#build">Hold to build, let go to drop</a><a href="/guide/dj.html#cue">Cue the next look</a><a href="/guide/dj.html#tap">Tap tempo</a><a href="/guide/dj.html#crowd">Crowd lines</a><a href="/guide/dj.html#controller">DJ controller support</a><a href="/guide/looks.html">34 looks</a><a href="/guide/looks.html#wave">Big Wave effects</a><a href="/guide/looks.html#3d">3D depth & club rigs</a><a href="/guide/looks.html">Pixel dancers</a><a href="/guide/looks.html#scenes">Describe a scene in words</a><a href="/guide/looks.html#transitions">Transitions</a><a href="/guide/looks.html#games">Arcade games</a><a href="/guide/looks.html#games">Arcade marathon</a><a href="/guide/holidays.html#movies">Holiday mini-movies</a><a href="/guide/holidays.html">9 holidays</a><a href="/guide/fireplace.html#styles">9 fire styles</a><a href="/guide/fireplace.html#colors">Team-color fire</a><a href="/guide/fireplace.html#colors">Night shift fire</a><a href="/guide/fireplace.html#music">Flare on the beat</a><a href="/guide/scoreboard.html#gameday">Game Day scoreboard</a><a href="/guide/scoreboard.html#live">44 live leagues</a><a href="/guide/scoreboard.html#stats">Live baseball diamond</a><a href="/guide/scoreboard.html#stats">Game Center stats</a><a href="/guide/scoreboard.html#f1">F1 live board</a><a href="/guide/scoreboard.html#boards">Golf leaderboards</a><a href="/guide/scoreboard.html#boards">NASCAR & IndyCar</a><a href="/guide/scoreboard.html#boards">Tennis</a><a href="/guide/scoreboard.html#boards">UFC</a><a href="/guide/scoreboard.html#timer">Countdown clock</a><a href="/guide/live-feeds.html#countdown">Party countdowns</a><a href="/guide/live-feeds.html#weather">Weather sky</a><a href="/guide/live-feeds.html#storm">Storm watch</a><a href="/guide/live-feeds.html#overhead">Planes & space station overhead</a><a href="/guide/text-logos.html#text">Text & beat words</a><a href="/guide/text-logos.html#logo">Your logo</a><a href="/guide/text-logos.html#mirror">Screen mirror</a><a href="/guide/lineup.html">Up to 8 curtains</a><a href="/guide/lineup.html#grid">Grid walls</a><a href="/guide/lineup.html#overlap">Overlapping curtains</a><a href="/guide/shapes.html">3D cylinder, box & globe</a><a href="/guide/lineup.html#camera">Camera mapping</a><a href="/guide/groups.html">Light groups</a><a href="/lights.html">Twinkly, WLED, Govee</a><a href="/lights.html">Bluetooth curtains & DayBetter</a><a href="/guide/console.html">Console for phone, iPad & laptop</a><a href="/guide/console.html#modebar">Back to music key</a><a href="/guide/console.html#extras">Screen stays on</a><a href="/guide/console.html#extras">Console sounds</a><a href="/support.html">Help & feedback in the app</a></div>
+</div></section>
+
 <section><div class="wrap">
   <div class="center reveal"><span class="eyebrow">Everything in the box</span><h2>One app, every kind of party</h2>
   <p class="lead">Pool party, DJ gig, Halloween night or the big game. Tap a panel to see how it works.</p></div>
@@ -233,45 +239,65 @@ home = f'''
 
 <section class="alt"><div class="wrap">
   <div class="feat reveal">
+    <div><span class="eyebrow">New · DJ mode</span><h2>Play the lights like a club lighting tech</h2>
+      <p class="lead">DJ has its own key. The music show keeps running and you add moves on top, by hand, and every one lands right on the beat.</p>
+      <ul class="ticks"><li><b>Hit pads:</b> drop, strobe, flash, fire burst, confetti and blackout.</li><li><b>Hold to build</b>, let go to drop.</li><li><b>Cue the next look</b>, <b>tap tempo</b> and big <b>crowd lines</b> like HANDS UP.</li><li>Plug in a <b>DJ controller</b> and teach it every pad.</li></ul>
+      <a class="btn" href="/guide/dj.html">DJ mode guide →</a></div>
+    <div class="media"><div class="grid g2 mini">{clip('drop')}{clip('fx-pixelfireworks')}{clip('text-beat')}{clip('look-club-rig')}</div></div>
+  </div>
+  <div class="feat flip reveal">
+    <div><span class="eyebrow">New · Fire</span><h2>Nine kinds of fire</h2>
+      <p class="lead">From a cozy fireplace to a dragon blasting flame across the wall. Simulated live, so it never loops.</p>
+      <ul class="ticks"><li>Fireplace, <b>campfire</b>, <b>bonfire</b>, <b>candle wall</b>, <b>torch row</b>, <b>pixel flames</b>, <b>spirit fire</b>, <b>lava rising</b> and <b>dragon breath</b>.</li><li>Nine colors, including your own <b>team colors</b> and <b>night shift</b>.</li><li><b>Flare on the beat</b> and gusts of wind when the music gets loud.</li></ul>
+      <a class="btn" href="/guide/fireplace.html">Fireplace guide →</a></div>
+    <div class="media"><div class="grid g2 mini">{clip('fire-dragon')}{clip('fire-campfire')}{clip('fire-candles-rainbow')}{clip('fire-lava')}</div></div>
+  </div>
+  <div class="feat reveal">
+    <div><span class="eyebrow">New · Games</span><h2>Arcade games that play themselves</h2>
+      <p class="lead">GAMES has its own key. Breakout, Snake, Pong, Alien parade, Space rocks, Block drop, Light cycles and Game of life, speeding up with the music. Or run the Arcade marathon.</p>
+      <a class="btn" href="/guide/looks.html#games">Games in the guide →</a></div>
+    <div class="media"><div class="grid g2 mini">{clip('fx-breakout')}{clip('fx-snakegame')}{clip('fx-pongbattle')}{clip('fx-alienparade')}</div></div>
+  </div>
+  <div class="feat flip reveal">
     <div><span class="eyebrow">New · Big Wave</span><h2>Waves that roll across the wall</h2>
       <p class="lead">A whole new family of effects: a giant glowing wave, a serpent that swims the length of your wall, twin waves and a deep ocean swell.</p>
       <ul class="ticks"><li><b>Big Wave</b> rolls and crests on the beat.</li><li><b>Serpent</b> swims a smooth path with a glowing head.</li><li><b>Twin Waves</b> and <b>Ocean Swell</b> for slower, dreamy songs.</li></ul>
       <a class="btn" href="/guide/looks.html#wave">Big Wave in the guide →</a></div>
     <div class="media"><div class="grid g2 mini">{clip('wave-bigwave', 'Big Wave')}{clip('wave-serpent', 'Serpent')}{clip('wave-twinwaves', 'Twin Waves')}{clip('wave-oceanswell', 'Ocean Swell')}</div></div>
   </div>
-  <div class="feat flip reveal">
+  <div class="feat reveal">
     <div><span class="eyebrow">New · Live feeds</span><h2>The outside world, on your lights</h2>
       <p class="lead">Tap LIVE and pick a feed. It takes over the wall until you turn it off. Storm watch runs quietly on top of the music and only flashes when something happens.</p>
       <ul class="ticks"><li><b>Countdown</b> to a party, a birthday or New Year, with a fireworks finale.</li><li><b>Weather</b> with an animated pixel sky, today's high and low and the next hours.</li><li><b>Storm watch</b> flashes new National Weather Service warnings, only if you turn it on.</li><li>The <b>planes and space station overhead</b>, right now.</li></ul>
       <a class="btn" href="/guide/live-feeds.html">Live feeds guide →</a></div>
     <div class="media"><div class="grid g2 mini">{clip('live-countdown', 'Countdown')}{clip('live-weather', 'Weather')}{clip('live-storm', 'Storm watch')}{clip('live-overhead', 'Overhead now')}</div></div>
   </div>
-  <div class="feat reveal">
+  <div class="feat flip reveal">
     <div><span class="eyebrow">New · 3D shapes</span><h2>Bend your lights into art</h2>
       <p class="lead">Wrap curtains around a cylinder, a box or a globe. GlowBop blends the seam so the picture goes all the way around, then plays effects made for 3D: a spinning globe, barber stripes, rising rings and a bouncing ball.</p>
       <ul class="ticks"><li>A <b>3D preview</b> you can drag to spin, right in the app.</li><li>Add a <b>lid curtain</b> on top of a cylinder or box.</li></ul>
       <a class="btn" href="/guide/shapes.html">3D shapes guide →</a></div>
     <div class="media"><div class="grid g2 mini">{clip('shape-spinningglobe')}{clip('shape-barberspin')}{clip('shape-risingrings')}{clip('look-3d-depth')}</div></div>
   </div>
-  <div class="feat flip reveal">
+  <div class="feat reveal">
     <div><span class="eyebrow">Smarter than "sound reactive"</span><h2>It knows a drop when it hears one</h2>
       <p class="lead">Most light apps flash on every beat. GlowBop follows the whole song.</p>
       <ul class="ticks"><li><b>Build-ups</b> fill the wall slowly, getting brighter and busier.</li><li><b>Drops</b> hit with a burst, a new effect and a color change.</li><li><b>Quiet parts</b> go soft and flowing so the room can breathe.</li><li><b>Epic songs</b> get one big climax instead of strobes.</li></ul>
       <a class="btn" href="/guide/music.html">How the music show works →</a></div>
     <div class="media">{clip('drop', 'a build-up and the drop')}</div>
   </div>
-  <div class="feat reveal">
+  <div class="feat flip reveal">
     <div><span class="eyebrow">Game day</span><h2>A scoreboard as big as your wall</h2>
-      <p class="lead">Keep score at the field, follow your team live, or watch Formula 1 running order with tyres and pit stops.</p>
+      <p class="lead">Keep score at the field, follow any of 44 leagues live with real game stats, or put golf, racing, tennis, UFC and F1 on the wall.</p>
       <ul class="ticks"><li><b>44 live leagues</b>: pro, women's, college and world soccer, plus 18 sports for Game Day.</li><li><b>Live stats</b>: the count, runners on base, batter and pitcher, the last play, down and distance.</li><li><b>Game Center</b> on your phone with the linescore and leaders.</li><li><b>Golf, NASCAR, IndyCar, tennis, UFC and F1</b> boards with celebrations for a new leader, a set or a knockout.</li></ul>
       <a class="btn" href="/guide/scoreboard.html">Sports guide →</a></div>
     <div class="media"><div class="grid g2 mini">{clip('score-baseball', 'Baseball')}{clip('score-football', 'Football')}{clip('live-golf', 'Golf')}{clip('live-nascar', 'NASCAR')}</div></div>
   </div>
-  <div class="feat flip reveal">
-    <div><span class="eyebrow">Holidays & fire</span><h2>Mini-movies and a fireplace</h2>
-      <p class="lead">Each holiday has its own button, with full wide-screen stories for Halloween, Thanksgiving, Christmas and New Year. Or light a fire across the whole wall: nine styles from a cozy fireplace to dragon breath.</p>
+  <div class="feat reveal">
+    <div><span class="eyebrow">Holidays</span><h2>Mini-movies for the big nights</h2>
+      <p class="lead">Each holiday has its own button, with full wide-screen stories for Halloween, Thanksgiving, Christmas and New Year that stretch across every curtain.</p>
       <a class="btn" href="/guide/holidays.html">See the holidays →</a></div>
-    <div class="media"><div class="grid g2 mini">{clip('movie-halloweennight')}{clip('movie-christmaseve')}{clip('fire-rainbow-cozy')}{clip('fire-classic-roar')}</div></div>
+    <div class="media"><div class="grid g2 mini">{clip('movie-halloweennight')}{clip('movie-christmaseve')}{clip('movie-newyearcountdown')}{clip('holiday-july4')}</div></div>
   </div>
 </div></section>
 

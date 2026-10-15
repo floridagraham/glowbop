@@ -253,3 +253,13 @@ footer .fine{border-top:6px solid #1a1628}
 .founder h3{font-size:30px;margin:10px 0 4px}.founder h3 b{color:var(--amber);font-family:var(--mono);font-size:38px}.founder h3 s{color:var(--dim);font-size:22px;margin-left:8px}
 .founder p{color:var(--dim);margin:0}
 .demo .d-snd{margin-left:auto;margin-right:6px;appearance:none;border:0;border-radius:999px;background:var(--cyan);color:#000;font:700 12px var(--cond);letter-spacing:1.5px;padding:5px 12px;cursor:pointer}
+.nums{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:26px}
+.num{background:var(--card);border-left:8px solid var(--c);border-radius:0 16px 0 16px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px}
+.num b{font:44px/1 var(--mono);color:var(--c)}
+.num span{font:600 13px/1.2 var(--cond);letter-spacing:1.5px;text-transform:uppercase;color:var(--label)}
+@media(max-width:1000px){.nums{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:520px){.nums{grid-template-columns:repeat(2,minmax(0,1fr))}.num b{font-size:36px}}
+.cloud{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:26px}
+.cloud a{font:600 15px var(--cond);letter-spacing:1px;text-transform:uppercase;color:var(--text);background:var(--card2);border-left:5px solid var(--lav);border-radius:0 10px 0 10px;padding:7px 12px}
+.cloud a:nth-child(6n+2){border-left-color:var(--pink)}.cloud a:nth-child(6n+3){border-left-color:var(--cyan)}.cloud a:nth-child(6n+4){border-left-color:var(--amber)}.cloud a:nth-child(6n+5){border-left-color:var(--green)}.cloud a:nth-child(6n+6){border-left-color:var(--orange)}
+.cloud a:hover{text-decoration:none;filter:brightness(1.25)}
