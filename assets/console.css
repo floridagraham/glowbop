@@ -321,3 +321,7 @@ table.cmp thead th.us{background:#0a0812;padding:14px 12px 16px;text-align:cente
 @keyframes usflowx{to{background-position:300% 0}}
 .us-head i{font:700 11px var(--cond);letter-spacing:2px;font-style:normal;color:#000;background:linear-gradient(90deg,var(--amber),var(--pink));padding:3px 10px;border-radius:999px;box-shadow:0 0 14px rgba(255,61,154,.7)}
 @media(prefers-reduced-motion:reduce){table.cmp .us::before,table.cmp .us::after,.us-head .gbsvg,.us-head b{animation:none}}
+/* compare chart group rows */
+table.cmp tr.grp th{background:linear-gradient(90deg,rgba(255,61,154,.22),rgba(155,61,255,.16) 40%,rgba(0,0,0,0));padding:18px 14px 12px;border-top:2px solid rgba(255,61,154,.5)}
+table.cmp tr.grp b{font:800 17px var(--cond);letter-spacing:3px;text-transform:uppercase;color:#fff;margin-right:14px}
+table.cmp tr.grp span{font-size:14px;color:var(--lav)}

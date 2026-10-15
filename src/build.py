@@ -123,7 +123,7 @@ def band(title='Ready to light up the party?', text='Join the launch list and we
 
 # ================================================================ HOME
 FEATS = [
-    ('🔊', 'Hears every beat', 'Listens to whatever your computer plays. Builds, drops and quiet parts all look different.', '/guide/music.html'),
+    ('🧠', 'Hears the whole song', 'Not just the beat: it sees the drop coming, remembers your songs, counts the bars and reads the mood. The most advanced music brain for LED lights.', '/guide/music.html'),
     ('🎛️', 'A real light console', 'A new control panel for phone, iPad and laptop, with a live view of your wall and big colored keys.', '/guide/console.html', 1),
     ('🎨', '34 looks, 200+ effects', 'Neon Party, Deep Space, Retro Arcade, the new Big Wave and 3D Object looks and more.', '/guide/looks.html', 1),
     ('📡', 'Live feeds', 'Countdowns, weather, storm watch, and the planes and space station flying over your house.', '/guide/live-feeds.html', 1),
@@ -966,13 +966,25 @@ page('/lights.html', 'Supported lights · GlowBop', 'GlowBop supports Twinkly cu
 # ================================================================ COMPARE
 Y, N, M = '<span class="y">✓ Yes</span>', '<span class="n">Not advertised</span>', '<span class="m">Partly</span>'
 ROWS = [
-    ('Reacts to music', [(Y, 'Any audio on the PC'), (Y, 'Phone mic, or Music dongle'), (Y, 'PC audio (Desktop), sync box'), (Y, 'PC audio, sync box'), (Y, 'PC audio'), (Y, 'PC audio'), (Y, 'Phone mic, Apple Music')]),
-    ('Detects build-ups & drops', [(Y, 'Plus Epic mode'), (N, 'Beat / BPM'), (N, 'Rhythm'), (N, 'Beat'), (N, 'Beat'), (N, ''), (N, 'Beat & mood')]),
-    ('Controls Twinkly lights', [(Y, ''), (Y, ''), (N, 'Govee only'), (N, 'Hue only'), (N, 'Nanoleaf only'), (N, 'WLED / ESP'), (N, 'Hue, LIFX, Nanoleaf')]),
-    ('Extra hardware for music', [('<span class="y">None needed, start right now</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
-    ('Scoreboard & live scores', [(Y, '44 live leagues, F1, golf, racing'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('#', '🧠 The music brain', 'Everyone flashes on the beat. Only GlowBop listens to the whole song.'),
+    ('Flashes on the beat', [(Y, 'Any audio on the PC'), (Y, 'Phone mic, or Music dongle'), (Y, 'PC audio (Desktop), sync box'), (Y, 'PC audio, sync box'), (Y, 'PC audio'), (Y, 'PC audio'), (Y, 'Phone mic, Apple Music')]),
+    ('Follows the whole song', [(Y, 'Intro, groove, build-up, drop and breakdown each get their own look'), (N, 'Beat / BPM'), (N, 'Rhythm'), (N, 'Beat'), (N, 'Beat'), (N, ''), (N, 'Beat & mood')]),
+    ('Sees the drop coming', [(Y, 'Winds the wall up through the build, then explodes on the drop'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Remembers your songs', [(Y, 'Learns where each drop is and nails it the next time it plays'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Counts bars & downbeats', [(Y, 'Big changes land on the first beat of the bar, like a real lighting operator'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Reads key, mood & genre', [(Y, 'Picks colors and effects to fit the song'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (M, 'Mood')]),
+    ('Epic mode for movie music', [(Y, 'Soundtracks and slow songs swell instead of strobing'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('DJ mode', [(Y, 'Hit pads, hold-to-build drops, cue the next look, tap tempo, crowd lines'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Bluetooth speaker sync', [(Y, 'Lights early or late? Nudge them either way, saved per speaker'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('#', '🎛️ Way beyond music', 'One console runs the party, game day and the holidays.'),
+    ('Scoreboard & live scores', [(Y, '44 live leagues, F1, golf, racing, tennis, UFC'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Arcade games & fireplace', [(Y, '8 self-playing games, 9 fire styles in 9 colors'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Text & logos on the lights', [(Y, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Holiday mini-movies', [(Y, '4 wide-screen movies'), (M, 'Effect library'), (M, 'Scene presets'), (M, 'Scene presets'), (N, ''), (N, ''), (N, '')]),
+    ('Live feeds', [(Y, 'Weather, storm watch, countdowns, planes overhead'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('#', '⚙️ Setup & price', ''),
+    ('Controls Twinkly lights', [(Y, ''), (Y, ''), (N, 'Govee only'), (N, 'Hue only'), (N, 'Nanoleaf only'), (N, 'WLED / ESP'), (N, 'Hue, LIFX, Nanoleaf')]),
+    ('Extra hardware for music', [('<span class="y">None needed, start right now</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
     ('Many curtains as one wall', [(Y, '1–8: side by side, stacked or a grid'), (M, 'Twinkly only'), (N, ''), (N, ''), (N, ''), (M, 'Virtual strips'), (N, '')]),
     ('Phone remote', [(Y, 'Any phone browser'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is a phone app')]),
     ('Runs on', [('Windows', ''), ('iOS, Android', ''), ('Windows, iOS, Android', ''), ('Windows, Mac', ''), ('Windows, Mac', ''), ('Win, Mac, Linux', ''), ('iPhone, iPad, Mac', '')]),
@@ -981,11 +993,14 @@ ROWS = [
 HEAD = ['GlowBop', 'Twinkly app', 'Govee Home / Desktop', 'Philips Hue Sync', 'Nanoleaf Desktop', 'LedFx', 'Light DJ Pro']
 US_HEAD = f'<span class="us-head">{logo_svg()}<b>GlowBop</b><i>★ THE FULL SHOW</i></span>'
 tbl = '<table class="cmp"><thead><tr><th></th>' + ''.join(f'<th{" class=us" if i == 0 else ""}>{US_HEAD if i == 0 else h}</th>' for i, h in enumerate(HEAD)) + '</tr></thead><tbody>'
-for name, cells in ROWS:
+for row in ROWS:
+    if row[0] == '#':
+        tbl += f'<tr class="grp"><th colspan="8"><b>{row[1]}</b>{f"<span>{row[2]}</span>" if row[2] else ""}</th></tr>'; continue
+    name, cells = row
     tbl += f'<tr><th>{name}</th>' + ''.join(f'<td{" class=us" if i == 0 else ""}>{v}{f"<small>{s}</small>" if s else ""}</td>' for i, (v, s) in enumerate(cells)) + '</tr>'
 tbl += '</tbody></table>'
 compare = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Compare</span><h1>GlowBop vs. <span class="grad">the other light apps</span></h1>
-<p class="lead">Great apps, different jobs. Most light apps run their own brand of lights and flash on the beat. GlowBop is built to follow a whole song on LED curtains, and to do more than music.</p></div></header>
+<p class="lead">Most light apps flash on the beat. GlowBop is the most advanced light-show software for LED curtains: it hears the whole song, sees the drop coming, remembers your music, and runs game day and the holidays too.</p></div></header>
 <section style="padding-top:10px"><div class="wrap">
 <div class="tablewrap reveal">{tbl}</div>
 <p class="dim" style="font-size:14px;margin-top:14px">Checked October 2026 from each product's own website, help pages and app listings. "Not advertised" means we could not find the feature in their materials, not that it is impossible. Prices change; check each site. Spot something out of date? Email <a href="mailto:{MAIL}">{MAIL}</a> and we'll fix it.</p>
