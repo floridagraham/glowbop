@@ -128,6 +128,7 @@ FEATS = [
     ('🎨', '34 looks, 200+ effects', 'Neon Party, Deep Space, Retro Arcade, the new Big Wave and 3D Object looks and more.', '/guide/looks.html', 1),
     ('📡', 'Live feeds', 'Countdowns, weather, storm watch, and the planes and space station flying over your house.', '/guide/live-feeds.html', 1),
     ('🏟️', 'Sports + live stats', '44 leagues with live stats, from the NFL to the Bundesliga, college softball and cricket, plus golf, racing, tennis, UFC and F1 boards.', '/guide/scoreboard.html', 1),
+    ('🏎️', 'F1 race day', 'Live timing in team colors, a DRS attack bar, and the wall explodes for a new leader, the safety car and the chequered flag.', '/guide/scoreboard.html#f1', 1),
     ('🌐', '3D shapes', 'Wrap your curtains around a cylinder, a box or a globe for a glowing art piece.', '/guide/shapes.html', 1),
     ('🧩', '1 to 8 curtains', 'Side by side, stacked, overlapping or a grid of rows and columns. Every show resizes to fit.', '/guide/lineup.html', 1),
     ('🎃', 'Holidays & mini-movies', 'Halloween, Christmas, New Year and more, with full animated scenes for the big nights.', '/guide/holidays.html'),
@@ -437,7 +438,8 @@ ORDER = ['Music show', 'DJ mode', 'Big Wave', 'Looks', 'Games', 'Wild Elements',
 F2.sort(key=lambda f: ORDER.index(f[2]) if f[2] in ORDER else 99)
 SHOW = [('wave-bigwave', 'Big Wave'), ('fire-rainbow-cozy', 'Rainbow fire'), ('shape-spinningglobe', '3D spinning globe'), ('fx-pixelfireworks', 'Pixel fireworks'),
         ('wave-serpent', 'Serpent'), ('fx-laserweb', 'Laser web'), ('fx-tesseract', 'Tesseract'), ('fx-volcano', 'Volcano'),
-        ('look-synthwave', 'Synthwave'), ('live-nascar', 'NASCAR live'), ('score-baseball', 'Baseball live'), ('live-overhead', 'Planes overhead')]
+        ('look-synthwave', 'Synthwave'), ('live-nascar', 'NASCAR live'), ('score-baseball', 'Baseball live'), ('live-overhead', 'Planes overhead'),
+        ('score-f1', 'F1: new leader'), ('f1-win', 'F1: chequered flag'), ('f1-safety', 'F1: safety car'), ('score-football', 'Football live')]
 features = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Features</span><h1>Everything <span class="grad">GlowBop</span> can do</h1>
 <p class="lead">A music light show, a holiday display, a scoreboard, live feeds and a sign, all run from one light-show console. Every section links to the step-by-step guide.</p></div></header>
 <section class="tight" style="padding-top:0"><div class="wrap">
