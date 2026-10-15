@@ -342,3 +342,9 @@ body.wallfull #hd, body.wallfull #rail { z-index:0; }
   .modebar .t small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .modebar #mBtn { padding:0 12px; font-size:calc(13px * var(--fs, 1)); min-height:42px; }
 }
+/* ⭐ PRO header, integrated: a slim gold bar the same width as the keys, label inside it (no floating rule or glow) */
+#rail .rail-sep[data-g=pro] { background:linear-gradient(90deg, var(--amber), var(--gold) 55%, #ffe9a8); color:#1a1206; text-shadow:none;
+  align-items:center; padding:0 10px 0 0; margin-top:4px; border-radius:0; opacity:1; }
+#rail .rail-sep[data-g=pro]::before { display:none; }
+#rail .rail-sep[data-g=pro] span { background:none; -webkit-background-clip:border-box; background-clip:border-box; color:#1a1206; font-weight:800; }
+#rail .rail-sep[data-g=pro] .ic { fill:#1a1206; }

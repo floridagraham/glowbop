@@ -312,9 +312,9 @@
     {id: 'text', label: 'TEXT', c: 'var(--gold)', g: 'visuals'},
     {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},         // moves up next to LOOKS when a holiday is close (seasonRail)
     {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
+    {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'pro'},
     {id: 'autoloops', label: 'LOOPS & CUES', c: '#ff9f5a', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
     {id: 'cues', label: 'CUES', c: '#7dffb2', pro: true, g: 'pro', rail: 'autoloops'},   // 🎬 cue lists + GO (cues.js): shares the LOOPS & CUES key (a switch on top), so the phone rail still fits
-    {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'pro'},
     {id: 'board', label: 'LIVE BOARD', c: '#4de8c8', pro: true, g: 'pro'},     // 🎚️🔁 Fader board + Loop banks
     {id: 'ops', label: 'OVERRIDE', c: '#e9e6ff', pro: true, g: 'pro'},
     {id: 'pro', label: 'PRO', c: 'var(--gold)', home: true, g: 'pro', ic: 'sparkle'},   // ✨ Home: the Pro DJ tour

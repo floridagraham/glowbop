@@ -414,7 +414,7 @@
       if (!cfg.open || !cfg._init) { $('sbMin').value = nw.minutes || 0; $('sbPerN').value = nw.periods || 1;
         P.setup.querySelectorAll('[data-sbdir]').forEach(x => x.classList.toggle('on', x.dataset.sbdir === (nw.dir || 'down'))); cfg._init = cfg.open; }
     }
-    renderGC(mode);
+    renderGC(mode); renderOv();
     if (mode === 'live') {
       if (lg.value && teamsFor !== lg.value) loadTeams();
       const g = SB.live;
@@ -433,13 +433,126 @@
     }
   }
 
+  // ------------------------------------------------------------------ 🏟️ Scores over the show: score cards pop in over the music show
+  GB.css(`
+  .sov-top { display:flex; align-items:center; gap:12px; }
+  .sov-top .tx { flex:1 1 auto; min-width:0; font:calc(14px * var(--fs, 1))/1.35 var(--body); color:var(--dim); }
+  .sov-sw { flex:0 0 auto; appearance:none; border:0; width:76px; height:44px; border-radius:22px; background:#33304a; position:relative; transition:background .15s; cursor:pointer; }
+  .sov-sw::after { content:''; position:absolute; top:5px; left:5px; width:34px; height:34px; border-radius:50%; background:#8a85a8; transition:left .15s, background .15s; }
+  .sov-sw[aria-checked=true] { background:var(--green); } .sov-sw[aria-checked=true]::after { left:37px; background:#fff; }
+  .sov-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; }
+  .sov-stp { display:grid; grid-template-columns:56px minmax(92px,auto) 56px; gap:6px; align-items:center; }
+  .sov-stp .btn { min-height:56px; padding:0; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+  .sov-stp .btn { font:500 calc(30px * var(--fs, 1))/1 var(--mono); letter-spacing:0; }
+  @media (max-width:520px) { .sov-row { grid-template-columns:minmax(0,1fr); gap:4px; } .sov-stp { grid-template-columns:64px minmax(0,1fr) 64px; } }
+  .sov-stp b { text-align:center; font:calc(24px * var(--fs, 1)) var(--mono); color:var(--amber); white-space:nowrap; }
+  .sov-stp b small { font-size:.6em; color:var(--dim); margin-left:3px; }
+  .sov-teams { display:flex; flex-wrap:wrap; gap:8px; }
+  .sov-teams .chip { max-width:100%; } .sov-teams .chip span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sov-add { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:8px; align-items:end; }
+  @media (max-width:520px) { .sov-add { grid-template-columns:minmax(0,1fr) minmax(0,1fr); } .sov-add .btn { grid-column:span 2; } }
+  .sov-st { font:calc(14px * var(--fs, 1)) var(--mono); color:var(--cyan); min-height:18px; overflow-wrap:anywhere; }
+  `);
+  let OV = null, ovT = null, ovEdit = 0, ovTeamsFor = '';
+  const ovPost = b => score(Object.assign({action: 'overlay'}, b));
+  const STEPS = [1, 2, 3, 4, 5, 7, 10, 15, 20, 30];
+  function stepper(el, get, set) {                                    // − / + with hold-to-repeat
+    el.querySelectorAll('[data-d]').forEach(b => {
+      let t1 = null, t2 = null;
+      const stop = () => { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; };
+      const go = () => set(get(), +b.dataset.d);
+      b.addEventListener('pointerdown', e => { e.preventDefault(); stop(); go(); t1 = setTimeout(() => { t2 = setInterval(go, 160); }, 450); });
+      ['pointerup', 'pointerleave', 'pointercancel', 'blur'].forEach(ev => b.addEventListener(ev, stop));
+      b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      b.addEventListener('contextmenu', e => e.preventDefault());
+    });
+  }
+  function ovSave(b) { ovEdit = Date.now(); clearTimeout(ovT); ovT = setTimeout(() => ovPost(b), 120); }
+  GB.panel('score', 12, el => {
+    P.ov = el; el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
+    el.innerHTML = `<div class="ph"><span>${GB.svg('trophy', ' style="width:20px;height:20px;vertical-align:-4px;margin-right:6px"')}Scores over the show</span><span class="r" id="sovR">OFF</span></div>
+      <div class="sov-top"><div class="tx">The music show keeps playing. Every few minutes your games pop in as a score card, then fade away.</div>
+        <button class="sov-sw" id="sovOn" role="switch" aria-checked="false" aria-label="Scores over the show"></button></div>
+      <div class="sov-row"><span class="sb-lab">Show every</span><div class="sov-stp" id="sovEvery"><button class="btn" data-d="-1" aria-label="Fewer minutes between cards">−</button><b id="sovEveryV">3<small>min</small></b><button class="btn" data-d="1" aria-label="More minutes between cards">+</button></div></div>
+      <div class="sov-row"><span class="sb-lab">Hold for</span><div class="sov-stp" id="sovHold"><button class="btn" data-d="-1" aria-label="Hold shorter">−</button><b id="sovHoldV">5<small>s</small></b><button class="btn" data-d="1" aria-label="Hold longer">+</button></div></div>
+      <div class="sub">Which games</div>
+      <div class="seg" id="sovGames"><button class="btn" data-g="mine" style="--c:var(--cyan)">My teams</button><button class="btn" data-g="live" style="--c:var(--cyan)">All live games</button></div>
+      <div class="chips"><button class="chip" id="sovF1" style="--c:var(--orange)" aria-pressed="false">🏎️ F1</button></div>
+      <label class="field" id="sovFavL" hidden>Favorite F1 driver<select id="sovFav"><option value="">None</option></select></label>
+      <div class="sub">My teams</div>
+      <div class="sov-teams" id="sovTeams"></div>
+      <div class="sov-add"><label class="field">League<select id="sovLg"></select></label><label class="field">Team<select id="sovTeam"><option value="">Pick a league</option></select></label>
+        <button class="btn" id="sovAdd" style="--c:var(--cyan)">Add</button></div>
+      <button class="btn c lg wide" id="sovNow" style="--c:var(--green)">Show one now</button>
+      <div class="sov-st" id="sovSt" aria-live="polite"></div>`;
+    $('sovOn').onclick = async () => { const on = !(OV && OV.on); if (await ovPost({on})) { if (OV) OV.on = on; ovEdit = Date.now(); renderOv(); GB.toast(on ? '🏟️ Scores will pop in over the show' : 'Scores over the show off'); refresh(300); } };
+    stepper($('sovEvery'), () => (OV ? OV.every_min : 3), (v, d) => {
+      let i = STEPS.findIndex(x => x >= v); if (i < 0) i = STEPS.length - 1; if (STEPS[i] !== v && d > 0) i--;
+      const n = STEPS[Math.max(0, Math.min(STEPS.length - 1, i + d))]; if (!OV || n === OV.every_min) return;
+      OV.every_min = n; renderOv(); ovSave({every_min: n}); });
+    stepper($('sovHold'), () => (OV ? OV.hold : 5), (v, d) => { const n = Math.max(3, Math.min(10, v + d)); if (!OV || n === OV.hold) return; OV.hold = n; renderOv(); ovSave({hold: n}); });
+    el.querySelectorAll('[data-g]').forEach(b => b.onclick = async () => { if (await ovPost({games: b.dataset.g})) { if (OV) OV.games = b.dataset.g; ovEdit = Date.now(); renderOv(); } });
+    $('sovF1').onclick = async () => { const f = !(OV && OV.f1); if (await ovPost({f1: f})) { if (OV) OV.f1 = f; ovEdit = Date.now(); renderOv(); GB.toast(f ? '🏎️ F1 sessions pop in too' : 'F1 off'); } };
+    $('sovFav').onchange = e => { ovPost({f1_fav: e.target.value}); ovEdit = Date.now(); GB.toast(e.target.value ? '⭐ ' + e.target.value + ' gets a glow and their own card' : 'No favorite driver'); };
+    $('sovLg').onchange = () => ovTeams();
+    $('sovAdd').onclick = async () => {
+      const t = $('sovTeam'); if (!t.value) return GB.toast('Pick a team');
+      const nm = t.options[t.selectedIndex].text;
+      if (await ovPost({add_team: {league: $('sovLg').value, id: t.value, name: nm}})) { GB.toast('➕ ' + nm); refresh(200); }
+    };
+    $('sovNow').onclick = async () => { if (await ovPost({now: true})) { GB.toast('🏟️ Next score card coming up'); refresh(300); setTimeout(() => refresh(0), 2500); } };
+  });
+  async function ovTeams() {
+    const lg = $('sovLg').value, t = $('sovTeam'); if (!lg || ovTeamsFor === lg) return; ovTeamsFor = lg;
+    t.innerHTML = '<option value="">Loading teams…</option>';
+    try { const r = await GB.get('/api/score/teams?league=' + encodeURIComponent(lg)); t.innerHTML = '';
+      (r.teams || []).forEach(x => t.add(new Option(x.name, x.id))); if (!(r.teams || []).length) t.innerHTML = '<option value="">No teams found</option>';
+    } catch (e) { ovTeamsFor = ''; t.innerHTML = '<option value="">Couldn\'t load teams</option>'; }
+  }
+  const fmtIn = s => s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : s + ' s';
+  function renderOv() {
+    if (!P.ov || !SB) return;
+    if (SB.overlay && Date.now() - ovEdit > 2500) OV = Object.assign({}, SB.overlay);
+    if (!OV) return;
+    const on = !!OV.on, br = (SB.overlay && SB.overlay.brief) || {};
+    $('sovOn').setAttribute('aria-checked', on ? 'true' : 'false');
+    $('sovR').textContent = br.card ? 'SHOWING' : on ? 'ON' : 'OFF';
+    $('sovEveryV').innerHTML = OV.every_min + '<small>min</small>'; $('sovHoldV').innerHTML = OV.hold + '<small>s</small>';
+    P.ov.querySelectorAll('[data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === (OV.games === 'all' ? 'live' : OV.games)));
+    $('sovF1').classList.toggle('on', !!OV.f1); $('sovF1').setAttribute('aria-pressed', OV.f1 ? 'true' : 'false');
+    $('sovFavL').hidden = !OV.f1;
+    const fv = $('sovFav'), drv = (OV.f1_drivers && OV.f1_drivers.length ? OV.f1_drivers : ['VER', 'NOR', 'PIA', 'LEC', 'HAM', 'RUS', 'ANT', 'ALO', 'SAI', 'ALB', 'GAS', 'OCO', 'HUL', 'BOR', 'STR', 'LAW', 'HAD', 'BEA', 'COL', 'PER', 'BOT', 'LIN']).slice();
+    if (OV.f1_fav && !drv.includes(OV.f1_fav)) drv.push(OV.f1_fav);
+    const fk = drv.join(','); if (fv._k !== fk) { fv._k = fk; fv.innerHTML = '<option value="">None</option>' + drv.map(c => `<option>${esc(c)}</option>`).join(''); }
+    if (document.activeElement !== fv) fv.value = OV.f1_fav || '';
+    // my teams: your Live Fan team + the ones you added
+    const lgName = k => (SB.leagues || {})[k] || k.toUpperCase();
+    const chips = (OV.teams || []).map(t => `<button class="chip" data-rm="${esc(t.league + ':' + t.id)}" aria-label="Remove ${esc(t.name)}"><span>${esc(t.name || t.id)} · ${esc(lgName(t.league))}</span>${GB.svg('ovr', ' style="opacity:.6"')}</button>`);
+    if (SB.team_id && !(OV.teams || []).some(t => t.league === SB.league && String(t.id) === String(SB.team_id)))
+      chips.unshift(`<span class="chip" title="Your Live Fan team"><span>📺 ${esc(SB.team_name || 'Live Fan team')}</span></span>`);
+    const th = chips.join('') || '<span class="note">No teams yet. Add one below (your Live Fan team counts too).</span>';
+    const tb = $('sovTeams'); if (tb._h !== th) { tb._h = th; tb.innerHTML = th;
+      tb.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { if (await ovPost({remove_team: b.dataset.rm})) { GB.toast('Removed'); ovEdit = 0; refresh(150); } }); }
+    const lg = $('sovLg');
+    if (!lg.options.length && SB.leagues) {
+      const grp = SB.leagues_group || {}, made = {};
+      Object.entries(SB.leagues).forEach(([k, v]) => { const g = grp[k]; let host = lg;
+        if (g) { if (!made[g]) { made[g] = document.createElement('optgroup'); made[g].label = g; lg.appendChild(made[g]); } host = made[g]; }
+        host.appendChild(new Option(v, k)); });
+      lg.value = SB.league || 'nfl'; ovTeams();
+    }
+    const n = br.count || 0;
+    $('sovSt').textContent = br.msg ? br.msg : br.card ? '▶ ' + br.card : !on ? (n ? n + ' game' + (n > 1 ? 's' : '') + ' ready' : 'Off') :
+      br.waiting ? 'Waiting: ' + br.waiting : (br.next_in != null ? 'Next card in ' + fmtIn(br.next_in) : '') + (n ? ' · ' + n + ' game' + (n > 1 ? 's' : '') : ' · no games live or recent');
+  }
+
   // ------------------------------------------------------------------ polling
   let loopT = null;
   async function refresh(delay) {
     clearTimeout(loopT);
     if (delay) { loopT = setTimeout(() => refresh(0), delay); return; }
     try { const j = await GB.get('/api/score' + q()); if (j && !j.error) { SB = j; render(); } } catch (e) {}
-    const fast = SB && SB.on && GB.page === 'score';
+    const fast = SB && (SB.on || (SB.overlay && SB.overlay.on)) && GB.page === 'score';
     loopT = setTimeout(() => refresh(0), document.hidden ? 3000 : fast ? 700 : 2500);
   }
   GB.on('ready', () => refresh(0));
