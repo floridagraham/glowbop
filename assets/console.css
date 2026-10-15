@@ -301,3 +301,23 @@ footer .fine{border-top:6px solid #1a1628}
   .hero h1 .grad{text-shadow:none;filter:drop-shadow(0 2px 10px rgba(0,0,0,.9))}
   .hero .lead{color:#e6e0f5}
 }
+/* 🏆 Compare chart: the GlowBop column is a lit-up LED lane (rainbow edges that flow, a glowing header key) */
+@keyframes usflow{to{background-position:0 300%}}
+@keyframes ushue{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+@keyframes uspulse{0%,100%{box-shadow:0 0 18px -2px var(--pink),0 0 0 2px #fff inset}50%{box-shadow:0 0 34px 2px var(--violet),0 0 0 2px #fff inset}}
+table.cmp th.us,table.cmp td.us{position:relative;background:linear-gradient(180deg,rgba(255,61,154,.16),rgba(155,61,255,.14),rgba(51,214,255,.14)) ;color:#fff;font-weight:700;min-width:190px}
+table.cmp td.us::before,table.cmp td.us::after,table.cmp th.us::before,table.cmp th.us::after{content:"";position:absolute;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--pink),var(--violet),var(--cyan),var(--amber),var(--pink));background-size:100% 300%;animation:usflow 3s linear infinite}
+table.cmp td.us::before,table.cmp th.us::before{left:0}
+table.cmp td.us::after,table.cmp th.us::after{right:0}
+table.cmp td.us small{color:#e6dcff}
+table.cmp td.us .y{color:#7dffb0;text-shadow:0 0 10px rgba(60,224,138,.9)}
+table.cmp tbody tr:last-child td.us{box-shadow:inset 0 -4px 0 var(--cyan)}
+table.cmp thead th.us{background:#0a0812;padding:14px 12px 16px;text-align:center;vertical-align:bottom}
+.us-head{display:flex;flex-direction:column;align-items:center;gap:6px}
+.us-head .gbsvg{width:46px;height:46px;border-radius:12px;animation:uspulse 1.9s ease-in-out infinite}
+.us-head b{font:800 20px/1 var(--cond);letter-spacing:4px;background:linear-gradient(90deg,var(--pink),var(--violet),var(--cyan),var(--pink));background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:usflowx 4s linear infinite;text-transform:uppercase}
+@keyframes usflowx{to{background-position:300% 0}}
+.us-head i{font:700 11px var(--cond);letter-spacing:2px;font-style:normal;color:#000;background:linear-gradient(90deg,var(--amber),var(--pink));padding:3px 10px;border-radius:999px;box-shadow:0 0 14px rgba(255,61,154,.7)}
+@media(prefers-reduced-motion:reduce){table.cmp .us::before,table.cmp .us::after,.us-head .gbsvg,.us-head b{animation:none}}

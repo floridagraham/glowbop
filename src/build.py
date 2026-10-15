@@ -74,7 +74,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=3">
-<link rel="stylesheet" href="/assets/console.css?v=10">
+<link rel="stylesheet" href="/assets/console.css?v=11">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -104,7 +104,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js?v=10"></script>
+<script src="/assets/site.js?v=11"></script>
 </body>
 </html>
 '''
@@ -970,16 +970,17 @@ ROWS = [
     ('Detects build-ups & drops', [(Y, 'Plus Epic mode'), (N, 'Beat / BPM'), (N, 'Rhythm'), (N, 'Beat'), (N, 'Beat'), (N, ''), (N, 'Beat & mood')]),
     ('Controls Twinkly lights', [(Y, ''), (Y, ''), (N, 'Govee only'), (N, 'Hue only'), (N, 'Nanoleaf only'), (N, 'WLED / ESP'), (N, 'Hue, LIFX, Nanoleaf')]),
     ('Extra hardware for music', [('<span class="y">None needed, start right now</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
-    ('Scoreboard & live scores', [(Y, '15 sports, live, F1'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
+    ('Scoreboard & live scores', [(Y, '44 live leagues, F1, golf, racing'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Text & logos on the lights', [(Y, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Holiday mini-movies', [(Y, '4 wide-screen movies'), (M, 'Effect library'), (M, 'Scene presets'), (M, 'Scene presets'), (N, ''), (N, ''), (N, '')]),
-    ('Many curtains as one wall', [(Y, '1–4, side by side or stacked'), (M, 'Twinkly only'), (N, ''), (N, ''), (N, ''), (M, 'Virtual strips'), (N, '')]),
+    ('Many curtains as one wall', [(Y, '1–8: side by side, stacked or a grid'), (M, 'Twinkly only'), (N, ''), (N, ''), (N, ''), (M, 'Virtual strips'), (N, '')]),
     ('Phone remote', [(Y, 'Any phone browser'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is a phone app')]),
     ('Runs on', [('Windows', ''), ('iOS, Android', ''), ('Windows, iOS, Android', ''), ('Windows, Mac', ''), ('Windows, Mac', ''), ('Win, Mac, Linux', ''), ('iPhone, iPad, Mac', '')]),
     ('Price', [('<b>$5.99/mo</b>, $59/yr or $379 once', 'Founder lifetime $129 at launch'), ('Free app; dongle extra', ''), ('Free app; sync box extra', ''), ('Free app; sync box extra', ''), ('See their site', ''), ('Free, open source', ''), ('Paid app', '')]),
 ]
 HEAD = ['GlowBop', 'Twinkly app', 'Govee Home / Desktop', 'Philips Hue Sync', 'Nanoleaf Desktop', 'LedFx', 'Light DJ Pro']
-tbl = '<table><thead><tr><th></th>' + ''.join(f'<th{" class=us" if i == 0 else ""}>{h}</th>' for i, h in enumerate(HEAD)) + '</tr></thead><tbody>'
+US_HEAD = f'<span class="us-head">{logo_svg()}<b>GlowBop</b><i>★ THE FULL SHOW</i></span>'
+tbl = '<table class="cmp"><thead><tr><th></th>' + ''.join(f'<th{" class=us" if i == 0 else ""}>{US_HEAD if i == 0 else h}</th>' for i, h in enumerate(HEAD)) + '</tr></thead><tbody>'
 for name, cells in ROWS:
     tbl += f'<tr><th>{name}</th>' + ''.join(f'<td{" class=us" if i == 0 else ""}>{v}{f"<small>{s}</small>" if s else ""}</td>' for i, (v, s) in enumerate(cells)) + '</tr>'
 tbl += '</tbody></table>'
