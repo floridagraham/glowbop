@@ -234,3 +234,5 @@ footer .fine{border-top:6px solid #1a1628}
 .showgrid{gap:12px}.showgrid .led figcaption{display:none}.showgrid h3{font-size:15px;margin:8px 2px 0;color:var(--lav)}
 @media(max-width:900px){.showgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .showgrid{max-width:980px;margin-left:auto;margin-right:auto}
+.dev .scr{position:relative}
+.dev .wallov{position:absolute;display:block;pointer-events:none}

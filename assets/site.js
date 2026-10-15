@@ -255,17 +255,18 @@
   function size(p) { const r = p.c.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1); p.c.width = Math.max(1, r.width * d | 0); p.c.height = Math.max(1, r.height * d | 0); p.last = -1; }
   function draw(p, data, w, h, f, fade) {
     const g = p.c.getContext('2d'), sx = p.c.width / w, sy = p.c.height / h, r = Math.min(sx, sy) * 0.4, base = f * w * h * 4, px = data.data;
-    g.fillStyle = '#000'; g.fillRect(0, 0, p.c.width, p.c.height);
+    const ov = p.c.classList.contains('wallov');                      // a live wall inside an app screenshot: app colors
+    g.fillStyle = ov ? '#05040a' : '#000'; g.fillRect(0, 0, p.c.width, p.c.height);
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const i = base + (y * w + x) * 4, R = px[i] * fade, G = px[i + 1] * fade, B = px[i + 2] * fade, lit = R + G + B > 24;
-      g.fillStyle = lit ? `rgb(${R | 0},${G | 0},${B | 0})` : '#14141c';
-      g.beginPath(); g.arc(x * sx + sx / 2, y * sy + sy / 2, lit ? r : r * 0.78, 0, 6.283); g.fill();
+      g.fillStyle = lit ? `rgb(${R | 0},${G | 0},${B | 0})` : (ov ? '#16121f' : '#14141c');
+      g.beginPath(); g.arc(x * sx + sx / 2, y * sy + sy / 2, lit ? r : r * (ov ? 0.55 : 0.78), 0, 6.283); g.fill();
     }
   }
   document.querySelectorAll('canvas[data-clip], canvas[data-reel]').forEach(c => {
     const list = (c.dataset.reel || c.dataset.clip).split(','), p = {c, list, k: 0, t0: performance.now(), vis: false, last: -1, label: c.dataset.label ? document.getElementById(c.dataset.label) : null};
     players.push(p); size(p);
-    if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { p.vis = e.isIntersecting; if (p.vis) list.slice(0, 2).forEach(load); }), {rootMargin: '200px'}).observe(c);
+    if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { p.vis = e.isIntersecting; if (p.vis) { size(p); list.slice(0, 2).forEach(load); } }), {rootMargin: '200px'}).observe(c);
     else { p.vis = true; load(list[0]); }
   });
   addEventListener('resize', () => players.forEach(size));
@@ -283,6 +284,7 @@
         fade = Math.min(1, el / 0.35, (dur - el) / 0.35);
       } else f = f % meta.n;
       f = Math.min(f, meta.n - 1);
+      if (p.c.clientWidth && Math.abs(p.c.clientWidth * Math.min(2, devicePixelRatio || 1) - p.c.width) > 2) size(p);   // its box changed (a lazy image loaded)
       if (f === p.last && fade === 1) continue; p.last = f;
       draw(p, data, meta.w, meta.h, reduce ? 0 : f, Math.max(0, fade));
     }
@@ -350,13 +352,16 @@
   if ('IntersectionObserver' in window) start();
 })();
 
-// ✨ sparkle logo: random LEDs of the SVG Curtain Burst glint white (same as the app)
+// ✨ sparkle logo: random LEDs of the SVG Curtain Burst glint white (same as the app).
+// Sets the SVG attributes directly (fill + a slightly bigger dot): works the same in Safari on iPhone / iPad.
 (() => {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   document.querySelectorAll('.gbsvg').forEach(host => {
     const lit = [...host.querySelectorAll('circle[data-l]')]; if (!lit.length) return;
-    const tick = () => { const n = 1 + (Math.random() < 0.6 ? 1 : 0);
-      for (let k = 0; k < n; k++) { const el = lit[(Math.random() * lit.length) | 0]; el.classList.add('tw'); setTimeout(() => el.classList.remove('tw'), 260); }
+    const glint = el => { if (el._on) return; el._on = 1; const f = el.getAttribute('fill');
+      el.setAttribute('fill', '#ffffff'); el.setAttribute('r', '5.6');
+      setTimeout(() => { el.setAttribute('fill', f); el.setAttribute('r', '4.6'); el._on = 0; }, 300); };
+    const tick = () => { if (!document.hidden) { const n = 1 + (Math.random() < 0.6 ? 1 : 0);
+      for (let k = 0; k < n; k++) glint(lit[(Math.random() * lit.length) | 0]); }
       setTimeout(tick, 250 + Math.random() * 450); };
     tick();
   });
@@ -379,12 +384,12 @@
     {id: 'fire', label: 'FIRE', c: 'var(--orange)', title: 'Fireplace', mode: ['Fireplace 🔥', 'cozy · flames that never loop', 'var(--orange)'],
      p: 'One tap lights a fire across the whole wall. 7 colors, Cozy or Roaring.',
      k: [['🔥', 'Classic', 'fire-classic-cozy'], ['🌋', 'Roaring', 'fire-classic-roar'], ['🌈', 'Rainbow', 'fire-rainbow-cozy'], ['💙', 'Blue gas', 'fire-blue-cozy'], ['💜', 'Purple', 'fire-purple-roar'], ['🤍', 'Ice', 'fire-ice-cozy']]},
-    {id: 'score', label: 'SCORE', c: 'var(--violet)', title: 'Scoreboard', mode: ['Scoreboard', 'game day · live stats', 'var(--violet)'],
-     p: 'Keep score at the field, follow your team live with real game stats, or put F1 on the wall.',
-     k: [['⚾', 'Baseball live', 'score-baseball'], ['🏈', 'Football live', 'score-football'], ['🏀', 'Basketball', 'score-basketball'], ['🏒', 'Hockey', 'score-hockey'], ['⚽', 'Soccer', 'score-soccer'], ['🏎️', 'F1 board', 'score-f1']]},
+    {id: 'score', label: 'SPORTS', c: 'var(--violet)', title: 'Scoreboard', mode: ['Scoreboard', 'game day · live stats', 'var(--violet)'],
+     p: 'Keep score at the field, follow your team live with real game stats, or put golf, NASCAR and F1 leaderboards on the wall.',
+     k: [['⚾', 'Baseball live', 'score-baseball'], ['🏈', 'Football live', 'score-football'], ['🏀', 'Basketball', 'score-basketball'], ['🏒', 'Hockey', 'score-hockey'], ['⛳', 'Golf', 'live-golf'], ['🏁', 'NASCAR', 'live-nascar'], ['🏎️', 'F1 board', 'score-f1']]},
     {id: 'live', label: 'LIVE', c: 'var(--green)', title: 'Pick a live feed', mode: ['Live', 'on the wall until you turn it off', 'var(--green)'],
-     p: 'Things from the outside world, live on your lights: countdowns, weather, storm watch, golf, NASCAR and what\'s flying overhead.',
-     k: [['🎉', 'Countdown', 'live-countdown'], ['🌦️', 'Weather', 'live-weather'], ['🌀', 'Storm watch', 'live-storm'], ['⛳', 'Golf', 'live-golf'], ['🏁', 'NASCAR', 'live-nascar'], ['✈️', 'Overhead', 'live-overhead']]},
+     p: 'Things from the outside world, live on your lights: countdowns, weather, storm watch and what\'s flying overhead.',
+     k: [['🎉', 'Countdown', 'live-countdown'], ['🌦️', 'Weather', 'live-weather'], ['🌀', 'Storm watch', 'live-storm'], ['✈️', 'Overhead', 'live-overhead']]},
     {id: '3d', label: '3D', c: 'var(--lav)', title: '3D shapes', mode: ['Wrapped wall', 'cylinder · globe · box', 'var(--lav)'],
      p: 'Bend your curtains around a cylinder, a box or a globe. GlowBop wraps the picture seamlessly and plays effects made for 3D.',
      k: [['🌍', 'Spinning globe', 'shape-spinningglobe'], ['💈', 'Barber spin', 'shape-barberspin'], ['⭕', 'Rising rings', 'shape-risingrings'], ['🌊', 'Ocean swell', 'wave-oceanswell'], ['〰️', 'Twin waves', 'wave-twinwaves']]},

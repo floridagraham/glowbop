@@ -104,7 +104,7 @@ def page(path, title, desc, body, active=''):
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
-<script src="/assets/site.js"></script>
+<script src="/assets/site.js?v=4"></script>
 </body>
 </html>
 '''
@@ -126,8 +126,8 @@ FEATS = [
     ('🔊', 'Hears every beat', 'Listens to whatever your computer plays. Builds, drops and quiet parts all look different.', '/guide/music.html'),
     ('🎛️', 'A real light console', 'A new control panel for phone, iPad and laptop, with a live view of your wall and big colored keys.', '/guide/console.html', 1),
     ('🎨', '34 looks, 200+ effects', 'Neon Party, Deep Space, Retro Arcade, the new Big Wave and 3D Object looks and more.', '/guide/looks.html', 1),
-    ('📡', 'Live feeds', 'Countdowns, weather, storm watch, golf and NASCAR boards, and the planes and space station overhead.', '/guide/live-feeds.html', 1),
-    ('🏟️', 'Scoreboard + live stats', 'Keep score yourself, or follow your team with live game stats, bases, counts and the last play.', '/guide/scoreboard.html', 1),
+    ('📡', 'Live feeds', 'Countdowns, weather, storm watch, and the planes and space station flying over your house.', '/guide/live-feeds.html', 1),
+    ('🏟️', 'Sports + live stats', 'Keep score yourself, follow your team with live game stats, or put golf, NASCAR and F1 leaderboards on the wall.', '/guide/scoreboard.html', 1),
     ('🌐', '3D shapes', 'Wrap your curtains around a cylinder, a box or a globe for a glowing art piece.', '/guide/shapes.html', 1),
     ('🧩', '1 to 8 curtains', 'Side by side, stacked, overlapping or a grid of rows and columns. Every show resizes to fit.', '/guide/lineup.html', 1),
     ('🎃', 'Holidays & mini-movies', 'Halloween, Christmas, New Year and more, with full animated scenes for the big nights.', '/guide/holidays.html'),
@@ -138,8 +138,16 @@ FEATS = [
 ]
 
 
+WALLR = _json.load(open(os.path.join(HERE, 'wallrects.json')))
+LIVEWALL = {'phone-music': 'wave-serpent', 'phone-live': 'live-weather', 'phone-score': 'score-soccer', 'phone-looks': 'wave-twinwaves',
+            'ipad-land': 'wave-bigwave', 'ipad-port': 'fx-pixelfireworks', 'desk-live': 'live-countdown'}
+
+
 def devframe(kind, img, alt, tag='', c='var(--amber)', cap=''):
     inner = f'<img src="/img/app/{img}.webp" alt="{html.escape(alt)}" loading="lazy">'
+    if img in LIVEWALL:                      # the live wall in the screenshot plays a real recording, like the real app
+        x, y, w, h = WALLR[img]
+        inner += f'<canvas class="wallov" data-clip="{LIVEWALL[img]}" style="left:{x}%;top:{y}%;width:{w}%;height:{h}%" aria-hidden="true"></canvas>'
     base = '<div class="base"></div>' if kind == 'laptop' else ''
     t = f'<span class="tag" style="--c:{c}">{tag}</span>' if tag else ''
     fc = f'<figcaption>{cap}</figcaption>' if cap else ''
@@ -190,7 +198,7 @@ home = f'''
   <div class="phones">
     {devframe('phone', 'phone-music', 'GlowBop on iPhone: the Serpent effect, tempo and Now Playing', 'Music', 'var(--pink)')}
     {devframe('phone', 'phone-live', 'GlowBop on iPhone: the LIVE tab with weather on the wall', 'Live', 'var(--green)')}
-    {devframe('phone', 'phone-score', 'GlowBop on iPhone: the scoreboard after a goal', 'Score', 'var(--violet)')}
+    {devframe('phone', 'phone-score', 'GlowBop on iPhone: the SPORTS section with a goal on the wall', 'Sports', 'var(--violet)')}
     {devframe('phone', 'phone-looks', 'GlowBop on iPhone: the list of looks', 'Looks', 'var(--amber)')}
   </div>
 </div></section>
@@ -232,36 +240,36 @@ home = f'''
   <div class="feat flip reveal">
     <div><span class="eyebrow">New · Live feeds</span><h2>The outside world, on your lights</h2>
       <p class="lead">Tap LIVE and pick a feed. It takes over the wall until you turn it off. Storm watch runs quietly on top of the music and only flashes when something happens.</p>
-      <ul class="ticks"><li><b>Countdown</b> to a party, a birthday or New Year, with a fireworks finale.</li><li><b>Weather</b> with an animated pixel sky, today's high and low and the next hours.</li><li><b>Storm watch</b> flashes new National Weather Service warnings, only if you turn it on.</li><li><b>Golf and NASCAR</b> leaderboards, and the <b>planes and space station overhead</b>.</li></ul>
+      <ul class="ticks"><li><b>Countdown</b> to a party, a birthday or New Year, with a fireworks finale.</li><li><b>Weather</b> with an animated pixel sky, today's high and low and the next hours.</li><li><b>Storm watch</b> flashes new National Weather Service warnings, only if you turn it on.</li><li>The <b>planes and space station overhead</b>, right now.</li></ul>
       <a class="btn" href="/guide/live-feeds.html">Live feeds guide →</a></div>
-    <div class="media"><div class="grid g2 mini">{clip('live-countdown', 'Countdown')}{clip('live-weather', 'Weather')}{clip('live-nascar', 'NASCAR')}{clip('live-overhead', 'Overhead now')}</div></div>
+    <div class="media"><div class="grid g2 mini">{clip('live-countdown', 'Countdown')}{clip('live-weather', 'Weather')}{clip('live-storm', 'Storm watch')}{clip('live-overhead', 'Overhead now')}</div></div>
   </div>
   <div class="feat reveal">
     <div><span class="eyebrow">New · 3D shapes</span><h2>Bend your lights into art</h2>
       <p class="lead">Wrap curtains around a cylinder, a box or a globe. GlowBop blends the seam so the picture goes all the way around, then plays effects made for 3D: a spinning globe, barber stripes, rising rings and a bouncing ball.</p>
       <ul class="ticks"><li>A <b>3D preview</b> you can drag to spin, right in the app.</li><li>Add a <b>lid curtain</b> on top of a cylinder or box.</li></ul>
       <a class="btn" href="/guide/shapes.html">3D shapes guide →</a></div>
-    <div class="media">{devframe('laptop', 'desk-setup', 'GlowBop Setup showing a 3D cylinder preview you can drag to spin', 'Setup', 'var(--peri)')}</div>
+    <div class="media"><div class="grid g2 mini">{clip('shape-spinningglobe')}{clip('shape-barberspin')}{clip('shape-risingrings')}{clip('look-3d-depth')}</div></div>
   </div>
   <div class="feat flip reveal">
     <div><span class="eyebrow">Smarter than "sound reactive"</span><h2>It knows a drop when it hears one</h2>
       <p class="lead">Most light apps flash on every beat. GlowBop follows the whole song.</p>
       <ul class="ticks"><li><b>Build-ups</b> fill the wall slowly, getting brighter and busier.</li><li><b>Drops</b> hit with a burst, a new effect and a color change.</li><li><b>Quiet parts</b> go soft and flowing so the room can breathe.</li><li><b>Epic songs</b> get one big climax instead of strobes.</li></ul>
       <a class="btn" href="/guide/music.html">How the music show works →</a></div>
-    <div class="media">{pic('dj-drop', 'A DJ with a wall of LED curtains bursting with light on the drop')}</div>
+    <div class="media">{clip('drop', 'a build-up and the drop')}</div>
   </div>
   <div class="feat reveal">
     <div><span class="eyebrow">Game day</span><h2>A scoreboard as big as your wall</h2>
       <p class="lead">Keep score at the field, follow your team live, or watch Formula 1 running order with tyres and pit stops.</p>
-      <ul class="ticks"><li><b>15 sports</b> plus a giant countdown clock.</li><li><b>Live stats</b>: the count, runners on base, batter and pitcher, the last play, down and distance.</li><li><b>Game Center</b> on your phone with the linescore and leaders.</li><li><b>F1 board</b> with fastest lap, tyres, pits and rain.</li></ul>
-      <a class="btn" href="/guide/scoreboard.html">Scoreboard guide →</a></div>
-    <div class="media"><div class="grid g2 mini">{clip('score-baseball', 'Baseball')}{clip('score-football', 'Football')}{clip('score-basketball', 'Basketball')}{clip('score-f1', 'F1')}</div></div>
+      <ul class="ticks"><li><b>15 sports</b> plus a giant countdown clock.</li><li><b>Live stats</b>: the count, runners on base, batter and pitcher, the last play, down and distance.</li><li><b>Game Center</b> on your phone with the linescore and leaders.</li><li><b>Golf, NASCAR and F1</b> leaderboards with celebrations for a new leader.</li></ul>
+      <a class="btn" href="/guide/scoreboard.html">Sports guide →</a></div>
+    <div class="media"><div class="grid g2 mini">{clip('score-baseball', 'Baseball')}{clip('score-football', 'Football')}{clip('live-golf', 'Golf')}{clip('live-nascar', 'NASCAR')}</div></div>
   </div>
   <div class="feat flip reveal">
     <div><span class="eyebrow">Holidays & fire</span><h2>Mini-movies and a fireplace</h2>
       <p class="lead">Each holiday has its own button, with full wide-screen stories for Halloween, Thanksgiving, Christmas and New Year. Or light a fire across the whole wall in 7 colors.</p>
       <a class="btn" href="/guide/holidays.html">See the holidays →</a></div>
-    <div class="media">{pic('halloween-porch', 'LED curtain showing pixel jack-o-lanterns on a Halloween porch')}</div>
+    <div class="media"><div class="grid g2 mini">{clip('movie-halloweennight')}{clip('movie-christmaseve')}{clip('fire-rainbow-cozy')}{clip('fire-classic-roar')}</div></div>
   </div>
 </div></section>
 
@@ -319,25 +327,25 @@ def media(scene, cap):
 F2 = [
     ('!tablet:ipad-land', 'The GlowBop console on an iPad held sideways', 'The console', 'A light-show console in your pocket',
      'GlowBop has a brand-new control panel. A colored side rail jumps between sections, the live wall shows exactly what your lights are doing, and big keys sized for thumbs run the show.',
-     ['<b>Nine sections</b> on the rail: Music, Looks, Scenes, Holiday, Fire, Score, Live, Text and Setup.', '<b>Live wall</b> mirrors your lights in real time. Tap <span class="k">Full view</span> for the whole screen.', '<b>iPad sideways</b> becomes a two-column board: wall on the left, controls on the right.', 'Console <b>sounds</b> with a mute key, a <b>screen-stays-on</b> switch, and a friendly screen if the laptop goes out of reach.'],
+     ['<b>Nine sections</b> on the rail: Music, Looks, Scenes, Holiday, Fire, Sports, Live, Text and Setup.', '<b>Live wall</b> mirrors your lights in real time. Tap <span class="k">Full view</span> for the whole screen.', '<b>iPad sideways</b> becomes a two-column board: wall on the left, controls on the right.', 'Console <b>sounds</b> with a mute key, a <b>screen-stays-on</b> switch, and a friendly screen if the laptop goes out of reach.'],
      '/guide/console.html', 'Console guide'),
     ('%wave-bigwave,wave-serpent,wave-twinwaves,wave-oceanswell', 'Big Wave effects', 'Big Wave', 'Waves that roll across the wall',
      'A new family of flowing effects with its own look. A giant wave crests on the beat, a serpent swims the length of your wall with a glowing head, twin waves cross and an ocean swell rolls in slow.',
      ['<b>Big Wave</b>, <b>Serpent</b>, <b>Twin Waves</b> and <b>Ocean Swell</b>.', 'Their own <b>Big Wave</b> look, and they show up in Molten, Neon Party and Storm &amp; Sea too.', 'Smooth on one curtain, spectacular across eight.'],
      '/guide/looks.html#wave', 'Big Wave in the guide'),
-    ('%live-countdown,live-weather,live-golf,live-nascar,live-overhead,live-storm', 'Live feeds', 'Live feeds', 'The outside world, live on your lights',
+    ('%live-countdown,live-weather,live-overhead,live-storm', 'Live feeds', 'Live feeds', 'The outside world, live on your lights',
      'Tap LIVE and pick a feed. It takes over the wall until you turn it off. Set your ZIP code or city once for weather, storms and what\'s overhead.',
-     ['<b>Countdown</b> to anything, with giant seconds at the end and a fireworks finale.', '<b>Weather</b>: big temperature over an animated pixel sky, today\'s high and low, the next hours.', '<b>Storm watch</b>: flashes new National Weather Service warnings over the music, only if you turn it on. Tap Stop any time.', '<b>Golf</b> and <b>NASCAR</b> leaderboards, and <b>Overhead now</b>: planes flying over and the space station.'],
+     ['<b>Countdown</b> to anything, with giant seconds at the end and a fireworks finale.', '<b>Weather</b>: big temperature over an animated pixel sky, today\'s high and low, the next hours.', '<b>Storm watch</b>: flashes new National Weather Service warnings over the music, only if you turn it on. Tap Stop any time.', '<b>Overhead now</b>: planes flying over your house and the space station.'],
      '/guide/live-feeds.html', 'Live feeds guide'),
-    ('!laptop:desk-setup', 'GlowBop Setup showing a 3D cylinder preview', '3D shapes', 'Bend your lights into art',
+    ('%shape-spinningglobe,shape-barberspin,shape-risingrings,look-3d-depth', '3D effects', '3D shapes', 'Bend your lights into art',
      'Wrap your curtains around a cylinder, a box or a globe. GlowBop knows the shape, blends the seam so the picture goes all the way round, and plays effects made for 3D.',
      ['<b>Cylinder</b>, <b>box</b> or <b>globe</b>, with an optional <b>lid</b> curtain on top.', '<b>3D effects</b>: Spinning Globe, Barber Spin, Rising Rings and Bounce Ball in the <b>3D Object</b> look.', 'A <b>3D preview</b> in the app you can drag to spin.'],
      '/guide/shapes.html', '3D shapes guide'),
-    ('@pool-party', 'Two LED curtains glowing behind a pool party at night', 'Music show', 'Hears the music, follows the song',
+    ('#drop', 'A build-up and the drop', 'Music show', 'Hears the music, follows the song',
      'GlowBop listens to the sound your computer is playing, so it works with any app: Spotify, YouTube, Apple Music, Serato, a playlist on a USB stick.',
      ['<b>Beat, bass and melody</b> each drive different parts of the show.', '<b>Build-ups and drops</b> get their own moves.', '<b>Pace</b> Chill, Normal or Hype, and <b>Sparkles</b> Off, Auto or Lots.', '<b>Sync slider</b> lines the lights up with Bluetooth speakers that run late.', '<b>Song memory</b> remembers how each song went the next time it plays.'],
      '/guide/music.html', 'Music show guide'),
-    ('@galaxy-patio', 'Two LED curtains showing a deep-space galaxy on a patio', 'Epic mode', 'Made for movie music',
+    ('#climax', 'The big moment of an epic song', 'Epic mode', 'Made for movie music',
      'Cinematic songs don\'t have a "drop". They swell for minutes and peak once. GlowBop notices and switches to Epic mode on its own.',
      ['A slow, growing <b>swell</b> through the crescendo.', '<b>One big climax</b> at the real peak, not every loud moment.', 'No harsh strobes during the quiet, emotional parts.', 'Optional <b>song lookup</b> uses free genre data to spot soundtracks even faster.'],
      '/guide/music.html#epic', 'About Epic mode'),
@@ -345,27 +353,27 @@ F2 = [
      'A look is a mood: its colors plus a set of effects for calm, medium and loud parts. GlowBop shuffles through them as the music changes.',
      ['Neon Party, Deep Space, Synthwave, Warehouse Rave, Mainstage, Club Rig, Royal Gold and more.', '<b>3D Depth</b> tunnels, spinning cubes and disco spheres.', '<b>Dance Crew</b> pixel characters you can switch on or off.', '<b>Describe a scene</b> in words and GlowBop builds it.', '<b>Pin</b> an effect you love, or hit <b>Surprise me</b>.'],
      '/guide/looks.html', 'Looks guide'),
-    ('@retro-arcade', 'Two LED curtains playing a self-running brick-breaker game in a game room', 'Retro Arcade', 'Games that play themselves',
+    ('%fx-breakout,fx-snakegame,fx-pongbattle,fx-alienparade', 'Retro Arcade effects', 'Retro Arcade', 'Games that play themselves',
      'Brick breaker, snake, pong, alien parades and 8-bit fireworks, all playing themselves across your wall and speeding up with the music.',
      ['<b>Breakout</b>: bricks burst into sparks.', '<b>Snake</b>: a rainbow snake hunts glowing food.', '<b>Pong</b>: the ball smashes on the beat.', '<b>Pixel fireworks</b> and <b>vector space rocks</b>.'],
      '/gallery.html#new', 'See them in the gallery'),
-    ('@volcano-patio', 'LED curtains showing a pixel volcano erupting on a rainy patio', 'Wild Elements', 'Weather and nature, wired to the beat',
+    ('%fx-volcano,fx-tornado,fx-rainonglass,fx-solarflare', 'Wild Elements effects', 'Wild Elements', 'Weather and nature, wired to the beat',
      'A volcano that erupts on the drop, a tornado that wanders across the wall, rain on the window, a waterfall and the surface of the sun.',
      ['<b>Volcano</b>: lava bombs fly on the drop.', '<b>Tornado</b>: debris spins faster as the song builds.', '<b>Rain on glass</b>, <b>Waterfall</b>, <b>Solar flare</b>.'],
      '/gallery.html#new', 'See them in the gallery'),
-    ('@christmas-eve', 'LED curtain showing a pixel Christmas tree in a window', 'Holidays', 'Every holiday gets its own button',
+    ('%movie-halloweennight,movie-christmaseve,movie-newyearcountdown,holiday-july4', 'Holiday mini-movies', 'Holidays', 'Every holiday gets its own button',
      'Holidays live in their own section, away from the normal shuffle. Tap one and the wall plays only that holiday until you stop it.',
      ['Halloween, Christmas, Thanksgiving, New Year, Valentine\'s, St. Patrick\'s, Birthday and Game Day.', '<b>Wide-screen mini-movies:</b> Halloween Night, Harvest Day, Christmas Eve and New Year Countdown.', 'Jack-o\'-lanterns, bats, ghosts, a haunted house, sleigh rides, fireworks, a ball drop and more.', 'Choose which holiday effects are in the rotation.'],
      '/guide/holidays.html', 'Holidays guide'),
-    ('@cozy-fireplace', 'LED curtain showing tall flickering flames behind a couple on a couch', 'Fireplace', 'Just the fire, no fireplace',
+    ('%fire-rainbow-cozy,fire-classic-roar,fire-purple-roar,fire-blue-cozy', 'Fireplace colors', 'Fireplace', 'Just the fire, no fireplace',
      'Light a fire on your wall with one tap. GlowBop simulates real flames live, so the fire never loops and never looks the same twice.',
      ['<b>7 colors:</b> Classic, Blue gas, Purple, Rainbow, Green, Pink and Ice.', '<b>Cozy:</b> tall, relaxing flames with the odd small flare.', '<b>Roaring:</b> wild flicker, big whooshes and bursts of sparks.', '<b>Dance:</b> the flames swell gently with the beat of your music.', 'One long fire across every curtain on the wall.'],
      '/guide/fireplace.html', 'Fireplace guide'),
-    ('%score-baseball,score-football,score-basketball,score-hockey', 'Scoreboards', 'Scoreboard', 'Game Day, Live Fan and F1',
+    ('%score-baseball,score-football,live-golf,live-nascar', 'Sports', 'Scoreboard', 'Game Day, Live Fan and F1',
      'Turn the wall into a scoreboard. Keep score yourself from your phone, follow a real game, or watch a Grand Prix.',
      ['<b>Game Day:</b> 15 sports, clock that counts down or up, periods, timeouts, fouls, possession, undo.', '<b>Live Fan:</b> pick a league and team; scores update every 10 seconds and the wall celebrates in team colors.', '<b>Live stats:</b> the count, runners on base, batter and pitcher, the last play scrolling by, down and distance, plus a Game Center on your phone.', '<b>F1:</b> running order, tyres, pit stops, fastest lap, DRS and rain.', '<b>Countdown timer:</b> a huge clock for halftime, a party or New Year.'],
      '/guide/scoreboard.html', 'Scoreboard guide'),
-    ('@f1-party', 'LED curtain wall showing a race running order at an F1 watch party', 'Formula 1', 'Race day on your wall',
+    ('#score-f1', 'The F1 board as the lead changes', 'Formula 1', 'Race day on your wall',
      'The F1 board shows the top of the field with team colors and tyre dots, then celebrates a new leader, pole position or a fastest lap.',
      ['Purple bar for the fastest lap, just like TV.', 'Pit stops get a soft flash, not a party.', 'Works for practice, qualifying and the race.'],
      '/guide/scoreboard.html#f1', 'F1 board guide'),
@@ -373,11 +381,11 @@ F2 = [
      'Put a message or a logo on top of the show. Great for birthdays, DJ sets, and businesses.',
      ['Modes: <b>Scroll</b>, <b>Beat words</b>, <b>Still</b> and <b>On drop</b>.', 'Colors that follow the look, rainbow, or plain white.', 'Upload a logo (PNG) with Glow, Pulse or Color-shift motion.', 'Flash a word on every drop.'],
      '/guide/text-logos.html', 'Text & logo guide'),
-    ('mirror', 'screen mirror', 'Screen mirror', 'Your screen, on the lights',
+    ('%look-psychedelic,look-hyperspace', 'Screen mirror', 'Screen mirror', 'Your screen, on the lights',
      'Mirror the laptop screen onto the wall: TV shows, music videos, games.',
      ['Styles: <b>TV</b>, <b>Beat</b> and <b>Glow</b>.', '<b>Smart fill</b> trims black bars so the video fills the wall.', '<b>Center zoom</b> for bigger, bolder shapes.'],
      '/guide/text-logos.html#mirror', 'Screen mirror guide'),
-    ('@dj-drop', 'Four LED curtains side by side as one wall behind a DJ', 'Multi-curtain', 'Up to 8 curtains, one wall',
+    ('#lineup', 'The line-up wizard on four curtains', 'Multi-curtain', 'Up to 8 curtains, one wall',
      'Hang curtains side by side, stack them, or build a grid of rows and columns. GlowBop treats them as one big screen and resizes every show to fit, keeping pixel art crisp.',
      ['<b>Grid walls:</b> tap a shape like 2 × 2, 3 × 2 or 4 × 2 for up to 8 curtains.', 'A <b>line-up wizard</b> shows a number and arrow on each curtain so you can rotate, flip and order them.', '<b>Lock it in</b> so nothing moves by accident.', 'Run them as <b>one show</b> or split them into <b>groups</b> with their own shows.'],
      '/guide/lineup.html', 'Line-up guide'),
@@ -415,8 +423,8 @@ G = [
     ('looks', '🎨', 'Looks & effects', 'Looks, scenes, pinning, characters and transitions.'),
     ('holidays', '🎃', 'Holidays & mini-movies', 'Holiday buttons and the animated stories.'),
     ('fireplace', '🔥', 'Fireplace', 'One-tap fire in 7 colors, cozy or roaring.'),
-    ('scoreboard', '🏟️', 'Scoreboard', 'Game Day, Live Fan with live stats, F1 and the countdown clock.'),
-    ('live-feeds', '📡', 'Live feeds', 'Countdowns, weather, storm watch, golf, NASCAR and what\'s overhead.'),
+    ('scoreboard', '🏟️', 'Sports', 'Game Day, Live Fan with live stats, F1, golf, NASCAR and the countdown clock.'),
+    ('live-feeds', '📡', 'Live feeds', 'Countdowns, weather, storm watch and what\'s overhead.'),
     ('text-logos', '🔤', 'Text, logos & mirror', 'Messages, logos and mirroring your screen.'),
     ('groups', '🧩', 'Light groups', 'Run different shows on different lights.'),
     ('troubleshooting', '🛠️', 'Troubleshooting', 'Fixes for the common snags.'),
@@ -438,7 +446,7 @@ def guide(slug, body, toc=()):
 def tip(t, kind=''): return f'<div class="tip {kind}">{t}</div>'
 
 
-RAILC = dict(MUSIC='var(--pink)', LOOKS='var(--amber)', SCENES='var(--lav)', HOLIDAY='var(--cyan)', FIRE='var(--orange)', SCORE='var(--violet)', LIVE='var(--green)', TEXT='var(--gold)', SETUP='var(--peri)')
+RAILC = dict(MUSIC='var(--pink)', LOOKS='var(--amber)', SCENES='var(--lav)', HOLIDAY='var(--cyan)', FIRE='var(--orange)', SPORTS='var(--violet)', LIVE='var(--green)', TEXT='var(--gold)', SETUP='var(--peri)')
 def rk(name): return f'<span class="k rail" style="--c:{RAILC[name]}">{name}</span>'
 
 
@@ -495,8 +503,8 @@ guide('console', f'''
 <div class="card" style="--c:{RAILC['SCENES']}"><h3>{rk('SCENES')}</h3><p>Quick scenes, Describe a scene in your own words, and Screen mirror.</p></div>
 <div class="card" style="--c:{RAILC['HOLIDAY']}"><h3>{rk('HOLIDAY')}</h3><p>A button for every holiday and the mini-movies.</p></div>
 <div class="card" style="--c:{RAILC['FIRE']}"><h3>{rk('FIRE')}</h3><p>Light the fireplace in 7 colors, Cozy or Roaring.</p></div>
-<div class="card" style="--c:{RAILC['SCORE']}"><h3>{rk('SCORE')}</h3><p>Game Day, Live Fan with the Game Center, F1 and the countdown clock.</p></div>
-<div class="card" style="--c:{RAILC['LIVE']}"><h3>{rk('LIVE')}</h3><p>Pick a live feed: countdown, weather, storm watch, golf, NASCAR, overhead.</p></div>
+<div class="card" style="--c:{RAILC['SPORTS']}"><h3>{rk('SPORTS')}</h3><p>Game Day, Live Fan with the Game Center, F1, golf and NASCAR leaderboards, and the countdown clock.</p></div>
+<div class="card" style="--c:{RAILC['LIVE']}"><h3>{rk('LIVE')}</h3><p>Pick a live feed: countdown, weather, storm watch, overhead.</p></div>
 <div class="card" style="--c:{RAILC['TEXT']}"><h3>{rk('TEXT')}</h3><p>Messages and your logo on top of the show.</p></div>
 <div class="card" style="--c:{RAILC['SETUP']}"><h3>{rk('SETUP')}</h3><p>Light setup, line-up and grid walls, 3D shapes, phone link, song lookup, license, screen, help.</p></div>
 </div>
@@ -691,7 +699,7 @@ guide('fireplace', f"""
 
 SPORTS = 'Soccer, Football, Basketball, Baseball, Softball, Hockey, Lacrosse, Volleyball, Pickleball, Tennis, Rugby, Water polo, Cornhole, Other, plus a Countdown timer'
 guide('scoreboard', f'''
-<p>Tap {rk('SCORE')} on the side rail and pick a mode: <span class="k">Game Day</span>, <span class="k">Live Fan</span> or <span class="k">🏎️ F1</span>. <span class="k">Off</span> returns to the light show.</p>
+<p>Tap {rk('SPORTS')} on the side rail and pick a mode: <span class="k">Game Day</span>, <span class="k">Live Fan</span>, <span class="k">F1</span>, <span class="k">⛳ Golf</span> or <span class="k">🏁 NASCAR</span>. <span class="k">Off</span> returns to the light show.</p>
 {pic('soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game')}
 <h2 id="gameday">Game Day: keep score yourself</h2>
 {clip('score-soccer', 'a goal at the soccer game, real celebration')}
@@ -716,7 +724,7 @@ guide('scoreboard', f'''
 <li>Tap <span class="k">Follow this team</span>.</li>
 <li>During the game the score updates <b>every 10 seconds</b>. When your team scores, the wall celebrates in their colors.</li></ol>
 <h3 id="stats">Live stats and the Game Center</h3>
-{devframe('phone', 'phone-score', 'The SCORE section on an iPhone')}
+{devframe('phone', 'phone-score', 'The SPORTS section on an iPhone')}
 <ul><li><b>Game Center</b> on your phone: the linescore inning by inning (or by quarter), hits and errors, the leaders, the series and each team's record.</li>
 <li><b>Baseball:</b> balls, strikes and outs, runners on base, who's batting and pitching, top or bottom of the inning. Every 16 seconds the wall shows a little diamond with the runners and the count.</li>
 <li><b>Football:</b> down and distance, ball on, who has it, and a red-zone alert.</li>
@@ -731,10 +739,16 @@ guide('scoreboard', f'''
 <li>A gap bar, <b>purple</b> for the fastest lap, plus DRS and a rain indicator.</li>
 <li>Celebrations for <b>NEW LEADER</b>, <b>POLE</b>, <b>TOP TIME</b> and <b>WINNER</b>. Pit stops get a soft flash.</li></ul>
 <p>Works during practice, qualifying and the race, whenever a session is live.</p>
+<h2 id="boards">⛳ Golf and 🏁 NASCAR</h2>
+<p>Tap <span class="k">⛳ Golf</span> or <span class="k">🏁 NASCAR</span> under the scoreboard, or <span class="k">Show on the wall</span> in their panels further down the page.</p>
+<ul><li><b>Golf:</b> the tournament leaderboard. Under par shows red like on TV, over par blue. Pick a favorite player and they always get a glowing spot on the wall. A new leader sets off a celebration.</li>
+<li><b>NASCAR:</b> the running order with each car in its own color and the flag on top: green, caution, red, white for the last lap, checkered at the finish.</li></ul>
+<p>Both show the next event's start time when nothing is live.</p>
+<div class="grid g2">{clip('live-golf', 'Golf: the leaderboard and a new leader')}{clip('live-nascar', 'NASCAR: caution, new leader, white flag, checkered (demo race)')}</div>
 <h2 id="timer">Countdown timer</h2>
 {clip('score-timer', 'a one-minute countdown')}
 <p>Pick <b>Countdown timer only</b> as the sport for a giant clock across the whole wall: halftime, a party countdown, New Year's Eve.</p>
-''', [('gameday', 'Game Day'), ('live', 'Live Fan'), ('stats', 'Live stats'), ('f1', 'F1'), ('timer', 'Countdown')])
+''', [('gameday', 'Game Day'), ('live', 'Live Fan'), ('stats', 'Live stats'), ('f1', 'F1'), ('boards', 'Golf & NASCAR'), ('timer', 'Countdown')])
 
 guide('live-feeds', f'''
 <p>Live feeds bring the outside world onto your lights. Tap {rk('LIVE')}, then a big key to put that feed on the wall. Tap it again, or <span class="k">♫ Back to music</span> under the wall, to go back to the music show.</p>
@@ -755,15 +769,10 @@ guide('live-feeds', f'''
 <ul><li><span class="k">Test alert</span> shows what an alert looks like. While it's on the wall the key turns into <span class="k">Stop the alert</span>, and <span class="k">♫ Back to music</span> under the wall clears it too.</li></ul>
 {clip('live-storm', 'a test warning flashing over the music show')}
 {tip('<b>Not an official warning system.</b> Always follow NWS alerts, your phone\'s emergency alerts and local officials. Alerts work for US locations.', 'warn')}
-<h2 id="boards">⛳ Golf and 🏁 NASCAR</h2>
-<ul><li><b>Golf:</b> the tournament leaderboard. Under par shows red like on TV, over par blue. Pick a favorite player and they always get a glowing spot on the wall. A new leader sets off a celebration.</li>
-<li><b>NASCAR:</b> the running order with each car in its own color and the flag on top: green, caution, red, white for the last lap, checkered at the finish.</li></ul>
-<p>Both show the next event's start time when nothing is live.</p>
-<div class="grid g2">{clip('live-golf', 'Golf: the leaderboard and a new leader')}{clip('live-nascar', 'NASCAR: caution, new leader, white flag, checkered (demo race)')}</div>
 <h2 id="overhead">✈️ Overhead now</h2>
 <p>A radar of the planes flying over your house right now, with their direction, plus the International Space Station when it comes by. Choose how far out to look. When the space station is as close as it gets, the wall celebrates. Wave hi! 👋</p>
 {clip('live-overhead', 'planes over the house, then the space station (demo sky)')}
-''', [('loc', 'Location'), ('countdown', 'Countdown'), ('weather', 'Weather'), ('storm', 'Storm watch'), ('boards', 'Golf & NASCAR'), ('overhead', 'Overhead')])
+''', [('loc', 'Location'), ('countdown', 'Countdown'), ('weather', 'Weather'), ('storm', 'Storm watch'), ('overhead', 'Overhead')])
 
 guide('text-logos', f'''
 <h2 id="text">Text on the wall</h2>
@@ -862,7 +871,7 @@ ROWS = [
     ('Reacts to music', [(Y, 'Any audio on the PC'), (Y, 'Phone mic, or Music dongle'), (Y, 'PC audio (Desktop), sync box'), (Y, 'PC audio, sync box'), (Y, 'PC audio'), (Y, 'PC audio'), (Y, 'Phone mic, Apple Music')]),
     ('Detects build-ups & drops', [(Y, 'Plus Epic mode'), (N, 'Beat / BPM'), (N, 'Rhythm'), (N, 'Beat'), (N, 'Beat'), (N, ''), (N, 'Beat & mood')]),
     ('Controls Twinkly lights', [(Y, ''), (Y, ''), (N, 'Govee only'), (N, 'Hue only'), (N, 'Nanoleaf only'), (N, 'WLED / ESP'), (N, 'Hue, LIFX, Nanoleaf')]),
-    ('Extra hardware for music', [('<span class="y">Nope, start right now</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
+    ('Extra hardware for music', [('<span class="y">None needed, start right now</span>', ''), (M, 'Music dongle sold separately'), (M, 'Sync box for TV/HDMI'), (M, 'Sync box for TV/HDMI'), ('None', ''), ('DIY controller', ''), ('None', '')]),
     ('Scoreboard & live scores', [(Y, '15 sports, live, F1'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Text & logos on the lights', [(Y, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Holiday mini-movies', [(Y, '4 wide-screen movies'), (M, 'Effect library'), (M, 'Scene presets'), (M, 'Scene presets'), (N, ''), (N, ''), (N, '')]),
@@ -1079,8 +1088,8 @@ GROUPS = [('New effects', '👾 Showstoppers', 'The newest effects: 3D shapes, l
           ('Holidays', '🎃 Holidays', 'Every holiday has its own button. Four of them play full wide-screen mini-movies.', 'holidays'),
           ('Fireplace', '🔥 Fireplace', 'Just the fire, simulated live so it never repeats. 7 colors, Cozy or Roaring.', 'fireplace'),
           ('3D shapes', '🌐 3D shapes', 'Effects made for curtains wrapped around a cylinder, a box or a globe. Shown here unrolled, flat.', 'shapes'),
-          ('Scoreboard', '🏟️ Scoreboard', 'Game Day for every sport, Live Fan with live stats, the F1 board and the giant countdown clock.', 'scoreboard'),
-          ('Live feeds', '📡 Live feeds', 'Countdown, weather, storm watch, golf, NASCAR and overhead, recorded with demo data.', 'live'),
+          ('Scoreboard', '🏟️ Sports', 'Game Day for every sport, Live Fan with live stats, golf, NASCAR, the F1 board and the giant countdown clock.', 'scoreboard'),
+          ('Live feeds', '📡 Live feeds', 'Countdown, weather, storm watch and overhead, recorded with demo data.', 'live'),
           ('Text & logos', '🔤 Text & logos', 'Your words on top of the show.', 'text'),
           ('Music', '💥 Big moments', 'A drop, and an epic climax.', 'music')]
 gal = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">🔴 Gallery</span><h1>Every pattern, <span class="grad">for real</span></h1>
