@@ -368,3 +368,6 @@ table.cmp tr.grp span{font-size:14px;color:var(--lav)}
 .ledtick i{background:none;color:#fff;-webkit-text-fill-color:#fff}
 @media(max-width:600px){.ledtick span,.ledtick i{font-size:28px}}
 @media(prefers-reduced-motion:reduce){.ledtick-run{animation-duration:90s}}
+
+.tierjump{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}.tierjump a{background:var(--card);border:1px solid #ffffff22;border-radius:0 14px 0 14px;padding:9px 18px;font:700 15px var(--cond);letter-spacing:1px;text-transform:uppercase;color:#fff;text-decoration:none}.tierjump a:hover{border-color:var(--amber)}
+.tierh{font-size:clamp(30px,5vw,46px);scroll-margin-top:90px}.plans.pro .plan{border-color:#a855f755}.plans.pro .plan h3::before{content:"🎛️ PRO ";font-size:.7em;color:#c084fc;letter-spacing:2px}

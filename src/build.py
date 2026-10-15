@@ -90,7 +90,7 @@ def page(path, title, desc, body, active=''):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=4">
-<link rel="stylesheet" href="/assets/console.css?v=14">
+<link rel="stylesheet" href="/assets/console.css?v=15">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -346,7 +346,7 @@ home = f'''
 <section class="tight"><div class="wrap"><a class="launchban reveal" href="{WAIT}"><img src="/img/launch-banner.jpg" alt="GlowBop launches October 31. Light up Halloween. Join the launch list." loading="lazy"></a></div></section>
 <section><div class="wrap">
   <div class="center reveal"><span class="eyebrow">Pricing</span><h2>A whole light show crew for $5.99 a month</h2>
-  <p class="lead">$5.99 a month, $59 a year, or $379 once and it's yours. 🎃 <b>Founder launch deal: lifetime for $129</b> during launch week or for the first 100 buyers. Every plan starts with a 7-day free trial.</p>
+  <p class="lead"><b>Home DJ</b>: $5.99 a month, $59 a year, or $379 once. <b>Pro DJ</b> for gigs and venues from $14.99 a month. 🎃 <b>Founder launch deal: lifetime for $129</b> during launch week or for the first 100 buyers. Every plan starts with a 7-day free trial.</p>
   <div class="btns" style="justify-content:center"><a class="btn primary" href="/pricing.html">See plans</a></div></div>
 </div></section>
 {band()}
@@ -539,7 +539,7 @@ guide('getting-started', f'''
 <ol><li><a href="/download.html">Download GlowBop</a> and run <b>GlowBop-Setup</b>. It installs just for your Windows account, no admin password needed.</li>
 <li>If Windows shows <b>"Windows protected your PC"</b>, click <b>More info</b>, then <b>Run anyway</b>. (Your browser may also say the file "isn't commonly downloaded": choose <b>Keep</b>.) This shows up for new apps from small makers, not because anything is wrong.</li>
 <li>When it finishes, leave <b>Open GlowBop now</b> ticked and click Finish. Next time, open <b>GlowBop</b> from the Start menu or desktop shortcut.</li>
-<li>Paste the <b>license key</b> from your Polar email (it starts with GLOWBOP-) and tap <b>Unlock</b>.</li>
+<li>Paste the <b>license key</b> from your Polar email (it starts with GLOWBOP- for Home DJ or GBPRO- for Pro DJ) and tap <b>Unlock</b>.</li>
 <li>If Windows asks, <b>allow GlowBop on private networks</b>. That lets your phone and lights reach it.</li></ol>
 {devframe('laptop', 'desk-live', 'The GlowBop console on a laptop')}
 <h2 id="find">3. Find your lights</h2>
@@ -1020,7 +1020,7 @@ ROWS = [
     ('Phone & iPad remote', [(Y, 'Any phone or iPad browser, nothing to install. Turns sideways into a big console on iPad'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (Y, 'App'), (N, 'PC app'), (Y, 'It is an iPhone / iPad app')]),
     ('Try the full app before buying', [(Y, 'Right in your browser at glowbop.com/try'), (N, ''), (N, ''), (N, ''), (N, ''), (N, ''), (N, '')]),
     ('Runs on', [('<b>Windows PC + iPhone, iPad, Android, Mac</b>', 'The show runs on your PC. Control it from any phone, tablet or computer browser'), ('iOS, Android', ''), ('Windows, iOS, Android', ''), ('Windows, Mac', ''), ('Windows, Mac', ''), ('Win, Mac, Linux', ''), ('iPhone, iPad, Mac', '')]),
-    ('Price', [('<b>$5.99/mo</b>, $59/yr or $379 once', 'Founder lifetime $129 at launch'), ('Free app; dongle extra', ''), ('Free app; sync box extra', ''), ('Free app; sync box extra', ''), ('See their site', ''), ('Free, open source', ''), ('Paid app', '')]),
+    ('Price', [('<b>Home DJ $5.99/mo</b>, $59/yr or $379 once', 'Founder $129 at launch. Pro DJ $14.99/mo, $149/yr or $599 once'), ('Free app; dongle extra', ''), ('Free app; sync box extra', ''), ('Free app; sync box extra', ''), ('See their site', ''), ('Free, open source', ''), ('Paid app', '')]),
 ]
 HEAD = ['GlowBop', 'Twinkly app', 'Govee Home / Desktop', 'Philips Hue Sync', 'Nanoleaf Desktop', 'LedFx', 'Light DJ Pro']
 US_HEAD = f'<span class="us-head">{logo_svg()}<b>GlowBop</b><i>★ THE FULL SHOW</i></span>'
@@ -1048,38 +1048,52 @@ SELLING = False          # flip to True on launch day: Buy buttons go live (Pola
 BUY = {'Monthly': 'https://buy.polar.sh/polar_cl_kVipnhlW4bHB8eL4tKAOXYm5t4Q9nH8pxN0XO4AJUn4',
        'Yearly': 'https://buy.polar.sh/polar_cl_IC4mJM92skvYXkaHAqOsyTWVK6XxQV1CUUW1F2JkwOB',
        'Lifetime': 'https://buy.polar.sh/polar_cl_zLuZrLVyFIje9ESIusnRrWcSwUL8Iqlpr3gL73T2pNn',      # $379
-       'Founder': 'https://buy.polar.sh/polar_cl_ryFBIVebhizIWoE5fhSk6KYkibhBiNnVY9avz2d2YtI'}      # $129 launch deal (private product)
+       'Founder': 'https://buy.polar.sh/polar_cl_ryFBIVebhizIWoE5fhSk6KYkibhBiNnVY9avz2d2YtI',      # $129 launch deal (private product)
+       'Pro Monthly': 'https://buy.polar.sh/polar_cl_jbLN2lE8JaW0S6muW5yH6iSEM2V6zRX4GMjqc2JV4AX',  # $14.99
+       'Pro Yearly': 'https://buy.polar.sh/polar_cl_O6pMeISNwvCl5DrKrU9ihtKf1cWOLm8bSz8la1PgwOv',   # $149
+       'Pro Lifetime': 'https://buy.polar.sh/polar_cl_QU9Mxf9p8gFxg4zeMR46LiTgqVpStXAeu18123W51j3'}  # $599
 PORTAL = 'https://polar.sh/glowbop/portal'
 EVERY = ['Music show with build-up & drop detection', 'DJ mode with hit pads, build & drop', 'All 34 looks and 200+ effects', 'Arcade games, holidays & mini-movies', 'Fireplace in every style', 'Sports: 44 live leagues, golf, racing, tennis, UFC, F1', 'Live feeds: countdowns, weather, storm watch', 'Text, logos & screen mirror', 'Up to 8 curtains, grid walls & 3D shapes', 'Console for phone, iPad & laptop', 'All updates']
-plan = lambda name, price, per, note, best=False, tag='': f'''<div class="plan{' best' if best else ''} reveal">{f'<span class="tag">{tag}</span>' if tag else ''}<h3>{name}</h3>
+PRO = ['<b>Everything in Home DJ</b>', 'Song Shows: auto-drafted timeline you can edit cue by cue', 'Fader board: master, speed, color, strobe and more, live', 'Override keys: hold-to-flash blackout, strobe, color', 'Interlude mode for talking breaks and between sets', 'Loop banks: record a groove, fire it back on the beat', 'Built for paid gigs, clubs, churches and venues', 'All Pro updates']
+def plan(name, price, per, note, best=False, tag='', pro=False):
+    key = ('Pro ' if pro else '') + name
+    btn = ('Buy once' if name == 'Lifetime' else 'Start free trial')
+    href = BUY[key] if SELLING and BUY.get(key) else WAIT
+    if not (SELLING and BUY.get(key)): btn = 'Join the launch list'
+    return f'''<div class="plan{' best' if best else ''} reveal">{f'<span class="tag">{tag}</span>' if tag else ''}<h3>{name}</h3>
 <div class="price">{price}<small> {per}</small></div><p class="dim" style="margin:6px 0 0">{note}</p>
-<ul class="ticks">{''.join(f'<li>{x}</li>' for x in EVERY)}</ul>
-{(f'<a class="btn{" primary" if best else ""}" href="{BUY[name]}">{"Buy once" if name == "Lifetime" else "Start free trial"}</a>' if SELLING and BUY.get(name) else f'<a class="btn{" primary" if best else ""}" href="{WAIT}">Join the launch list</a>')}</div>'''
-pricing = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Pricing</span><h1>Simple pricing, <span class="grad">every feature</span></h1>
-<p class="lead">Every plan includes everything. Start with a <b>7-day free trial</b>, cancel anytime.</p>
-<span class="pill">🎃 Launching this Halloween. Join the list and we'll email you on day one.</span></div></header>
+<ul class="ticks">{''.join(f'<li>{x}</li>' for x in (PRO if pro else EVERY))}</ul>
+<a class="btn{" primary" if best else ""}" href="{href}">{btn}</a></div>'''
+pricing = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">Pricing</span><h1>Two ways to <span class="grad">light it up</span></h1>
+<p class="lead"><b>Home DJ</b> for parties and holidays. <b>Pro DJ</b> for gigs and venues. Every plan starts with a <b>7-day free trial</b> on subscriptions, cancel anytime.</p>
+<span class="pill">🎃 Launching this Halloween. Join the list and we'll email you on day one.</span>
+<div class="tierjump"><a href="#home">🏠 Home DJ</a><a href="#pro">🎛️ Pro DJ</a></div></div></header>
 <section style="padding-top:10px"><div class="wrap">
-<div class="founder reveal"><span class="tag">🎃 Founder launch deal</span><h3>Lifetime for <b>$129</b> <s>$379</s></h3><p>During launch week, or for the first 100 buyers, whichever comes first. Pay once, keep GlowBop and every update forever.</p>{f'<a class="btn primary" href="{BUY["Founder"]}">🎃 Grab the Founder deal</a>' if SELLING else ''}</div>
+<h2 class="center tierh" id="home">🏠 GlowBop <span class="grad">Home DJ</span></h2><p class="center dim" style="margin:-4px 0 22px">Everything you need to turn your home into a light show.</p>
+<div class="founder reveal"><span class="tag">🎃 Founder launch deal</span><h3>Home DJ Lifetime for <b>$129</b> <s>$379</s></h3><p>During launch week, or for the first 100 buyers, whichever comes first. Pay once, keep GlowBop and every update forever.</p>{f'<a class="btn primary" href="{BUY["Founder"]}">🎃 Grab the Founder deal</a>' if SELLING else ''}</div>
 <div class="plans">{plan('Monthly', '$5.99', '/ month', 'Perfect for a party season.')}{plan('Yearly', '$59', '/ year', 'About $4.92 a month. 2 months free.', True, 'Best value')}{plan('Lifetime', '$379', 'once', 'Pay once, keep it forever. Founders pay $129 at launch.')}</div>
+<h2 class="center tierh" id="pro" style="margin-top:70px">🎛️ GlowBop <span class="grad">Pro DJ</span></h2><p class="center dim" style="margin:-4px 0 22px">For DJs, clubs, churches and venues. Program whole songs, ride the faders and play the lights like an instrument.</p>
+<div class="plans pro">{plan('Monthly', '$14.99', '/ month', 'Great for a busy gig season.', pro=True)}{plan('Yearly', '$149', '/ year', 'About $12.42 a month. 2 months free.', True, 'Pro favorite', pro=True)}{plan('Lifetime', '$599', 'once', 'Pay once, own Pro forever.', pro=True)}</div>
 <p class="center dim" style="margin-top:22px;font-size:15px">Payments are handled securely by Polar. Prices in USD.</p>
 <div style="max-width:780px;margin:50px auto 0"><h2 class="center">Pricing questions</h2>
-<details><summary>How does the free trial work?</summary><p>You get 7 days with every feature. If you cancel before the trial ends, you pay nothing.</p></details>
-<details><summary>What is the Founder deal?</summary><p>To celebrate the launch, lifetime costs $129 instead of $379 during launch week or for the first 100 buyers, whichever comes first. Same app, every feature, every update, forever.</p></details>
-<details><summary>Can I switch plans?</summary><p>Yes. Start monthly and move to yearly or lifetime whenever you like.</p></details>
+<details><summary>Home DJ or Pro DJ?</summary><p>Home DJ has every look, game, sport and the full music show and DJ mode. Pro DJ adds the tools working DJs and venues ask for: Song Shows you can program cue by cue, a live fader board, override keys, interlude mode and loop banks.</p></details>
+<details><summary>How does the free trial work?</summary><p>Monthly and yearly plans get 7 days with every feature of that tier. If you cancel before the trial ends, you pay nothing.</p></details>
+<details><summary>What is the Founder deal?</summary><p>To celebrate the launch, Home DJ Lifetime costs $129 instead of $379 during launch week or for the first 100 buyers, whichever comes first. Same app, every Home DJ feature, every update, forever.</p></details>
+<details><summary>Can I switch plans?</summary><p>Yes. Start monthly and move to yearly or lifetime, or step up from Home DJ to Pro DJ, whenever you like.</p></details>
 <details><summary>Do I need to buy anything else?</summary><p>Just your lights and a Windows computer. No dongles, sync boxes or extra subscriptions. Song lookup uses free keys.</p></details>
 </div></div></section>{band()}'''
 thanks = f'''<header class="pagehead"><div class="wrap center"><span class="eyebrow">You're in</span><h1>Thanks for getting <span class="grad">GlowBop</span>! 🎉</h1>
 <p class="lead">Your order went through. Here's how to get your lights dancing.</p></div></header>
 <section style="padding-top:10px"><div class="wrap" style="max-width:780px">
 <div class="grid g3">
-<div class="card reveal"><div class="em">📧</div><h3>1. Check your email</h3><p>Polar sends your receipt and your <b>GlowBop license key</b> (it starts with GLOWBOP-). Check spam if it's not there in a few minutes.</p></div>
+<div class="card reveal"><div class="em">📧</div><h3>1. Check your email</h3><p>Polar sends your receipt and your <b>GlowBop license key</b> (it starts with GLOWBOP- for Home DJ or GBPRO- for Pro DJ). Check spam if it's not there in a few minutes.</p></div>
 <div class="card reveal"><div class="em">⬇️</div><h3>2. Install GlowBop</h3><p><a class="btn primary small" href="/download/GlowBop-Setup.exe" download>Download for Windows</a></p><p>Run it, then follow the <a href="/guide/getting-started.html">getting started guide</a> to find your lights.</p></div>
 <div class="card reveal"><div class="em">🔑</div><h3>3. Paste your key</h3><p>Open GlowBop, paste your license key when it asks, and press play on any song.</p></div>
 </div>
 <p class="center dim" style="margin-top:26px">Lost your key or want to change plans? Open your <a href="{PORTAL}">customer portal</a>. Questions? Email <a href="mailto:{MAIL}">{MAIL}</a>.</p>
 </div></section>'''
 page('/thanks.html', 'Thank you · GlowBop', 'Your GlowBop order is complete. Find your license key and install the app.', thanks, '/thanks.html')
-page('/pricing.html', 'Pricing · GlowBop', 'GlowBop costs $5.99 a month, $59 a year, or $379 once, with a $129 Founder lifetime deal at launch. Every plan has every feature and a 7-day free trial.', pricing, '/pricing.html')
+page('/pricing.html', 'Pricing · GlowBop', 'GlowBop Home DJ costs $5.99 a month, $59 a year, or $379 once, with a $129 Founder deal at launch. GlowBop Pro DJ is $14.99 a month, $149 a year, or $599 once.', pricing, '/pricing.html')
 
 
 # ================================================================ DOWNLOAD
@@ -1093,7 +1107,7 @@ download = f'''<header class="pagehead"><div class="wrap center"><span class="ey
 <ol><li>Open the downloaded <b>GlowBop-Setup.exe</b>. If your browser says it "isn't commonly downloaded", choose <b>Keep</b>.</li>
 <li>If Windows shows <b>"Windows protected your PC"</b>, click <b>More info</b>, then <b>Run anyway</b>. This appears for new apps from small makers, not because anything is wrong.</li>
 <li>Click <b>Install</b>, then <b>Finish</b> with "Open GlowBop now" ticked.</li>
-<li>Paste the <b>license key</b> from your Polar email (it starts with GLOWBOP-) and tap <b>Unlock</b>. Then follow the <a href="/guide/getting-started.html#find">setup guide</a> to find your lights.</li></ol>
+<li>Paste the <b>license key</b> from your Polar email (it starts with GLOWBOP- for Home DJ or GBPRO- for Pro DJ) and tap <b>Unlock</b>. Then follow the <a href="/guide/getting-started.html#find">setup guide</a> to find your lights.</li></ol>
 {tip('<b>Moving to a new computer?</b> In the old one, open Light setup and tap <b>Move my license to another computer</b>, then install here and paste your key.', 'pink')}
 <details style="margin-top:26px"><summary>For the careful: check the file</summary><p>SHA-256 of GlowBop-Setup.exe:<br><code style="word-break:break-all">{SHA}</code></p></details>
 <details><summary>How do I uninstall?</summary><p>Windows Settings, then Apps, then GlowBop, then Uninstall. Your lights go back to their own apps.</p></details>
