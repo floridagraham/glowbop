@@ -121,11 +121,11 @@
   }
 })();
 
-// 📱 the ▶ Play the live demo bar slides up once you scroll past the top of the page, and hides near the demo itself and the footer
+// 📱 the ▶ Play the live demo bar slides up once you start scrolling and stays there
 (function () {
   const d = document.querySelector('.demo-dock'); if (!d) return;
   const tl = document.getElementById('tryLive'), away = [tl && (tl.closest('section') || tl)].filter(Boolean), ft = document.querySelector('footer');
   const near = el => { const r = el.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; };
-  const tick = () => d.classList.toggle('show', scrollY > 520 && !away.some(near) && !(ft && near(ft)));
+  const tick = () => d.classList.toggle('show', scrollY > 300);   // stays put once you start scrolling (Oct 16: hiding near the demo felt broken)
   addEventListener('scroll', tick, {passive: true}); addEventListener('resize', tick); tick();
 })();
