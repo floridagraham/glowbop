@@ -10,7 +10,7 @@
 (function () {
   'use strict';
   const {$} = GB, S = GB.store;
-  const PRO_PAGES = ['shows', 'autoloops', 'cues', 'board', 'ops'];
+  const PRO_PAGES = ['shows', 'autoloops', 'cues', 'board', 'ops', 'home'];
   const BORROW = [['muCard', 'music'], ['fdPanel', 'board'], ['lpPanel', 'board'], ['alPanel', 'autoloops'], ['cuPanel', 'cues']];
   const COLS = 48, ROW = 8;                       // the invisible grid: 48 columns, 8 px rows
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches && S.get('gb_intro_motion') !== 'full';
@@ -41,6 +41,7 @@
   #pdHd { min-height:40px; margin-right:6px; gap:6px; } #pdHd .ic { width:18px; height:18px; fill:currentColor; }
   #pdHd .ps { display:none; } @media (max-width:1100px) { #pdHd .pl { display:none; } #pdHd .ps { display:inline; } } @media (max-width:560px) { #pdHd .ps { display:none; } #pdHd { padding:0 12px; } }
   #pdHd.on { box-shadow:0 0 18px var(--gold); }
+  @media (max-width:560px) { #pdHd, #phHd { padding:0 9px !important; margin-right:4px; } #sfx span { display:none; } #sfx { padding:0 10px; } #gbGuideBtn { margin-right:4px; } }   /* phones: the two Pro keys fit next to GUIDE */
   #pdSw { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   #pdSw .pdT { flex:1 1 200px; min-width:0; }
   #pdSw .pdT b { display:block; font:800 calc(20px * var(--fs, 1))/1 var(--cond); letter-spacing:3px; }
@@ -65,6 +66,10 @@
   #main.lay > #view, #main.lay > #pages, #main.lay .page.on { display:contents; }
   #main.lay .lay-it { margin:5px; min-height:0; min-width:0; overflow:auto; position:relative; }
   #main.lay .lay-it.panel:not(.box) { overflow:hidden; }
+  /* the Live wall shrinks and grows with its box (the picture redraws to fit) */
+  #main.lay .lay-it[data-lk="v:wall"] { display:flex; flex-direction:column; }
+  #main.lay .lay-it[data-lk="v:wall"] .wallbox { flex:1 1 auto; min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:6px; }
+  #main.lay .lay-it[data-lk="v:wall"] .seg { flex:none; }
   html.gb-arr #main.lay .lay-it { outline:2px dashed #4de8c899; outline-offset:-2px; }
   .lay-hand { position:absolute; inset:0; z-index:30; cursor:grab; background:#4de8c80d; touch-action:none; display:flex; align-items:flex-start; justify-content:center; }
   .lay-hand span { margin-top:6px; background:#000c; color:#4de8c8; border:1px solid #4de8c8; border-radius:999px; padding:3px 12px; font:700 12px var(--cond); letter-spacing:2px; text-transform:uppercase; pointer-events:none; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -163,6 +168,9 @@
     } catch (e) {}
   }
   GB.proSound = proSound;                         // GB.proSound(true) to hear it
+  // a template made before a page's boxes finished loading gets redone once they have (only if you haven't moved anything)
+  const recompact = () => { const k = canArrange() ? pageKey() : null; if (k && !arranging && S.get(store(k) + ':auto') === '1') compact(true); };
+  GB.proDJ = {recompact, isOn, setOn: (on, anim) => setOn(on, anim), flicker: f => flicker(f), relayout: () => layout(), syncBorrow: () => syncBorrow()};   // shared with prohome.js
   function setOn(on, animate) {
     if (on && GB.pro !== true) return;
     S.set('gb_prodj', on ? '1' : '0');
@@ -304,7 +312,7 @@
   // ================================================================ ✏️ arrange: an invisible fine grid
   let arranging = false;
   const bucket = () => (innerWidth >= 1000 && innerWidth >= innerHeight) ? 'wide' : 'tall';
-  const pageKey = () => GB.page === 'dj' ? (isOn() ? 'prodj' : null) : (PRO_PAGES.includes(GB.page) && GB.pro === true ? GB.page : null);
+  const pageKey = () => GB.page === 'dj' ? (isOn() ? 'prodj' : 'dj') : GB.page === 'home' ? (GB.pro === true ? 'prohome' : null) : (PRO_PAGES.includes(GB.page) && GB.pro === true ? GB.page : null);
   const canArrange = () => innerWidth >= 700 && !!pageKey();
   const store = k => 'gb_lay2:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
   function items() {
@@ -338,7 +346,7 @@
   let cur = null;                                   // {key, L}
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
-    if (k === 'prodj' && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); return compact(true); }   // Pro DJ starts on the Compact template
+    if ((k === 'prodj' || k === 'prohome' || k === 'dj') && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); return compact(true); }   // Pro DJ starts on the Compact template
     $('layFab') && $('layFab').classList.toggle('show', !!k);
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
     const list = items(); const LL = L || measure(list);
@@ -358,6 +366,9 @@
     ids.forEach(i => { const p = L[i]; let guard = 0;
       for (;;) { const o = done.find(j => hits(p, L[j])); if (!o || guard++ > 200) break; p.y = L[o].y + L[o].h; }
       done.push(i); });
+    // then everything floats up into any gap above it, so the board always stays packed and lined up
+    Object.keys(L).sort((a, b) => L[a].y - L[b].y).forEach(i => { const p = L[i];
+      while (p.y > 0 && !Object.keys(L).some(j => j !== i && hits({x: p.x, y: p.y - 1, w: p.w, h: p.h}, L[j]))) p.y--; });
   }
   function handles() {
     document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove());
@@ -383,7 +394,7 @@
       };
       const end = () => { handle.removeEventListener('pointermove', mv); handle.classList.remove('drag'); el.style.zIndex = '';
         settle(cur.L, id); Object.keys(cur.L).forEach(k => { const n = document.querySelector('#main [data-lk="' + CSS.escape(k) + '"].lay-it'); if (n) place(n, cur.L[k]); });
-        save(cur.key, cur.L); };
+        save(cur.key, cur.L); S.set(store(cur.key) + ':auto', ''); };
       handle.addEventListener('pointermove', mv); handle.addEventListener('pointerup', end, {once: true}); handle.addEventListener('pointercancel', end, {once: true});
     });
   }
@@ -400,7 +411,10 @@
     $('main').classList.add('lay');
     const list = items(), id = sel => { const n = document.querySelector('#main ' + sel); const it = n && n.closest('[data-lk]'); return it ? it.dataset.lk : null; };
     const wide = bucket() === 'wide' && k === 'prodj';
-    const cols = k !== 'prodj' ? [[0, 24, []], [24, 24, []]]
+    const cols = k === 'prohome' ? (bucket() === 'wide' ? [[0, 17, ['v:wall', 'v:mode', 'v:reads']], [17, 15, ['phScenes']], [32, 16, ['phSched']]] : [[0, 24, ['v:wall', 'phScenes']], [24, 24, ['phSched']]])
+      : k === 'dj' ? (bucket() === 'wide' ? [[0, 17, ['v:wall', id('#djBuild'), 'v:mode']], [17, 15, ['djPadsPanel', id('#djCool')]], [32, 16, [id('#djColor'), id('#djTap'), id('#djLooks')]]]
+                                          : [[0, 24, ['v:wall', id('#djBuild'), id('#djCool')]], [24, 24, ['djPadsPanel', id('#djColor'), id('#djTap')]]])
+      : k !== 'prodj' ? [[0, 24, []], [24, 24, []]]
       : wide ? [[0, 17, ['v:wall', 'v:keys', 'muCard', 'v:mode', 'v:reads']], [17, 15, [id('#djBuild'), id('#djCool'), id('#djColor')]], [32, 16, ['djPadsPanel', id('#djTap'), 'pdPanel', id('#djLooks')]]]
       : [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', id('#djCool'), id('#djColor')]], [24, 24, [id('#djBuild'), 'djPadsPanel', id('#djTap'), 'pdPanel', id('#djLooks')]]];
     const L = {}, byId = {}; list.forEach(el => byId[el.dataset.lk] = el);
@@ -415,7 +429,7 @@
     // everything else: two columns under the top band, always into the shorter one
     const rest = list.map(el => el.dataset.lk).filter(i => !L[i]), lane = [top, top];
     rest.forEach(i => { const c = lane[0] <= lane[1] ? 0 : 1; L[i] = {x: c * 24, y: lane[c], w: 24, h: H[i]}; lane[c] += H[i]; });
-    save(k, L); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
+    save(k, L); S.set(store(k) + ':auto', silent ? '1' : ''); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
     if (!silent) GB.toast && GB.toast('⚡ Compact layout. Drag anything to fine-tune');
   }
   function reset() { const k = pageKey(); if (!k) return; S.set(store(k), ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the standard layout'); }
@@ -432,8 +446,10 @@
   // ================================================================ wiring
   GB.on('ready', () => { chrome(); buildKeys(); if (GB.pro === true) apply(isOn()); else paintSwitch(); setTimeout(headerKey, 500); });
   GB.on('pro', v => { if (!v && document.documentElement.classList.contains('prodj')) document.documentElement.classList.remove('prodj'); apply(v && isOn()); });
-  GB.on('page', () => { if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); layout(); paintSwitch(); });
+  GB.on('page', () => { if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
   GB.on('status', paintLit);
+  try { const wb = $('wallBox'); if (wb) { let rq = 0; new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => GB.redrawWall && GB.redrawWall()); }).observe(wb); } } catch (e) {}
+  let refit = false; GB.on('catalog', () => { if (!refit) { refit = true; setTimeout(() => GB.proDJ.recompact(), 500); } });   // looks loaded: refit an untouched template once
   let rt = 0, sig = '';                           // re-lay only when the screen shape really changes (phone turned, window resized past a size)
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const n = bucket() + (canArrange() ? 1 : 0) + innerWidth;
     if (n !== sig && !document.querySelector('.lay-hand.drag')) { sig = n; layout(); } paintSwitch(); }, 250); });

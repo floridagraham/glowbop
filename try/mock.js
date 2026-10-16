@@ -1716,6 +1716,29 @@
   }
 
   // ======================================================================= /api/control
+  // 🏠 Pro Home (demo): house scenes run through the same control path; schedules are kept for this visit only
+  const SCH = (() => {
+    const SC = {welcome: ['Welcome home', 'home', '#ffb23d', {power: true, look: 'Golden Porch', pace: 'normal', brightness: 80}],
+      dinner: ['Dinner', 'candle', '#ff9f5a', {power: true, look: 'Lava Lounge', pace: 'chill', brightness: 45}],
+      party: ['Party', 'disco', '#ff3d9a', {power: true, look: 'Neon Party', pace: 'hype', brightness: 100}],
+      movie: ['Movie night', 'movie', '#9b3dff', {power: true, look: 'Moonlit', pace: 'chill', brightness: 20}],
+      gameday: ['Game day', 'trophy', '#33d6ff', {power: true, look: 'Mainstage', pace: 'hype', brightness: 90}],
+      relax: ['Relax', 'moon', '#4de8c8', {power: true, look: 'Deep Sea', pace: 'chill', brightness: 35}],
+      bedtime: ['Bedtime', 'moon', '#6677ff', {power: true, look: 'Midnight Galaxy', pace: 'chill', brightness: 10}],
+      off: ['All off', 'power', '#ff5c7a', {power: false}]};
+    let items = [{id: 's1', name: 'Lights on at sunset', when: 'sunset', time: '19:00', offset: 0, days: [0, 1, 2, 3, 4, 5, 6], action: 'scene', scene: 'welcome', enabled: true},
+      {id: 's2', name: 'Off at bedtime', when: 'time', time: '23:30', offset: 0, days: [0, 1, 2, 3, 4, 5, 6], action: 'off', scene: '', enabled: true}];
+    const info = () => ({items: items.map(x => Object.assign({}, x, {next: x.enabled ? (x.when === 'sunset' ? 'Today 18:59' : x.when === 'sunrise' ? 'Tomorrow 07:26' : 'Today ' + x.time) : null})),
+      scenes: Object.fromEntries(Object.entries(SC).map(([k, v]) => [k, {name: v[0], ic: v[1], c: v[2]}])), sun: {sunrise: '07:26', sunset: '18:59', place: 'Demo house'}, has_loc: true});
+    const post = b => {
+      if (b.scene) { const v = SC[b.scene]; if (v) { const c = Object.assign({}, v[3]); if (c.look && !LOOK_SET[c.look]) delete c.look; control(c); } return {ok: true}; }
+      if (b.save) { const it = Object.assign({}, b.save); it.id = it.id || 's' + Date.now(); items = items.filter(x => x.id !== it.id).concat(it); }
+      if (b.delete) items = items.filter(x => x.id !== b.delete);
+      if (b.enable) items.forEach(x => { if (x.id === b.enable) x.enabled = !!b.on; });
+      return Object.assign({ok: true}, info());
+    };
+    return {info, post};
+  })();
   function control(b) {
     lpObserve('control', b); shObserve('control', b);
     if (['look+', 'look-', 'effect+', 'effect-'].includes(b.step) && !S.scene) {        // 🎛️ DJ skip buttons: the next / previous look or effect
@@ -1798,6 +1821,7 @@
     if (method === 'GET') {
       switch (path) {
         case '/api/status': return {json: status()};
+        case '/api/schedule': return {json: SCH.info()};
         case '/api/catalog': return {json: Object.assign({}, CAT, {holiday_cal: holCal()})};
         case '/api/frames': return {json: {groups: [{id: 'g1', name: 'Main', w: W, h: H, gw: W, gh: H, shape: null, rgb: paint(),
           devices: DEVS.map(d => ({id: d.id, name: d.name, x0: d.x0, x1: d.x0 + 19, y0: 0, y1: H - 1}))}]}};
@@ -1844,6 +1868,7 @@
     } else {
       switch (path) {
         case '/api/control': return control(b);
+        case '/api/schedule': return {json: SCH.post(b)};
         case '/api/autoloops': case '/api/scenes': case '/api/cues': case '/api/tempo': case '/api/zones': case '/api/palettes': case '/api/prodj':
           return pro(() => pdPost(path.slice(5), b));
         case '/api/songinfo': { const t = M.queue[M.idx]; if (!t) return {status: 409, json: {error: 'no song is playing'}};

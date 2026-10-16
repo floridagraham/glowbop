@@ -303,7 +303,7 @@
   // the rail, by how often you reach for it: PERFORM (the home screen + playing by hand), VISUALS (everyday looks, most used
   // first), PRO (the Pro DJ tools, or one gold tour key on Home), SYSTEM (lights + app, mostly one-time setup) at the bottom.
   const PAGES = GB.PAGES = [
-    {id: 'music', label: 'MUSIC', c: 'var(--pink)', big: 2, g: 'perform'},
+    {id: 'music', label: 'MUSIC', c: '#e9e6ff', big: 2, g: 'perform'},   // Oct 16: pale white-lavender, so it stands apart from the pinks
     {id: 'dj', label: 'DJ', c: 'var(--red)', g: 'perform'},
     {id: 'looks', label: 'LOOKS', c: 'var(--amber)', g: 'visuals'},
     {id: 'scenes', label: 'SCENES', c: 'var(--lav)', g: 'visuals'},            // 🔥 the fireplace lives here now
@@ -312,6 +312,7 @@
     {id: 'text', label: 'TEXT', c: 'var(--gold)', g: 'visuals'},
     {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},         // moves up next to LOOKS when a holiday is close (seasonRail)
     {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
+    {id: 'home', label: 'PRO HOME', c: '#ffb23d', pro: true, g: 'pro'},           // 🏠 Pro Home control center (prohome.js): its rail key shows only in Pro Home mode
     {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'pro'},
     {id: 'autoloops', label: 'LOOPS+CUES', c: '#3fb6ff', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
     {id: 'cues', label: 'CUES', c: '#7dffb2', pro: true, g: 'pro', rail: 'autoloops'},   // 🎬 cue lists + GO (cues.js): shares the LOOPS & CUES key (a switch on top), so the phone rail still fits
@@ -487,12 +488,13 @@
     const r = $('wallInfo'); if (r) r.textContent = kind.toUpperCase() + ' · DRAG TO SPIN';
     PVHIT = [];
   }
+  GB.redrawWall = () => { if (PV.length) drawSetup(PV); };
   function drawSetup(blocks) {
     PV = blocks; if (!blocks.length) return;
     if (blocks.length === 1 && blocks[0].shape) {
       const dpr = Math.min(2, window.devicePixelRatio || 1), box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
       const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
-      return draw3D(blocks[0], cssW, FULL ? innerHeight - 40 : compact ? Math.max(GB.page === 'music' ? 120 : 150, innerHeight * (GB.page === 'music' ? 0.16 : 0.26)) : Math.max(240, Math.min(620, innerHeight * (wide ? 0.46 : 0.5))), dpr);
+      return draw3D(blocks[0], cssW, FULL ? innerHeight - 40 : ($('wallBox').closest('.lay-it') ? Math.max(50, $('wallBox').clientHeight - 20) : 0) || (compact ? Math.max(GB.page === 'music' ? 120 : 150, innerHeight * (GB.page === 'music' ? 0.16 : 0.26)) : Math.max(240, Math.min(620, innerHeight * (wide ? 0.46 : 0.5)))), dpr);
     }
     const many = blocks.length > 1, dpr = Math.min(2, window.devicePixelRatio || 1);
     const gap = 2, totW = blocks.reduce((a, b) => a + b.w, 0) + gap * (blocks.length - 1), maxH = Math.max(...blocks.map(b => b.h));
@@ -500,7 +502,8 @@
     const box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
     const lab = (many ? 18 : 0) + (anyDev ? 16 : 0);
     const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
-    const maxCssH = FULL ? innerHeight - 40 : compact ? Math.max(GB.page === 'music' ? 110 : 130, innerHeight * (GB.page === 'music' ? 0.15 : 0.24)) : Math.max(220, Math.min(620, innerHeight * (wide ? 0.44 : 0.5)));
+    const inLay = !FULL && box.closest('.lay-it');                      // ✏️ arranged console: the picture fits whatever box size you gave the Live wall
+    const maxCssH = FULL ? innerHeight - 40 : inLay ? Math.max(50, box.clientHeight - 20) : compact ? Math.max(GB.page === 'music' ? 110 : 130, innerHeight * (GB.page === 'music' ? 0.15 : 0.24)) : Math.max(220, Math.min(620, innerHeight * (wide ? 0.44 : 0.5)));
     const st = Math.min(cssW / totW, (maxCssH - lab) / maxH);
     const cssH = Math.round(lab + maxH * st), drawW = totW * st, ox0 = (cssW - drawW) / 2;
     cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
