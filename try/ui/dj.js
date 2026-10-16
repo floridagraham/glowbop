@@ -239,6 +239,38 @@
     b.addEventListener('contextmenu', e => e.preventDefault());
     paint();
   });
+  // ------------------------------------------------------------------ 🌙 cool down (Oct 16): hold for a breather, tap to latch it on
+  GB.css(`
+  #djCool { min-height:76px; font-size:calc(22px * var(--fs, 1)); letter-spacing:3px; touch-action:none; user-select:none; -webkit-user-select:none; transition:background .5s, color .5s, box-shadow .5s; }
+  #djCool.on { background:linear-gradient(135deg,#cc99ff,#6677ff); color:#120a22; box-shadow:0 0 34px #cc99ff88; animation:djCoolB 3.2s ease-in-out infinite; }
+  #djCool.latched::after { content:'LATCHED · TAP TO RELEASE'; display:block; font:700 calc(11px * var(--fs, 1)) var(--mono); letter-spacing:1px; opacity:.75; margin-top:4px; }
+  @keyframes djCoolB { 0%,100% { box-shadow:0 0 18px #cc99ff55; } 50% { box-shadow:0 0 44px #cc99ffaa; } }
+  @media (prefers-reduced-motion: reduce) { #djCool.on { animation:none; } }
+  `);
+  GB.panel('dj', 5, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
+    el.innerHTML = `<div class="ph"><span>Cool down</span><span class="r" id="djCoolR">HOLD, OR TAP TO LATCH</span></div>
+      <button class="btn c wide" id="djCool" style="--c:var(--lav)">🌙 COOL DOWN</button>
+      <p class="note">Same look, just calmer: dimmer, half speed, no strobes or flashes, softer colors with light trails. Hold it for a breather, or tap once to keep it on and tap again to bring the lights back. If the song gets loud again, the lights come back up on their own.</p>`;
+    const b = el.querySelector('#djCool'); let down = 0, keep = 0, latched = false;
+    const show = (on, lat) => { b.classList.toggle('on', on); b.classList.toggle('latched', !!lat); const r = $('djCoolR'); if (r) r.textContent = lat ? 'LATCHED ON' : on ? 'COOLING DOWN' : 'HOLD, OR TAP TO LATCH'; };
+    b.addEventListener('pointerdown', e => {
+      e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (_) {}
+      down = performance.now(); if (latched) return;
+      show(true, false); dj({cool: true, ttl: 1.5}); clearInterval(keep);
+      keep = setInterval(() => dj({cool: true, ttl: 1.5}), 500);          // keeps it on while held; if the Wi-Fi drops it lets go by itself
+      GB.sfx && GB.sfx('tap');
+    });
+    const up = e => {
+      if (!down) return; const quick = performance.now() - down < 350; down = 0; clearInterval(keep);
+      if (latched) { latched = false; show(false, false); dj({cool: false}); GB.toast && GB.toast('✨ Lights coming back up'); return; }
+      if (quick && e.type === 'pointerup') { latched = true; show(true, true); dj({cool: true, latch: true}); GB.toast && GB.toast('🌙 Cool down latched on. Tap again to bring it back'); }
+      else { show(false, false); dj({cool: false}); }
+    };
+    b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
+    GB.on('status', s => { const d = s.dj || {}; if (down) return; latched = !!d.cool_latched; show(!!d.cool, latched); });
+  });
+
   GB.panel('dj', 30, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
     el.innerHTML = `<div class="ph"><span>Tap tempo</span><span class="r" id="djTapR">FOLLOWING THE MUSIC</span></div>

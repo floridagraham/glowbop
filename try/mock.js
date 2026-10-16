@@ -148,8 +148,8 @@
   }
 
   // ======================================================================= 🎧 DJ mode (same engine as the website's demo console)
-  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null, pfx: [], nfx: [], dstyle: 'random', lastDrop: ''};
-  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, pfx: [], nfx: []}); }
+  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null, pfx: [], nfx: [], dstyle: 'random', lastDrop: '', coolLatch: false, coolUntil: 0, coolK: 0};
+  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, pfx: [], nfx: [], coolLatch: false, coolUntil: 0}); }
   // 🎛️ the six one-shot pads (padfx.py): sweep, shockwave, color bomb, lightning, 3-2-1, heartbeat. Short overlays in the look's colours.
   const PAD_FX = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat', 'star'];
   const PAD_SECS = {sweep: .9, shockwave: 1.1, colorbomb: 1.2, lightning: .8, countdown: 2.4, heartbeat: 1.8, star: 1.3};
@@ -395,12 +395,14 @@
         const col = [.5 + .5 * Math.cos(6.283 * hh), .5 + .5 * Math.cos(6.283 * (hh - .33)), .5 + .5 * Math.cos(6.283 * (hh - .66))].map(v => 120 + 135 * v);
         stamp(buf, m, x0, y0, () => col, .35); }
     }
-    if (DJ.strobe > t) { const on = Math.floor(t / .055) % 2 === 0; for (let i = 0; i < buf.length; i++) buf[i] = on ? 255 : buf[i] * .05; }
-    if (DJ.flash > .01) { for (let i = 0; i < buf.length; i++) buf[i] = Math.max(buf[i], 255 * DJ.flash); DJ.flash *= Math.pow(.02, dt); }
+    const ck = DJ.coolK;                                            // 🌙 cool down: no strobes, flashes fade out
+    if (DJ.strobe > t && ck < .5) { const on = Math.floor(t / .055) % 2 === 0; for (let i = 0; i < buf.length; i++) buf[i] = on ? 255 : buf[i] * .05; }
+    if (DJ.flash > .01) { for (let i = 0; i < buf.length; i++) buf[i] = Math.max(buf[i], 255 * DJ.flash * (1 - ck)); DJ.flash *= Math.pow(.02, dt); }
     if (DJ.black) buf.fill(0);
   }
   const djInfo = () => ({cue: DJ.cue, building: DJ.build != null, build_style: DJ.bstyle || 'rise', blackout: DJ.black, tap_bpm: DJ.tap_bpm ? Math.round(DJ.tap_bpm) : null,
-    queued: DJ.queue.slice(), strobing: now() < DJ.strobe});
+    queued: DJ.queue.slice(), strobing: now() < DJ.strobe, cool: coolOn(), cool_latched: DJ.coolLatch, cool_level: +DJ.coolK.toFixed(2)});
+  const coolOn = () => DJ.coolLatch || now() < DJ.coolUntil;
 
   // ======================================================================= 🔤 text + logo layer
   const TX = {s: null, presets: [], logo: null, dropUntil: 0, t0: 0};
@@ -1570,6 +1572,14 @@
   }
 
   // ======================================================================= painting one frame
+  let coolPrev = null; const coolTmp = new Float32Array(N * 3);
+  function coolPost(b, k) {
+    const bk = .45 * k, dim = 1 - .4 * k, tr = .45 * k;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, u = y > 0 ? i - W * 3 : i, d = y < H - 1 ? i + W * 3 : i, l = x > 0 ? i - 3 : i, rr = x < W - 1 ? i + 3 : i;
+      for (let c = 0; c < 3; c++) coolTmp[i + c] = (b[i + c] * (1 - bk) + (b[u + c] + b[d + c] + b[l + c] + b[rr + c]) / 4 * bk) * dim; }
+    if (!coolPrev) coolPrev = new Float32Array(N * 3).fill(0);
+    for (let i = 0; i < b.length; i++) { b[i] = coolTmp[i] * (1 - tr) + coolPrev[i] * tr; coolPrev[i] = b[i]; }
+  }
   let buf = new Float32Array(N * 3), curClip = null, clipV0 = 0, VT = 0, lastT = now(), spk = new Float32Array(N), lastLevel = 0, lastSrc = {label: ''};
   const HEX = []; for (let i = 0; i < 256; i++) HEX.push(i.toString(16).padStart(2, '0'));
   // a mode with its own picture and pace owns the wall: faders' looks, Song Show cues and loop spans stay out of the way (like the engine)
@@ -1578,7 +1588,8 @@
     const t = now(), dt = Math.min(.25, t - lastT); lastT = t; clock();
     const busy = takeover();
     ovTick(dt); lpTick(); shTick(busy); cueStep(LP.layer, busy ? {} : LP.act, busy, it => (it.end - it.t));
-    const sp = busy ? 1 : fSpeed(), vdt = Math.min(.25, dt * sp); VT += dt * sp;      // 🎚️ SPEED: the animations' own clock
+    { const loud = clamp((lastLevel - .72) / .2, 0, 1), tg = coolOn() ? 1 - .6 * loud : 0; DJ.coolK += (tg - DJ.coolK) * Math.min(1, dt * (tg > DJ.coolK ? 1.6 : 1.1)); if (DJ.coolK < .01 && !tg) DJ.coolK = 0; }
+    const ck = DJ.coolK, sp = (busy ? 1 : fSpeed()) * (1 - .5 * ck), vdt = Math.min(.25, dt * sp); VT += dt * sp;      // 🎚️ SPEED: the animations' own clock
     const si = followShow(), src = source(t, si); lastSrc = src;
     buf.fill(0);
     if (src.clip) {
@@ -1602,9 +1613,10 @@
       const m = textMask(HOL_NAME.text, H), el = (t % 14) / 4.2; stamp(buf, m, Math.round(W - el * (W + m.w)), ((H - m.h) / 2) | 0, (x) => HOL_NAME.cols[x < W / 2 ? 0 : 1], .3); }
     if (S.power) textOverlay(buf, t, si);
     // ✨ sparkles: auto = a few on the drops, lots = always glittering
-    const want = S.sparkles === 'lots' ? .012 : S.sparkles === 'auto' && si.name === 'drop' ? .004 : 0;
+    const want = (S.sparkles === 'lots' ? .012 : S.sparkles === 'auto' && si.name === 'drop' ? .004 : 0) * (1 - ck);
     for (let i = 0; i < N; i++) { if (want && R() < want) spk[i] = 1; if (spk[i] > .02) { const v = spk[i] * 255; buf[i * 3] = Math.max(buf[i * 3], v); buf[i * 3 + 1] = Math.max(buf[i * 3 + 1], v); buf[i * 3 + 2] = Math.max(buf[i * 3 + 2], v); spk[i] *= Math.pow(.004, vdt); } else spk[i] = 0; }
     if (S.power) djApply(buf, t, vdt);
+    if (ck > 0) coolPost(buf, ck); else coolPrev = null;                                  // 🌙 softer, dimmer, light trails
     if (!busy) { cueText(buf, SH.act, t); cueText(buf, LP.act, t); if (SH.act.blackout || LP.act.blackout) buf.fill(0); }
     fadersLook(buf, t, busy);                                       // 🎚️ trails, colour, white, strobe
     if (SH.ok && !busy && SH.mult !== 1) for (let i = 0; i < buf.length; i++) buf[i] *= SH.mult;   // 🎬 the show's brightness curve
@@ -1883,6 +1895,7 @@
               if (iv.length >= 2) DJ.tap_bpm = clamp(60 / iv[iv.length >> 1], 60, 200); } }
           if (b.tap_off) { DJ.tap_bpm = null; DJ.taps = []; }
           if (b.say) { const w = String(b.say).toUpperCase().slice(0, 40).trim(); if (w) DJ.word = {w, t0: t}; }
+          if ('cool' in b) { if (b.cool) { if (b.latch) DJ.coolLatch = true; else DJ.coolUntil = t + clamp(num(b.ttl, 1.5), .3, 5); } else { DJ.coolLatch = false; DJ.coolUntil = 0; } }   // 🌙 cool down
           if (b.reset) djReset();
           return ok(); }
         case '/api/music': return musicCmd(b);
