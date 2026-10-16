@@ -76,6 +76,10 @@
     act: {},                                   // which takeover was switched on last (fire, score, feed, holiday, scene, lock) wins the wall
   };
   const bump = k => { S.act[k] = wall(); };
+  // ✨ (Oct 16) the home page's demo is the flashy part: no calm looks, songs or slow effects there (they stay in the full demo)
+  const SHOWY = /[?&]embed=1\b/.test(location.search);
+  const CALM_LOOKS = ['Cinematic', 'Concert Hall', 'Jazz Club', 'Moonlit', 'Silk', 'Golden Porch', 'Deep Space', 'Fairy Forest', 'Liquid Dreams', 'Midnight Galaxy', 'Blue Sky', 'Ice Palace', 'Deep Sea', 'Emerald Ocean'];
+  const showyFx = list => { if (!SHOWY || !CAT || !CAT.effects) return list; const f = (list || []).filter(e => !CAT.effects[e] || CAT.effects[e].energy !== 'low'); return f.length ? f : list; };
   let BPM = 124, beatPos = 0, lastClock = now(), forceSec = null, songLook = 0;
   function clock() { const t = now(); beatPos += (t - lastClock) * pdTempoBpm() / 60; lastClock = t; return beatPos; }   // 🎛️ the Tempo toolbox can lock / scale it
   const SECS = ['groove', 'build', 'drop', 'break'];
@@ -95,12 +99,12 @@
       if (si.name === 'drop' && lastSecName !== 'drop' && DJ.cue) { setLook(DJ.cue, false); DJ.cue = null; }
       else if (si.name === 'drop' && lastSecName && lastSecName !== 'drop' && S.shuffle && !S.held) autoLook();
       lastSecK = si.k; lastSecName = si.name; S.lookK++;
-      const lk = CAT && CAT.looks[S.look]; if (lk) S.effect = pickOne(si.name === 'drop' ? lk.high : si.name === 'break' ? lk.low : lk.mid);
+      const lk = CAT && CAT.looks[S.look]; if (lk) S.effect = pickOne(showyFx(SHOWY ? (si.name === 'build' ? lk.mid : lk.high.concat(si.name === 'drop' ? [] : lk.mid)) : si.name === 'drop' ? lk.high : si.name === 'break' ? lk.low : lk.mid));
       if (si.name === 'drop' && TX.s.drop_flash) TX.dropUntil = now() + 2.2;
     }
     return si;
   }
-  function autoLook() { const ls = Object.keys(CAT.looks).filter(n => n !== S.look && n !== 'Retro Arcade'); S.look = pickOne(ls); }
+  function autoLook() { const ls = Object.keys(CAT.looks).filter(n => n !== S.look && n !== 'Retro Arcade' && !(SHOWY && CALM_LOOKS.includes(n))); S.look = pickOne(ls); }
   function setLook(n, pin) { S.look = n; S.held = n; S.pinned = !!pin; S.lookK = 0; }
 
   // ======================================================================= text masks + a tiny pixel font
@@ -1102,11 +1106,12 @@
     const basis = drops.length ? 'memory' : 'guess';
     if (dur <= 0) dur = drops.length ? drops[drops.length - 1] + 40 * BAR : 64 * BAR + 120;
     if (!drops.length) { for (let t = g + 40 * BAR; t < dur - 24 * BAR; t += 40 * BAR) drops.push(bar(t)); if (!drops.length && dur > 24 * BAR) drops.push(bar(dur * 0.4)); }
+    if (SHOWY) { drops = []; for (let t = g + 8 * BAR; t < dur - 8 * BAR; t += 24 * BAR) drops.push(bar(t)); }   // ✨ home page: the first drop comes fast, then one every 24 bars
     drops = drops.filter(d => d >= 2 * BAR && d < dur - 2 * BAR).sort((a, b) => a - b);
     const mood = ['dark', 'bright'].includes(song.mood) ? song.mood : 'neutral', epic = (song.epic || 0) > 0.55, ls = LOOK_SETS[epic ? 'epic' : mood];
     const rot = xs => { xs = xs.filter(x => CAT.looks[x]); const o = variant % xs.length; return xs.slice(o).concat(xs.slice(0, o)); };
-    const calm = rot(ls[0]), build_l = rot(ls[1]), drop_l = rot(ls[2]);
-    const efx = xs => xs.filter(x => CAT.effects[x]), bfx = efx(['WarpSpeed', 'TunnelRush', 'Hyperjump', 'ShapeTunnel']), cfx = efx(['Aurora', 'LavaFlow', 'OceanWaves', 'InkBloom', 'LiquidMelt', 'Bioluminescence', 'SkyClouds']);
+    const calm = SHOWY ? rot(ls[2].filter(x => !CALM_LOOKS.includes(x))).concat(rot(ls[1])).filter(x => !CALM_LOOKS.includes(x)) : rot(ls[0]), build_l = rot(SHOWY ? ls[1].filter(x => !CALM_LOOKS.includes(x)) : ls[1]), drop_l = rot(SHOWY ? ls[2].filter(x => !CALM_LOOKS.includes(x)) : ls[2]);
+    const efx = xs => xs.filter(x => CAT.effects[x]), bfx = efx(['WarpSpeed', 'TunnelRush', 'Hyperjump', 'ShapeTunnel']), cfx = efx(SHOWY ? ['LaserFan', 'DiscoTiles', 'BassRings', 'Kaleidoscope', 'LaserBlast', 'Fireworks', 'RainbowRings'] : ['Aurora', 'LavaFlow', 'OceanWaves', 'InkBloom', 'LiquidMelt', 'Bioluminescence', 'SkyClouds']);
     const segs = []; let prev = 0;
     drops.forEach((D, i) => { const gap = D - prev, blen = gap >= 16 * BAR ? 8 * BAR : Math.max(2 * BAR, gap > 4 * BAR ? bar(gap / 2) : BAR), B = Math.max(prev, D - blen);
       if (B - prev >= 2 * BAR) segs.push([i === 0 ? 'intro' : 'breakdown', prev, B]); else if (segs.length && B > prev) segs[segs.length - 1][2] = B;
@@ -1116,14 +1121,14 @@
       else { dl = Math.max(4 * BAR, Math.min(32 * BAR, (dur - D) - 8 * BAR)); dl = Math.min(dl, dur - D); }
       segs.push(['drop', D, Math.min(nxt, D + dl < dur ? bar(D + dl) : dur)]); prev = segs[segs.length - 1][2]; });
     if (dur - prev > BAR) segs.push([drops.length ? 'outro' : 'intro', prev, dur]); else if (segs.length) segs[segs.length - 1][2] = dur;
-    const big = drops.length > 1 ? drops[1] : drops[0], items = [], bp = [[0, 40]]; let n = 0, dk = 0, bk = 0;
+    const big = drops.length > 1 ? drops[1] : drops[0], items = [], bp = [[0, SHOWY ? 85 : 40]]; let n = 0, dk = 0, bk = 0;
     const add = o => { n++; o.id = 'a' + variant + 'x' + n; o.auto = true; ['t', 'end'].forEach(k => { if (k in o) o[k] = r3(o[k]); }); items.push(o); };
     const pickLine = (xs, k) => xs[(variant + k) % xs.length];
     segs.forEach(([kind, s, e]) => {
       const lookn = kind === 'build' ? build_l[dk % build_l.length] : kind === 'drop' ? drop_l[dk % drop_l.length] : kind === 'breakdown' ? calm[(1 + bk) % calm.length] : calm[0];
       const last = items[items.length - 1];
       if (last && last.lane === 'look' && last.look === lookn && Math.abs(last.end - s) < 0.01) last.end = r3(e); else add({lane: 'look', t: s, end: e, look: lookn});
-      if (kind === 'intro') bp.push([s, 40], [Math.max(s, e - P), 72]);
+      if (kind === 'intro') bp.push([s, SHOWY ? 85 : 40], [Math.max(s, e - P), SHOWY ? 95 : 72]);
       else if (kind === 'build') { bp.push([s, 60], [Math.max(s, e - P), 100]); if (bfx.length) add({lane: 'effect', t: s, end: e, effect: bfx[(dk + variant) % bfx.length]}); }
       else if (kind === 'drop') { const D = s, isbig = D === big, burst = mood === 'dark' ? 'fire' : 'confetti';
         bp.push([s, 100], [Math.max(s, e - P / 2), 100]); add({lane: 'hit', t: D, hit: 'drop'});
@@ -1133,7 +1138,7 @@
         if (isbig) { if (!epic) add({lane: 'hit', t: D, hit: burst}); const tt = D + (epic ? P : BAR); add({lane: 'text', t: tt, end: tt + 2 * BAR, text: pickLine(SH_LINES[epic ? 'epic' : mood], dk)}); }
         for (let k = 8; D + k * BAR < e - 2 * BAR; k += 8) add({lane: 'hit', t: D + k * BAR, hit: k === 8 && !isbig && !epic ? burst : 'flash'});
         dk++; }
-      else if (kind === 'breakdown') { bp.push([s, 100], [s + 2 * P, 65], [Math.max(s + 2 * P, e - P), 65]);
+      else if (kind === 'breakdown') { const lo = SHOWY ? 90 : 65; bp.push([s, 100], [s + 2 * P, lo], [Math.max(s + 2 * P, e - P), lo]);
         add({lane: 'color', t: s, end: e, colors: keyColors(song.key_name, mood).slice(0, 2 + (variant % 2))});
         if (cfx.length) add({lane: 'effect', t: s, end: Math.min(e, s + 8 * BAR), effect: cfx[(bk + variant) % cfx.length]}); bk++; }
       else if (kind === 'outro') bp.push([s, 100], [dur, 18]);
@@ -1702,7 +1707,7 @@
     if ('lock_effect' in b) { S.locked = b.lock_effect || null; if (S.locked) { S.feature = null; bump('lock'); clearTakeovers(); } }
     if (b.look) { setLook(b.look, b.pin); S.feature = null; S.locked = null; clearTakeovers(); }
     if (b.feature) { S.feature = {clip: effectClip(b.feature), name: b.feature, until: now() + 32}; clearTakeovers(); }
-    if (b.skip) { S.feature = null; const lk = CAT.looks[S.look]; if (S.held || !S.shuffle) { S.lookK++; S.effect = pickOne(lk.mid.concat(lk.high)); const c = effectClip(S.effect); if (c && c !== lookClip(S.look)) S.feature = {clip: c, name: S.effect, until: now() + 20}; } else { autoLook(); S.lookK = 0; } }
+    if (b.skip) { S.feature = null; const lk = CAT.looks[S.look]; if (S.held || !S.shuffle) { S.lookK++; S.effect = pickOne(showyFx(lk.mid.concat(lk.high))); const c = effectClip(S.effect); if (c && c !== lookClip(S.look)) S.feature = {clip: c, name: S.effect, until: now() + 20}; } else { autoLook(); S.lookK = 0; } }
     if (b.surprise) { const all = Object.keys(CLIPS).filter(n => /^(look|fx|wave|shape)-/.test(n)), c = pickOne(all); S.feature = {clip: c, name: titleOf(c), until: now() + 30}; clearTakeovers(); }
     if (b.cameo) S.cameo = now() + 9;
     if ('holiday' in b) {
@@ -1939,7 +1944,8 @@
     TX.s = Object.assign({}, ENG.text.state, {text: 'WELCOME TO THE PARTY'});
     TX.presets = [{name: 'HAPPY BIRTHDAY JACK', kind: 'text', text: 'HAPPY BIRTHDAY JACK *', mode: 'scroll', color: 'rainbow'}, {name: 'LETS DANCE', kind: 'text', text: 'LETS DANCE', mode: 'beat', color: 'look'}];
     FD.s = JSON.parse(JSON.stringify(FEEDS0));
-    S.effect = pickOne(CAT.looks[S.look].mid);
+    if (SHOWY) { M.queue = M.queue.filter(t => !CALM_LOOKS.concat(['Rock Arena']).includes(t.look) || t.look === 'Rock Arena'); M.queue = M.queue.filter(t => !['Silk', 'Jazz Club', 'Golden Porch', 'Deep Space'].includes(t.look)); M.idx = 0; S.pace = 'hype'; }
+    S.effect = pickOne(showyFx(CAT.looks[S.look].mid));
     BPM = songBpm(M.queue[M.idx]); M.posAt = now(); showsSeed(); pdSeed(); S.cameos = true;
     ['look-neon-party', 'live-storm'].forEach(loadClip);
     setInterval(tick, 250);
