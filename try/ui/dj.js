@@ -131,12 +131,12 @@
   const BUILD_SECS = 8;                                        // the wind-up peaks after 8 seconds (same as the engine)
   /* 🎲 one picker for builds and drops: One style | My mix (only the ones you tick) | Full random (default).
      Every build / drop picks again, never the same one twice in a row. */
-  function chooser(key, list) {
-    const S = GB.store, keys = list.map(x => x[0]);
+  function chooser(key, list, defMode = 'all', defStyle = null) {
+    const S = GB.store, keys = list.map(x => x[0]), dStyle = defStyle || keys[0];
     if (key === 'build' && S.get('gb_build_style', '') === 'auto') { S.set('gb_build_mode', 'all'); S.set('gb_build_style', 'rise'); }   // old "Auto"
     const C = {
-      mode: () => { const m = S.get('gb_' + key + '_mode', 'all'); return ['one', 'mix', 'all'].includes(m) ? m : 'all'; },
-      one: () => { const v = S.get('gb_' + key + '_style', keys[0]); return keys.includes(v) ? v : keys[0]; },
+      mode: () => { const m = S.get('gb_' + key + '_mode', defMode); return ['one', 'mix', 'all'].includes(m) ? m : defMode; },
+      one: () => { const v = S.get('gb_' + key + '_style', dStyle); return keys.includes(v) ? v : dStyle; },
       pool: () => { try { const p = JSON.parse(S.get('gb_' + key + '_pool', '') || 'null'); const q = Array.isArray(p) ? p.filter(k => keys.includes(k)) : []; return q.length ? q : keys.slice(); } catch (e) { return keys.slice(); } },
       last: null,
       pick() { const m = C.mode(); if (m === 'one') return C.one();
@@ -166,7 +166,7 @@
     };
     return C;
   }
-  const BUILD = chooser('build', BUILDS), DROP = chooser('drop', DROPS);
+  const BUILD = chooser('build', BUILDS, 'one', 'spin'), DROP = chooser('drop', DROPS);   // 🌀 builds default to Spin (Oct 16), drops stay Full random
   const buildStyle = () => BUILD.pick();
   const dropStyle = () => DROP.pick();
   GB.css(`

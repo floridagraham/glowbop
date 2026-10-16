@@ -1741,7 +1741,7 @@
           if (b.hit === 'blackout') DJ.black = 'on' in b ? !!b.on : !DJ.black;
           else if (b.hit && b.snap === false) djFire(b.hit, b.beats);     // ⚡ instant pads fire right now; snapped ones wait for the beat
           else if (b.hit) DJ.queue.push(b.hit);
-          if ('build' in b) { if (b.build && DJ.build == null) { DJ.build = t; const st = String(b.style || 'rise'); DJ.bstyle = st === 'auto' ? pickOne(BUILD_STYLES.filter(x => x !== DJ.bstyle)) : BUILD_STYLES.includes(st) ? st : 'rise'; } else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
+          if ('build' in b) { if (b.build && DJ.build == null) { DJ.build = t; const st = String(b.style || 'spin'); DJ.bstyle = st === 'auto' ? pickOne(BUILD_STYLES.filter(x => x !== DJ.bstyle)) : BUILD_STYLES.includes(st) ? st : 'spin'; } else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
           if ('cue' in b) DJ.cue = b.cue && CAT.looks[b.cue] ? b.cue : null;
           if (b.tap) { DJ.taps = DJ.taps.filter(x => t - x < 3).concat([t]);
             if (DJ.taps.length >= 3) { const iv = DJ.taps.slice(-8).map((x, i, a) => i ? x - a[i - 1] : 0).slice(1).filter(v => v > .25 && v < 1.5).sort((a, c) => a - c);

@@ -85,7 +85,7 @@
 
   // ------------------------------------------------------------------ data
   let DATA = null, loading = null;
-  const load = () => loading || (loading = fetch('/ui/guide_content.json?v=2').then(r => r.json()).then(d => (DATA = d)).catch(e => { loading = null; throw e; }));
+  const load = () => loading || (loading = fetch('/ui/guide_content.json?v=3').then(r => r.json()).then(d => (DATA = d)).catch(e => { loading = null; throw e; }));
   const secIdx = slug => DATA.findIndex(s => s.slug === slug);
 
   // ------------------------------------------------------------------ the window
