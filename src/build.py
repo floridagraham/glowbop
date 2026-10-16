@@ -228,7 +228,7 @@ home = f'''
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop.</p>
     <p class="lead" style="margin-top:-6px"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install.</p>
     {WORKS}
-    <div class="btns"><a class="btn primary herotry" href="#tryLive">🎛️ Play the live demo ↓</a><a class="btn" href="{WAIT}">✉️ Join the launch list</a></div>
+    <div class="btns"><a class="btn primary herotry" href="/try/?intro=1">🎛️ Play the live demo</a><a class="btn" href="{WAIT}">✉️ Join the launch list</a></div>
     <div class="stats"><div><b>300+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
   </div>
   <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><video class="gbv herov" src="/video/hero.mp4" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback aria-hidden="true"></video><span class="concept">Concept photo · real GlowBop patterns</span></figure>
