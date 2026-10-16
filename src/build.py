@@ -223,12 +223,12 @@ VOICE = f'''<section class="tight" id="voice"><div class="wrap center reveal">
   <p style="margin-top:16px"><a class="btn" href="/try/#setup">Hear them in the demo →</a></p></div></section>'''
 home = f'''
 <header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg.mp4" data-poster="/video/hero-bg.jpg" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback></video></div><div class="wrap">
-  <div>
+  <div class="herotext">
     <img class="herologo" src="/img/brand/glowbop-logo.webp" alt="GlowBop" width="880" height="233">
     <span class="pill">🎃 <b>Launching this Halloween</b> · 7-day free trial</span>
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop.</p>
-    <p class="lead" style="margin-top:-6px"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install.</p>
+    <p class="lead lead2" style="margin-top:-6px"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install.</p>
     {WORKS}
     <div class="btns"><a class="btn primary herotry" href="/try/?intro=1">🎛️ Play the live demo</a><a class="btn" href="{WAIT}">✉️ Join the launch list</a></div>
     <div class="stats"><div><b>300+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
@@ -246,6 +246,14 @@ home = f'''
 </div></section>
 
 <section class="alt"><div class="wrap">
+  <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
+  <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px">{reel('main', 'reelName')}
+  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
+  <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
+</div></section>
+
+<section class="tight"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--cyan)">Real screenshots</span><h2>One console, every screen</h2>
   <p class="lead">Scan a QR code and the console opens in your browser. The colored rail is grouped: <b>Perform</b> for music and DJ, <b>Visuals</b> for looks, scenes and fire, live feeds, sports and more, <b>Pro</b> for the Pro DJ tools, <b>System</b> for your lights and settings. Power and Brightness sit at the top of every page. On iPad it turns sideways into a big two-column board with the live wall on the left.</p></div>
   <div class="devices">
@@ -260,13 +268,6 @@ home = f'''
   </div>
 </div></section>
 
-<section class="tight"><div class="wrap">
-  <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
-  <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
-  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px">{reel('main', 'reelName')}
-  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
-  <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
-</div></section>
 
 <section class="alt"><div class="wrap">
   <div class="center reveal"><span class="eyebrow">How it works</span><h2>From box to light show in 5 minutes</h2>

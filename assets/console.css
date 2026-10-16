@@ -430,3 +430,16 @@ html,body{overflow-x:clip}
 .demo-dock b{animation:dockTri 3.2s ease-in-out infinite}
 @keyframes dockTri{0%,30%,62%,100%{border-left-color:var(--cyan)}42%,50%{border-left-color:var(--pink)}}
 @media(prefers-reduced-motion:reduce){.demo-dock span,.demo-dock b{animation:none}}
+
+/* 📱 phones + iPads (Oct 16): see the product working sooner. Headline, one short line, then the pool party video right away;
+   the buttons follow, and the "run the whole show" line, the works-with chips and the numbers move below them */
+@media(max-width:900px){
+  .hero{padding-top:20svh}
+  .hero .herotext{display:contents}
+  .hero .herologo{order:1}.hero .pill{order:2;justify-self:start}.hero h1{order:3}.hero .herotext>.lead:not(.lead2){order:4}
+  .hero .hero-shot{order:5;margin:4px 0 6px}
+  .hero .btns{order:6;margin-top:6px}
+  .hero .lead2{order:7;margin-top:6px!important}.hero .works{order:8}.hero .stats{order:9}
+  .hero .wrap{gap:14px}
+}
+@media(max-width:700px){.hero .stats{display:none}}   /* phones: the numbers live further down ("By the numbers"), so the demo comes sooner */

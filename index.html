@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=4">
-<link rel="stylesheet" href="/assets/console.css?v=29">
+<link rel="stylesheet" href="/assets/console.css?v=30">
 </head>
 <body>
 <header class="nav con-hd"><div class="wrap">
@@ -32,12 +32,12 @@
 </div></header>
 
 <header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg.mp4" data-poster="/video/hero-bg.jpg" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback></video></div><div class="wrap">
-  <div>
+  <div class="herotext">
     <img class="herologo" src="/img/brand/glowbop-logo.webp" alt="GlowBop" width="880" height="233">
     <span class="pill">🎃 <b>Launching this Halloween</b> · 7-day free trial</span>
     <h1>Your lights,<br><span class="grad">dancing to your music.</span></h1>
     <p class="lead">GlowBop turns LED curtain lights into a live light show that hears every beat, build-up and drop.</p>
-    <p class="lead" style="margin-top:-6px"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install.</p>
+    <p class="lead lead2" style="margin-top:-6px"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install.</p>
     <div class="works reveal"><span class="wk">Works with</span><a class="wb ok" href="/lights.html">Twinkly curtains <i>supported</i></a><a class="wb" href="/lights.html">WLED <i>testing</i></a><a class="wb" href="/lights.html">Govee <i>testing</i></a><a class="wb" href="/lights.html">DayBetter <i>testing</i></a><a class="wb" href="/lights.html">Bluetooth pixel curtains <i>testing</i></a><a class="wb soonx" href="/lights.html">xLights houses <i>coming</i></a><a class="wb more" href="/lights.html#soon">More on the way →</a></div>
     <div class="btns"><a class="btn primary herotry" href="/try/?intro=1">🎛️ Play the live demo</a><a class="btn" href="mailto:hello@glowbop.com?subject=GlowBop%20launch%20list&body=Hi!%20Add%20me%20to%20the%20GlowBop%20launch%20list.%0A%0AMy%20lights%3A%20">✉️ Join the launch list</a></div>
     <div class="stats"><div><b>300+</b>effects</div><div><b>44</b>live leagues</div><div><b>9</b>fire styles</div><div><b>8</b>arcade games</div><div><b>1–8</b>curtains</div></div>
@@ -63,6 +63,14 @@
 </div></section>
 
 <section class="alt"><div class="wrap">
+  <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
+  <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
+  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><video class="gbv" src="/video/reel-main.mp4" poster="/video/reel-main.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-label="GlowBop showreel" data-cues="[[0.0,&quot;Psychedelic&quot;],[3.8,&quot;Rainbow \u00b7 Cozy&quot;],[7.6,&quot;Hypnotic&quot;],[11.4,&quot;Rainbow Riot&quot;],[15.2,&quot;3D Depth&quot;],[19.0,&quot;Barber Spin&quot;],[22.8,&quot;Warehouse Rave&quot;],[26.6,&quot;PixelFireworks&quot;],[30.4,&quot;Dance Crew&quot;],[34.2,&quot;Retro Arcade&quot;],[38.0,&quot;Neon Party&quot;],[41.8,&quot;Wild Elements&quot;],[45.6,&quot;Chaos&quot;],[49.4,&quot;Hyperspace&quot;],[53.2,&quot;Toxic Rave&quot;],[57.0,&quot;Tesseract&quot;],[60.8,&quot;Live Fan \u00b7 Baseball&quot;],[64.6,&quot;NASCAR&quot;],[68.4,&quot;Live Fan \u00b7 Football&quot;],[72.2,&quot;Golf&quot;],[76.0,&quot;F1: new leader&quot;],[79.8,&quot;F1: chequered flag&quot;],[83.6,&quot;Midnight Galaxy&quot;],[87.4,&quot;Liquid Dreams&quot;],[91.2,&quot;Lava Lounge&quot;],[95.0,&quot;Serpent&quot;],[98.8,&quot;Royal Gold&quot;],[102.6,&quot;Wild Card&quot;],[106.4,&quot;Synthwave&quot;],[110.2,&quot;LaserWeb&quot;],[114.0,&quot;Spinning Globe&quot;],[117.8,&quot;Club Rig&quot;],[121.6,&quot;Big Wave&quot;],[125.4,&quot;Classic \u00b7 Roaring&quot;],[129.2,&quot;Volcano&quot;],[133.0,&quot;Studio 54&quot;]]" data-label="reelName"></video>
+  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
+  <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
+</div></section>
+
+<section class="tight"><div class="wrap">
   <div class="center reveal"><span class="eyebrow" style="--c:var(--cyan)">Real screenshots</span><h2>One console, every screen</h2>
   <p class="lead">Scan a QR code and the console opens in your browser. The colored rail is grouped: <b>Perform</b> for music and DJ, <b>Visuals</b> for looks, scenes and fire, live feeds, sports and more, <b>Pro</b> for the Pro DJ tools, <b>System</b> for your lights and settings. Power and Brightness sit at the top of every page. On iPad it turns sideways into a big two-column board with the live wall on the left.</p></div>
   <div class="devices">
@@ -77,13 +85,6 @@
   </div>
 </div></section>
 
-<section class="tight"><div class="wrap">
-  <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
-  <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
-  <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><video class="gbv" src="/video/reel-main.mp4" poster="/video/reel-main.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-label="GlowBop showreel" data-cues="[[0.0,&quot;Psychedelic&quot;],[3.8,&quot;Rainbow \u00b7 Cozy&quot;],[7.6,&quot;Hypnotic&quot;],[11.4,&quot;Rainbow Riot&quot;],[15.2,&quot;3D Depth&quot;],[19.0,&quot;Barber Spin&quot;],[22.8,&quot;Warehouse Rave&quot;],[26.6,&quot;PixelFireworks&quot;],[30.4,&quot;Dance Crew&quot;],[34.2,&quot;Retro Arcade&quot;],[38.0,&quot;Neon Party&quot;],[41.8,&quot;Wild Elements&quot;],[45.6,&quot;Chaos&quot;],[49.4,&quot;Hyperspace&quot;],[53.2,&quot;Toxic Rave&quot;],[57.0,&quot;Tesseract&quot;],[60.8,&quot;Live Fan \u00b7 Baseball&quot;],[64.6,&quot;NASCAR&quot;],[68.4,&quot;Live Fan \u00b7 Football&quot;],[72.2,&quot;Golf&quot;],[76.0,&quot;F1: new leader&quot;],[79.8,&quot;F1: chequered flag&quot;],[83.6,&quot;Midnight Galaxy&quot;],[87.4,&quot;Liquid Dreams&quot;],[91.2,&quot;Lava Lounge&quot;],[95.0,&quot;Serpent&quot;],[98.8,&quot;Royal Gold&quot;],[102.6,&quot;Wild Card&quot;],[106.4,&quot;Synthwave&quot;],[110.2,&quot;LaserWeb&quot;],[114.0,&quot;Spinning Globe&quot;],[117.8,&quot;Club Rig&quot;],[121.6,&quot;Big Wave&quot;],[125.4,&quot;Classic \u00b7 Roaring&quot;],[129.2,&quot;Volcano&quot;],[133.0,&quot;Studio 54&quot;]]" data-label="reelName"></video>
-  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
-  <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
-</div></section>
 
 <section class="alt"><div class="wrap">
   <div class="center reveal"><span class="eyebrow">How it works</span><h2>From box to light show in 5 minutes</h2>
