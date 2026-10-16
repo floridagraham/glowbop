@@ -443,3 +443,16 @@ html,body{overflow-x:clip}
   .hero .wrap{gap:14px}
 }
 @media(max-width:700px){.hero .stats{display:none}}   /* phones: the numbers live further down ("By the numbers"), so the demo comes sooner */
+/* 📲 upright iPads (two-row header): one DEMO only (the key in the row, no extra pill), keys sized to their words so nothing spills out */
+@media(min-width:700px) and (max-width:1040px){
+  .nav.con-hd .demo-m{display:none}
+  .nav.con-hd .cta{margin-left:auto}
+  .nav.con-hd ul li{flex:1 1 auto}
+  .nav.con-hd ul a{font-size:13px;letter-spacing:.5px;padding:0 7px 6px 6px;justify-content:flex-end;white-space:nowrap}
+  .nav.con-hd ul li:first-child a{padding-left:18px}
+}
+@media(min-width:880px) and (max-width:1040px){.nav.con-hd ul a{font-size:14px;letter-spacing:1px}}
+@media(min-width:700px) and (max-width:1040px){.nav.con-hd .demo-m + .cta{margin-left:auto}}
+/* wide screens: the whole row of keys slides right so Try free sits at the edge, wherever the keys end */
+@media(min-width:1041px){.nav.con-hd ul{margin-left:auto}.nav.con-hd .cta{margin-left:8px}}
+.nav.con-hd ul a.navdemo b{align-self:flex-end;margin-bottom:3px}
