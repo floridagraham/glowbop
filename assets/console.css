@@ -378,9 +378,11 @@ html,body{overflow-x:clip}
 
 .works .wb.soonx{border-color:var(--pink)} .works .wb.soonx i{color:var(--pink)}
 /* ▶ DEMO key in the top bar (right before Pricing): opens the full app with the power-on intro */
-.nav.con-hd ul a.navdemo{gap:5px;opacity:1;box-shadow:0 0 12px -3px var(--cyan);animation:demoGlow 2.6s ease-in-out infinite}
+.nav.con-hd ul a.navdemo{gap:5px;opacity:1;box-shadow:0 0 12px -3px var(--cyan);animation:demoFlash 3.2s steps(1,end) infinite}
+.nav.con-hd ul a.navdemo:hover{animation:none;background:#fff}
 .nav.con-hd ul a.navdemo b{font-size:.7em;line-height:1.3}
-@keyframes demoGlow{50%{box-shadow:0 0 20px 0 var(--cyan)}}
+/* 🚨 console alert blink: steady, then a quick double flash to white every few seconds */
+@keyframes demoFlash{0%,72%{background:var(--cyan);box-shadow:0 0 12px -3px var(--cyan)}76%{background:#fff;box-shadow:0 0 26px 2px #bff4ff}81%{background:var(--cyan);box-shadow:0 0 12px -3px var(--cyan)}86%{background:#fff;box-shadow:0 0 26px 2px #bff4ff}91%,100%{background:var(--cyan);box-shadow:0 0 14px -2px var(--cyan)}}
 @media(prefers-reduced-motion:reduce){.nav.con-hd ul a.navdemo{animation:none}}
 /* room for the 9th key: tuck the "Light show console" label sooner and slim the keys a little on mid-size screens */
 @media(min-width:1041px){.con-r .who{display:none}.con-r .row{padding-left:26px}}
