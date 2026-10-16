@@ -148,8 +148,8 @@
   }
 
   // ======================================================================= 🎧 DJ mode (same engine as the website's demo console)
-  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null, pfx: [], nfx: [], dstyle: 'random', lastDrop: '', coolLatch: false, coolUntil: 0, coolK: 0};
-  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, pfx: [], nfx: [], coolLatch: false, coolUntil: 0}); }
+  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null, pfx: [], nfx: [], dstyle: 'random', lastDrop: '', coolLatch: false, coolUntil: 0, coolK: 0, colorOn: false, colorCols: [], colorK: 0, colorPos: 0};
+  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, pfx: [], nfx: [], coolLatch: false, coolUntil: 0, colorOn: false}); }
   // 🎛️ the six one-shot pads (padfx.py): sweep, shockwave, color bomb, lightning, 3-2-1, heartbeat. Short overlays in the look's colours.
   const PAD_FX = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat', 'star'];
   const PAD_SECS = {sweep: .9, shockwave: 1.1, colorbomb: 1.2, lightning: .8, countdown: 2.4, heartbeat: 1.8, star: 1.3};
@@ -401,7 +401,7 @@
     if (DJ.black) buf.fill(0);
   }
   const djInfo = () => ({cue: DJ.cue, building: DJ.build != null, build_style: DJ.bstyle || 'rise', blackout: DJ.black, tap_bpm: DJ.tap_bpm ? Math.round(DJ.tap_bpm) : null,
-    queued: DJ.queue.slice(), strobing: now() < DJ.strobe, cool: coolOn(), cool_latched: DJ.coolLatch, cool_level: +DJ.coolK.toFixed(2)});
+    queued: DJ.queue.slice(), strobing: now() < DJ.strobe, cool: coolOn(), cool_latched: DJ.coolLatch, cool_level: +DJ.coolK.toFixed(2), color: DJ.colorOn, colors: DJ.colorCols.map(c => '#' + c.map(v => HEX[v]).join(''))});
   const coolOn = () => DJ.coolLatch || now() < DJ.coolUntil;
 
   // ======================================================================= 🔤 text + logo layer
@@ -1573,6 +1573,17 @@
 
   // ======================================================================= painting one frame
   let coolPrev = null; const coolTmp = new Float32Array(N * 3);
+  function colorPost(b, dt) {
+    const tg = DJ.colorOn && DJ.colorCols.length ? 1 : 0; DJ.colorK += (tg - DJ.colorK) * Math.min(1, dt * 3);
+    if (DJ.colorK < .01 && !tg) { DJ.colorK = 0; return; }
+    const K = DJ.colorK, cs = DJ.colorCols.length ? DJ.colorCols : [[255, 255, 255]], n = cs.length; DJ.colorPos = (DJ.colorPos + dt * .04) % 1;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, r = b[i], g = b[i + 1], bl = b[i + 2], mx = Math.max(r, g, bl), mn = Math.min(r, g, bl);
+      if (mx <= 0) continue; const sat = (mx - mn) / mx, d = Math.max(mx - mn, 1e-6);
+      let h = mx === r ? (((g - bl) / d) % 6 + 6) % 6 : mx === g ? (bl - r) / d + 2 : (r - g) / d + 4; h /= 6;
+      const w = clamp((sat - .12) / .2, 0, 1), u = ((h * w + (x / W * .6 + y / H * .25) * (1 - w) + DJ.colorPos) % 1 + 1) % 1;
+      let p = u * n, i0 = Math.floor(p) % n, f = clamp((p - Math.floor(p) - .7) / .3, 0, 1); f = f * f * (3 - 2 * f); const c0 = cs[i0], c1 = cs[(i0 + 1) % n], v = mx / 255;
+      for (let c = 0; c < 3; c++) b[i + c] = b[i + c] * (1 - K) + (c0[c] * (1 - f) + c1[c] * f) * v * K; }
+  }
   function coolPost(b, k) {
     const bk = .45 * k, dim = 1 - .4 * k, tr = .45 * k;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, u = y > 0 ? i - W * 3 : i, d = y < H - 1 ? i + W * 3 : i, l = x > 0 ? i - 3 : i, rr = x < W - 1 ? i + 3 : i;
@@ -1616,7 +1627,9 @@
     const want = (S.sparkles === 'lots' ? .012 : S.sparkles === 'auto' && si.name === 'drop' ? .004 : 0) * (1 - ck);
     for (let i = 0; i < N; i++) { if (want && R() < want) spk[i] = 1; if (spk[i] > .02) { const v = spk[i] * 255; buf[i * 3] = Math.max(buf[i * 3], v); buf[i * 3 + 1] = Math.max(buf[i * 3 + 1], v); buf[i * 3 + 2] = Math.max(buf[i * 3 + 2], v); spk[i] *= Math.pow(.004, vdt); } else spk[i] = 0; }
     if (S.power) djApply(buf, t, vdt);
-    if (ck > 0) coolPost(buf, ck); else coolPrev = null;                                  // 🌙 softer, dimmer, light trails
+    if (ck > 0) coolPost(buf, ck); else coolPrev = null;
+    colorPost(buf, dt);                                             // 🎨 the whole wall in the picked colours
+                                     // 🌙 softer, dimmer, light trails
     if (!busy) { cueText(buf, SH.act, t); cueText(buf, LP.act, t); if (SH.act.blackout || LP.act.blackout) buf.fill(0); }
     fadersLook(buf, t, busy);                                       // 🎚️ trails, colour, white, strobe
     if (SH.ok && !busy && SH.mult !== 1) for (let i = 0; i < buf.length; i++) buf[i] *= SH.mult;   // 🎬 the show's brightness curve
@@ -1895,6 +1908,8 @@
               if (iv.length >= 2) DJ.tap_bpm = clamp(60 / iv[iv.length >> 1], 60, 200); } }
           if (b.tap_off) { DJ.tap_bpm = null; DJ.taps = []; }
           if (b.say) { const w = String(b.say).toUpperCase().slice(0, 40).trim(); if (w) DJ.word = {w, t0: t}; }
+          if (Array.isArray(b.colors)) { const cs = b.colors.slice(0, 4).map(c => String(c).trim().replace('#', '')).filter(h => /^[0-9a-f]{6}$/i.test(h)).map(h => [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16))); if (cs.length) DJ.colorCols = cs; }   // 🎨 colour key
+          if ('color' in b) DJ.colorOn = !!b.color && DJ.colorCols.length > 0;
           if ('cool' in b) { if (b.cool) { if (b.latch) DJ.coolLatch = true; else DJ.coolUntil = t + clamp(num(b.ttl, 1.5), .3, 5); } else { DJ.coolLatch = false; DJ.coolUntil = 0; } }   // 🌙 cool down
           if (b.reset) djReset();
           return ok(); }

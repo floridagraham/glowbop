@@ -271,6 +271,62 @@
     GB.on('status', s => { const d = s.dj || {}; if (down) return; latched = !!d.cool_latched; show(!!d.cool, latched); });
   });
 
+  // ------------------------------------------------------------------ 🎨 colour key (Oct 16): pick up to 4 colours, tap to latch the whole show into them
+  GB.css(`
+  .djc-dots { display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 12px; }
+  .djc-dot { width:calc(44px * var(--fs, 1)); height:calc(44px * var(--fs, 1)); border-radius:50%; border:3px solid #ffffff22; background:var(--d); position:relative; padding:0; cursor:pointer; box-shadow:0 0 0 0 var(--d); transition:transform .15s, box-shadow .2s, border-color .2s; }
+  .djc-dot.on { border-color:#fff; box-shadow:0 0 16px var(--d); transform:scale(1.08); }
+  .djc-dot.on::after { content:attr(data-n); position:absolute; right:-6px; top:-6px; width:20px; height:20px; border-radius:50%; background:#fff; color:#000; font:800 12px/20px var(--mono); text-align:center; }
+  .djc-dot.more { background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red); }
+  .djc-dot.more input { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
+  #djColor { min-height:76px; font-size:calc(22px * var(--fs, 1)); letter-spacing:3px; transition:background .4s, color .4s, box-shadow .4s; }
+  #djColor.on { background:var(--grad); color:#000; box-shadow:0 0 34px #ffffff55; text-shadow:0 0 6px #fff8; }
+  .djc-mine { display:flex; gap:6px; align-items:center; font:700 calc(12px * var(--fs, 1)) var(--mono); color:var(--dim); }
+  .djc-mine i { width:16px; height:16px; border-radius:50%; background:var(--d); display:inline-block; }
+  `);
+  const DOTS = ['#ff1a1a', '#ff7a1a', '#ffcc00', '#2bff4a', '#1ad9ff', '#2b4dff', '#9b3dff', '#ff3dc8'];
+  GB.panel('dj', 6, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--orange)');
+    let pick = []; try { pick = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 4); } catch (_) {}
+    if (!pick.length) pick = ['#ff1a1a'];
+    let latched = false;
+    el.innerHTML = `<div class="ph"><span>Color</span><span class="r" id="djColorR">PICK UP TO 4, THEN TAP</span></div>
+      <div class="djc-dots" id="djcDots"></div>
+      <button class="btn c wide" id="djColor" style="--c:var(--orange)">🎨 COLOR LOCK</button>
+      <p class="note">Pick 1 to 4 colors, then tap the key: everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on. The rainbow dot picks any color you like.</p>`;
+    const dots = el.querySelector('#djcDots'), key = el.querySelector('#djColor');
+    const save = () => { try { localStorage.setItem('gb_dj_colors', JSON.stringify(pick)); } catch (_) {} };
+    const grad = () => pick.length > 1 ? `linear-gradient(90deg,${pick.join(',')})` : pick[0];
+    const paint = () => {
+      dots.querySelectorAll('.djc-dot[data-c]').forEach(d => { const i = pick.indexOf(d.dataset.c); d.classList.toggle('on', i >= 0); d.dataset.n = i >= 0 ? i + 1 : ''; });
+      key.style.setProperty('--grad', grad()); key.classList.toggle('on', latched);
+      key.textContent = latched ? '🎨 LOCKED · TAP TO RELEASE' : '🎨 COLOR LOCK';
+      $('djColorR').textContent = latched ? 'LOCKED: ' + pick.length + (pick.length > 1 ? ' COLORS' : ' COLOR') : pick.length ? pick.length + ' PICKED · TAP TO LOCK' : 'PICK UP TO 4, THEN TAP';
+    };
+    const send = () => { if (latched) dj({colors: pick}); };
+    const toggle = c => {
+      const i = pick.indexOf(c);
+      if (i >= 0) { if (pick.length > 1) pick.splice(i, 1); }
+      else { if (pick.length >= 4) pick.shift(); pick.push(c); }
+      save(); render(); send();
+    };
+    const render = () => {
+      const all = DOTS.concat(pick.filter(c => !DOTS.includes(c)));
+      dots.innerHTML = all.map(c => `<button class="djc-dot" data-c="${c}" style="--d:${c}" aria-label="Color ${c}"></button>`).join('') +
+        `<label class="djc-dot more" title="Any color"><input type="color" value="${pick[pick.length - 1] || '#ff1a1a'}" aria-label="Pick any color"></label>`;
+      dots.querySelectorAll('.djc-dot[data-c]').forEach(d => d.onclick = () => { toggle(d.dataset.c); GB.sfx && GB.sfx('tap'); });
+      dots.querySelector('input').addEventListener('change', e => toggle(e.target.value.toLowerCase()));
+      paint();
+    };
+    render();
+    key.onclick = async () => {
+      latched = !latched; paint(); GB.sfx && GB.sfx('tap');
+      if (latched) { await dj({colors: pick, color: true}); GB.toast && GB.toast('🎨 Color locked. Tap again to go back to the full show'); }
+      else { await dj({color: false}); GB.toast && GB.toast('🌈 Back to the full show'); }
+    };
+    GB.on('status', s => { const d = s.dj || {}; if (typeof d.color === 'boolean' && d.color !== latched) { latched = d.color; paint(); } });
+  });
+
   GB.panel('dj', 30, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
     el.innerHTML = `<div class="ph"><span>Tap tempo</span><span class="r" id="djTapR">FOLLOWING THE MUSIC</span></div>
