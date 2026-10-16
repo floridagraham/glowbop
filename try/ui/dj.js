@@ -397,6 +397,25 @@
     const tr = $('djTapR'); if (tr) tr.textContent = d.tap_bpm ? 'LOCKED TO YOUR TAPS' : 'FOLLOWING THE MUSIC';
     const au = $('djAuto'); if (au) au.hidden = !d.tap_bpm;
   });
+  /* 🎛️ one key style everywhere (Oct 16, Graham): hit pads and the look/effect skip keys now match the Pro keys under the wall:
+     a solid colored key, a small line icon on top, the name underneath. Same on DJ, Pro DJ and the Live Board. */
+  GB.css(`
+  .dj-pads { grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)) !important; gap:6px; }
+  .dj-pads .tile { background:var(--c) !important; color:#000 !important; border:0 !important; border-radius:999px !important; min-height:58px !important; padding:4px 4px !important;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font:700 calc(12px * var(--fs, 1))/1.05 var(--cond) !important; letter-spacing:1px; text-transform:uppercase; box-shadow:none !important; }
+  .dj-pads .tile::before { display:none !important; }
+  .dj-pads .tile .em { font-size:inherit !important; filter:none !important; line-height:1; }
+  .dj-pads .tile .em .ic, .dj-pads .tile .em svg { width:calc(22px * var(--fs, 1)); height:calc(22px * var(--fs, 1)); fill:currentColor; color:#000; }
+  .dj-pads .tile .nm { color:#000 !important; text-shadow:none !important; font-weight:700; }
+  .dj-pads .tile:hover { filter:brightness(1.12); }
+  .dj-pads .tile.hit { filter:brightness(1.8); }
+  .dj-pads .tile.on { box-shadow:0 0 18px var(--c) !important; outline:2px solid #fff; }
+  .dj-skip .btn { background:var(--c); color:#000; border:0; border-radius:999px; }
+  .dj-skip .btn .sk { background:transparent; color:#000; box-shadow:none; width:auto; height:auto; }
+  .dj-skip .btn .sk svg, .dj-skip .btn .ir > svg { fill:currentColor; }
+  .dj-skip .btn.hit { filter:brightness(1.8); box-shadow:0 0 18px var(--c); }
+  .dj-skip .btn.hit .sk { background:transparent; color:#000; }
+  `);
   // shared with prodj.js (the Pro DJ keys under the wall)
   GB.djHit = hit; GB.djPost = dj; GB.DJ_PADS = PADS;
 })();
