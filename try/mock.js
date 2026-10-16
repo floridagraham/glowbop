@@ -303,7 +303,9 @@
   function djFire(a, beats, cue) {
     const P = DJ.parts;
     if (a === 'drop') {
-      let st = DJ.dstyle || 'random'; if (st === 'random' || !(st === 'classic' || DROP_FX.includes(st))) st = pickOne(DROP_FX.filter(x => x !== DJ.lastDrop)); DJ.lastDrop = st;
+      let st = DJ.dstyle || 'random'; if (st === 'random' || !(st === 'classic' || DROP_FX.includes(st))) st = pickOne(DROP_FX.filter(x => x !== DJ.lastDrop));
+      const FIRST_DROPS = ['supernova', 'starburst', 'shatter'];   // 💥 the demo's first three drops are the big, beautiful ones (explosion first), then random
+      DJ.dropN = (DJ.dropN || 0) + 1; if (DJ.dropN <= FIRST_DROPS.length) st = FIRST_DROPS[DJ.dropN - 1]; DJ.lastDrop = st;
       DJ.black = false;
       if (st !== 'classic') { if (st === 'lightning') { padStart('lightning'); DJ.flash = .6; } else nStart('drop_' + st); }
       else { DJ.flash = 1; DJ.rings.push({x: W / 2, y: H / 2, r: 0, c: [255, 255, 255]}); }
@@ -1941,7 +1943,8 @@
       set(v) { if (/^\/api\/qr\.svg/.test(String(v))) v = QR; else if (/^\/api\//.test(String(v))) v = ''; d.set.call(this, v); }}); } catch (e) {}
 
   window.__demoWall = () => ({clip: lastSrc.clip || lastSrc.kind || '', label: lastSrc.label || ''});   // handy for tests
-  window.__demoPads = () => DJ.pfx.map(p => p.k);                                                       // one-shot pads on the wall right now (tests)
+  window.__demoPads = () => DJ.pfx.map(p => p.k);
+  window.__demoLastDrop = () => DJ.lastDrop;                                                              // which drop style just played (tests)                                                       // one-shot pads on the wall right now (tests)
 
   // ======================================================================= start
   function boot() {
