@@ -392,4 +392,6 @@
     const tr = $('djTapR'); if (tr) tr.textContent = d.tap_bpm ? 'LOCKED TO YOUR TAPS' : 'FOLLOWING THE MUSIC';
     const au = $('djAuto'); if (au) au.hidden = !d.tap_bpm;
   });
+  // shared with prodj.js (the Pro DJ keys under the wall)
+  GB.djHit = hit; GB.djPost = dj; GB.DJ_PADS = PADS;
 })();
