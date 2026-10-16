@@ -37,7 +37,7 @@
   #pdArr { min-height:56px; }
   /* ---- the 6 Pro keys under the wall */
   #proKeys { display:none; grid-template-columns:repeat(6, minmax(0,1fr)) auto; gap:6px; }
-  html.prodj #proKeys { display:grid; }
+  #proKeysBox { display:none; } html.prodj #proKeysBox { display:flex; } html.prodj #proKeys { display:grid; }
   html.prodj #view .seg { display:none; }
   #proKeys .btn { min-height:58px; padding:4px 2px; flex-direction:column; gap:2px; font-size:calc(12px * var(--fs, 1)); letter-spacing:1px; line-height:1.05; touch-action:none; user-select:none; -webkit-user-select:none; }
   #proKeys .btn .pe { font-size:calc(20px * var(--fs, 1)); line-height:1; }
@@ -190,8 +190,10 @@
   const DEF = ['blackout', 'strobe', 'cool', 'color', 'lookn', 'tap'];
   const keysNow = () => { let k = []; try { k = JSON.parse(S.get('gb_prokeys') || '[]'); } catch (e) {} return DEF.map((d, i) => ACT[k[i]] ? k[i] : d); };
   function buildKeys() {
-    const seg = document.querySelector('#view .seg'); if (!seg || $('proKeys')) return;
-    const row = document.createElement('div'); row.id = 'proKeys'; seg.after(row); paintKeys();
+    const wall = document.querySelector('#view > .panel'); if (!wall || $('proKeys')) return;
+    // the Pro keys live in their own box (not inside the wall's box), so Arrange can move them and the wall separately
+    const box = document.createElement('div'); box.className = 'panel'; box.id = 'proKeysBox';
+    const row = document.createElement('div'); row.id = 'proKeys'; box.appendChild(row); wall.after(box); paintKeys();
   }
   function paintKeys() {
     const row = $('proKeys'); if (!row) return;
@@ -250,7 +252,7 @@
   function items() {
     const pg = $('pg-' + GB.page); if (!pg) return [];
     const view = $('view'), out = [];
-    const v = [[view.querySelector(':scope > .panel:not(.reads-panel)'), 'v:wall'], [view.querySelector(':scope > .modebar'), 'v:mode'], [view.querySelector(':scope > .reads-panel'), 'v:reads']];
+    const v = [[view.querySelector(':scope > .panel:not(.reads-panel):not(#proKeysBox)'), 'v:wall'], [$('proKeysBox'), 'v:keys'], [view.querySelector(':scope > .modebar'), 'v:mode'], [view.querySelector(':scope > .reads-panel'), 'v:reads']];
     v.forEach(([el, id]) => { if (el) { el.dataset.lk = id; out.push(el); } });
     let n = 0;
     [...pg.children].forEach(el => { if (!el.classList.contains('panel')) return; if (el.hidden || el.id === 'pdPanel' && false) return;
@@ -281,7 +283,8 @@
     $('layFab') && $('layFab').classList.toggle('show', !!k && GB.page !== 'dj');   // DJ has its own ARRANGE key in the Pro DJ box
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
     const list = items(); const LL = L || measure(list);
-    // new boxes (not in the saved layout yet) go underneath everything
+    // the Pro keys box (new) starts right under the wall; any other new box goes underneath everything
+    if (!LL['v:keys'] && LL['v:wall'] && $('proKeysBox') && isOn()) { const w = LL['v:wall']; LL['v:keys'] = {x: w.x, y: w.y + w.h, w: w.w, h: 10}; settle(LL, 'v:keys'); }
     let bottom = Math.max(0, ...Object.values(LL).map(p => p.y + p.h));
     list.forEach(el => { if (!LL[el.dataset.lk]) { LL[el.dataset.lk] = {x: 0, y: bottom, w: 24, h: 30}; bottom += 30; } });
     clearLay(); $('main').classList.add('lay');
@@ -300,7 +303,7 @@
   function handles() {
     document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove());
     document.querySelectorAll('#main .lay-it').forEach(el => {
-      const id = el.dataset.lk, ph = el.querySelector('.ph span, .ph'), name = id === 'v:wall' ? 'Live wall' : id === 'v:mode' ? 'Now playing' : id === 'v:reads' ? 'Tempo & look' : id === 'pdPanel' ? 'Pro DJ switch' : (ph ? ph.textContent.trim().split('\n')[0] : 'Box');
+      const id = el.dataset.lk, ph = el.querySelector('.ph .gb-ihold > span') || el.querySelector('.ph > span:not(.r)') || el.querySelector('.ph'), name = id === 'v:wall' ? 'Live wall' : id === 'v:mode' ? 'Now playing' : id === 'v:reads' ? 'Tempo & look' : id === 'v:keys' ? 'Pro keys' : id === 'pdPanel' ? 'Pro DJ switch' : (ph ? ph.textContent.trim().split('\n')[0] : 'Box');
       const h = document.createElement('div'); h.className = 'lay-hand'; h.innerHTML = '<span>⠿ ' + GB.esc(name.slice(0, 40)) + '</span>';
       const g = document.createElement('div'); g.className = 'lay-grip'; g.setAttribute('aria-label', 'Resize');
       el.appendChild(h); el.appendChild(g);
