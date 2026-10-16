@@ -310,16 +310,12 @@
   // ------------------------------------------------------------- pages + rail
   // the rail, by how often you reach for it: PERFORM (the home screen + playing by hand), VISUALS (everyday looks, most used
   // first), PRO (the Pro DJ tools, or one gold tour key on Home), SYSTEM (lights + app, mostly one-time setup) at the bottom.
+  // rail order (Oct 16, Graham): MUSIC, DJ, TEXT, then the Pro tabs (PRO DJ, PRO HOME, SHOWS, LOOPS+CUES, LIVE BOARD, OVERRIDE),
+  // then HOLIDAY, SPORTS, LIVE, LOOKS, SCENES, GAMES, then LIGHTS and SETUP.
   const PAGES = GB.PAGES = [
     {id: 'music', label: 'MUSIC', c: 'var(--cyan)', big: 2, g: 'perform'},   // Oct 16: GlowBop cyan (Graham)
-    {id: 'dj', label: 'DJ', c: 'var(--violet)', g: 'perform'},     // Oct 16: GlowBop purple
-    {id: 'looks', label: 'LOOKS', c: 'var(--amber)', g: 'visuals'},
-    {id: 'scenes', label: 'SCENES', c: 'var(--lav)', g: 'visuals'},            // 🔥 the fireplace lives here now
-    {id: 'feeds', label: 'LIVE', c: 'var(--green)', g: 'visuals'},
-    {id: 'score', label: 'SPORTS', c: 'var(--violet)', g: 'visuals'},          // team scores + golf, racing, tennis, UFC boards
-    {id: 'text', label: 'TEXT', c: 'var(--gold)', g: 'visuals'},
-    {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},         // moves up next to LOOKS when a holiday is close (seasonRail)
-    {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
+    {id: 'dj', label: 'DJ', c: 'var(--pink)', g: 'perform'},       // Oct 16: GlowBop pink (Graham)
+    {id: 'text', label: 'TEXT', c: 'var(--gold)', g: 'perform'},
     {id: 'home', label: 'PRO HOME', c: '#ffb23d', pro: true, g: 'pro'},           // 🏠 Pro Home control center (prohome.js): its rail key shows only in Pro Home mode
     {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'pro'},
     {id: 'autoloops', label: 'LOOPS+CUES', c: '#3fb6ff', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
@@ -327,6 +323,12 @@
     {id: 'board', label: 'LIVE BOARD', c: '#4de8c8', pro: true, g: 'pro'},     // 🎚️🔁 Fader board + Loop banks
     {id: 'ops', label: 'OVERRIDE', c: '#ff5c7a', pro: true, g: 'pro'},
     {id: 'pro', label: 'PRO', c: 'var(--gold)', home: true, g: 'pro', ic: 'sparkle'},   // ✨ Home: the Pro DJ tour
+    {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},         // moves up next to LOOKS when a holiday is close (seasonRail)
+    {id: 'score', label: 'SPORTS', c: 'var(--violet)', g: 'visuals'},          // team scores + golf, racing, tennis, UFC boards
+    {id: 'feeds', label: 'LIVE', c: 'var(--green)', g: 'visuals'},
+    {id: 'looks', label: 'LOOKS', c: 'var(--amber)', g: 'visuals'},
+    {id: 'scenes', label: 'SCENES', c: 'var(--lav)', g: 'visuals'},            // 🔥 the fireplace lives here now
+    {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
     {id: 'lights', label: 'LIGHTS', c: 'var(--peri)', g: 'system'},
     {id: 'setup', label: 'SETUP', c: 'var(--dim)', g: 'system'},
   ];
@@ -387,6 +389,7 @@
 
   // 🎃 seasonal: when one of your holidays is on or within 10 days, HOLIDAY moves up next to LOOKS (back to its spot after)
   function seasonRail(cat) {
+    return;                                                        // (Oct 16) HOLIDAY sits at the top of the visuals now, so it no longer moves
     const rail = $('rail'), hb = rail && rail.querySelector('button[data-p=holiday]'), looks = rail && rail.querySelector('button[data-p=looks]');
     const home = rail && rail.querySelector('button[data-p=games]'); if (!hb || !looks || !home) return;
     const c = cat && cat.holiday_cal, info = (c && !c.error && c.info) || {};
