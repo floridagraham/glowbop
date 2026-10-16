@@ -29,11 +29,14 @@
   #gbIntro.big svg{transform:scale(1.06);transition:transform .35s cubic-bezier(.2,1.5,.35,1)}
   #gbIntro.settle svg{transform:scale(1);transition:transform 1.2s ease}
   #gbIntro circle{transition:fill .12s,r .12s,opacity .12s}
-  #gbIntro .tap{font:700 20px/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.32em;padding-left:.32em;color:#33d6ff;text-shadow:0 0 12px rgba(51,214,255,.55);opacity:.85;animation:gbiP 1.6s ease-in-out infinite;text-transform:uppercase}
+  #gbIntro .tap{font:800 clamp(30px,8vw,46px)/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.22em;padding-left:.22em;color:#ff3d9a;animation:gbiT 1.6s ease-in-out infinite;text-transform:uppercase}   /* 🔘 TAP above the logo, TO START below: the logo is the on button */
+  @keyframes gbiT{50%{opacity:.72;transform:scale(.97)}}
   #gbIntro.go .tap{visibility:hidden}
   #gbIntro .snd{position:absolute;left:0;right:0;bottom:calc(36px + env(safe-area-inset-bottom));text-align:center;font:700 16px/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.3em;padding-left:.3em;color:#33d6ff;text-transform:uppercase;opacity:.9;transition:opacity .3s;animation:gbiP 1.6s ease-in-out infinite}
   #gbIntro.bgout .snd{opacity:0}
-  #gbIntro .tap,#gbIntro .word,#gbIntro .snd{text-shadow:0 0 6px #000,0 0 14px #000,0 0 24px #000,0 2px 3px #000}   /* readable over the grey console */
+  #gbIntro .lbl{display:grid;place-items:center}#gbIntro .lbl>*{grid-area:1/1}   /* GLOWBOP takes the place of TO START once it boots */
+  #gbIntro .word,#gbIntro .snd{text-shadow:0 0 6px #000,0 0 14px #000,0 0 24px #000,0 2px 3px #000}
+  #gbIntro .tap{text-shadow:0 0 2px #000,0 0 10px #000,0 0 22px rgba(255,61,154,.75),0 2px 3px #000}   /* readable over the grey console */
   #gbIntro .word{font:800 24px/1 'Saira Condensed','Arial Narrow',sans-serif;padding-left:.5em;letter-spacing:.5em;color:#fff;opacity:0;transition:opacity .6s}
   #gbIntro.big .word{opacity:.9}
   @keyframes gbiP{50%{opacity:.35}}
@@ -84,8 +87,8 @@
     const el = document.createElement('div'); el.id = 'gbIntro'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'GlowBop');
     let c = '';
     M.forEach((row, r) => row.forEach((col, k) => { c += `<circle cx="${9 + k * 13}" cy="${9 + r * 13}" r="4.6" fill="${col}" data-r="${r}" data-c="${k}" opacity="${col === D ? 1 : .14}"/>`; }));
-    el.innerHTML = `<div class="lgw"><div class="buzz"><svg viewBox="0 0 96 96" aria-hidden="true"><defs><filter id="gbiG" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#gbiG)">${c}</g></svg></div></div>
-      <div class="word">GLOWBOP</div><div class="tap">Tap to start</div>`;
+    el.innerHTML = `<div class="tap">Tap</div><div class="lgw"><div class="buzz"><svg viewBox="0 0 96 96" aria-hidden="true"><defs><filter id="gbiG" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#gbiG)">${c}</g></svg></div></div>
+      <div class="lbl"><div class="word">GLOWBOP</div><div class="tap">to start</div></div>`;
     document.body.appendChild(el);
     requestAnimationFrame(() => H.classList.remove('gbi-pre')); setTimeout(() => H.classList.remove('gbi-pre'), 120);   // the intro covers the screen now: let the console render behind it
     const dot = (r, k) => el.querySelector(`circle[data-r="${r}"][data-c="${k}"]`);
@@ -238,7 +241,7 @@
     // sound: start by itself when the browser allows audio, otherwise wait for the tap
     // 🌐 website demo: no "Tap to start", it plays straight away (with sound if the browser allows it, silent if not)
     const AUTO = !!(window.__demoUnhandled || window.GB_INTRO_AUTO);
-    if (AUTO) { const tp = el.querySelector('.tap'); if (tp) tp.style.display = 'none';
+    if (AUTO) { el.querySelectorAll('.tap').forEach(tp => tp.style.display = 'none');
       if (mode === 'sound') { const sn = document.createElement('div'); sn.className = 'snd'; sn.textContent = 'Tap for sound'; el.appendChild(sn); } }
     prime().then(() => { if (ctx && ctx.state === 'running' && buf) setTimeout(() => run(true), 150); else if (AUTO) setTimeout(() => run(false), 150); });
     if (AUTO) setTimeout(() => { if (!started) run(false); }, 1200);   // a phone can leave the audio check hanging: don't wait for it
