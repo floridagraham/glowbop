@@ -138,11 +138,14 @@
   // 🔊 Pro DJ power-up: a deep thump, a rising synth sweep, then a bright chord as the keys flicker on (off: a soft power-down sweep).
   // Made live with Web Audio, no sound files. Follows the SFX key (muted = silent).
   let actx = null;
-  function proSound(on) {
-    if (S.get('gb_sfx', '1') !== '1') return;
+  function proSound(on, offline) {
+    if (!offline && S.get('gb_sfx', '1') !== '1') return;
     try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
-      const C = actx, t = C.currentTime + 0.02, out = C.createGain(); out.gain.value = 0.55; out.connect(C.destination);
+      let C = offline;
+      if (!C) { actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+        if (actx.state !== 'running') { const go = () => proSound(on, actx); actx.resume().then(go, go); return; }   // wake the speakers first (iPhone / iPad / Windows app)
+        C = actx; }
+      const t = (offline && offline !== actx ? 0 : C.currentTime) + 0.03, out = C.createGain(); out.gain.value = 0.8; out.connect(C.destination);
       const env = (g, a, peak, d, at) => { g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + a); g.gain.exponentialRampToValueAtTime(0.0001, at + a + d); };
       const osc = (type, f, at, dur, peak, a, dest) => { const o = C.createOscillator(), g = C.createGain(); o.type = type; o.frequency.setValueAtTime(f, at);
         env(g, a, peak, dur, at); o.connect(g); g.connect(dest || out); o.start(at); o.stop(at + a + dur + 0.05); return o; };
@@ -159,6 +162,7 @@
       }
     } catch (e) {}
   }
+  GB.proSound = proSound;                         // GB.proSound(true) to hear it
   function setOn(on, animate) {
     if (on && GB.pro !== true) return;
     S.set('gb_prodj', on ? '1' : '0');
