@@ -21,7 +21,6 @@
   html.prohome #pg-home > .panel.box:nth-of-type(4n+2) { --c:#ff9f5a !important; }
   html.prohome #pg-home > .panel.box:nth-of-type(4n+3) { --c:#ffd21a !important; }
   html.prohome #pg-home > .panel.box:nth-of-type(4n+4) { --c:#4de8c8 !important; }
-  html:not(.prohome) #rail button[data-p=home] { display:none !important; }
   #rail button[data-p=home] { background:#ffb23d; }
   /* ---- header key */
   #phHd { min-height:40px; margin-right:6px; gap:6px; } #phHd .ic { width:18px; height:18px; fill:currentColor; }
@@ -182,6 +181,8 @@
 
   // ================================================================ on / off
   function railMove(on, animate) {
+    const b0 = document.querySelector('#rail button[data-p=home]'); if (b0 && on && animate) { b0.classList.add('gbi-off'); setTimeout(() => { b0.classList.remove('gbi-off'); b0.classList.add('gbi-boot'); setTimeout(() => b0.classList.remove('gbi-boot'), 760); }, 500); }
+    return;                                         // (Oct 16) the tab keeps its place under PRO DJ
     const rail = $('rail'), b = rail && rail.querySelector('button[data-p=home]'), sep = rail && rail.querySelector('.rail-sep[data-g=pro]'); if (!b || !sep) return;
     if (sep.nextElementSibling !== b) sep.after(b);
     if (on && animate) { b.classList.add('gbi-off'); setTimeout(() => { b.classList.remove('gbi-off'); b.classList.add('gbi-boot'); setTimeout(() => b.classList.remove('gbi-boot'), 760); }, 500); }
@@ -190,33 +191,29 @@
     document.documentElement.classList.toggle('prohome', !!on);
     railMove(on, animate); headerKey();
     borrow(!!on && GB.page === 'home');
-    if (on && GB.page !== 'home') GB.go('home');
-    if (!on && GB.page === 'home') GB.go('music');
     if (on) load();
   }
   function setOn(on, animate) {
     if (on && GB.pro !== true) return;
-    if (on && GB.proDJ && GB.proDJ.isOn()) GB.proDJ.setOn(false, false);          // one Pro mode at a time
     S.set('gb_prohome', on ? '1' : '0');
     if (animate) { chime(on); GB.toast(on ? '🏠 Pro Home on' : 'Back to the regular console'); }
     if (animate && GB.proDJ) GB.proDJ.flicker(() => apply(on, true)); else apply(on, animate);
   }
+  // 🏠 PRO HOME is a rail tab (Oct 16): tap it and the console powers up into Pro Home; leave the page and it's the regular console.
+  // Without Pro the tab stays grey and doesn't power on.
   function headerKey() {
-    const line = document.querySelector('#hd .line'); if (!line) return;
-    let b = $('phHd');
-    if (!b) { b = document.createElement('button'); b.id = 'phHd'; b.className = 'btn sm c'; b.style.setProperty('--c', '#ffb23d'); b.onclick = () => setOn(!isOn(), true); }
-    const after = $('pdHd') || $('gbGuideBtn');
-    if (after) { if (after.nextSibling !== b) after.after(b); } else if (!b.parentElement) line.insertBefore(b, $('sfx'));
-    const on = isOn(); b.hidden = GB.pro !== true;
-    b.innerHTML = GB.svg('home') + '<span class="pl">' + (on ? 'EXIT PRO HOME' : 'ACTIVATE PRO HOME') + '</span><span class="ps">' + (on ? 'EXIT HOME' : 'PRO HOME') + '</span>';
-    b.setAttribute('aria-label', on ? 'Exit Pro Home mode' : 'Activate Pro Home mode'); b.classList.toggle('on', on);
+    const old = $('phHd'); if (old) old.remove();
+    const b = document.querySelector('#rail button[data-p=home]'); if (!b) return;
+    const after = $('pdTab') || document.querySelector('#rail .rail-sep[data-g=pro]');
+    if (after && after.nextElementSibling !== b) after.after(b);
+    b.hidden = GB.pro == null; b.classList.toggle('locked', GB.pro === false);
+    b.onclick = () => { if (GB.pro !== true) { GB.proLockedTap ? GB.proLockedTap(b, 'Pro Home') : GB.go('pro'); return; } GB.go('home'); };
   }
-
-  GB.on('ready', () => { headerKey(); setTimeout(headerKey, 600); if (isOn()) apply(true, false); });
-  GB.on('pro', v => { headerKey(); if (!v) document.documentElement.classList.remove('prohome'); else if (isOn()) apply(true, false); });
-  GB.on('page', id => { borrow(isOn() && id === 'home'); if (id === 'home') load(); });
-  // Pro DJ switched on: Pro Home steps aside
-  const mo = new MutationObserver(() => { if (document.documentElement.classList.contains('prodj') && isOn()) { S.set('gb_prohome', '0'); document.documentElement.classList.remove('prohome'); headerKey(); } });
-  mo.observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
+  GB.on('ready', () => { headerKey(); setTimeout(headerKey, 600); if (isOn() && GB.page === 'home') apply(true, false); else if (isOn()) { S.set('gb_prohome', '0'); } });
+  GB.on('pro', v => { headerKey(); if (!v) document.documentElement.classList.remove('prohome'); else if (GB.page === 'home') { S.set('gb_prohome', '1'); apply(true, false); } });
+  GB.on('page', id => {
+    if (id === 'home' && GB.pro === true && !isOn()) setOn(true, true);          // entering PRO HOME powers it up (every time)
+    else if (id !== 'home' && isOn()) { S.set('gb_prohome', '0'); apply(false, false); }
+    borrow(isOn() && id === 'home'); if (id === 'home') load(); headerKey(); });
   setInterval(() => { if (GB.page === 'home' && !document.hidden) load(); }, 60000);
 })();

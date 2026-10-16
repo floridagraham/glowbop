@@ -311,8 +311,8 @@
   // the rail, by how often you reach for it: PERFORM (the home screen + playing by hand), VISUALS (everyday looks, most used
   // first), PRO (the Pro DJ tools, or one gold tour key on Home), SYSTEM (lights + app, mostly one-time setup) at the bottom.
   const PAGES = GB.PAGES = [
-    {id: 'music', label: 'MUSIC', c: '#e9e6ff', big: 2, g: 'perform'},   // Oct 16: pale white-lavender, so it stands apart from the pinks
-    {id: 'dj', label: 'DJ', c: 'var(--red)', g: 'perform'},
+    {id: 'music', label: 'MUSIC', c: 'var(--cyan)', big: 2, g: 'perform'},   // Oct 16: GlowBop cyan (Graham)
+    {id: 'dj', label: 'DJ', c: 'var(--violet)', g: 'perform'},     // Oct 16: GlowBop purple
     {id: 'looks', label: 'LOOKS', c: 'var(--amber)', g: 'visuals'},
     {id: 'scenes', label: 'SCENES', c: 'var(--lav)', g: 'visuals'},            // 🔥 the fireplace lives here now
     {id: 'feeds', label: 'LIVE', c: 'var(--green)', g: 'visuals'},

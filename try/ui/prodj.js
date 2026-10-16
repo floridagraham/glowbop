@@ -26,7 +26,10 @@
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+5) { --c:#cc99ff !important; }
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+6) { --c:#4de8c8 !important; }
   html.prodj #pg-dj > .panel.box { box-shadow:inset 0 0 0 1px #4de8c822; }
-  html.prodj #rail button[data-p=dj] { background:#ff3d9a; }   /* GlowBop pink */
+  #rail #pdTab { background:#ff3d9a; }   /* GlowBop pink */
+  #rail .rail-sep[data-g=pro], #rail button[data-p=pro] { display:none !important; }   /* the PRO DJ / PRO HOME tabs say it; no label row, no tour key */
+  #rail button.locked { background:#2a2833 !important; color:#77748a !important; box-shadow:none !important; }
+  #rail button.nope { animation:pdNope .35s ease; } @keyframes pdNope { 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
   /* ---- Pro DJ is a tighter console: smaller paddings and keys so more fits on one screen */
   html.prodj #pg-dj > .panel.box { padding:8px 10px 10px; gap:8px; }
   html.prodj #djBuild { min-height:64px; font-size:calc(20px * var(--fs, 1)); }
@@ -98,18 +101,33 @@
     el.querySelector('#pdGo').onclick = () => setOn(!isOn(), true);
     el.querySelector('#pdArr').onclick = () => arrange(true);
   });
-  // ⚡ the switch lives in the top bar, right after GUIDE (yellow, lightning bolt): ACTIVATE PRO DJ / EXIT PRO DJ
+  // ⚡ PRO DJ is a tab on the rail (Oct 16, Graham: no more keys in the top bar). Tap it: the DJ page powers up into Pro DJ.
+  // Without Pro it stays grey and doesn't power on. Leaving the DJ page (or tapping the regular DJ tab) drops back to regular.
   function headerKey() {
-    const line = document.querySelector('#hd .line'); if (!line) return;
-    let b = $('pdHd');
-    if (!b) { b = document.createElement('button'); b.id = 'pdHd'; b.className = 'btn sm c'; b.style.setProperty('--c', 'var(--gold)');
-      b.onclick = () => { const on = !isOn(); if (on && GB.page !== 'dj') GB.go('dj'); setOn(on, true); }; }
-    const g = $('gbGuideBtn'), sfx = $('sfx');
-    if (g) { if (g.nextSibling !== b) g.after(b); } else if (!b.parentElement) line.insertBefore(b, sfx || null);
-    const on = isOn(); b.hidden = GB.pro !== true;
-    b.innerHTML = GB.svg('bolt') + '<span class="pl">' + (on ? 'EXIT PRO DJ' : 'ACTIVATE PRO DJ') + '</span><span class="ps">' + (on ? 'EXIT PRO' : 'PRO DJ') + '</span>';
-    b.setAttribute('aria-label', on ? 'Exit Pro DJ mode' : 'Activate Pro DJ mode'); b.classList.toggle('on', on);
+    const old = $('pdHd'); if (old) old.remove();
+    const rail = $('rail'); if (!rail) return;
+    let b = $('pdTab');
+    if (!b) { b = document.createElement('button'); b.id = 'pdTab'; b.dataset.g = 'pro'; b.innerHTML = '<span class="rl">PRO DJ</span>'; b.setAttribute('aria-label', 'Pro DJ');
+      b.onclick = () => {
+        if (GB.pro !== true) { lockedTap(b, 'Pro DJ'); return; }
+        if (GB.page !== 'dj') GB.go('dj');
+        if (!isOn()) setOn(true, true); else paintTabs();
+      }; }
+    const sep = rail.querySelector('.rail-sep[data-g=pro]');
+    if (sep && sep.nextElementSibling !== b) sep.after(b);
+    b.hidden = GB.pro == null; b.classList.toggle('locked', GB.pro === false);
+    paintTabs();
   }
+  function paintTabs() {
+    const on = GB.page === 'dj' && isOn(), t = $('pdTab'), dj = document.querySelector('#rail button[data-p=dj]');
+    if (t) t.classList.toggle('on', on); if (dj) dj.classList.toggle('on', GB.page === 'dj' && !on);
+  }
+  function lockedTap(b, name) {
+    GB.sfx && GB.sfx('err'); b.classList.remove('nope'); void b.offsetWidth; b.classList.add('nope');
+    GB.toast && GB.toast('🔒 ' + name + ' is part of GlowBop Pro');
+    setTimeout(() => GB.go('pro'), 700);
+  }
+  GB.proLockedTap = lockedTap;
   function paintSwitch() {
     headerKey();
     const p = $('pdPanel'); if (!p) return;
@@ -175,10 +193,12 @@
     if (on && GB.pro !== true) return;
     S.set('gb_prodj', on ? '1' : '0');
     if (animate) flicker(() => apply(on, true)); else apply(on);
+    paintTabs();
     if (animate) { proSound(on); GB.toast && GB.toast(on ? '🎛️ Pro DJ on' : '🎚️ Back to the regular DJ page'); }
   }
   // 🔀 the DJ key itself moves: down into the PRO section (gold-teal, "PRO DJ") when Pro DJ is on, back up under MUSIC when it's off
   function railMove(on, animate) {
+    return;                                         // (Oct 16) the DJ tab stays put now; PRO DJ has its own tab
     const rail = $('rail'), b = rail && rail.querySelector('button[data-p=dj]'); if (!b) return;
     const sep = rail.querySelector('.rail-sep[data-g=pro]'), music = rail.querySelector('button[data-p=music]');
     const target = on ? sep : music; if (!target) return;
@@ -203,7 +223,7 @@
   }
   function flicker(swap) {
     if (calm()) { const m = $('main'); m.style.transition = 'opacity .25s'; m.style.opacity = '0.2'; setTimeout(() => { swap(); m.style.opacity = ''; setTimeout(() => m.style.transition = '', 300); }, 250); return; }
-    const SEL = '#main .btn, #main .pad, #main .tile, #main .chip, #main .seg > *, #main .ph, #main .read, #main .mfad, #rail button[data-p=dj], #main canvas';
+    const SEL = '#main .btn, #main .pad, #main .tile, #main .chip, #main .seg > *, #main .ph, #main .read, #main .mfad, #pdTab, #main canvas';
     const vis = n => { const b = n.getBoundingClientRect(); return b.width && b.bottom > 0 && b.top < innerHeight; };
     const off = list => list.forEach(n => n.classList.add('gbi-off'));
     // 1) the old console powers down (quick dim), 2) swap to the new layout + palette while dark, 3) every key flickers on in a sweep
@@ -446,7 +466,9 @@
   // ================================================================ wiring
   GB.on('ready', () => { chrome(); buildKeys(); if (GB.pro === true) apply(isOn()); else paintSwitch(); setTimeout(headerKey, 500); });
   GB.on('pro', v => { if (!v && document.documentElement.classList.contains('prodj')) document.documentElement.classList.remove('prodj'); apply(v && isOn()); });
-  GB.on('page', () => { if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
+  document.addEventListener('click', e => { const d = e.target.closest && e.target.closest('#rail button[data-p=dj]'); if (d && isOn()) setOn(false, false); }, true);   // the regular DJ tab = regular DJ
+  GB.on('page', id => { if (id !== 'dj' && isOn()) { S.set('gb_prodj', '0'); apply(false); } paintTabs();
+    if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
   GB.on('status', paintLit);
   // 🏟️ Home DJ with more than 4 light sets: a friendly banner (once per visit) + "Each separate" light groups are Pro
   GB.css(`#limBar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(90deg,#2a1640,#13202e); border:1px solid #ffd21a66; border-radius:16px; padding:10px 14px; margin-bottom:var(--gap); }
