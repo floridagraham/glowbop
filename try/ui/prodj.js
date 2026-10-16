@@ -278,7 +278,7 @@
   const bucket = () => (innerWidth >= 1000 && innerWidth >= innerHeight) ? 'wide' : 'tall';
   const pageKey = () => GB.page === 'dj' ? (isOn() ? 'prodj' : null) : (PRO_PAGES.includes(GB.page) && GB.pro === true ? GB.page : null);
   const canArrange = () => innerWidth >= 700 && !!pageKey();
-  const store = k => 'gb_lay:' + k + ':' + bucket();
+  const store = k => 'gb_lay2:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
   function items() {
     const pg = $('pg-' + GB.page); if (!pg) return [];
     const view = $('view'), out = [];
@@ -310,6 +310,7 @@
   let cur = null;                                   // {key, L}
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
+    if (k === 'prodj' && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); return compact(true); }   // Pro DJ starts on the Compact template
     $('layFab') && $('layFab').classList.toggle('show', !!k);
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
     const list = items(); const LL = L || measure(list);
@@ -365,10 +366,11 @@
     else { document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove()); layout(); GB.toast && GB.toast('✅ Layout saved'); }
   }
   // ⚡ COMPACT: a ready-made tight layout. Columns of boxes, each sized to its own content, packed with no gaps.
-  function compact() {
+  function compact(silent) {
     const k = pageKey(); if (!k) return;
-    if (!arranging) arrange(true);
-    const list = items(), id = sel => { const n = document.querySelector('#main ' + sel); const it = n && n.closest('.lay-it'); return it ? it.dataset.lk : null; };
+    if (!silent && !arranging) arrange(true);
+    $('main').classList.add('lay');
+    const list = items(), id = sel => { const n = document.querySelector('#main ' + sel); const it = n && n.closest('[data-lk]'); return it ? it.dataset.lk : null; };
     const wide = bucket() === 'wide' && k === 'prodj';
     const cols = k !== 'prodj' ? [[0, 24, []], [24, 24, []]]
       : wide ? [[0, 17, ['v:wall', 'v:keys', 'muCard', 'v:mode', 'v:reads']], [17, 15, [id('#djBuild'), id('#djCool'), id('#djColor')]], [32, 16, ['djPadsPanel', id('#djTap'), 'pdPanel', id('#djLooks')]]]
@@ -378,15 +380,15 @@
     // measure every box at its column width (its content height, nothing stretched)
     list.forEach(el => { const xw = widthOf[el.dataset.lk] || [0, 24]; el.style.gridColumn = (xw[0] + 1) + ' / span ' + xw[1]; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
     const kb = $('proKeysBox'); if (kb) kb.classList.toggle('narrow', kb.clientWidth < 520);
-    const H = {}; list.forEach(el => H[el.dataset.lk] = Math.max(6, Math.ceil((el.offsetHeight + 10) / ROW)));
+    const H = {}; list.forEach(el => H[el.dataset.lk] = Math.max(6, Math.ceil((el.offsetHeight + 26) / ROW)));
     list.forEach(el => { el.style.alignSelf = ''; el.style.overflow = ''; });
     let top = 0;
     cols.forEach(([x, w, ids]) => { let y = 0; ids.forEach(i => { if (!i || !byId[i]) return; L[i] = {x, y, w, h: H[i]}; y += H[i]; }); top = Math.max(top, y); });
     // everything else: two columns under the top band, always into the shorter one
     const rest = list.map(el => el.dataset.lk).filter(i => !L[i]), lane = [top, top];
     rest.forEach(i => { const c = lane[0] <= lane[1] ? 0 : 1; L[i] = {x: c * 24, y: lane[c], w: 24, h: H[i]}; lane[c] += H[i]; });
-    save(k, L); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); handles();
-    GB.toast && GB.toast('⚡ Compact layout. Drag anything to fine-tune');
+    save(k, L); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
+    if (!silent) GB.toast && GB.toast('⚡ Compact layout. Drag anything to fine-tune');
   }
   function reset() { const k = pageKey(); if (!k) return; S.set(store(k), ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the standard layout'); }
 
