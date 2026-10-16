@@ -313,7 +313,7 @@
   let arranging = false;
   const bucket = () => (innerWidth >= 1000 && innerWidth >= innerHeight) ? 'wide' : 'tall';
   const pageKey = () => GB.page === 'dj' ? (isOn() ? 'prodj' : 'dj') : GB.page === 'home' ? (GB.pro === true ? 'prohome' : null) : (PRO_PAGES.includes(GB.page) && GB.pro === true ? GB.page : null);
-  const canArrange = () => innerWidth >= 700 && !!pageKey();
+  const canArrange = () => innerWidth >= 700 && !!pageKey() && GB.pro === true;   // ✏️ Arrange is a Pro tool (Oct 16)
   const store = k => 'gb_lay2:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
   function items() {
     const pg = $('pg-' + GB.page); if (!pg) return [];
@@ -448,6 +448,24 @@
   GB.on('pro', v => { if (!v && document.documentElement.classList.contains('prodj')) document.documentElement.classList.remove('prodj'); apply(v && isOn()); });
   GB.on('page', () => { if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
   GB.on('status', paintLit);
+  // 🏟️ Home DJ with more than 4 light sets: a friendly banner (once per visit) + "Each separate" light groups are Pro
+  GB.css(`#limBar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(90deg,#2a1640,#13202e); border:1px solid #ffd21a66; border-radius:16px; padding:10px 14px; margin-bottom:var(--gap); }
+    #limBar b { font:800 calc(16px * var(--fs, 1)) var(--cond); letter-spacing:1px; color:#ffd21a; } #limBar span { flex:1 1 220px; min-width:0; color:var(--text); }
+    #limBar .btn { min-height:40px; }`);
+  let limShown = false;
+  GB.on('status', s => {
+    const L = s.light_limit, pages = $('pages'); if (!pages) return;
+    let bar = $('limBar');
+    if (!L || GB.pro === true || limShown === 'x') { if (bar) bar.remove(); return; }
+    if (!bar) { bar = document.createElement('div'); bar.id = 'limBar'; pages.prepend(bar); limShown = true; }
+    bar.innerHTML = `<b>🏟️ Your setup has grown!</b><span>GlowBop found ${L.total} light sets. Home DJ plays ${L.max} together (${(L.off || []).map(GB.esc).join(', ')} are resting). Pro runs them all.</span>
+      <button class="btn c" style="--c:#ffd21a">See Pro</button><button class="btn ghost" aria-label="Hide">✕</button>`;
+    bar.querySelector('.btn.c').onclick = () => GB.go('pro'); bar.querySelector('.ghost').onclick = () => { limShown = 'x'; bar.remove(); };
+  });
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('#suEach');
+    if (b && GB.pro === false) { e.stopPropagation(); e.preventDefault(); GB.sfx && GB.sfx('err'); GB.toast('🔒 Each group running its own show is part of Pro. Home DJ plays all your lights together.'); }
+  }, true);
   try { const wb = $('wallBox'); if (wb) { let rq = 0; new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => GB.redrawWall && GB.redrawWall()); }).observe(wb); } } catch (e) {}
   let refit = false; GB.on('catalog', () => { if (!refit) { refit = true; setTimeout(() => GB.proDJ.recompact(), 500); } });   // looks loaded: refit an untouched template once
   let rt = 0, sig = '';                           // re-lay only when the screen shape really changes (phone turned, window resized past a size)

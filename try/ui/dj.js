@@ -71,6 +71,7 @@
   // ⚡ instant by default: a pad fires the moment your finger touches it. Snap to beat (switch) holds it for the next beat.
   const snap = () => GB.store.get('gb_dj_snap', '0') === '1';
   async function hit(k, src) {
+    if (GB.pro === false && PRO_PADS.includes(k)) { GB.sfx('err'); GB.toast('🔒 ' + PADS.find(p => p[0] === k)[2] + ' is a Pro hit pad. Upgrade to Pro to unlock all 13.'); return; }
     const st = (GB.status || {}).dj || {};
     document.querySelectorAll(`.dj-pads [data-k="${k}"]`).forEach(b => { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); });
     if (k === 'blackout') { const on = !st.blackout; if (await dj({hit: 'blackout', on})) GB.toast(on ? '⬛ Blackout (tap again to bring it back)' : '💡 Lights back'); }
@@ -143,7 +144,8 @@
       one: () => { const v = S.get('gb_' + key + '_style', dStyle); return keys.includes(v) ? v : dStyle; },
       pool: () => { try { const p = JSON.parse(S.get('gb_' + key + '_pool', '') || 'null'); const q = Array.isArray(p) ? p.filter(k => keys.includes(k)) : []; return q.length ? q : keys.slice(); } catch (e) { return keys.slice(); } },
       last: null,
-      pick() { const m = C.mode(); if (m === 'one') return C.one();
+      pick() { if (GB.pro === false) return keys[Math.floor(Math.random() * keys.length)];   // Home DJ: a random style each time
+        const m = C.mode(); if (m === 'one') return C.one();
         let ks = m === 'mix' ? C.pool() : keys.filter(k => k !== 'classic');
         if (ks.length > 1) ks = ks.filter(k => k !== C.last);
         return (C.last = ks[Math.floor(Math.random() * ks.length)]); },
@@ -416,6 +418,35 @@
   .dj-skip .btn.hit { filter:brightness(1.8); box-shadow:0 0 18px var(--c); }
   .dj-skip .btn.hit .sk { background:transparent; color:#000; }
   `);
+  // ------------------------------------------------------------------ 🔒 Home DJ vs Pro (Oct 16, Graham): Pro gets the DJ power tools
+  // Home keeps HOLD TO BUILD (a random style each time), the 6 classic pads, Cool down, tap tempo, crowd lines and look/effect skips.
+  // Pro adds: the 7 extra pads, build & drop style pickers, Color lock, Cue the next look and DJ controllers (MIDI). The engine checks too.
+  const PRO_PADS = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat', 'star'];
+  GB.css(`
+  .dj-pads .tile.pro-pad.locked { opacity:.4; filter:grayscale(.6) !important; }
+  .dj-pads .tile.pro-pad.locked::after { content:'PRO'; position:absolute; top:4px; right:10px; font:800 9px var(--mono); letter-spacing:1px; background:#000; color:#fff; border-radius:6px; padding:1px 5px; }
+  .dj-lockline { display:flex; align-items:center; gap:8px; margin-top:10px; padding:8px 12px; border-radius:14px; background:#0007; border:1px dashed color-mix(in srgb, var(--orchid) 50%, transparent); color:var(--dim); font-size:calc(13px * var(--fs, 1)); cursor:pointer; }
+  .dj-lockline b { color:var(--orchid); }
+  `);
+  function proPaint() {
+    const locked = GB.pro === false;
+    document.querySelectorAll('.dj-pads .tile').forEach(t => { const pro = PRO_PADS.includes(t.dataset.k); t.classList.toggle('pro-pad', pro); t.classList.toggle('locked', pro && locked); });
+    ['djBuildPick', 'djDropPick'].forEach(id => { const n = $(id); if (!n) return; n.hidden = locked; const sub = n.previousElementSibling; if (sub && sub.classList.contains('dj-sub')) sub.hidden = locked; });
+    let line = $('djStyleLock');
+    if (locked && !line && $('djDropPick')) { line = document.createElement('div'); line.id = 'djStyleLock'; line.className = 'dj-lockline';
+      line.innerHTML = GB.svg('lock') + '<span>Every build and drop picks its own style. <b>Pro</b> lets you choose the build and drop styles.</span>';
+      line.onclick = () => GB.go('pro'); $('djDropPick').after(line); }
+    if (line) line.hidden = !locked;
+  }
+  GB.on('ready', () => {
+    const gate = (el, pitch) => el && GB.proGate(el, 'DJ power tools', {pitch});
+    gate($('djColor') && $('djColor').closest('.panel'), 'Color lock: pick up to 4 colors and the whole show (looks, effects, builds, drops, even the white flashes) plays only in those colors until you tap again. Part of GlowBop Pro.');
+    gate($('djLooks') && $('djLooks').closest('.panel'), 'Cue the next look: pick what comes in on the next drop, so the show changes exactly when you want. Part of GlowBop Pro.');
+    gate($('djMidiCard'), 'DJ controllers: plug in a USB DJ controller or pad and play every GlowBop key from real buttons and faders. Part of GlowBop Pro.');
+    proPaint();
+  });
+  GB.on('pro', proPaint);
+
   // shared with prodj.js (the Pro DJ keys under the wall)
   GB.djHit = hit; GB.djPost = dj; GB.DJ_PADS = PADS;
 })();

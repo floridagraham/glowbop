@@ -100,6 +100,14 @@
       pitch: 'Big panic buttons that take over the whole wall in one touch: blackout, full white, strobe, house lights, your colours, a disco ball drop and an audience sweep. Flash or latch, with smooth fades and laptop shortcuts.'},
     {name: 'Interlude', ic: 'mic', c: 'var(--lav)', page: 'ops', tab: 'OVERRIDE', prev: 'interlude',
       pitch: 'Ambient mode for talking breaks, speeches and band changeovers: one tap and the wall drifts into a calm, tasteful glow that ignores the mic, then fades back into the show (with a flash or a drop if you like). Can start by itself when the music stops.'},
+    {name: 'Pro DJ mode', ic: 'dj', c: '#ff3d9a', page: 'dj', tab: 'PRO DJ', prev: 'faders',
+      pitch: 'One key turns the console into a DJ control center: the music player, faders, loop banks and cues on one page, 6 assignable Pro keys under the wall, and a layout you can drag and resize to fit your rig.'},
+    {name: 'Pro Home', ic: 'home', c: '#ffb23d', page: 'home', tab: 'PRO HOME', prev: 'zones',
+      pitch: 'Run the whole house: one-tap house scenes (Dinner, Party, Movie night, Bedtime), schedules that turn the lights on at sunset and off at bedtime every day, zones and the holiday calendar.'},
+    {name: 'DJ power tools', ic: 'bolt', c: 'var(--cyan)', page: 'dj', tab: 'DJ', prev: 'override',
+      pitch: 'All 13 hit pads, pick your build and drop styles, Color lock, Cue the next look, and USB DJ controllers.'},
+    {name: 'Unlimited lights', ic: 'bulb', c: 'var(--gold)', page: 'lights', tab: 'LIGHTS', prev: 'zones',
+      pitch: 'Home DJ plays up to 4 light sets together. Pro runs as many as you hang (big pool cages, whole-house installs, giant matrix walls), with light groups so each area runs its own show.'},
   ];
   const PRO_LIST = PRO_FEATURES.map(f => f.name);
   const firstLine = t => (String(t).match(/^.*?[.!?](?=\s|$)/) || [t])[0];
