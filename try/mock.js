@@ -78,7 +78,8 @@
   const bump = k => { S.act[k] = wall(); };
   // ✨ (Oct 16) the home page's demo is the flashy part: no calm looks, songs or slow effects there (they stay in the full demo)
   const EMBED_SHOWY = /[?&]embed=1\b/.test(location.search);
-  const SHOWY = true;                                   // (Oct 16) the full demo opens with the same excitement; chill songs keep their calm shows
+  const SHOWY = true;
+  try { if (localStorage.getItem('gb_build_mode') == null) localStorage.setItem('gb_build_mode', 'all'); } catch (e) {}   // 🎲 demo builds are Full random (the first one is always the star)                                   // (Oct 16) the full demo opens with the same excitement; chill songs keep their calm shows
   const CHILL_TITLES = ['Starlight Freeway', 'Silk Horizon', 'Blue Note Lanterns', 'Porch Light Saturday'];
   const showyNow = () => EMBED_SHOWY || !(typeof M !== 'undefined' && M.queue[M.idx] && CHILL_TITLES.includes(M.queue[M.idx].title));
   const CALM_LOOKS = ['Cinematic', 'Concert Hall', 'Jazz Club', 'Moonlit', 'Silk', 'Golden Porch', 'Deep Space', 'Fairy Forest', 'Liquid Dreams', 'Midnight Galaxy', 'Blue Sky', 'Ice Palace', 'Deep Sea', 'Emerald Ocean'];
@@ -347,7 +348,7 @@
     if (style === 'rainbow') { rev = bTurns(el, .15, 1.6); wk = Math.pow(Math.max(0, (k - .55) / .45), 2); }
     if (style === 'heartbeat') { const f = bTurns(el, 55 / 60, 170 / 60) % 1; env = Math.max(Math.exp(-f * 9), f >= .3 ? .75 * Math.exp(-(f - .3) * 9) : 0); pulse = env; dim = .35 + .4 * k; wk = 0; }
     let srot = 0, ssize = 0, senv = 0;
-    if (style === 'star') { srot = bTurns(el, .15, 1.4); const bb = bTurns(el, 1, 3) % 1; senv = Math.exp(-bb * 6); ssize = (.35 + .5 * k + .08 * senv) * Math.min((W - 1) / 2, (H - 1) / 2) * 1.15; pulse = senv; dim = .35 + .4 * k; wk = 0; }
+    if (style === 'star') { srot = bTurns(el, .15, 1.4); const bb = bTurns(el, 1, 3) % 1; senv = Math.exp(-bb * 6); ssize = (.62 + .45 * k + .08 * senv) * Math.min((W - 1) / 2, (H - 1) / 2) * 1.2; pulse = senv; dim = .55 + .35 * k; wk = 0; }   // big and bold from the first second
     const ra = (.06 + .1 * k) * Math.sin(t * (1.5 + 2.5 * k)) * 6.2832;
     const hs = (.42 + .22 * k + .14 * env) * Math.min((W - 1) / 2, (H - 1) / 2);
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -365,7 +366,7 @@
       else if (style === 'rainbow') { const fi = ss(0, 1.6, el); col = hue((x / W + y / H * .6) * (1 + 1.5 * k) - rev, 1, 1); lv = (.35 + .65 * k * (.65 + .35 * pulse)) * fi; m = fi; }   // 🌅 fades in
       else if (style === 'star') { const d = Math.hypot(BG.dx[j], BG.dy[j]), f = .5 + .5 * Math.cos(5 * (Math.atan2(BG.dy[j], BG.dx[j]) - srot * 6.2832)), rs = ssize * (.42 + .58 * f ** 2.2);
         const mm = clamp((rs - d) / Math.max(.6, ssize * .1) + .5, 0, 1), rays = f ** 10 * Math.exp(-d / (ssize * 2)) * (.3 + .6 * k);
-        col = pal(d / Math.max(1, ssize) * .5 - t * (.2 + .8 * k)).map((v, c) => v * (1 - .4 * k) + .4 * k * hue(d / Math.max(1, ssize) * .4 + t * .5, 1, 1)[c]);
+        const hw = .6 + .3 * k; col = pal(d / Math.max(1, ssize) * .5 - t * (.2 + .8 * k)).map((v, c) => v * (1 - hw) + hw * hue(d / Math.max(1, ssize) * .45 - t * (.4 + .6 * k), 1, 1)[c]);   // 🌈 rainbow star
         lv = mm * (.55 + .45 * senv) + rays; m = Math.max(mm, clamp(rays, 0, 1)); if (R() < (.04 + .12 * k) * mm) { lv = 1.4; } }
       else if (style === 'heartbeat') { const X0 = BG.dx[j] / hs, Y0 = -BG.dy[j] / hs, X = X0 * Math.cos(ra) - Y0 * Math.sin(ra), Y = X0 * Math.sin(ra) + Y0 * Math.cos(ra) + .12, v = (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3;
         const mm = clamp(.5 - v * 6, 0, 1), glow = Math.exp(-BG.rad[j] * 3) * env * (.25 + .5 * k);
@@ -1872,7 +1873,8 @@
           if (b.hit === 'blackout') DJ.black = 'on' in b ? !!b.on : !DJ.black;
           else if (b.hit && b.snap === false) djFire(b.hit, b.beats);     // ⚡ instant pads fire right now; snapped ones wait for the beat
           else if (b.hit) DJ.queue.push(b.hit);
-          if ('build' in b) { if (b.build && DJ.build == null) { DJ.build = t; const st = String(b.style || 'spin'); DJ.bstyle = st === 'auto' ? pickOne(BUILD_STYLES.filter(x => x !== DJ.bstyle)) : BUILD_STYLES.includes(st) ? st : 'spin'; } else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
+          if ('build' in b) { if (b.build && DJ.build == null) { DJ.build = t; let st = String(b.style || 'spin'); if (!DJ.firstBuild) { DJ.firstBuild = true; st = 'star'; }   // ⭐ the first build anyone sees in the demo is the spinning rainbow star
+             DJ.bstyle = st === 'auto' ? pickOne(BUILD_STYLES.filter(x => x !== DJ.bstyle)) : BUILD_STYLES.includes(st) ? st : 'spin'; } else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
           if ('cue' in b) DJ.cue = b.cue && CAT.looks[b.cue] ? b.cue : null;
           if (b.tap) { DJ.taps = DJ.taps.filter(x => t - x < 3).concat([t]);
             if (DJ.taps.length >= 3) { const iv = DJ.taps.slice(-8).map((x, i, a) => i ? x - a[i - 1] : 0).slice(1).filter(v => v > .25 && v < 1.5).sort((a, c) => a - c);
