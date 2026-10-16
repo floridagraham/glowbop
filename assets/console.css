@@ -414,3 +414,10 @@ html,body{overflow-x:clip}
 .demo-dock b{border-left-width:12px;border-top-width:8px;border-bottom-width:8px}
 @media(max-width:350px){.nav.con-hd .demo-m b{display:inline-block}}
 @media(max-width:390px){.nav.con-hd .demo-m{padding:0 10px;font-size:14px;letter-spacing:.5px;gap:4px}.nav.con-hd .cta{padding-left:10px;padding-right:10px;font-size:12px;letter-spacing:.5px}.nav.con-hd .demo-m + .cta{margin-left:6px}.nav.con-hd .burger{margin-left:6px;padding:0 9px}}
+/* 📱 calmer demo bar: dark with a cyan outline, no white flashing (iPhone Safari tints its own bottom bar to match whatever is at the bottom of the screen) */
+@media(max-width:820px){
+  .demo-dock{background:rgba(7,5,13,.92);color:var(--cyan);box-shadow:inset 0 0 0 2px var(--cyan),0 10px 30px -6px #000;animation:dockPulse 3.2s ease-in-out infinite;bottom:calc(22px + env(safe-area-inset-bottom));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .demo-dock:hover{color:var(--cyan)}
+}
+@keyframes dockPulse{0%,100%{box-shadow:inset 0 0 0 2px var(--cyan),0 10px 30px -6px #000}50%{box-shadow:inset 0 0 0 2px var(--cyan),0 0 18px -4px var(--cyan),0 10px 30px -6px #000}}
+@media(prefers-reduced-motion:reduce){.demo-dock{animation:none}}
