@@ -1768,7 +1768,9 @@
         case '/api/link': return {json: {link: 'http://192.168.0.42:8787'}};
         case '/api/lights': return {json: lightsInfo()};
         case '/api/music': return {json: musicState()};
-        case '/api/media': return {json: {available: false, title: null}};
+        case '/api/media': { const t = M.queue[M.idx];                 // 🎵 (Oct 16) the demo pretends a music app is playing on the laptop, so skip / pause / seek all work
+          return {json: t ? {available: true, title: t.title, artist: t.artist, status: M.playing ? 'Playing' : 'Paused', pos: songPos(), len: t.dur, app_name: 'Demo playlist', app: 'Demo playlist',
+            can_seek: true, vol: M.volume, mute: M.volume === 0} : {available: false, title: null}}; }
         case '/api/songinfo': return {json: {keys: {lastfm: true, getsongbpm: true}, current: songInfoNow()}};
         case '/api/text': return {json: {state: Object.assign({}, TX.s), presets: TX.presets.map(p => Object.assign({}, p, {logo: undefined}))}};
         case '/api/score': return {json: scoreInfo()};
@@ -1869,7 +1871,11 @@
           if (b.reset) djReset();
           return ok(); }
         case '/api/music': return musicCmd(b);
-        case '/api/media': return ok();
+        case '/api/media': { const a = b.action;
+          if (a === 'playpause') musicCmd({action: 'toggle'}); else if (a === 'next' || a === 'prev') { musicCmd({action: a}); toast('🎵 ' + M.queue[M.idx].title + ' · ' + M.queue[M.idx].artist); }
+          else if (a === 'seek') musicCmd({action: 'seek', pos: b.pos}); else if (a === 'vol') musicCmd({action: 'volume', volume: b.level});
+          else if (a === 'mute') { if (M.volume > 0) { M._vol = M.volume; M.volume = 0; } else M.volume = M._vol || 70; }
+          return ok(); }
         case '/api/license': return LAPTOP('entering a license key');
         case '/api/keys': return LAPTOP('saving song lookup keys');
         case '/api/support': setTimeout(() => toast('Demo: nothing was sent. Reach us from the Contact page'), 2600); return ok({sent: true, ticket: 'GB-DEMO'});
