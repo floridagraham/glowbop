@@ -120,7 +120,7 @@ def page(path, title, desc, body, active=''):
   <div class="fine"><span><a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a> · <a href="/refunds.html">Refunds</a></span><span>© 2026 GlowBop, a product of Marketing Savvy LLC. Twinkly, Govee and other brand names belong to their owners. GlowBop is not affiliated with them.</span>
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
-<a class="demo-dock" href="/try/?intro=1" aria-label="Play the live demo"><b>▶</b>Play the live demo</a>
+<a class="demo-dock" href="/try/?intro=1" aria-label="Play the live demo"><b>▶</b><span>Play the live demo</span></a>
 <script>window.GB_CLIPS={CLIPS_JS};</script>
 <script src="/assets/site.js?v=15"></script>
 </body>
