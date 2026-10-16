@@ -19,7 +19,7 @@
 
   const css = `
   #gbIntro{position:fixed;inset:0;z-index:9999;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .45s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  #gbIntro::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 45%,#1a1030 0,#07050d 70%);transition:opacity .7s ease}
+  #gbIntro::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 46%,rgba(0,0,0,.55) 0,rgba(0,0,0,.25) 32%,transparent 58%);transition:opacity .7s ease}   /* 🖥️ (Oct 16) no blue backdrop: the grey, powered-down console shows from the first moment, just a soft shadow behind the logo */
   #gbIntro{isolation:isolate}
   #gbIntro.bgout::before{opacity:0}                 /* 🌅 the background melts away first: the app shows through behind the logo */
   #gbIntro.bgout{pointer-events:none}
@@ -33,6 +33,7 @@
   #gbIntro.go .tap{visibility:hidden}
   #gbIntro .snd{position:absolute;left:0;right:0;bottom:calc(36px + env(safe-area-inset-bottom));text-align:center;font:700 16px/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.3em;padding-left:.3em;color:#33d6ff;text-transform:uppercase;opacity:.9;transition:opacity .3s;animation:gbiP 1.6s ease-in-out infinite}
   #gbIntro.bgout .snd{opacity:0}
+  #gbIntro .tap,#gbIntro .word,#gbIntro .snd{text-shadow:0 0 6px #000,0 0 14px #000,0 0 24px #000,0 2px 3px #000}   /* readable over the grey console */
   #gbIntro .word{font:800 24px/1 'Saira Condensed','Arial Narrow',sans-serif;padding-left:.5em;letter-spacing:.5em;color:#fff;opacity:0;transition:opacity .6s}
   #gbIntro.big .word{opacity:.9}
   @keyframes gbiP{50%{opacity:.35}}
