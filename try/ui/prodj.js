@@ -334,7 +334,7 @@
   const bucket = () => (innerWidth >= 1000 && innerWidth >= innerHeight) ? 'wide' : 'tall';
   const pageKey = () => GB.page === 'dj' ? (isOn() ? 'prodj' : 'dj') : GB.page === 'home' ? (GB.pro === true ? 'prohome' : null) : (PRO_PAGES.includes(GB.page) && GB.pro === true ? GB.page : null);
   const canArrange = () => innerWidth >= 700 && !!pageKey() && GB.pro === true;   // ✏️ Arrange is a Pro tool (Oct 16)
-  const store = k => 'gb_lay2:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
+  const store = k => 'gb_lay3:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
   function items() {
     const pg = $('pg-' + GB.page); if (!pg) return [];
     const view = $('view'), out = [];
@@ -366,6 +366,7 @@
   let cur = null;                                   // {key, L}
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
+    if (k && L && !arranging && S.get(store(k) + ':auto') === '1' && items().some(el => !L[el.dataset.lk])) return compact(true);   // an untouched template + new boxes: rebuild it
     if ((k === 'prodj' || k === 'prohome' || k === 'dj') && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); return compact(true); }   // Pro DJ starts on the Compact template
     $('layFab') && $('layFab').classList.toggle('show', !!k);
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
@@ -442,7 +443,11 @@
     // measure every box at its column width (its content height, nothing stretched)
     list.forEach(el => { const xw = widthOf[el.dataset.lk] || [0, 24]; el.style.gridColumn = (xw[0] + 1) + ' / span ' + xw[1]; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
     const kb = $('proKeysBox'); if (kb) kb.classList.toggle('narrow', kb.clientWidth < 520);
+    void document.body.offsetHeight;                // let the narrow key layout settle before measuring
     const H = {}; list.forEach(el => H[el.dataset.lk] = Math.max(6, Math.ceil((el.offsetHeight + 26) / ROW)));
+    // the Live wall starts at the size where your lights fill it edge to edge (then shrink it however you like)
+    const wEl = byId['v:wall'], wb = $('wallBox');
+    if (wEl && wb && GB.wallIdeal) { const fixed = wEl.offsetHeight - wb.offsetHeight; H['v:wall'] = Math.max(10, Math.ceil((fixed + GB.wallIdeal(Math.max(120, wb.clientWidth - 20)) + 26 + 26) / ROW)); }
     list.forEach(el => { el.style.alignSelf = ''; el.style.overflow = ''; });
     let top = 0;
     cols.forEach(([x, w, ids]) => { let y = 0; ids.forEach(i => { if (!i || !byId[i]) return; L[i] = {x, y, w, h: H[i]}; y += H[i]; }); top = Math.max(top, y); });
@@ -489,6 +494,7 @@
     if (b && GB.pro === false) { e.stopPropagation(); e.preventDefault(); GB.sfx && GB.sfx('err'); GB.toast('🔒 Each group running its own show is part of Pro. Home DJ plays all your lights together.'); }
   }, true);
   try { const wb = $('wallBox'); if (wb) { let rq = 0; new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => GB.redrawWall && GB.redrawWall()); }).observe(wb); } } catch (e) {}
+  GB.on('wallshape', () => setTimeout(() => GB.proDJ.recompact(), 200));   // the Live wall's real shape arrived: refit an untouched template
   let refit = false; GB.on('catalog', () => { if (!refit) { refit = true; setTimeout(() => GB.proDJ.recompact(), 500); } });   // looks loaded: refit an untouched template once
   let rt = 0, sig = '';                           // re-lay only when the screen shape really changes (phone turned, window resized past a size)
   addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const n = bucket() + (canArrange() ? 1 : 0) + innerWidth;

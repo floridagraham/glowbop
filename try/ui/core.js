@@ -500,8 +500,16 @@
     PVHIT = [];
   }
   GB.redrawWall = () => { if (PV.length) drawSetup(PV); };
+  // the Live wall's natural height at a given picture width: the lights fill it edge to edge (used by the ✏️ Arrange templates)
+  GB.wallIdeal = cssW => { const b = PV; if (!b.length) return cssW * 0.6;
+    if (b.length === 1 && b[0].shape) return Math.min(innerHeight * 0.82, cssW * 0.75);
+    const totW = b.reduce((a, x) => a + x.w, 0) + 2 * (b.length - 1), maxH = Math.max(...b.map(x => x.h));
+    const lab = (b.length > 1 ? 18 : 0) + (b.some(x => (x.devices || []).length > 1) ? 16 : 0);
+    return Math.min(innerHeight * 0.82, lab + maxH * cssW / totW); };
+  let pvSig = '';
   function drawSetup(blocks) {
     PV = blocks; if (!blocks.length) return;
+    const sig = blocks.map(b => b.w + 'x' + b.h).join(','); if (sig !== pvSig) { pvSig = sig; setTimeout(() => GB.emit('wallshape', sig), 50); }   // your lights' shape is known (or changed)
     if (blocks.length === 1 && blocks[0].shape) {
       const dpr = Math.min(2, window.devicePixelRatio || 1), box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
       const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
@@ -514,7 +522,7 @@
     const lab = (many ? 18 : 0) + (anyDev ? 16 : 0);
     const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
     const inLay = !FULL && box.closest('.lay-it');                      // ✏️ arranged console: the picture fits whatever box size you gave the Live wall
-    const maxCssH = FULL ? innerHeight - 40 : inLay ? Math.max(50, box.clientHeight - 20) : compact ? Math.max(GB.page === 'music' ? 110 : 130, innerHeight * (GB.page === 'music' ? 0.15 : 0.24)) : Math.max(220, Math.min(620, innerHeight * (wide ? 0.44 : 0.5)));
+    const maxCssH = FULL ? innerHeight - 40 : inLay ? Math.max(50, box.clientHeight - 20) : compact ? Math.max(GB.page === 'music' ? 110 : 130, innerHeight * (GB.page === 'music' ? 0.15 : 0.24)) : Math.max(220, innerHeight * 0.82)   // Oct 16: your lights fill the box edge to edge by default (tall for one curtain);
     const st = Math.min(cssW / totW, (maxCssH - lab) / maxH);
     const cssH = Math.round(lab + maxH * st), drawW = totW * st, ox0 = (cssW - drawW) / 2;
     cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
