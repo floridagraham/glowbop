@@ -26,7 +26,7 @@
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+5) { --c:#cc99ff !important; }
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+6) { --c:#4de8c8 !important; }
   html.prodj #pg-dj > .panel.box { box-shadow:inset 0 0 0 1px #4de8c822; }
-  html.prodj #rail button[data-p=dj] { background:linear-gradient(160deg,#ff3d9a 0%,#9b3dff 55%,#33d6ff 100%); color:#fff; text-shadow:0 1px 3px #0008; }   /* GlowBop colors */
+  html.prodj #rail button[data-p=dj] { background:#ff3d9a; }   /* GlowBop pink */
   /* ---- Pro DJ is a tighter console: smaller paddings and keys so more fits on one screen */
   html.prodj #pg-dj > .panel.box { padding:8px 10px 10px; gap:8px; }
   html.prodj #djBuild { min-height:64px; font-size:calc(20px * var(--fs, 1)); }
@@ -135,11 +135,35 @@
   function syncBorrow() { borrow(isOn() && GB.page === 'dj'); }
 
   // ================================================================ on / off + the power-on flicker
+  // 🔊 Pro DJ power-up: a deep thump, a rising synth sweep, then a bright chord as the keys flicker on (off: a soft power-down sweep).
+  // Made live with Web Audio, no sound files. Follows the SFX key (muted = silent).
+  let actx = null;
+  function proSound(on) {
+    if (S.get('gb_sfx', '1') !== '1') return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
+      const C = actx, t = C.currentTime + 0.02, out = C.createGain(); out.gain.value = 0.55; out.connect(C.destination);
+      const env = (g, a, peak, d, at) => { g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + a); g.gain.exponentialRampToValueAtTime(0.0001, at + a + d); };
+      const osc = (type, f, at, dur, peak, a, dest) => { const o = C.createOscillator(), g = C.createGain(); o.type = type; o.frequency.setValueAtTime(f, at);
+        env(g, a, peak, dur, at); o.connect(g); g.connect(dest || out); o.start(at); o.stop(at + a + dur + 0.05); return o; };
+      if (on) {
+        const k = osc('sine', 90, t, 0.35, 0.9, 0.005); k.frequency.exponentialRampToValueAtTime(42, t + 0.3);          // thump
+        const lp = C.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 9; lp.frequency.setValueAtTime(300, t); lp.frequency.exponentialRampToValueAtTime(5200, t + 0.62); lp.connect(out);
+        [0, 7].forEach(dt => { const sw = osc('sawtooth', 110, t + 0.04, 0.55, 0.22, 0.12, lp); sw.detune.value = dt * 2; sw.frequency.exponentialRampToValueAtTime(880, t + 0.64); });   // the rise
+        [523.25, 659.25, 783.99, 987.77, 1318.5].forEach((f, i) => { osc('triangle', f, t + 0.66 + i * 0.012, 1.1, 0.16, 0.01); osc('sine', f * 2, t + 0.66 + i * 0.012, 0.5, 0.04, 0.01); });   // bright chord
+        [1046.5, 1318.5, 1568, 2093].forEach((f, i) => osc('sine', f, t + 0.8 + i * 0.07, 0.25, 0.06, 0.005));   // sparkle on top
+      } else {
+        const lp = C.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(3000, t); lp.frequency.exponentialRampToValueAtTime(200, t + 0.6); lp.connect(out);
+        const sw = osc('sawtooth', 660, t, 0.6, 0.16, 0.02, lp); sw.frequency.exponentialRampToValueAtTime(70, t + 0.6);
+        osc('sine', 70, t + 0.45, 0.3, 0.5, 0.005);
+      }
+    } catch (e) {}
+  }
   function setOn(on, animate) {
     if (on && GB.pro !== true) return;
     S.set('gb_prodj', on ? '1' : '0');
     if (animate) flicker(() => apply(on, true)); else apply(on);
-    if (animate) { GB.sfx && GB.sfx(on ? 'ok' : 'tap'); GB.toast && GB.toast(on ? '🎛️ Pro DJ on' : '🎚️ Back to the regular DJ page'); }
+    if (animate) { proSound(on); GB.toast && GB.toast(on ? '🎛️ Pro DJ on' : '🎚️ Back to the regular DJ page'); }
   }
   // 🔀 the DJ key itself moves: down into the PRO section (gold-teal, "PRO DJ") when Pro DJ is on, back up under MUSIC when it's off
   function railMove(on, animate) {
