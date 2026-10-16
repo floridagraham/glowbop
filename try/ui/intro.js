@@ -34,6 +34,11 @@
   #gbIntro.go .tap{visibility:hidden}
   #gbIntro .snd{position:absolute;left:0;right:0;bottom:calc(36px + env(safe-area-inset-bottom));text-align:center;font:700 16px/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.3em;padding-left:.3em;color:#33d6ff;text-transform:uppercase;opacity:.9;transition:opacity .3s;animation:gbiP 1.6s ease-in-out infinite}
   #gbIntro.bgout .snd{opacity:0}
+  #gbIntro.wait svg{transform:scale(.8)}
+  #gbIntro svg{background:rgba(7,6,13,.9);border-radius:18%;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 10px 40px rgba(0,0,0,.7)}   /* 🔘 a dark tile like the corner logo, so it reads as a button over the grey console */
+  #gbIntro.wait svg{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 10px 40px rgba(0,0,0,.7),0 0 34px -6px rgba(51,214,255,.55)}
+  #gbIntro.wait svg g{animation:gbiWait 1.6s ease-in-out infinite}   /* 🔘 the on button breathes in time with TAP / TO START */
+  @keyframes gbiWait{0%,100%{opacity:1}50%{opacity:.5}}
   #gbIntro .lbl{display:grid;place-items:center}#gbIntro .lbl>*{grid-area:1/1}   /* GLOWBOP takes the place of TO START once it boots */
   #gbIntro .word,#gbIntro .snd{text-shadow:0 0 6px #000,0 0 14px #000,0 0 24px #000,0 2px 3px #000}
   #gbIntro .tap{text-shadow:0 0 2px #000,0 0 10px #000,0 0 22px rgba(255,61,154,.75),0 2px 3px #000}   /* readable over the grey console */
@@ -204,7 +209,7 @@
       draw(); svg.style.visibility = 'hidden';
     };
     const run = withSound => {
-      if (started) return; started = true; runT = performance.now(); sndOn = !!(withSound && ctx && buf); if (sndOn) { const sn = el.querySelector('.snd'); if (sn) sn.remove(); } markSeen(); el.classList.add('go');
+      if (started) return; started = true; if (stopIdle && chase) stopIdle(); runT = performance.now(); sndOn = !!(withSound && ctx && buf); if (sndOn) { const sn = el.querySelector('.snd'); if (sn) sn.remove(); } markSeen(); el.classList.add('go');
       if (withSound && ctx && buf) { try { const s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start(); } catch (e) {} }
       EV.forEach(([t, a, d]) => setTimeout(() => {
         if (a === 'boot') { const n = dot(d[0], d[1]); if (n && n.getAttribute('opacity') < 0.35) on(n, .35); }
@@ -217,7 +222,7 @@
       setTimeout(() => powerUp(0.85 - 0.04 + 0.22), 5100 - 220);   // ⚡ whoosh starts just before the fly, thump on ignite
       setTimeout(() => finish(false), 5100);                     // right after the Glow-BOP! the logo flies into the corner (the background already left)
     };
-    let runT = 0, sndOn = false;
+    let runT = 0, sndOn = false, chase = 0, stopIdle = null;
     el.addEventListener('click', () => {
       // 🔊 website demo on iPhone / iPad: the first tap turns the sound on right where the intro is (it doesn't skip); a second tap skips
       if (started && AUTO && !sndOn && mode === 'sound' && !fin) {
@@ -237,10 +242,23 @@
         if (!pbuf) { try { const pb = await (await fetch(PWR)).arrayBuffer(); pbuf = await new Promise((ok, no) => ctx.decodeAudioData(pb, ok, no)); } catch (e) {} }
       } catch (e) {}
     }
+    const AUTO = !!(window.__demoUnhandled || window.GB_INTRO_AUTO);
     if (mode === 'silent') { setTimeout(() => run(false), 250); return; }
+    // 🔘 waiting for the tap: the logo is the on button. Its outer ring of lights chases round in a circle and the whole logo breathes
+    const RINGO = [[0,2],[0,3],[0,4],[1,5],[2,6],[3,6],[4,6],[5,5],[6,4],[6,3],[6,2],[5,1],[4,0],[3,0],[2,0],[1,1]];
+    let head = 0;
+    const idle = () => {
+      if (started) return;
+      lit.forEach(n => { n.setAttribute('opacity', '.85'); n.setAttribute('fill', M[+n.dataset.r][+n.dataset.c]); n.setAttribute('r', '4.6'); });
+      [0, 1, 2, 3].forEach(k => { const [r, c] = RINGO[(head - k + RINGO.length * 4) % RINGO.length], n = dot(r, c);
+        if (n) { n.setAttribute('opacity', String(1 - k * 0.12)); if (k === 0) { n.setAttribute('fill', '#fff'); n.setAttribute('r', '5.6'); } } });
+      head = (head + 1) % RINGO.length;
+    };
+    stopIdle = () => { clearInterval(chase); chase = 0; el.classList.remove('wait');
+      lit.forEach(n => { n.setAttribute('opacity', '.14'); n.setAttribute('fill', M[+n.dataset.r][+n.dataset.c]); n.setAttribute('r', '4.6'); }); };
+    if (!AUTO) { el.classList.add('wait'); idle(); chase = setInterval(idle, 75); }
     // sound: start by itself when the browser allows audio, otherwise wait for the tap
     // 🌐 website demo: no "Tap to start", it plays straight away (with sound if the browser allows it, silent if not)
-    const AUTO = !!(window.__demoUnhandled || window.GB_INTRO_AUTO);
     if (AUTO) { el.querySelectorAll('.tap').forEach(tp => tp.style.display = 'none');
       if (mode === 'sound') { const sn = document.createElement('div'); sn.className = 'snd'; sn.textContent = 'Tap for sound'; el.appendChild(sn); } }
     prime().then(() => { if (ctx && ctx.state === 'running' && buf) setTimeout(() => run(true), 150); else if (AUTO) setTimeout(() => run(false), 150); });
