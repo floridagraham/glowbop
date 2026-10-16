@@ -8,14 +8,22 @@
   let shown = false, since = Date.now(), tries = 0, el = null, raf = 0, shownAt = 0;
 
   GB.css(`
-  #offScr { position:fixed; inset:0; z-index:900; background:radial-gradient(120% 80% at 50% 0%, #1a0f2e 0%, #000 70%);
+  /* 🖥️ the console stays on screen behind the message, powered down: grey and dim, like before the intro switches it on */
+  html.gb-offline #con { -webkit-filter:grayscale(.9) brightness(.5); filter:grayscale(.9) brightness(.5); transition:filter .6s ease, -webkit-filter .6s ease; pointer-events:none; }
+  html.gb-waking #con { transition:filter .5s ease, -webkit-filter .5s ease; }
+  .gb-wake { animation:gbWake .7s linear both; }
+  @keyframes gbWake { 0%{opacity:.3;filter:grayscale(1) brightness(.5)} 10%{opacity:1;filter:brightness(2.4) saturate(1.4)} 20%{opacity:.35;filter:brightness(.7)} 34%{opacity:1;filter:brightness(1.8)} 100%{opacity:1;filter:none} }
+  @media (prefers-reduced-motion: reduce) { .gb-wake { animation:none; } }
+  #offScr { position:fixed; inset:0; z-index:900; background:radial-gradient(90% 70% at 50% 45%, rgba(26,15,46,.55) 0%, rgba(0,0,0,.35) 75%);
     display:flex; align-items:center; justify-content:center; padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
     opacity:0; pointer-events:none; transition:opacity .45s ease; }
   #offScr.show { opacity:1; pointer-events:auto; }
-  #offScr .box { width:100%; max-width:470px; border-left:14px solid var(--lav); border-radius:0 30px 0 30px; background:var(--panel);
-    padding:22px 20px 20px; display:flex; flex-direction:column; gap:14px; box-shadow:0 0 60px #9b3dff33; }
+  #offScr .box { width:100%; max-width:440px; max-height:calc(100vh - 32px); overflow:auto; border-left:14px solid var(--lav); border-radius:0 30px 0 30px; background:var(--panel);
+    padding:22px 20px 20px; display:flex; flex-direction:column; gap:14px; box-shadow:0 0 0 1px #2e2845, 0 20px 80px #000c, 0 0 60px #9b3dff44; }
+  #offScr .box { transform:translateY(46px) scale(.96); opacity:0; transition:transform .6s cubic-bezier(.2,1.25,.4,1) .2s, opacity .35s ease .2s; }   /* 💬 the message slides up into view */
+  #offScr.show .box { transform:none; opacity:1; }
   #offScr .bar { display:flex; gap:6px; height:12px; } #offScr .bar i { border-radius:6px; background:var(--c); }
-  #offScr canvas { width:100%; height:auto; aspect-ratio:16/7; border-radius:16px; background:#05040a; border:2px solid #2e2845; }
+  #offScr canvas { width:100%; height:auto; aspect-ratio:16/5; border-radius:16px; background:#05040a; border:2px solid #2e2845; }
   #offScr h2 { margin:0; font:800 calc(28px * var(--fs, 1))/1.05 var(--cond); letter-spacing:2px; text-transform:uppercase; }
   #offScr h2 span { color:var(--lav); }
   #offScr p { margin:0; color:var(--dim); line-height:1.45; }
@@ -35,8 +43,8 @@
     el.innerHTML = `<div class="box">
       <div class="bar"><i style="--c:var(--lav);width:40px"></i><i style="--c:var(--pink);flex:1"></i><i style="--c:var(--amber);width:26px"></i><i style="--c:var(--cyan);width:56px"></i></div>
       <canvas id="offCv" width="320" height="140" aria-hidden="true"></canvas>
-      <h2>Your lights are <span>taking a breather</span> 💤</h2>
-      <p>We can't reach your GlowBop laptop right now. No worries, nothing is lost. The show picks right back up the second we find it.</p>
+      <h2>We can't <span>connect right now</span> 💤</h2>
+      <p>Your lights are taking a breather while we look for your GlowBop laptop. Nothing is lost. The show picks right back up the second we find it.</p>
       <ul>
         <li><b style="color:var(--cyan)">${GB.svg('wifi')}</b><div>Same Wi-Fi as the laptop?<small>Phones love to jump to cellular. Check you're on your home Wi-Fi.</small></div></li>
         <li><b style="color:var(--lav)">${GB.svg('laptop')}</b><div>Laptop awake?<small>If it went to sleep, wake it up. Plugged in is best during a show.</small></div></li>
@@ -74,10 +82,20 @@
     raf = requestAnimationFrame(draw);
   }
 
+  // ⚡ back online: the console's keys flicker back on, a little wave down the screen
+  function wake() {
+    const H = document.documentElement; H.classList.add('gb-waking'); setTimeout(() => H.classList.remove('gb-waking'), 900);
+    const keys = [...document.querySelectorAll('#rail button, #hd .btn, #main .btn, #main .pad, #main .tile, .mfad, #mBtn')]
+      .filter(n => { const b = n.getBoundingClientRect(); return b.width && b.bottom > 0 && b.top < innerHeight; }).slice(0, 200);
+    keys.forEach(n => { const b = n.getBoundingClientRect(), at = 120 + (b.top / innerHeight) * 700 + Math.random() * 120;
+      setTimeout(() => { n.classList.add('gb-wake'); setTimeout(() => n.classList.remove('gb-wake'), 760); }, at); });
+  }
   function show(on) {
     if (on === shown) return;
     shown = on; if (!el) build();
     el.classList.toggle('show', on);
+    const H = document.documentElement; H.classList.toggle('gb-offline', on);
+    if (!on) wake();
     cancelAnimationFrame(raf);
     if (on) { tries = 0; shownAt = Date.now(); raf = requestAnimationFrame(draw); }
     else {
@@ -108,6 +126,7 @@
   setInterval(() => {
     if (document.hidden) return;
     const quiet = Date.now() - Math.max(GB.lastOk || 0, since);
-    if (quiet > GRACE) { show(true); check(); } else if (shown) show(false);
+    const introBusy = document.getElementById('gbIntro') || document.querySelector('.gbi-off, .gbi-offbox, .gbi-grey, canvas.gbi-px');   // 🎬 let the intro and power-on finish first
+    if (quiet > GRACE && !introBusy) { show(true); check(); } else if (shown) show(false);
   }, 1500);
 })();

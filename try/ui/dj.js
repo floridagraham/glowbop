@@ -10,7 +10,8 @@
                 // one-shots drawn by padfx.py. Icons: the ICON[...] name if core.js has it, else the closest existing one
                 ['sweep', ['sweep', 'wind'], 'Sweep', 'var(--lime, #b6ff3d)'], ['shockwave', ['shockwave', 'album'], 'Shockwave', 'var(--violet)'],
                 ['colorbomb', ['colorbomb', 'palette'], 'Color bomb', 'var(--amber)'], ['lightning', ['lightning', 'bolt'], 'Lightning', '#8fb4ff'],
-                ['countdown', ['count321', 'recent'], '3-2-1', 'var(--orchid)'], ['heartbeat', ['heart', 'star'], 'Heartbeat', 'var(--red)']]
+                ['countdown', ['count321', 'recent'], '3-2-1', 'var(--orchid)'], ['heartbeat', ['heart', 'star'], 'Heartbeat', 'var(--red)'],
+                ['star', ['star'], 'Star', 'var(--gold)']]
     .map(p => { const ic = Array.isArray(p[1]) ? (p[1].find(n => (GB.ICON || {})[n]) || p[1][p[1].length - 1]) : p[1]; return [p[0], ic, p[2], p[3]]; });
   // crisp skip icons (iOS turns ◀ ▶ into emoji triangles): double chevrons in the coloured circle, a swatch for looks, a sparkle for effects
   const svg = (body, sw) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 2.4}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
@@ -47,7 +48,8 @@
   @container (min-width: 900px) { .dj-pads { grid-template-columns:repeat(6, minmax(0, 1fr)); } }
   @container (max-width: 420px) { .dj-pads { grid-auto-rows:1fr; } .dj-pads .tile { min-height:80px; padding:8px 3px; letter-spacing:0; font-size:min(calc(14.5px * var(--fs, 1)), 5.2cqi); }
     .dj-pads .tile .nm { overflow-wrap:normal; word-break:keep-all; } .dj-pads .tile .em { font-size:calc(28px * var(--fs, 1)); } }
-  .dj-skip { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; margin-top:10px; }
+  .dj-skip { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; margin-top:4px; }
+  #djPadsPanel .dj-now { margin:8px 0 12px; }
   .dj-skip .btn { min-height:58px; padding:6px 4px; font-size:calc(14px * var(--fs, 1)); letter-spacing:1px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; line-height:1.1; touch-action:manipulation;
     color:color-mix(in srgb, var(--c) 50%, #fff); border:2px solid color-mix(in srgb, var(--c) 70%, transparent); border-radius:22px 22px 22px 22px;
     background:linear-gradient(180deg, color-mix(in srgb, var(--c) 30%, #13101d), color-mix(in srgb, var(--c) 8%, #0a0911)); box-shadow:0 0 14px -6px var(--c); }
@@ -72,12 +74,11 @@
     const st = (GB.status || {}).dj || {};
     document.querySelectorAll(`.dj-pads [data-k="${k}"]`).forEach(b => { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); });
     if (k === 'blackout') { const on = !st.blackout; if (await dj({hit: 'blackout', on})) GB.toast(on ? '⬛ Blackout (tap again to bring it back)' : '💡 Lights back'); }
-    else { GB.sfx('on'); if (await dj({hit: k, snap: snap()}) && src !== 'midi' && snap()) GB.toast(PADS.find(p => p[0] === k)[2] + ' on the next beat'); }
+    else { GB.sfx('on'); if (await dj(k === 'drop' ? {hit: k, snap: snap(), drop_style: dropStyle()} : {hit: k, snap: snap()}) && src !== 'midi' && snap()) GB.toast(PADS.find(p => p[0] === k)[2] + ' on the next beat'); }
   }
   GB.panel('dj', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--red)'); el.id = 'djPadsPanel';
     el.innerHTML = `<div class="ph"><span>Hit pads</span><button class="btn" id="djSnap" style="--c:var(--cyan);min-height:34px;padding:4px 14px;font-size:calc(13px * var(--fs, 1))"></button></div>
-      <div class="tiles dj-pads" id="djPads"></div>
       <div class="dj-skip" id="djSkip">
         <button class="btn" data-st="look-" style="--c:var(--gold)" aria-label="Previous look"><span class="ir">${SK.back}${SK.look}</span><span class="lb">LOOK</span></button>
         <button class="btn" data-st="look+" style="--c:var(--orange)" aria-label="Next look"><span class="ir">${SK.look}${SK.fwd}</span><span class="lb">NEXT LOOK</span></button>
@@ -85,6 +86,7 @@
         <button class="btn" data-st="effect+" style="--c:var(--lime, #b6ff3b)" aria-label="Next effect"><span class="ir">${SK.fx}${SK.fwd}</span><span class="lb">NEXT EFFECT</span></button>
       </div>
       <div class="dj-now"><span>Look: <b id="djNowLook">-</b></span><span>Effect: <b id="djNowFx">-</b></span></div>
+      <div class="tiles dj-pads" id="djPads"></div>
       <p class="note" id="djSnapNote"></p>`;
     el.querySelectorAll('#djSkip .btn').forEach(b => {
       const go = async () => { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); GB.sfx('tap'); await GB.control({step: b.dataset.st}); };
@@ -121,15 +123,52 @@
 
   // ------------------------------------------------------------------ build + tap tempo
   // 🎚️ build styles: how the wall winds up while you hold. The engine draws the same style on the wall (dj.py BUILD_STYLES).
-  const BUILDS = [['auto', '🎲', 'Auto'], ['rise', '⬆️', 'Rise'], ['close', '🔲', 'Close in'], ['burst', '💥', 'Burst out'], ['spin', '🌀', 'Spin'],
-                  ['rainbow', '🌈', 'Rainbow'], ['zipper', '↔️', 'Zipper'], ['heartbeat', '💓', 'Heartbeat']];
+  const BUILDS = [['rise', '⬆️', 'Rise'], ['close', '🔲', 'Close in'], ['burst', '💥', 'Burst out'], ['spin', '🌀', 'Spin'],
+                  ['rainbow', '🌈', 'Rainbow'], ['zipper', '↔️', 'Zipper'], ['heartbeat', '💓', 'Heartbeat'], ['star', '⭐', 'Star']];
+  // 💥 drop styles: what the wall does when the drop lands (padfx.py DROP_FX; Classic = the plain drop, no extra move)
+  const DROPS = [['classic', '🎆', 'Classic'], ['supernova', '🌟', 'Supernova'], ['starburst', '✴️', 'Star burst'], ['heartpop', '💖', 'Heart pop'],
+                 ['shatter', '🪟', 'Shatter'], ['colorbomb', '🎨', 'Color bomb'], ['rainbowwave', '🌈', 'Rainbow wave'], ['bassslam', '🔊', 'Bass slam'], ['lightning', '⚡', 'Lightning']];
   const BUILD_SECS = 8;                                        // the wind-up peaks after 8 seconds (same as the engine)
-  const buildPick = () => { const v = GB.store.get('gb_build_style', 'rise'); return BUILDS.some(x => x[0] === v) ? v : 'rise'; };
-  let lastAuto = null;
-  function buildStyle() {                                      // Auto picks a different style every time
-    const v = buildPick(); if (v !== 'auto') return v;
-    const pool = BUILDS.slice(1).map(x => x[0]).filter(x => x !== lastAuto); lastAuto = pool[Math.floor(Math.random() * pool.length)]; return lastAuto;
+  /* 🎲 one picker for builds and drops: One style | My mix (only the ones you tick) | Full random (default).
+     Every build / drop picks again, never the same one twice in a row. */
+  function chooser(key, list) {
+    const S = GB.store, keys = list.map(x => x[0]);
+    if (key === 'build' && S.get('gb_build_style', '') === 'auto') { S.set('gb_build_mode', 'all'); S.set('gb_build_style', 'rise'); }   // old "Auto"
+    const C = {
+      mode: () => { const m = S.get('gb_' + key + '_mode', 'all'); return ['one', 'mix', 'all'].includes(m) ? m : 'all'; },
+      one: () => { const v = S.get('gb_' + key + '_style', keys[0]); return keys.includes(v) ? v : keys[0]; },
+      pool: () => { try { const p = JSON.parse(S.get('gb_' + key + '_pool', '') || 'null'); const q = Array.isArray(p) ? p.filter(k => keys.includes(k)) : []; return q.length ? q : keys.slice(); } catch (e) { return keys.slice(); } },
+      last: null,
+      pick() { const m = C.mode(); if (m === 'one') return C.one();
+        let ks = m === 'mix' ? C.pool() : keys.filter(k => k !== 'classic');
+        if (ks.length > 1) ks = ks.filter(k => k !== C.last);
+        return (C.last = ks[Math.floor(Math.random() * ks.length)]); },
+      label() { const m = C.mode(); return m === 'one' ? list.find(x => x[0] === C.one()).slice(1).join(' ').toUpperCase() : m === 'mix' ? '🎲 MY MIX · ' + C.pool().length : '🎲 FULL RANDOM'; },
+      mount(wrap, onChange) {
+        wrap.innerHTML = `<div class="seg dj-cmode"><button class="btn" data-m="one">One style</button><button class="btn" data-m="mix">🎲 My mix</button><button class="btn" data-m="all">🎲 Full random</button></div>
+          <div class="dj-bwrap"><div class="chips dj-bstyles" role="group" style="--c:var(--pink)"></div></div>`;
+        const box = wrap.querySelector('.dj-bstyles');
+        const paint = () => { const m = C.mode(), p = C.pool();
+          wrap.querySelectorAll('.dj-cmode .btn').forEach(b => { b.classList.toggle('on', b.dataset.m === m); b.style.setProperty('--c', 'var(--pink)'); });
+          box.querySelectorAll('.chip').forEach(c => { const on = m === 'all' ? c.dataset.v !== 'classic' : m === 'one' ? c.dataset.v === C.one() : p.includes(c.dataset.v);
+            c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); });
+          onChange && onChange(); };
+        wrap.querySelectorAll('.dj-cmode .btn').forEach(b => b.onclick = () => { S.set('gb_' + key + '_mode', b.dataset.m); paint(); GB.sfx('tap'); });
+        list.forEach(([k, ic, name]) => { const c = document.createElement('button'); c.className = 'chip'; c.dataset.v = k;
+          c.innerHTML = `<span class="ic">${ic}</span>${name}`;
+          c.onclick = () => { const m = C.mode();
+            if (m === 'mix') { let p = C.pool(); p = p.includes(k) ? p.filter(x => x !== k) : p.concat(k); if (!p.length) p = [k]; S.set('gb_' + key + '_pool', JSON.stringify(p)); }
+            else { S.set('gb_' + key + '_style', k); S.set('gb_' + key + '_mode', 'one'); }
+            paint(); GB.sfx('tap'); };
+          box.appendChild(c); });
+        paint(); C.paint = paint;
+      },
+    };
+    return C;
   }
+  const BUILD = chooser('build', BUILDS), DROP = chooser('drop', DROPS);
+  const buildStyle = () => BUILD.pick();
+  const dropStyle = () => DROP.pick();
   GB.css(`
   #djBuild { position:relative; overflow:hidden; isolation:isolate; --p:0; --t:0; --a:0; --arms:1; --h:0; --b:0; }
   #djBuild .bfx { position:absolute; inset:0; z-index:-1; pointer-events:none; opacity:0; transition:opacity .15s; }
@@ -152,6 +191,10 @@
     background-size:200% 100%; background-position:calc(var(--h) * 100%) 0; filter:saturate(calc(.6 + var(--p))) brightness(calc(.55 + var(--p) * .9)); }
   #djBuild[data-s="zipper"] .bfx { background:linear-gradient(90deg, color-mix(in srgb, var(--c) calc(100% - var(--p) * 100%), #fff) 0 calc(var(--p) * 50% - 3px), #fff 0 calc(var(--p) * 50%), transparent 0 calc(100% - var(--p) * 50%), #fff 0 calc(100% - var(--p) * 50% + 3px), color-mix(in srgb, var(--cyan) calc(100% - var(--p) * 100%), #fff) 0); }
   #djBuild[data-s="heartbeat"] .bfx { background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--c) calc(100% - var(--p) * 100%), #fff) 0 calc(18% + var(--p) * 30% + var(--b) * 12%), transparent calc(30% + var(--p) * 40% + var(--b) * 20%)); opacity:calc(.45 + var(--b) * .55); }
+  #djBuild[data-s="star"] .bfx { background:repeating-conic-gradient(from calc(var(--a) * 1turn), color-mix(in srgb, var(--gold) calc(100% - var(--p) * 60%), #ff3d9a) 0 6%, transparent 6% 20%),
+    radial-gradient(circle, #fff 0 calc(6% + var(--p) * 10%), transparent calc(18% + var(--p) * 30%)); opacity:calc(.5 + var(--b) * .5); }
+  .dj-cmode { margin-top:10px; } .dj-cmode .btn { min-height:34px; font-size:calc(13px * var(--fs, 1)); }
+  .dj-sub { margin-top:12px; font:700 calc(12px * var(--fs, 1)) var(--mono); letter-spacing:1.5px; opacity:.8; display:flex; justify-content:space-between; }
   .dj-bwrap { container-type:inline-size; margin-top:10px; }
   .dj-bstyles { display:flex; flex-wrap:nowrap; gap:6px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; padding:2px 2px 4px;
     -webkit-mask:linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask:linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
@@ -165,16 +208,16 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--pink)');
     el.innerHTML = `<div class="ph"><span>Build &amp; drop</span><span class="r" id="djBuildR">HOLD, THEN LET GO</span></div>
       <button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">HOLD TO BUILD</span><span class="bcnt"></span><span class="bbar"></span></button>
-      <div class="dj-bwrap"><div class="chips dj-bstyles" id="djBuildStyles" role="radiogroup" aria-label="Build style" style="--c:var(--pink)"></div></div>
-      <p class="note">Hold it: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds. Let go: it drops. Slide your finger off the key to cancel. Pick how it winds up above.</p>`;
+      <div class="dj-sub"><span>🎚️ BUILD STYLE</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div>
+      <div class="dj-sub"><span>💥 DROP STYLE</span><span id="djDropMode"></span></div><div id="djDropPick"></div>
+      <p class="note">Hold it: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds. Let go: it drops. Slide your finger off the key to cancel.
+        Pick one style, tick your own mix, or go full random: every build and every drop can be different.</p>`;
     const b = $('djBuild'), lbl = b.querySelector('.blbl'), cnt = b.querySelector('.bcnt'); let held = false, t0 = 0, raf = 0, cur = 'rise';
-    const box = el.querySelector('#djBuildStyles');
-    const paint = () => { const v = buildPick(); box.querySelectorAll('.chip').forEach(c => { const on = c.dataset.v === v; c.classList.toggle('on', on); c.setAttribute('aria-checked', on); });
-      if (!held) b.dataset.s = v === 'auto' ? 'rise' : v;
-      $('djBuildR').textContent = held ? 'BUILDING: ' + BUILDS.find(x => x[0] === cur)[2].toUpperCase() : BUILDS.find(x => x[0] === v).slice(1).join(' ').toUpperCase(); };
-    BUILDS.forEach(([k, ic, name]) => { const c = document.createElement('button'); c.className = 'chip'; c.dataset.v = k; c.setAttribute('role', 'radio');
-      c.innerHTML = `<span class="ic">${ic}</span>${name}`;
-      c.onclick = () => { GB.store.set('gb_build_style', k); paint(); GB.sfx('tap'); }; box.appendChild(c); });
+    const paint = () => {
+      if (!held) b.dataset.s = BUILD.mode() === 'one' ? BUILD.one() : 'rise';
+      $('djBuildR').textContent = held ? 'BUILDING: ' + BUILDS.find(x => x[0] === cur)[2].toUpperCase() : 'HOLD, THEN LET GO';
+      const bm = $('djBuildMode'), dm = $('djDropMode'); if (bm) bm.textContent = BUILD.label(); if (dm) dm.textContent = DROP.label(); };
+    BUILD.mount(el.querySelector('#djBuildPick'), paint); DROP.mount(el.querySelector('#djDropPick'), paint);
     const tick = () => {                                       // the button's own wind-up, in the same style as the wall
       if (!held) return;
       const el2 = (performance.now() - t0) / 1000, p = Math.min(1, el2 / BUILD_SECS), T = Math.min(el2, BUILD_SECS);
@@ -190,7 +233,7 @@
     const start = e => { e.preventDefault(); if (held) return; held = true; cur = buildStyle(); b.dataset.s = cur; t0 = performance.now();
       b.classList.add('held'); lbl.textContent = 'BUILDING… LET GO TO DROP'; paint(); tick(); dj({build: true, style: cur}); GB.sfx('nav'); };
     const end = (cancel) => { if (!held) return; held = false; cancelAnimationFrame(raf); b.classList.remove('held', 'full'); b.style.setProperty('--p', 0);
-      lbl.textContent = 'HOLD TO BUILD'; cnt.textContent = ''; paint(); dj({build: false, cancel: !!cancel, snap: snap()}); if (!cancel) GB.sfx('ok'); };
+      lbl.textContent = 'HOLD TO BUILD'; cnt.textContent = ''; paint(); dj(cancel ? {build: false, cancel: true} : {build: false, snap: snap(), drop_style: dropStyle()}); if (!cancel) GB.sfx('ok'); };
     b.addEventListener('pointerdown', start); b.addEventListener('pointerup', () => end(false));
     b.addEventListener('pointerleave', () => end(true)); b.addEventListener('pointercancel', () => end(true));
     b.addEventListener('contextmenu', e => e.preventDefault());

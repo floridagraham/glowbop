@@ -102,7 +102,8 @@
   let ms = {}, np = {}, scrubbing = false, volT = null, lib = null, curTab = 'search', rated = {}, lastVol = 80;
   let si = null, siT = 0, mounted = false;
   const extPlaying = () => np && np.title && np.status === 'Playing' && !/glowbop/i.test(np.title || '');
-  const ours = () => ms && ms.now && (ms.playing || !extPlaying());   // another app playing beats a paused GlowBop song
+  const YT_OFF = true;                                         // 🚫 Oct 15: the built-in YouTube player is off; GlowBop follows Windows audio only
+  const ours = () => !YT_OFF && ms && ms.now && (ms.playing || !extPlaying());   // another app playing beats a paused GlowBop song
   const music = b => post('/api/music', b);
   const setIc = (id, n, extra) => { $(id).innerHTML = svg(n, extra); };
   const TABS = [['search', 'search', 'Search'], ['lists', 'lists', 'Playlists'], ['moods', 'moods', 'Moods'], ['queue', 'queue', 'Up Next'], ['recent', 'recent', 'Recent']];
@@ -156,11 +157,12 @@
         </div>
       </div>`;
     wire();
+    if (YT_OFF) ['muYtOpen', 'muYt', 'appVid'].forEach(id => { const n = $(id); if (n) n.style.setProperty('display', 'none', 'important'); });   // 🚫 no YouTube browser (hidden, so the rest of the page still finds them)
     mounted = true;
   });
   // 📺 the YouTube browser (a music source) sits lower on MUSIC, under Show control and Levels, so the first screen on a phone
   // is now playing, play/skip, volume, light style, power and brightness. Same elements, same ids: only moved.
-  GB.panel('music', 40, el => {
+  if (!YT_OFF) GB.panel('music', 40, el => {
     el.classList.add('box', 'mu-card', 'mu-src'); el.id = 'muSrcPanel'; el.style.setProperty('--c', 'var(--red)');
     el.innerHTML = '<div class="ph"><span>Music source</span><span class="r">YOUTUBE THROUGH GLOWBOP</span></div>';
     ['muYtOpen', 'muYt'].forEach(id => { const n = $(id); if (n) el.appendChild(n); });
@@ -496,8 +498,8 @@
   GB.on('ready', () => {
     mediaLoop();
     // the GlowBop window on the laptop plays the music itself (the pop-up player is only a fallback)
-    if (GB.local && location.pathname === '/app') {
-      const sc = document.createElement('script'); sc.src = '/player.js?v=2';
+    if (!YT_OFF && GB.local && location.pathname === '/app') {
+      const sc = document.createElement('script'); sc.src = '/player.js?v=3';
       sc.onload = () => {
         let lastSt = '';
         window.appPlayer = LumaPlayer({kind: 'app', ids: ['ayt0', 'ayt1'], wraps: ['aw0', 'aw1'], onStatus: (st, want, active) => {

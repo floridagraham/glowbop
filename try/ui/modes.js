@@ -370,18 +370,18 @@
   let lgSrc = null, lgRes = null, lgRz = null, lgOpt = {boost: true, removeBg: true}, lgLayout = 'auto', lgJobs = [], lgTimer = null;
   try { Object.assign(lgOpt, JSON.parse(localStorage.getItem('gb_logo_opts') || '{}')); } catch (e) {}
   const LG_HINT = 'Any picture works. A flat background is removed for you.';
-  const LM_TIP = {still: 'Logo glows with the beat', pulse: 'Logo punches on every kick', shimmer: 'Logo colors shift each bar',
-    sparks: '✨ Logo builds itself from sparks', wipe: 'Logo wipes in on the beat', drop: '💥 Logo blasts apart on every drop', twinkle: '✨ Logo pops in dot by dot, then twinkles'};
-  const LM_NOTE = {still: 'Glows and breathes with the beat.', pulse: 'Punches bigger on every kick.', shimmer: 'Colors swing round the color wheel each bar.',
+  const LM_TIP = {random: '🎲 A different motion and entrance every time', still: 'Logo glows with the beat', pulse: 'Logo punches on every kick', shimmer: 'Logo colors shift each bar',
+    sparks: '✨ Logo builds itself from sparks', wipe: 'Logo wipes in on the beat', drop: '💥 Logo blasts apart on every drop', twinkle: '✨ Logo pops in dot by dot, then twinkles', spin: '🌀 Logo spins, faster on the beat', flash: '⚡ Logo flashes white on the beat', bounce: 'Logo hops on every kick', zoom: 'Logo zooms in and out'};
+  const LM_NOTE = {random: 'Every time a logo comes on it picks a new entrance and a new motion, never the same twice in a row.', still: 'Glows and breathes with the beat.', pulse: 'Punches bigger on every kick.', shimmer: 'Colors swing round the color wheel each bar.',
     sparks: 'Builds itself from flying sparks each time it appears, then breathes.', wipe: 'Wipes in left to right on the beat, then holds.',
-    drop: 'Holds, then explodes into particles on every drop and flies back together.', twinkle: 'Pops in dot by dot with a white flash, then random dots glint, like the GlowBop icon.'};
+    drop: 'Holds, then explodes into particles on every drop and flies back together.', twinkle: 'Pops in dot by dot with a white flash, then random dots glint, like the GlowBop icon.', spin: 'Spins round and round, faster on the beat.', flash: 'Flashes white on every kick, a big flash each bar.', bounce: 'Hops up on every kick and drops back.', zoom: 'Slowly zooms in and out, with a nudge on the beat.'};
   const WALL = {off: 'Off', text: 'Text', logo: 'Logo', both: 'Both'};
   async function loadText() {
     try {
       TX = await GB.get('/api/text?px=1' + (GB.gsel ? '&g=' + encodeURIComponent(GB.gsel) : ''));
       TX.state = TX.state || {};
       const s = TX.state || {};
-      txMode = s.mode || 'scroll'; txColor = s.color || 'look'; txLayer = s.layer || 'over'; lgMode = s.logo_mode || 'still';
+      txMode = s.mode || 'scroll'; txColor = s.color || 'look'; txLayer = s.layer || 'over'; lgMode = s.logo_random !== false ? 'random' : (s.logo_mode || 'still');
       if (s.text && !$('mdTxText').value) $('mdTxText').value = s.text;
       $('mdTxDrop').checked = !!s.drop_flash; if (s.drop_word) $('mdTxDropWord').value = s.drop_word;
       if (s.speed) { $('mdTxSpeed').value = Math.round(s.speed * 10); GB.paintRange($('mdTxSpeed')); }
@@ -482,7 +482,7 @@
       <div class="sub">Saved logos</div>
       <div class="md-pre" id="mdLgPresets"></div>
       <div class="sub">Entrance &amp; motion</div>
-      <div class="seg wrap md-pinks md-lm"><button class="btn" data-lm="still">Glow</button><button class="btn" data-lm="pulse">Pulse</button><button class="btn" data-lm="shimmer">Color shift</button><button class="btn" data-lm="sparks">Sparks</button><button class="btn" data-lm="wipe">Wipe in</button><button class="btn" data-lm="drop">Drop blast</button><button class="btn" data-lm="twinkle">Twinkle</button></div>
+      <div class="seg wrap md-pinks md-lm"><button class="btn" data-lm="random">🎲 Random</button><button class="btn" data-lm="still">Glow</button><button class="btn" data-lm="pulse">Pulse</button><button class="btn" data-lm="shimmer">Color shift</button><button class="btn" data-lm="sparks">Sparks</button><button class="btn" data-lm="wipe">Wipe in</button><button class="btn" data-lm="drop">Drop blast</button><button class="btn" data-lm="twinkle">Twinkle</button><button class="btn" data-lm="spin">Spin</button><button class="btn" data-lm="flash">Flash</button><button class="btn" data-lm="bounce">Bounce</button><button class="btn" data-lm="zoom">Zoom</button></div>
       <p class="note" id="mdLgMdNote"></p>
       <div class="grid2">
         <button class="btn c" id="mdLgSave" style="--c:var(--gold)">${GB.svg('save')}<span>Save logo</span></button>
@@ -491,9 +491,10 @@
       ${more('mdLgMore', `<div class="md-fxl">
         ${tg('mdLgBoost', 'Boost for LEDs', 'Punchier colors, lifts dark colors, thickens thin lines, turns near-black off.')}
         ${tg('mdLgBg', 'Remove background', 'Finds a flat background (white or any solid color) and turns it off.')}
-        ${tg('mdLgInside', 'Show inside the logo', 'The light show plays only inside the logo shape, with a soft glow round the edge.')}
+        ${tg('mdLgInside', 'Show inside the logo', 'Your logo becomes part of the show: it fills with moving light, breathes with the beat and flashes on drops.')}
+        <div class="seg wrap md-pinks" id="mdLgIfx" hidden><button class="btn" data-ifx="random">🎲 Random</button><button class="btn" data-ifx="flow">🌊 Flow</button><button class="btn" data-ifx="neon">💡 Neon</button><button class="btn" data-ifx="sweep">🌈 Sweep</button><button class="btn" data-ifx="fire">🔥 Fire</button><button class="btn" data-ifx="glitter">✨ Glitter</button><button class="btn" data-ifx="show">🎵 The show</button></div>
         ${tg('mdLgSlide', 'Slideshow', 'While the logo is on the wall, rotates through every saved logo.')}
-        ${tg('mdLgSlBuilt', 'Include GlowBop logos', 'Adds the two built-in GlowBop logos to the rotation. Works with no saved logos.')}
+        ${tg('mdLgSlBuilt', 'Include GlowBop logos', 'Adds the 6 built-in GlowBop logos to the rotation. Works with no saved logos.')}
         </div>
         <div class="seg md-pinks" id="mdLgEvery"><button class="btn" data-se="8bars">Every 8 bars</button><button class="btn" data-se="1min">1 min</button><button class="btn" data-se="5min">5 min</button></div>
         <p class="note" id="mdLgSlNote"></p>`)}`;
@@ -506,6 +507,8 @@
       if (lgSrc) { lgRun(); lgSend(); } else renderText(); };
     $('mdLgBoost').onclick = () => flip('boost');
     $('mdLgBg').onclick = () => flip('removeBg');
+    const IFX = {random: '🎲 A new fill every time the logo comes on', flow: '🌊 Liquid color flows through your logo', neon: '💡 Neon lights chase round your logo', sweep: '🌈 Rainbow waves sweep your logo on the beat', fire: '🔥 Your logo is on fire', glitter: '✨ Your logo sparkles', show: '🎵 The music show plays inside your logo'};
+    el.querySelectorAll('[data-ifx]').forEach(b => b.onclick = () => { TX.state.inside_fx = b.dataset.ifx; renderText(); sendText({inside_fx: b.dataset.ifx}, IFX[b.dataset.ifx]); });
     $('mdLgInside').onclick = () => { const v = !(TX.state || {}).logo_inside; TX.state.logo_inside = v; renderText();
       sendText({logo_inside: v}, v ? '✨ The show plays inside your logo' : 'Logo drawn normally'); };
     $('mdLgSlide').onclick = () => { const s = TX.state || {}, v = !s.slideshow;
@@ -885,7 +888,8 @@
   /*/LGPROC*/
 
   // 🖼️ how many logos the slideshow rotates: saved ones + the 2 built-in GlowBop logos (unless switched off)
-  const slideN = s => (s.logo_count || 0) + (s.slide_builtin === false ? 0 : 2);
+  const BUILT_N = 6;                                         // built-in GlowBop logos (GlowBop, Name, GB, Ripple, Bars, Spark)
+  const slideN = s => (s.logo_count || 0) + (s.slide_builtin === false ? 0 : BUILT_N);
   function renderText() {
     if (!$('mdWall')) return;
     const s = TX.state || {}, v = showing(), txOn = v === 'text' || v === 'both', lgOn = v === 'logo' || v === 'both';
@@ -904,11 +908,12 @@
     document.querySelectorAll('#pg-text [data-lm]').forEach(b => b.classList.toggle('on', b.dataset.lm === lgMode));
     $('mdLgMdNote').textContent = LM_NOTE[lgMode] || '';
     const setT = (id, on) => { const b = $(id); b.classList.toggle('on', !!on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); };
-    setT('mdLgBoost', lgOpt.boost); setT('mdLgBg', lgOpt.removeBg); setT('mdLgInside', s.logo_inside); setT('mdLgSlide', s.slideshow); setT('mdLgSlBuilt', s.slide_builtin !== false);
+    setT('mdLgBoost', lgOpt.boost); setT('mdLgBg', lgOpt.removeBg); setT('mdLgInside', s.logo_inside); $('mdLgIfx').hidden = !s.logo_inside;
+    document.querySelectorAll('#pg-text [data-ifx]').forEach(b => b.classList.toggle('on', b.dataset.ifx === (s.inside_fx || 'random'))); setT('mdLgSlide', s.slideshow); setT('mdLgSlBuilt', s.slide_builtin !== false);
     document.querySelectorAll('#pg-text [data-se]').forEach(b => b.classList.toggle('on', b.dataset.se === (s.slide_every || '8bars')));
     $('mdLgEvery').hidden = !s.slideshow; $('mdLgSlBuilt').hidden = !s.slideshow;
     const nl = s.logo_count || 0, bi = s.slide_builtin !== false, ns = slideN(s);
-    $('mdLgSlNote').textContent = s.slideshow ? (ns >= 2 ? `Rotating ${bi ? (nl ? nl + ' saved logo' + (nl === 1 ? '' : 's') + ' + 2 GlowBop logos' : 'the 2 GlowBop logos') : nl + ' saved logos'} while the logo is on the wall. Now: ${s.logo_name || '-'}` : `Only ${nl} saved logo${nl === 1 ? '' : 's'}. Save 2 or more to rotate (pick a picture, tap Save logo), or include the GlowBop logos.`) : (nl ? `${nl} saved logo${nl === 1 ? '' : 's'}. Great for sponsors at a game or business.` : 'Save logos, then rotate them. Great for sponsors.');
+    $('mdLgSlNote').textContent = s.slideshow ? (ns >= 2 ? `Rotating ${bi ? (nl ? nl + ' saved logo' + (nl === 1 ? '' : 's') + ' + ' + BUILT_N + ' GlowBop logos' : 'the ' + BUILT_N + ' GlowBop logos') : nl + ' saved logos'} while the logo is on the wall. Now: ${s.logo_name || '-'}` : `Only ${nl} saved logo${nl === 1 ? '' : 's'}. Save 2 or more to rotate (pick a picture, tap Save logo), or include the GlowBop logos.`) : (nl ? `${nl} saved logo${nl === 1 ? '' : 's'}. Great for sponsors at a game or business.` : 'Save logos, then rotate them. Great for sponsors.');
     $('mdTxSpeedV').textContent = ($('mdTxSpeed').value / 10).toFixed(1) + 'x';
     const pre = (TX.presets || []).slice().reverse();
     const chips = (box, kind, empty) => {

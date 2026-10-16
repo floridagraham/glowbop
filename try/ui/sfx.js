@@ -1,4 +1,4 @@
-/* 🔊 Console sounds: GlowBop's own synthesized key sounds (Web Audio, no sound files), in twelve styles.
+/* 🔊 Console sounds: GlowBop's own synthesized key sounds (Web Audio, no sound files), in fifteen styles, played one at a time, as your own mix, or fully random (every press a different style).
    Console (default): crisp two-tone panel chirps.  Computer: warbly mainframe trills.  Arcade: 8-bit square blips.
    Bubble: the original soft pops.  Then the "patch" styles, each a little set of oscillators, noise and filters:
    Galaxy Rebel (droid bleeps, soft pews), Wasteland Terminal (lo-fi bunker clicks), Synthwave (detuned neon blips),
@@ -9,7 +9,19 @@
   'use strict';
   let ctx = null;                          // the one shared AudioContext (made on the first sound)
   let C = null, TR = 1;                    // the context a sound is being built in + that sound's loudness trim
-  const style = () => GB.store.get('gb_sfx_style', 'console');
+  const picked = () => GB.store.get('gb_sfx_style', 'console');
+  const DEFAULT_MIX = ['softbubble', 'console', 'computer', 'arcade'];
+  const mode = () => GB.store.get('gb_sfx_mode', 'mix');                      // 'one' | 'mix' | 'all' (default: my mix)
+  const pool = () => { try { const p = JSON.parse(GB.store.get('gb_sfx_pool', '') || 'null'); return Array.isArray(p) && p.length ? p : DEFAULT_MIX; } catch (e) { return DEFAULT_MIX; } };
+  let lastStyle = '';
+  const style = () => {                                                       // 🎲 which style plays THIS press
+    const m = mode(); if (m === 'one') return picked();
+    const ks = m === 'all' ? GB.SFX_STYLES.map(x => x[0]) : pool().filter(k => GB.SFX_STYLES.some(x => x[0] === k));
+    if (!ks.length) return picked();
+    let k = ks[(Math.random() * ks.length) | 0];
+    if (ks.length > 1) while (k === lastStyle) k = ks[(Math.random() * ks.length) | 0];
+    return (lastStyle = k);
+  };
   const on = () => GB.store.get('gb_sfx', '1') === '1';
   const kill = ns => ns.forEach(n => { try { n.disconnect(); } catch (e) {} });
 
@@ -174,7 +186,27 @@
     voice(t + 0.02, 0.22, [o, o2], {fx: [flt('lowpass', 2400 * k)], att: 0.01});
   }
 
+  // 🫧🔔💎 GlowBop's own Apple-inspired trio (Oct 2026): soft, clean, quiet under the music. On rises G->C like the intro.
+  function bub(t, f, d = 0.2) {        // a round "bloop": sine with a tiny pitch drop + a soft octave
+    const o = osc('sine', f * 1.06), o2 = osc('sine', f * 2.12), a = amp(0.15);
+    glide(o.frequency, t, [[0.012, f]]); glide(o2.frequency, t, [[0.012, f * 2]]); o2.connect(a);
+    voice(t, d, [o, a], {mods: [[o2]], att: 0.003});
+  }
+  const glassBell = (t, f, d = 0.45) => bell(t, f, d, 1, {ratio: 2, index: 0.35, att: 0.003});
+  const crystalBell = (t, f, d = 0.8) => bell(t, f, d, 1, {ratio: 3.5, index: 2.2, att: 0.002});
+  function trio(play, k) {            // the same little melodies for all three; k shifts the register per style
+    const T = [1396.91, 1567.98, 1760, 2093].map(f => f * k);
+    return {
+      tap(t) { play(t, pick(T) , 0.12); },
+      nav(t) { play(t, pick([1046.5, 1174.66]) * k, 0.14); },
+      on(t) { play(t, 783.99 * k); play(t + 0.07, 1046.5 * k); },
+      off(t) { play(t, 1046.5 * k); play(t + 0.07, 783.99 * k); },
+      ok(t) { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => play(t + i * 0.06, f * k)); },
+      err(t) { play(t, 329.63 * k); play(t + 0.11, 261.63 * k); },
+    };
+  }
   const PROC = {
+    softbubble: trio(bub, 1), glass: trio(glassBell, 1.335), crystal: trio(crystalBell, 1.26),
     // 🚀 space opera: chatty droid bleeps, soft pews, a hyperspace-ish whoosh, a power hum
     galaxy: {
       tap(t) {     // 2-4 random notes on one oscillator, some jumps, some glides, gated so they chatter
@@ -439,12 +471,16 @@
     spooky: {tap: 0.1729, on: 0.08796, nav: 0.8339, ok: 0.287, err: 0.254, off: 0.1603},
     reactor: {tap: 0.1648, on: 0.3019, nav: 0.1023, ok: 0.12, err: 0.0478, off: 0.5174},
     deepsea: {tap: 0.2513, on: 0.06503, nav: 0.5824, ok: 0.1234, err: 0.1217, off: 0.1216},
+    softbubble: {tap: 0.06, on: 0.065, nav: 0.06, ok: 0.055, err: 0.07, off: 0.065},
+    glass: {tap: 0.055, on: 0.06, nav: 0.055, ok: 0.05, err: 0.065, off: 0.06},
+    crystal: {tap: 0.045, on: 0.05, nav: 0.045, ok: 0.04, err: 0.055, off: 0.05},
     chamber: {tap: 0.5888, on: 0.1507, nav: 0.354, ok: 0.1888, err: 0.02766, off: 0.1508},
   };
 
   GB.SFX_STYLES = [['console', 'Console', '🖖'], ['computer', 'Computer', '🖥️'], ['arcade', 'Arcade', '👾'], ['bubble', 'Bubble', '🫧'],
     ['galaxy', 'Galaxy Rebel', '🚀'], ['wasteland', 'Wasteland Terminal', '☢️'], ['synthwave', 'Synthwave', '🌆'], ['magic', 'Magic', '✨'],
-    ['spooky', 'Spooky', '👻'], ['reactor', 'Reactor Lab', '⚛️'], ['deepsea', 'Deep Sea Deco', '🫧'], ['chamber', 'Test Chamber', '🔵🟠']];
+    ['spooky', 'Spooky', '👻'], ['reactor', 'Reactor Lab', '⚛️'], ['deepsea', 'Deep Sea Deco', '🫧'], ['chamber', 'Test Chamber', '🔵🟠'],
+    ['softbubble', 'Soft Bubble', '🫧'], ['glass', 'Glass', '🔔'], ['crystal', 'Crystal', '💎']];
   // kind = tap | on | off | nav | ok | err; st = a style (default: the picked one). c/at let a test render into an OfflineAudioContext.
   GB.sfxPlay = (kind, st, c, at) => {
     try {
@@ -468,15 +504,30 @@
   GB.panel('setup', 56, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
     el.innerHTML = `<div class="ph"><span>Console sounds</span><span class="r" id="sfxNow"></span></div>
+      <div class="seg" id="sfxMode"><button class="btn" data-m="one">One style</button><button class="btn" data-m="mix">🎲 My mix</button><button class="btn" data-m="all">🎲 Full random</button></div>
       <div class="sfxwrap"><div class="tiles" id="sfxStyles"></div></div>
-      <p class="note">Tap a style to hear it. The <b>SFX</b> key at the top turns the sounds on and off.</p>`;
+      <p class="note" id="sfxNote"></p>`;
     const box = el.querySelector('#sfxStyles');
-    const paint = () => { box.querySelectorAll('.tile').forEach(b => b.classList.toggle('on', b.dataset.s === style()));
-      const n = GB.SFX_STYLES.find(x => x[0] === style()); el.querySelector('#sfxNow').textContent = (n ? n[1] : '').toUpperCase(); };
+    const NOTE = {one: 'Tap a style to use it on every button.', mix: 'Tap styles to add or remove them from your mix. Every button press plays a different one.',
+      all: 'Every button press plays a random style from all of them.'};
+    const paint = () => {
+      const m = mode(), p = pool();
+      el.querySelectorAll('#sfxMode .btn').forEach(b => { b.classList.toggle('on', b.dataset.m === m); b.style.setProperty('--c', 'var(--lav)'); });
+      box.querySelectorAll('.tile').forEach(b => b.classList.toggle('on', m === 'all' || (m === 'one' ? b.dataset.s === picked() : p.includes(b.dataset.s))));
+      const n = GB.SFX_STYLES.find(x => x[0] === picked());
+      el.querySelector('#sfxNow').textContent = m === 'one' ? (n ? n[1] : '').toUpperCase() : m === 'mix' ? `MIX · ${p.length} STYLES` : 'FULL RANDOM';
+      el.querySelector('#sfxNote').innerHTML = NOTE[m] + ' The <b>SFX</b> key at the top turns the sounds on and off.';
+    };
+    el.querySelectorAll('#sfxMode .btn').forEach(b => b.onclick = () => { GB.store.set('gb_sfx_mode', b.dataset.m); paint(); });
     GB.SFX_STYLES.forEach(([k, name, em]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.s = k; b.style.setProperty('--c', 'var(--lav)');
       b.innerHTML = `<span class="em">${em}</span>${name}`;
-      b.onclick = () => { GB.store.set('gb_sfx_style', k); paint(); GB.sfxPlay('on', k); setTimeout(() => GB.sfxPlay('tap', k), 380); };
+      b.onclick = () => {
+        const m = mode();
+        if (m === 'mix') { let p = pool().slice(); p = p.includes(k) ? p.filter(x => x !== k) : p.concat(k); if (!p.length) p = [k]; GB.store.set('gb_sfx_pool', JSON.stringify(p)); }
+        else { GB.store.set('gb_sfx_style', k); if (m === 'all') GB.store.set('gb_sfx_mode', 'one'); }
+        paint(); GB.sfxPlay('on', k); setTimeout(() => GB.sfxPlay('tap', k), 380);
+      };
       box.appendChild(b);
     });
     paint();

@@ -80,7 +80,9 @@
       if (m === 'off') ok = await score({action: 'off'}); else if (m === 'game') ok = await score({action: 'game'});
       else if (m === 'f1') ok = await score({action: 'f1'}); else { ok = await score({action: 'on', mode: 'live'}); teamsFor = ''; loadTeams(); }
       if (!ok) return;
-      GB.toast(m === 'off' ? 'Scoreboard off, back to the light show' : m === 'game' ? '🏟️ Game Day scoreboard' : m === 'f1' ? '🏎️ F1 running order (latest session)' : '📺 Live Fan scoreboard');
+      const ovWas = m !== 'off' && SB && SB.overlay && SB.overlay.on;
+      GB.toast((m === 'off' ? 'Scoreboard off, back to the light show' : m === 'game' ? '🏟️ Game Day scoreboard' : m === 'f1' ? '🏎️ F1 running order (latest session)' : '📺 Live Fan scoreboard') + (ovWas ? ' (Scores over the show turned off)' : ''));
+      if (ovWas) { SB.overlay.on = false; if (OV) OV.on = false; ovEdit = Date.now(); renderOv(); }
       if (SB) { SB.on = m !== 'off'; if (m !== 'off') SB.mode = m; render(); }
       refresh(300);
     });
@@ -455,7 +457,9 @@
   `);
   let OV = null, ovT = null, ovEdit = 0, ovTeamsFor = '';
   const ovPost = b => score(Object.assign({action: 'overlay'}, b));
-  const STEPS = [1, 2, 3, 4, 5, 7, 10, 15, 20, 30];
+  const STEPS = [15, 30, 60, 120, 180, 240, 300, 420, 600, 900, 1200, 1800];   // seconds
+  const evS = () => OV ? (OV.every_sec || OV.every_min * 60) : 180;
+  const evTxt = v => v < 60 ? v + '<small>s</small>' : (v / 60) + '<small>min</small>';
   function stepper(el, get, set) {                                    // − / + with hold-to-repeat
     el.querySelectorAll('[data-d]').forEach(b => {
       let t1 = null, t2 = null;
@@ -471,7 +475,7 @@
   GB.panel('score', 12, el => {
     P.ov = el; el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
     el.innerHTML = `<div class="ph"><span>${GB.svg('trophy', ' style="width:20px;height:20px;vertical-align:-4px;margin-right:6px"')}Scores over the show</span><span class="r" id="sovR">OFF</span></div>
-      <div class="sov-top"><div class="tx">The music show keeps playing. Every few minutes your games pop in as a score card, then fade away.</div>
+      <div class="sov-top"><div class="tx">The music show keeps playing. Every so often your games pop in, flip through one after another, then fade away.</div>
         <button class="sov-sw" id="sovOn" role="switch" aria-checked="false" aria-label="Scores over the show"></button></div>
       <div class="sov-row"><span class="sb-lab">Show every</span><div class="sov-stp" id="sovEvery"><button class="btn" data-d="-1" aria-label="Fewer minutes between cards">−</button><b id="sovEveryV">3<small>min</small></b><button class="btn" data-d="1" aria-label="More minutes between cards">+</button></div></div>
       <div class="sov-row"><span class="sb-lab">Hold for</span><div class="sov-stp" id="sovHold"><button class="btn" data-d="-1" aria-label="Hold shorter">−</button><b id="sovHoldV">5<small>s</small></b><button class="btn" data-d="1" aria-label="Hold longer">+</button></div></div>
@@ -485,11 +489,13 @@
         <button class="btn" id="sovAdd" style="--c:var(--cyan)">Add</button></div>
       <button class="btn c lg wide" id="sovNow" style="--c:var(--green)">Show one now</button>
       <div class="sov-st" id="sovSt" aria-live="polite"></div>`;
-    $('sovOn').onclick = async () => { const on = !(OV && OV.on); if (await ovPost({on})) { if (OV) OV.on = on; ovEdit = Date.now(); renderOv(); GB.toast(on ? '🏟️ Scores will pop in over the show' : 'Scores over the show off'); refresh(300); } };
-    stepper($('sovEvery'), () => (OV ? OV.every_min : 3), (v, d) => {
+    $('sovOn').onclick = async () => { const on = !(OV && OV.on), bigWas = on && SB && SB.on;
+      if (await ovPost({on})) { if (OV) OV.on = on; if (bigWas) { SB.on = false; render(); } ovEdit = Date.now(); renderOv();
+        GB.toast(on ? '🏟️ Scores will pop in over the show' + (bigWas ? ' (big scoreboard turned off so the cards can show)' : '') : 'Scores over the show off'); refresh(300); } };
+    stepper($('sovEvery'), evS, (v, d) => {
       let i = STEPS.findIndex(x => x >= v); if (i < 0) i = STEPS.length - 1; if (STEPS[i] !== v && d > 0) i--;
-      const n = STEPS[Math.max(0, Math.min(STEPS.length - 1, i + d))]; if (!OV || n === OV.every_min) return;
-      OV.every_min = n; renderOv(); ovSave({every_min: n}); });
+      const n = STEPS[Math.max(0, Math.min(STEPS.length - 1, i + d))]; if (!OV || n === evS()) return;
+      OV.every_sec = n; renderOv(); ovSave({every_sec: n}); });
     stepper($('sovHold'), () => (OV ? OV.hold : 5), (v, d) => { const n = Math.max(3, Math.min(10, v + d)); if (!OV || n === OV.hold) return; OV.hold = n; renderOv(); ovSave({hold: n}); });
     el.querySelectorAll('[data-g]').forEach(b => b.onclick = async () => { if (await ovPost({games: b.dataset.g})) { if (OV) OV.games = b.dataset.g; ovEdit = Date.now(); renderOv(); } });
     $('sovF1').onclick = async () => { const f = !(OV && OV.f1); if (await ovPost({f1: f})) { if (OV) OV.f1 = f; ovEdit = Date.now(); renderOv(); GB.toast(f ? '🏎️ F1 sessions pop in too' : 'F1 off'); } };
@@ -517,7 +523,7 @@
     const on = !!OV.on, br = (SB.overlay && SB.overlay.brief) || {};
     $('sovOn').setAttribute('aria-checked', on ? 'true' : 'false');
     $('sovR').textContent = br.card ? 'SHOWING' : on ? 'ON' : 'OFF';
-    $('sovEveryV').innerHTML = OV.every_min + '<small>min</small>'; $('sovHoldV').innerHTML = OV.hold + '<small>s</small>';
+    $('sovEveryV').innerHTML = evTxt(evS()); $('sovHoldV').innerHTML = OV.hold + '<small>s</small>';
     P.ov.querySelectorAll('[data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === (OV.games === 'all' ? 'live' : OV.games)));
     $('sovF1').classList.toggle('on', !!OV.f1); $('sovF1').setAttribute('aria-pressed', OV.f1 ? 'true' : 'false');
     $('sovFavL').hidden = !OV.f1;
@@ -528,8 +534,8 @@
     // my teams: your Live Fan team + the ones you added
     const lgName = k => (SB.leagues || {})[k] || k.toUpperCase();
     const chips = (OV.teams || []).map(t => `<button class="chip" data-rm="${esc(t.league + ':' + t.id)}" aria-label="Remove ${esc(t.name)}"><span>${esc(t.name || t.id)} · ${esc(lgName(t.league))}</span>${GB.svg('ovr', ' style="opacity:.6"')}</button>`);
-    if (SB.team_id && !(OV.teams || []).some(t => t.league === SB.league && String(t.id) === String(SB.team_id)))
-      chips.unshift(`<span class="chip" title="Your Live Fan team"><span>📺 ${esc(SB.team_name || 'Live Fan team')}</span></span>`);
+    if (SB.team_id && !OV.fan_skipped && !(OV.teams || []).some(t => t.league === SB.league && String(t.id) === String(SB.team_id)))
+      chips.unshift(`<button class="chip" data-rm="${esc(SB.league + ':' + SB.team_id)}" title="Your Live Fan team (from SPORTS)" aria-label="Remove ${esc(SB.team_name || 'Live Fan team')}"><span>📺 ${esc(SB.team_name || 'Live Fan team')}</span>${GB.svg('ovr', ' style="opacity:.6"')}</button>`);
     const th = chips.join('') || '<span class="note">No teams yet. Add one below (your Live Fan team counts too).</span>';
     const tb = $('sovTeams'); if (tb._h !== th) { tb._h = th; tb.innerHTML = th;
       tb.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { if (await ovPost({remove_team: b.dataset.rm})) { GB.toast('Removed'); ovEdit = 0; refresh(150); } }); }

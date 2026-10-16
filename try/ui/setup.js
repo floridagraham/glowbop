@@ -59,6 +59,13 @@
   .su-done b.su-tk { display:block; font:calc(28px * var(--fs, 1)) var(--mono); color:var(--cyan); margin:6px 0; letter-spacing:2px; }
   .su-keys { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; } .su-keys .btn { grid-column:1 / -1; }
   @media (max-width: 600px) { .su-keys { grid-template-columns:minmax(0, 1fr); } }
+  .su-tier { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:99px; font:600 calc(10px * var(--fs, 1)) var(--mono); letter-spacing:.06em; text-transform:uppercase; vertical-align:middle; }
+  .su-tier.full { background:rgba(255,196,0,.16); color:#ffc400; border:1px solid rgba(255,196,0,.5); }
+  .su-tier.basic { background:rgba(150,150,150,.12); color:#9a9a9a; border:1px solid rgba(150,150,150,.35); }
+  .su-link { margin:6px 0 2px 26px; padding:8px 10px; border-left:4px solid var(--amber); background:color-mix(in srgb, var(--amber) 8%, transparent); border-radius:0 10px 0 10px; }
+  .su-link.ok { border-left-color:var(--green); background:color-mix(in srgb, var(--green) 7%, transparent); }
+  .su-link b { display:block; font:700 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; }
+  .su-link small { display:block; color:var(--dim); font-size:calc(13px * var(--fs, 1)); line-height:1.4; margin-top:2px; }
   .su-now { font:calc(14px * var(--fs, 1)) var(--mono); color:var(--cyan); overflow-wrap:anywhere; }
   `);
 
@@ -67,8 +74,37 @@
     wled: 'WLED: the IP is shown in the WLED app, or on your router. GlowBop takes over the strip while running, then WLED goes back to its own effect.',
     govee: 'Govee: first turn on "LAN Control" for the light in the Govee app (light → settings ⚙). Govee lights show one color at a time.',
     surplife: 'Surplife curtain: Find my lights finds it over Bluetooth (close the Surplife app on your phone first: only one connection at a time). Or type its Bluetooth address, e.g. AA:BB:CC:DD:EE:FF.',
-    daybetter: 'DayBetter strips and light poles: Find my lights finds them over Bluetooth (close the DayBetter app on your phone first: only one connection at a time). Each strip glows one color at a time, picked from the show and pulsing with the beat.'};
-  const BRAND = {twinkly: 'Twinkly', wled: 'WLED', govee: 'Govee', surplife: 'Surplife curtain (Bluetooth)', daybetter: 'DayBetter (Bluetooth)'};
+    daybetter: 'DayBetter strips and light poles: Find my lights finds them over Bluetooth (close the DayBetter app on your phone first: only one connection at a time). Each strip glows one color at a time, picked from the show and pulsing with the beat.',
+    blecheap: 'Bluetooth LED strips (names like MELK, ELK-BLEDOM, LEDBLE): the cheap strips that come with furniture, TV backlights and neon signs. Find my lights finds them; close the strip\'s phone app first. Each one glows one color, following the show.'};
+  const BRAND = {twinkly: 'Twinkly', wled: 'WLED', govee: 'Govee', surplife: 'Surplife curtain (Bluetooth)', daybetter: 'DayBetter (Bluetooth)', blecheap: 'Bluetooth LED strip'};
+  // ⭐ Full show: every LED is drawn separately (the real GlowBop look). Basic sync: the whole light shows one color.
+  const FULL = new Set(['twinkly', 'wled', 'surplife', 'xlights']);
+  const tier = t => FULL.has(t) ? '<span class="su-tier full" title="Every LED moves on its own: the full GlowBop show">Full show</span>' : '<span class="su-tier basic" title="The whole light glows one color that follows the music">Basic sync</span>';
+  const tierNote = t => FULL.has(t) ? '⭐ Full show: every LED moves on its own. ' : '🔵 Basic sync: the whole light glows one color with the music. For the full show, use Twinkly, WLED or a pixel curtain. ';
+  // 🔵 Bluetooth link status in plain English. The cause sits with the light (its range, its sleep timer, its phone app), never GlowBop.
+  const LINK = {
+    connected: ['🟢', 'Connected', ''],
+    searching: ['🟡', 'Looking for it…', 'Make sure it is switched on and close to the laptop.'],
+    asleep: ['😴', 'Asleep or out of range', 'Bluetooth lights like this one fall asleep or lose range on their own. Turn it off and on, and keep it within about 30 ft of the laptop. GlowBop keeps trying and grabs it the moment it wakes up.'],
+    lost: ['🟠', 'Signal dropped, reconnecting…', 'Bluetooth lights drop out now and then (walls, distance, other gadgets). GlowBop reconnects by itself.'],
+    failed: ['🔴', 'Won\'t accept a connection', 'This light takes one connection at a time. Close its phone app (or turn off Bluetooth on your phone), then turn the light off and on.'],
+  };
+  const linkPrev = {};
+  function paintLink(el, d) {
+    const L = LINK[d.link] || LINK.searching;
+    el.innerHTML = `<b>${L[0]} ${L[1]}</b>${L[2] ? `<small>${L[2]}</small>` : ''}`;
+    el.classList.toggle('ok', d.link === 'connected');
+  }
+  setInterval(async () => {                                    // refresh the Bluetooth lines while LIGHTS is open (no full redraw)
+    if (GB.page !== 'lights' || !LS || !LS.devices || !LS.devices.some(d => d.link)) return;
+    let j; try { j = await GB.get('/api/lights'); } catch (e) { return; }
+    (j.devices || []).forEach((d, i) => {
+      if (!d.link) return;
+      const el = document.getElementById('suLink-' + i); if (el) paintLink(el, d);
+      if (linkPrev[d.id] && linkPrev[d.id] !== 'connected' && d.link === 'connected') GB.toast('🔵 ' + d.name + ' is back online');
+      linkPrev[d.id] = d.link;
+    });
+  }, 4000);
   const btn = (cls, html, fn, extra) => { const b = document.createElement('button'); b.className = 'btn ' + (cls || ''); b.innerHTML = html; if (fn) b.onclick = fn; if (extra) Object.assign(b, extra); return b; };
   const lbl = (ic, t) => (ic ? GB.svg(ic) : '') + '<span>' + esc(t) + '</span>';
   // tap twice to confirm: first tap arms the button and changes its text for 4 s
@@ -103,14 +139,14 @@
       <div class="seg"><button class="btn c" id="suScan" style="--c:var(--cyan)">${lbl('search', 'Find my lights')}</button><button class="btn" id="suAddBtn">${lbl('add', 'Add by brand')}</button></div>
       <div id="suFound" class="list"></div>
       <div id="suAdd" class="su-inset" hidden>
-        <select id="suBrand" aria-label="Brand"><option value="twinkly">Twinkly</option><option value="wled">WLED</option><option value="govee">Govee</option><option value="surplife">Surplife curtain (Bluetooth)</option><option value="daybetter">DayBetter (Bluetooth)</option></select>
+        <select id="suBrand" aria-label="Brand"><optgroup label="⭐ Full show"><option value="twinkly">Twinkly</option><option value="wled">WLED</option><option value="surplife">Surplife curtain (Bluetooth)</option></optgroup><optgroup label="Basic sync (one color)"><option value="govee">Govee</option><option value="daybetter">DayBetter (Bluetooth)</option><option value="blecheap">Bluetooth LED strip</option></optgroup></select>
         <div class="su-addrow"><input type="search" id="suIp" placeholder="IP address, e.g. 192.168.0.50" aria-label="IP address" autocapitalize="off" spellcheck="false"><button class="btn c" id="suAddGo" style="--c:var(--cyan)">Add</button></div>
         <p class="note" id="suHelp"></p>
       </div>
       <p class="note">Lights a beat behind a Bluetooth speaker? Set <a href="#music" id="suSyncGo"><b>Sync delay</b></a> on the MUSIC page while a song plays. It is saved per speaker.</p>`;
     $('suScan').onclick = scan;
-    $('suAddBtn').onclick = () => { const a = $('suAdd'); a.hidden = !a.hidden; $('suAddBtn').classList.toggle('on', !a.hidden); $('suHelp').textContent = HELP[$('suBrand').value]; };
-    $('suBrand').onchange = () => $('suHelp').textContent = HELP[$('suBrand').value];
+    $('suAddBtn').onclick = () => { const a = $('suAdd'); a.hidden = !a.hidden; $('suAddBtn').classList.toggle('on', !a.hidden); $('suHelp').textContent = tierNote($('suBrand').value) + HELP[$('suBrand').value]; };
+    $('suBrand').onchange = () => $('suHelp').textContent = tierNote($('suBrand').value) + HELP[$('suBrand').value];
     $('suAddGo').onclick = async () => {
       const ip = $('suIp').value.trim(); if (!ip) return GB.toast('Type the light\'s IP address');
       GB.toast('Checking ' + ip + '…');
@@ -202,11 +238,12 @@
     if (!LS.devices.length) box.innerHTML = '<p class="note">No lights yet. Tap Find my lights.</p>';
     LS.devices.forEach((d, i) => {
       const r = document.createElement('div'); r.className = 'su-dev' + (d.enabled ? '' : ' off');
-      const st = !d.enabled ? 'off' : d.connected ? (d.mapped ? 'mapped by camera' : d.grid ? 'hand-made layout' : d.type === 'surplife' ? 'built-in 20×20 grid' : d.type === 'daybetter' ? 'one color, follows the show' : 'not mapped yet') : 'not connected';
+      const st = !d.enabled ? 'off' : (d.link && d.link !== 'connected') ? 'not connected right now' : d.connected ? (d.mapped ? 'mapped by camera' : d.grid ? 'hand-made layout' : d.type === 'surplife' ? 'built-in 20×20 grid' : (d.type === 'daybetter' || d.type === 'blecheap') ? 'one color, follows the show' : 'not mapped yet') : 'not connected';
       const col = DEVCOL[i % DEVCOL.length];
       const top = document.createElement('div'); top.className = 'su-top';
-      top.innerHTML = `<span class="su-dot" style="background:${col};color:${col}"></span><div class="su-tx"><b>${esc(d.name)}</b><small>${esc(d.brand)} · ${esc(d.ip)} · ${d.n || '?'} lights · ${st}</small></div>`;
+      top.innerHTML = `<span class="su-dot" style="background:${col};color:${col}"></span><div class="su-tx"><b>${esc(d.name)}</b>${tier(d.type)}<small>${esc(d.brand)} · ${esc(d.ip)} · ${d.n || '?'} lights · ${st}</small></div>`;
       r.appendChild(top);
+      if (d.link) { const ln = document.createElement('div'); ln.className = 'su-link'; ln.id = 'suLink-' + i; paintLink(ln, d); r.appendChild(ln); }   // 🔵 live Bluetooth status
       if (renaming === d.id) {                                     // ✏️ rename in place
         const f = document.createElement('div'); f.className = 'su-ren';
         f.innerHTML = `<input type="text" maxlength="40" aria-label="New name" value="${esc(d.name)}">`;
@@ -412,9 +449,9 @@
     box.innerHTML = r.found.length ? '<div class="sub">Found nearby</div>' : '<p class="note">No lights found. For Govee, turn on LAN Control in the Govee app first. You can also Add by brand with the IP.</p>';
     r.found.forEach(f => {
       const row = document.createElement('div'); row.className = 'item';
-      row.innerHTML = `<span class="su-dot" style="background:#555;color:transparent"></span><div class="su-tx"><b>${esc(f.name)}</b><small>${esc(BRAND[f.type] || f.type)} · ${esc(f.ip)}${f.n ? ' · ' + f.n + ' lights' : ''}${f.model ? ' · ' + esc(f.model) : ''}</small></div>`;
+      row.innerHTML = `<span class="su-dot" style="background:#555;color:transparent"></span><div class="su-tx"><b>${esc(f.name)}</b>${tier(f.type)}<small>${esc(BRAND[f.type] || f.type)} · ${esc(f.ip)}${f.n ? ' · ' + f.n + ' lights' : ''}${f.model ? ' · ' + esc(f.model) : ''}</small></div>`;
       const b = btn('c sm', f.added ? 'Added' : lbl('add', 'Add')); b.style.setProperty('--c', 'var(--cyan)'); b.style.flex = '0 0 auto'; b.disabled = !!f.added;
-      b.onclick = async () => { if (await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name})) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; GB.toast('💡 Added ' + f.name); loadLights(); } };
+      b.onclick = async () => { if (await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name, style: f.style, model: f.model})) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; GB.toast('💡 Added ' + f.name); loadLights(); } };
       row.appendChild(b); box.appendChild(row);
     });
   }
