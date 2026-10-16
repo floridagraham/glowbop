@@ -9,7 +9,7 @@ PHOTOS = []
 CUR = ['']
 
 NAV = [('/features.html', 'Features', 'var(--amber)'), ('/gallery.html', 'Gallery', 'var(--lav)'), ('/guide/', 'Guide', 'var(--cyan)'),
-       ('/lights.html', 'Lights', 'var(--orange)'), ('/compare.html', 'Compare', 'var(--violet)'), ('/pro.html', 'Pro', 'var(--gold)'), ('/pricing.html', 'Pricing', 'var(--green)'), ('/faq.html', 'FAQ', 'var(--gold)')]
+       ('/lights.html', 'Lights', 'var(--orange)'), ('/compare.html', 'Compare', 'var(--violet)'), ('/pro.html', 'Pro', 'var(--gold)'), ('/try/?intro=1', '<b>▶</b>Demo', 'var(--cyan)'), ('/pricing.html', 'Pricing', 'var(--green)'), ('/faq.html', 'FAQ', 'var(--gold)')]
 
 
 def logo_svg():
@@ -72,7 +72,8 @@ def pic(name, alt, cls=''):
 def page(path, title, desc, body, active=''):
     CUR[0] = path
     CLIPS_JS = _json.dumps({k: dict(w=v['w'], h=v['h'], n=v['n'], fps=v['fps'], title=v['title']) for k, v in CLIPS.items()}, separators=(',', ':'))
-    nav = ''.join(f'<li><a href="{h}" style="--c:{c}"{" class=on" if h == active else ""}>{n}</a></li>' for h, n, c in NAV)
+    DEMO_CLS = ' class="navdemo"'
+    nav = ''.join(f'<li><a{DEMO_CLS if h.startswith("/try/") else ""} href="{h}" style="--c:{c}"{" class=on" if h == active else ""}>{n}</a></li>' for h, n, c in NAV)
     doc = f'''<!doctype html>
 <html lang="en">
 <head>
