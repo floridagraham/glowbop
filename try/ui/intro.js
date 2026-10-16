@@ -233,7 +233,8 @@
 
   const embedded = (() => { try { return window.top !== window || /[?&]embed=/.test(location.search); } catch (e) { return true; } })();
   const mode = pref();
-  if (mode !== 'off' && !seen() && !embedded) {
+  const force = /[?&]intro=1/.test(location.search);   // 🚀 the website's "Open the full GlowBop app" button always plays it
+  if (mode !== 'off' && (!seen() || force) && !embedded) {
     if (document.body) show(mode); else document.addEventListener('DOMContentLoaded', () => show(mode));
   }
 

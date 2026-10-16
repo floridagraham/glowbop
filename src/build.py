@@ -239,7 +239,7 @@ home = f'''
   <p class="lead">This is the real GlowBop console, running right here on a pretend light wall. Hold to build, let go to drop, then hit the pads and ride the faders. Tap the colored rail for every other page.</p></div>
   {TRY}
   <p class="center"><span class="demo-tag">● DEMO · on your lights it runs live, right to the beat</span></p>
-  <div class="center reveal" style="margin-top:22px"><a class="btn primary lg" href="/try/">🚀 Open the full GlowBop app</a>
+  <div class="center reveal" style="margin-top:22px"><a class="btn primary lg" href="/try/?intro=1">🚀 Open the full GlowBop app</a>
   <p class="lead" style="margin-top:12px;font-size:16px">Every page, every control: music, DJ pads and skip keys, looks, games, scenes and fire, holidays, sports, live feeds and text, plus the <a href="/pro.html">Pro DJ tools</a>: Autoloops, cue lists, Song Shows, the LIVE BOARD, override keys and the Pad Recorder. It runs right in your browser on a phone, iPad or laptop, on a pretend light wall.</p></div>
 </div></section>
 
