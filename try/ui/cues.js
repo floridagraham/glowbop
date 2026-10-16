@@ -7,7 +7,7 @@
   'use strict';
   const {$, esc} = GB;
   const MINT = '#7dffb2';
-  const TYPES = [['scene', 'save', 'Scene', '#ffc27a'], ['loop', 'loop', 'Autoloop', '#ff9f5a'], ['blackout', 'dark', 'Blackout', 'var(--peri)'],
+  const TYPES = [['scene', 'save', 'Scene', '#8fd3ff'], ['loop', 'loop', 'Autoloop', '#3fb6ff'], ['blackout', 'dark', 'Blackout', 'var(--peri)'],
                  ['interlude', 'mic', 'Interlude', 'var(--lav)'], ['auto', 'note', 'Back to Auto', 'var(--green)']];
   const TY = Object.fromEntries(TYPES.map(t => [t[0], t]));
   const FADES = [[0, 'Cut'], [0.5, '0.5 s'], [1, '1 s'], [2, '2 s'], [4, '4 s']];

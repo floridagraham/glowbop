@@ -11,7 +11,7 @@
   'use strict';
   const {$} = GB, S = GB.store;
   const PRO_PAGES = ['shows', 'autoloops', 'cues', 'board', 'ops'];
-  const BORROW = [['fdPanel', 'board'], ['lpPanel', 'board'], ['alPanel', 'autoloops'], ['cuPanel', 'cues']];
+  const BORROW = [['muCard', 'music'], ['fdPanel', 'board'], ['lpPanel', 'board'], ['alPanel', 'autoloops'], ['cuPanel', 'cues']];
   const COLS = 48, ROW = 8;                       // the invisible grid: 48 columns, 8 px rows
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches && S.get('gb_intro_motion') !== 'full';
   const isOn = () => GB.pro === true && S.get('gb_prodj') === '1';
@@ -19,31 +19,46 @@
   GB.css(`
   /* ---- Pro DJ palette: deep teal-navy panels, gold / teal / orchid accents */
   html.prodj { --panel:#0c1420; --line:#1d3247; }
-  html.prodj #pg-dj > .panel.box:nth-of-type(6n+1) { --c:#ffd21a !important; }
-  html.prodj #pg-dj > .panel.box:nth-of-type(6n+2) { --c:#4de8c8 !important; }
-  html.prodj #pg-dj > .panel.box:nth-of-type(6n+3) { --c:#e45cff !important; }
-  html.prodj #pg-dj > .panel.box:nth-of-type(6n+4) { --c:#ff9f5a !important; }
-  html.prodj #pg-dj > .panel.box:nth-of-type(6n+5) { --c:#33d6ff !important; }
-  html.prodj #pg-dj > .panel.box:nth-of-type(6n+6) { --c:#7dffb2 !important; }
+  html.prodj #pg-dj > .panel.box:nth-of-type(6n+1) { --c:#ff3d9a !important; }
+  html.prodj #pg-dj > .panel.box:nth-of-type(6n+2) { --c:#33d6ff !important; }
+  html.prodj #pg-dj > .panel.box:nth-of-type(6n+3) { --c:#9b3dff !important; }
+  html.prodj #pg-dj > .panel.box:nth-of-type(6n+4) { --c:#ffb23d !important; }
+  html.prodj #pg-dj > .panel.box:nth-of-type(6n+5) { --c:#cc99ff !important; }
+  html.prodj #pg-dj > .panel.box:nth-of-type(6n+6) { --c:#4de8c8 !important; }
   html.prodj #pg-dj > .panel.box { box-shadow:inset 0 0 0 1px #4de8c822; }
-  html.prodj #rail button[data-p=dj] { background:linear-gradient(160deg,#fff4cc 0%,#ffd21a 45%,#4de8c8 100%); }
+  html.prodj #rail button[data-p=dj] { background:linear-gradient(160deg,#ff3d9a 0%,#9b3dff 55%,#33d6ff 100%); color:#fff; text-shadow:0 1px 3px #0008; }   /* GlowBop colors */
+  /* ---- Pro DJ is a tighter console: smaller paddings and keys so more fits on one screen */
+  html.prodj #pg-dj > .panel.box { padding:8px 10px 10px; gap:8px; }
+  html.prodj #djBuild { min-height:64px; font-size:calc(20px * var(--fs, 1)); }
+  html.prodj #djCool, html.prodj #djColor { min-height:50px; font-size:calc(17px * var(--fs, 1)); }
+  html.prodj #pg-dj .dj-pads { grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); gap:6px; }
+  html.prodj #pg-dj .dj-pads .tile { min-height:60px; font-size:calc(13px * var(--fs, 1)); }
+  html.prodj #pg-dj .dj-pads .tile .em { font-size:calc(22px * var(--fs, 1)); }
+  html.prodj #pg-dj .djc-dot { width:calc(34px * var(--fs, 1)); height:calc(34px * var(--fs, 1)); }
+  html.prodj #pg-dj .djc-dots { gap:8px; margin:2px 0 6px; }
+  html.prodj #pdGo, html.prodj #pdArr { min-height:44px; }
   /* ---- the switch */
+  #pdHd { min-height:40px; margin-right:6px; gap:6px; } #pdHd .ic { width:18px; height:18px; fill:currentColor; }
+  #pdHd .ps { display:none; } @media (max-width:1100px) { #pdHd .pl { display:none; } #pdHd .ps { display:inline; } } @media (max-width:560px) { #pdHd .ps { display:none; } #pdHd { padding:0 12px; } }
+  #pdHd.on { box-shadow:0 0 18px var(--gold); }
   #pdSw { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   #pdSw .pdT { flex:1 1 200px; min-width:0; }
   #pdSw .pdT b { display:block; font:800 calc(20px * var(--fs, 1))/1 var(--cond); letter-spacing:3px; }
   #pdSw .pdT small { color:var(--dim); font-size:calc(13px * var(--fs, 1)); }
   #pdGo { min-height:56px; padding:0 22px; font-size:calc(18px * var(--fs, 1)); letter-spacing:3px; }
-  html.prodj #pdGo { background:linear-gradient(120deg,#ffd21a,#4de8c8); color:#000; box-shadow:0 0 24px #4de8c866; }
+  html.prodj #pdGo { box-shadow:0 0 24px #9b3dff88; }
+  #pdGo { background:linear-gradient(120deg,#ff3d9a,#9b3dff,#33d6ff); color:#fff; text-shadow:0 1px 3px #0008; }
   #pdArr { min-height:56px; }
   /* ---- the 6 Pro keys under the wall */
   #proKeys { display:none; grid-template-columns:repeat(6, minmax(0,1fr)) auto; gap:6px; }
   #proKeysBox { display:none; } html.prodj #proKeysBox { display:flex; } html.prodj #proKeys { display:grid; }
   html.prodj #view .seg { display:none; }
   #proKeys .btn { min-height:58px; padding:4px 2px; flex-direction:column; gap:2px; font-size:calc(12px * var(--fs, 1)); letter-spacing:1px; line-height:1.05; touch-action:none; user-select:none; -webkit-user-select:none; }
-  #proKeys .btn .pe { font-size:calc(20px * var(--fs, 1)); line-height:1; }
+  #proKeys .btn .pe { line-height:1; } #proKeys .btn .pe .ic { width:calc(22px * var(--fs, 1)); height:calc(22px * var(--fs, 1)); fill:currentColor; }
   #proKeys .btn.on { background:var(--c); color:#000; box-shadow:0 0 18px var(--c); }
   #proKeys .btn.hit { filter:brightness(1.8); }
   #proKeys .more { width:40px; min-width:40px; font-size:20px; }
+  #proKeysBox.narrow #proKeys { grid-template-columns:repeat(3, minmax(0,1fr)); } #proKeysBox.narrow #proKeys .more { grid-column:span 3; width:auto; min-height:30px; }
   @media (max-width:520px) { #proKeys { grid-template-columns:repeat(3, minmax(0,1fr)); } #proKeys .more { grid-column:span 3; width:auto; min-height:36px; } }
   /* ---- arrange: the grid takes over #main; nobody sees the grid itself */
   #main.lay { display:grid !important; grid-template-columns:repeat(${COLS}, minmax(0,1fr)); grid-auto-rows:${ROW}px; gap:0; align-items:stretch; }
@@ -71,20 +86,33 @@
 
   // ================================================================ the PRO DJ switch (top of the DJ page)
   GB.panel('dj', 1, el => {
-    el.classList.add('box'); el.id = 'pdPanel'; el.style.setProperty('--c', '#ffd21a'); el.hidden = true;
+    el.classList.add('box'); el.id = 'pdPanel'; el.style.setProperty('--c', '#9b3dff'); el.hidden = true;
     el.innerHTML = `<div id="pdSw"><div class="pdT"><b id="pdTitle">PRO DJ</b><small id="pdSub">Switch the console into the Pro control center.</small></div>
       <button class="btn c" id="pdArr" style="--c:#4de8c8" hidden>✏️ ARRANGE</button>
       <button class="btn c" id="pdGo" style="--c:#ffd21a">⚡ PRO DJ</button></div>`;
     el.querySelector('#pdGo').onclick = () => setOn(!isOn(), true);
     el.querySelector('#pdArr').onclick = () => arrange(true);
   });
+  // ⚡ the switch lives in the top bar, right after GUIDE (yellow, lightning bolt): ACTIVATE PRO DJ / EXIT PRO DJ
+  function headerKey() {
+    const line = document.querySelector('#hd .line'); if (!line) return;
+    let b = $('pdHd');
+    if (!b) { b = document.createElement('button'); b.id = 'pdHd'; b.className = 'btn sm c'; b.style.setProperty('--c', 'var(--gold)');
+      b.onclick = () => { const on = !isOn(); if (on && GB.page !== 'dj') GB.go('dj'); setOn(on, true); }; }
+    const g = $('gbGuideBtn'), sfx = $('sfx');
+    if (g) { if (g.nextSibling !== b) g.after(b); } else if (!b.parentElement) line.insertBefore(b, sfx || null);
+    const on = isOn(); b.hidden = GB.pro !== true;
+    b.innerHTML = GB.svg('bolt') + '<span class="pl">' + (on ? 'EXIT PRO DJ' : 'ACTIVATE PRO DJ') + '</span><span class="ps">' + (on ? 'EXIT PRO' : 'PRO DJ') + '</span>';
+    b.setAttribute('aria-label', on ? 'Exit Pro DJ mode' : 'Activate Pro DJ mode'); b.classList.toggle('on', on);
+  }
   function paintSwitch() {
+    headerKey();
     const p = $('pdPanel'); if (!p) return;
-    p.hidden = GB.pro !== true;
+    p.hidden = true;                                 // the switch moved up to the top bar (Oct 16); this box stays for older layouts only
     const on = isOn();
     $('pdGo').textContent = on ? '✕ EXIT PRO' : '⚡ PRO DJ';
     $('pdTitle').textContent = on ? 'PRO DJ · ON' : 'PRO DJ';
-    $('pdSub').textContent = on ? 'Faders, loops, cues and 6 Pro keys are on this page. Hold a Pro key to change what it does.' : 'Switch the console into the Pro control center.';
+    $('pdSub').textContent = on ? 'Music, faders, loops, cues and 6 Pro keys are on this page. Hold a Pro key to change what it does.' : 'Switch the console into the Pro control center.';
     $('pdArr').hidden = !on || innerWidth < 700;
   }
 
@@ -164,28 +192,28 @@
 
   // ================================================================ the 6 Pro keys under the wall
   const ACT = {
-    blackout: {e: '⬛', n: 'Blackout', c: 'var(--peri)', tap: () => GB.djHit('blackout'), lit: d => !!d.blackout},
-    strobe: {e: '⚡', n: 'Strobe', c: 'var(--cyan)', tap: () => GB.djHit('strobe')},
-    flash: {e: '☀️', n: 'Flash', c: 'var(--gold)', tap: () => GB.djHit('flash')},
-    drop: {e: '💥', n: 'Drop', c: 'var(--pink)', tap: () => GB.djHit('drop')},
-    fire: {e: '🔥', n: 'Fire burst', c: 'var(--orange)', tap: () => GB.djHit('fire')},
-    confetti: {e: '🎊', n: 'Confetti', c: 'var(--lav)', tap: () => GB.djHit('confetti')},
-    lightning: {e: '🌩️', n: 'Lightning', c: '#8fb4ff', tap: () => GB.djHit('lightning')},
-    shockwave: {e: '🌀', n: 'Shockwave', c: 'var(--violet)', tap: () => GB.djHit('shockwave')},
-    colorbomb: {e: '🎨', n: 'Color bomb', c: 'var(--amber)', tap: () => GB.djHit('colorbomb')},
-    countdown: {e: '3️⃣', n: '3-2-1', c: 'var(--orchid)', tap: () => GB.djHit('countdown')},
-    cool: {e: '🌙', n: 'Cool down', c: 'var(--lav)', hold: true, lit: d => !!d.cool},
-    color: {e: '🎨', n: 'Color lock', c: 'var(--orange)', lit: d => !!d.color, tap: async () => {
+    blackout: {i: 'dark', n: 'Blackout', c: 'var(--peri)', tap: () => GB.djHit('blackout'), lit: d => !!d.blackout},
+    strobe: {i: 'bolt', n: 'Strobe', c: 'var(--cyan)', tap: () => GB.djHit('strobe')},
+    flash: {i: 'sun', n: 'Flash', c: 'var(--gold)', tap: () => GB.djHit('flash')},
+    drop: {i: 'burst', n: 'Drop', c: 'var(--pink)', tap: () => GB.djHit('drop')},
+    fire: {i: 'fire', n: 'Fire burst', c: 'var(--orange)', tap: () => GB.djHit('fire')},
+    confetti: {i: 'confetti', n: 'Confetti', c: 'var(--lav)', tap: () => GB.djHit('confetti')},
+    lightning: {i: 'lightning', n: 'Lightning', c: '#8fb4ff', tap: () => GB.djHit('lightning')},
+    shockwave: {i: 'shockwave', n: 'Shockwave', c: 'var(--violet)', tap: () => GB.djHit('shockwave')},
+    colorbomb: {i: 'colorbomb', n: 'Color bomb', c: 'var(--amber)', tap: () => GB.djHit('colorbomb')},
+    countdown: {i: 'count321', n: '3-2-1', c: 'var(--orchid)', tap: () => GB.djHit('countdown')},
+    cool: {i: 'moon', n: 'Cool down', c: 'var(--lav)', hold: true, lit: d => !!d.cool},
+    color: {i: 'palette', n: 'Color lock', c: 'var(--orange)', lit: d => !!d.color, tap: async () => {
       const d = (GB.status || {}).dj || {}; let cols = []; try { cols = JSON.parse(S.get('gb_dj_colors') || '[]'); } catch (e) {}
       if (!cols.length) cols = ['#ff1a1a'];
       if (await GB.djPost(d.color ? {color: false} : {colors: cols, color: true})) GB.toast(d.color ? '🌈 Back to the full show' : '🎨 Color locked'); }},
-    lookn: {e: '⏭️', n: 'Next look', c: 'var(--orange)', tap: () => GB.control({step: 'look+'})},
-    lookp: {e: '⏮️', n: 'Prev look', c: 'var(--orange)', tap: () => GB.control({step: 'look-'})},
-    effn: {e: '✨', n: 'Next effect', c: 'var(--lav)', tap: () => GB.control({step: 'effect+'})},
-    tap: {e: '🥁', n: 'Tap tempo', c: 'var(--cyan)', tap: () => GB.djPost({tap: true})},
-    loopsoff: {e: '⏹️', n: 'Stop loops', c: '#ff9f5a', tap: () => GB.loopsStopAll && GB.loopsStopAll()},
-    release: {e: '🚨', n: 'Release overrides', c: 'var(--red)', tap: () => GB.overrideRelease ? GB.overrideRelease() : GB.post('/api/override', {release: true})},
-    fullview: {e: '🖥️', n: 'Full view', c: 'var(--gold)', tap: () => GB.setFull && GB.setFull(true)},
+    lookn: {i: 'ffwd', n: 'Next look', c: 'var(--orange)', tap: () => GB.control({step: 'look+'})},
+    lookp: {i: 'back', n: 'Prev look', c: 'var(--orange)', tap: () => GB.control({step: 'look-'})},
+    effn: {i: 'sparkle', n: 'Next effect', c: 'var(--lav)', tap: () => GB.control({step: 'effect+'})},
+    tap: {i: 'drum', n: 'Tap tempo', c: 'var(--cyan)', tap: () => GB.djPost({tap: true})},
+    loopsoff: {i: 'stop', n: 'Stop loops', c: '#3fb6ff', tap: () => GB.loopsStopAll && GB.loopsStopAll()},
+    release: {i: 'ovr', n: 'Release overrides', c: 'var(--red)', tap: () => GB.overrideRelease ? GB.overrideRelease() : GB.post('/api/override', {release: true})},
+    fullview: {i: 'full', n: 'Full view', c: 'var(--gold)', tap: () => GB.setFull && GB.setFull(true)},
   };
   const DEF = ['blackout', 'strobe', 'cool', 'color', 'lookn', 'tap'];
   const keysNow = () => { let k = []; try { k = JSON.parse(S.get('gb_prokeys') || '[]'); } catch (e) {} return DEF.map((d, i) => ACT[k[i]] ? k[i] : d); };
@@ -194,13 +222,15 @@
     // the Pro keys live in their own box (not inside the wall's box), so Arrange can move them and the wall separately
     const box = document.createElement('div'); box.className = 'panel'; box.id = 'proKeysBox';
     const row = document.createElement('div'); row.id = 'proKeys'; box.appendChild(row); wall.after(box); paintKeys();
+    const fit = () => box.classList.toggle('narrow', box.clientWidth > 0 && box.clientWidth < 520);   // 3 across when the box is narrow
+    try { new ResizeObserver(fit).observe(box); } catch (e) { addEventListener('resize', fit); } fit();
   }
   function paintKeys() {
     const row = $('proKeys'); if (!row) return;
     const ks = keysNow(); row.innerHTML = '';
     ks.forEach((k, i) => {
       const a = ACT[k], b = document.createElement('button'); b.className = 'btn c'; b.dataset.k = k; b.dataset.i = i; b.style.setProperty('--c', a.c);
-      b.innerHTML = `<span class="pe">${a.e}</span><span>${GB.esc(a.n)}</span>`; b.title = a.n + ' (hold to change this key)';
+      b.innerHTML = `<span class="pe">${GB.svg(a.i)}</span><span>${GB.esc(a.n)}</span>`; b.title = a.n + ' (hold to change this key)';
       wire(b, k, i); row.appendChild(b);
     });
     const m = document.createElement('button'); m.className = 'btn more'; m.textContent = '⋯'; m.setAttribute('aria-label', 'Mirror, full view, lights and key setup');
@@ -238,10 +268,10 @@
   }
   function assign(i) {
     const cur = keysNow()[i];
-    GB.sheet('Pro key ' + (i + 1) + ': pick what it does', Object.keys(ACT).map(k => ({label: ACT[k].e + ' ' + ACT[k].n + (k === cur ? '  ✓' : ''),
+    GB.sheet('Pro key ' + (i + 1) + ': pick what it does', Object.keys(ACT).map(k => ({ic: ACT[k].i, label: ACT[k].n + (k === cur ? '  ✓' : ''),
       sub: ACT[k].hold ? 'hold, or tap to latch' : '', onclick: () => { const ks = keysNow(); ks[i] = k; S.set('gb_prokeys', JSON.stringify(ks)); paintKeys(); GB.toast('Key ' + (i + 1) + ': ' + ACT[k].n); }})));
   }
-  function pickSlot() { GB.sheet('Which key?', keysNow().map((k, i) => ({label: (i + 1) + '. ' + ACT[k].e + ' ' + ACT[k].n, onclick: () => assign(i)}))); }
+  function pickSlot() { GB.sheet('Which key?', keysNow().map((k, i) => ({ic: ACT[k].i, label: (i + 1) + '. ' + ACT[k].n, onclick: () => assign(i)}))); }
 
   // ================================================================ ✏️ arrange: an invisible fine grid
   let arranging = false;
@@ -280,7 +310,7 @@
   let cur = null;                                   // {key, L}
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
-    $('layFab') && $('layFab').classList.toggle('show', !!k && GB.page !== 'dj');   // DJ has its own ARRANGE key in the Pro DJ box
+    $('layFab') && $('layFab').classList.toggle('show', !!k);
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
     const list = items(); const LL = L || measure(list);
     // the Pro keys box (new) starts right under the wall; any other new box goes underneath everything
@@ -334,19 +364,43 @@
     if (on) { layout(); if (cur && !load(cur.key)) save(cur.key, cur.L); handles(); GB.sfx && GB.sfx('tap'); }
     else { document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove()); layout(); GB.toast && GB.toast('✅ Layout saved'); }
   }
+  // ⚡ COMPACT: a ready-made tight layout. Columns of boxes, each sized to its own content, packed with no gaps.
+  function compact() {
+    const k = pageKey(); if (!k) return;
+    if (!arranging) arrange(true);
+    const list = items(), id = sel => { const n = document.querySelector('#main ' + sel); const it = n && n.closest('.lay-it'); return it ? it.dataset.lk : null; };
+    const wide = bucket() === 'wide' && k === 'prodj';
+    const cols = k !== 'prodj' ? [[0, 24, []], [24, 24, []]]
+      : wide ? [[0, 17, ['v:wall', 'v:keys', 'muCard', 'v:mode', 'v:reads']], [17, 15, [id('#djBuild'), id('#djCool'), id('#djColor')]], [32, 16, ['djPadsPanel', id('#djTap'), 'pdPanel', id('#djLooks')]]]
+      : [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', id('#djCool'), id('#djColor')]], [24, 24, [id('#djBuild'), 'djPadsPanel', id('#djTap'), 'pdPanel', id('#djLooks')]]];
+    const L = {}, byId = {}; list.forEach(el => byId[el.dataset.lk] = el);
+    const widthOf = {}; cols.forEach(([x, w, ids]) => ids.forEach(i => { if (i) widthOf[i] = [x, w]; }));
+    // measure every box at its column width (its content height, nothing stretched)
+    list.forEach(el => { const xw = widthOf[el.dataset.lk] || [0, 24]; el.style.gridColumn = (xw[0] + 1) + ' / span ' + xw[1]; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
+    const kb = $('proKeysBox'); if (kb) kb.classList.toggle('narrow', kb.clientWidth < 520);
+    const H = {}; list.forEach(el => H[el.dataset.lk] = Math.max(6, Math.ceil((el.offsetHeight + 10) / ROW)));
+    list.forEach(el => { el.style.alignSelf = ''; el.style.overflow = ''; });
+    let top = 0;
+    cols.forEach(([x, w, ids]) => { let y = 0; ids.forEach(i => { if (!i || !byId[i]) return; L[i] = {x, y, w, h: H[i]}; y += H[i]; }); top = Math.max(top, y); });
+    // everything else: two columns under the top band, always into the shorter one
+    const rest = list.map(el => el.dataset.lk).filter(i => !L[i]), lane = [top, top];
+    rest.forEach(i => { const c = lane[0] <= lane[1] ? 0 : 1; L[i] = {x: c * 24, y: lane[c], w: 24, h: H[i]}; lane[c] += H[i]; });
+    save(k, L); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); handles();
+    GB.toast && GB.toast('⚡ Compact layout. Drag anything to fine-tune');
+  }
   function reset() { const k = pageKey(); if (!k) return; S.set(store(k), ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the standard layout'); }
 
   function chrome() {
     const bar = document.createElement('div'); bar.id = 'layBar';
-    bar.innerHTML = '<b>✏️ ARRANGING</b><small>Drag a box to move it. Pull the corner to resize.</small><button class="btn" id="layReset">Reset</button><button class="btn c" id="layDone" style="--c:#4de8c8">Done</button>';
+    bar.innerHTML = '<b>✏️ ARRANGING</b><small>Drag a box to move it. Pull the corner to resize.</small><button class="btn c" id="layCompact" style="--c:#ff3d9a">⚡ Compact</button><button class="btn" id="layReset">Reset</button><button class="btn c" id="layDone" style="--c:#4de8c8">Done</button>';
     document.body.appendChild(bar);
-    bar.querySelector('#layDone').onclick = () => arrange(false); bar.querySelector('#layReset').onclick = reset;
+    bar.querySelector('#layDone').onclick = () => arrange(false); bar.querySelector('#layReset').onclick = reset; bar.querySelector('#layCompact').onclick = compact;
     const fab = document.createElement('button'); fab.id = 'layFab'; fab.type = 'button'; fab.innerHTML = '✏️ ARRANGE'; fab.onclick = () => arrange(true);
     document.body.appendChild(fab);
   }
 
   // ================================================================ wiring
-  GB.on('ready', () => { chrome(); buildKeys(); if (GB.pro === true) apply(isOn()); else paintSwitch(); });
+  GB.on('ready', () => { chrome(); buildKeys(); if (GB.pro === true) apply(isOn()); else paintSwitch(); setTimeout(headerKey, 500); });
   GB.on('pro', v => { if (!v && document.documentElement.classList.contains('prodj')) document.documentElement.classList.remove('prodj'); apply(v && isOn()); });
   GB.on('page', () => { if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); layout(); paintSwitch(); });
   GB.on('status', paintLit);

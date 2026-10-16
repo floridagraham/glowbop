@@ -78,13 +78,13 @@
   GB.loadPro = async () => { try { const r = await GB.get('/api/license'); GB.setPro(r.pro !== false, r); } catch (e) {} };
   // the Pro tools, the tab each lives on, and the pitch the upgrade card and the PRO tour both use
   const PRO_FEATURES = GB.PRO_FEATURES = [
-    {name: 'Autoloops', ic: 'loop', c: '#ff9f5a', page: 'autoloops', tab: 'LOOPS & CUES', prev: 'autoloops',
+    {name: 'Autoloops', ic: 'loop', c: '#3fb6ff', page: 'autoloops', tab: 'LOOPS+CUES', prev: 'autoloops',
       pitch: '32 ready-made, beat-synced looks in four banks (Club, Chill / Flow, Big Room, Color). Tap a pad and it drops in on the next bar and holds until you change it, or let it auto-advance every few bars.'},
-    {name: 'Scenes', ic: 'save', c: '#ffc27a', page: 'autoloops', tab: 'LOOPS & CUES', prev: 'scenes',
+    {name: 'Scenes', ic: 'save', c: '#8fd3ff', page: 'autoloops', tab: 'LOOPS+CUES', prev: 'scenes',
       pitch: 'Save the wall exactly as it looks right now (look, effect, colours, faders) and bring it back later with a smooth fade. Your own bank of go-to moments.'},
-    {name: 'Cues', ic: 'lists', c: '#7dffb2', page: 'cues', tab: 'LOOPS & CUES', prev: 'cues',
+    {name: 'Cues', ic: 'lists', c: '#7dffb2', page: 'cues', tab: 'LOOPS+CUES', prev: 'cues',
       pitch: 'Plan an event as a list of cues (Grand Entrance, First Dance, Cake, Last Song) and run it with one big GO key, with crossfades between cues and the space bar on a laptop.'},
-    {name: 'Tempo toolbox', ic: 'note', c: '#ff9f5a', page: 'autoloops', tab: 'LOOPS & CUES', prev: 'tempo',
+    {name: 'Tempo toolbox', ic: 'note', c: '#3fb6ff', page: 'autoloops', tab: 'LOOPS+CUES', prev: 'tempo',
       pitch: 'Fine-tune the BPM, double or halve it, nudge the beat earlier or later and lock it, so every flash lands exactly on the kick. Auto Ambient goes calm by itself when the music stops.'},
     {name: 'Song Shows', ic: 'movie', c: 'var(--orchid)', page: 'shows', tab: 'SHOWS', prev: 'shows',
       pitch: 'Build a light show for a song once and it plays the same way, right on the beat, every time that song comes on. Look through the timelines below to see how they work.'},
@@ -313,10 +313,10 @@
     {id: 'holiday', label: 'HOLIDAY', c: 'var(--cyan)', g: 'visuals'},         // moves up next to LOOKS when a holiday is close (seasonRail)
     {id: 'games', label: 'GAMES', c: 'var(--lime)', g: 'visuals'},
     {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'pro'},
-    {id: 'autoloops', label: 'LOOPS & CUES', c: '#ff9f5a', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
+    {id: 'autoloops', label: 'LOOPS+CUES', c: '#3fb6ff', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
     {id: 'cues', label: 'CUES', c: '#7dffb2', pro: true, g: 'pro', rail: 'autoloops'},   // 🎬 cue lists + GO (cues.js): shares the LOOPS & CUES key (a switch on top), so the phone rail still fits
     {id: 'board', label: 'LIVE BOARD', c: '#4de8c8', pro: true, g: 'pro'},     // 🎚️🔁 Fader board + Loop banks
-    {id: 'ops', label: 'OVERRIDE', c: '#e9e6ff', pro: true, g: 'pro'},
+    {id: 'ops', label: 'OVERRIDE', c: '#ff5c7a', pro: true, g: 'pro'},
     {id: 'pro', label: 'PRO', c: 'var(--gold)', home: true, g: 'pro', ic: 'sparkle'},   // ✨ Home: the Pro DJ tour
     {id: 'lights', label: 'LIGHTS', c: 'var(--peri)', g: 'system'},
     {id: 'setup', label: 'SETUP', c: 'var(--dim)', g: 'system'},
@@ -397,7 +397,7 @@
     override: () => '<div class="pt-ov">' + ['#000', '#fff', '#f4f2ff', 'var(--gold)', 'var(--red)', 'var(--cyan)', 'var(--orchid)', 'var(--green)']
       .map(c => `<i style="background:${c}"></i>`).join('') + '</div>',
     interlude: () => '<div class="pt-il"><span>BE RIGHT BACK</span></div>',
-    autoloops: () => '<div class="pt-lp">' + ['#ff3d9a', '#33d6ff', '#c3ff4d', '#ff9f5a', '#9b3dff', '#ffd21a', '#4de8c8', '#ff6b6b'].map((c, i) => `<i style="--bc:${c}"${i === 5 ? ' class="on"' : ''}></i>`).join('') + '</div>',
+    autoloops: () => '<div class="pt-lp">' + ['#ff3d9a', '#33d6ff', '#c3ff4d', '#3fb6ff', '#9b3dff', '#ffd21a', '#4de8c8', '#ff6b6b'].map((c, i) => `<i style="--bc:${c}"${i === 5 ? ' class="on"' : ''}></i>`).join('') + '</div>',
     scenes: () => '<div class="pt-sc">' + [['#ff1aa8', '#00e5ff', '#7a1aff'], ['#ffc400', '#ffffff', '#ff8a00'], ['#1aff5a', '#00995c', '#d9ff1a']].map((cs, i) => `<i${i === 1 ? ' class="on"' : ''}>${cs.map(c => `<b style="background:${c}"></b>`).join('')}</i>`).join('') + '</div>',
     cues: () => '<div class="pt-cu"><span><b>3</b>FIRST DANCE</span><span><b>4</b>CAKE</span><u>GO</u></div>',
     tempo: () => '<div class="pt-tp"><span>128.0</span><small>BPM · LOCK</small><i></i><i class="on"></i><i></i><i></i></div>',
@@ -412,7 +412,7 @@
     el.classList.add('box', 'pt-hero'); el.style.setProperty('--c', 'var(--gold)'); el.id = 'proTour';
     el.innerHTML = `<div class="ph"><span>GlowBop Pro DJ</span><span class="r">FOR EVENTS</span></div>
       <h2 class="pt-h">Play your lights like an instrument</h2>
-      <p class="note">Everything you have now stays. Pro DJ adds a full lighting desk for parties, DJ sets and events, in four new tabs: LOOPS & CUES, SHOWS, LIVE BOARD and OVERRIDE.</p>
+      <p class="note">Everything you have now stays. Pro DJ adds a full lighting desk for parties, DJ sets and events, in four new tabs: LOOPS+CUES, SHOWS, LIVE BOARD and OVERRIDE.</p>
       <div class="pt-cta"><button class="btn c lg pt-buy" style="--c:var(--gold)">${GB.svg('star')}<span>Upgrade to Pro</span></button>
         <button class="pt-key" type="button">I have a Pro key</button></div>`;
     el.querySelector('.pt-buy').onclick = () => window.open(GB.buyPro, '_blank', 'noopener');
@@ -421,12 +421,12 @@
   GB.panel('pro', 20, el => {
     el.classList.add('pt-feats');
     GB.css(`.pt-sc { height:100%; display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; } .pt-sc i { display:flex; border-radius:4px; overflow:hidden; border:1px solid #3a3456; } .pt-sc i b { flex:1; }
-      .pt-sc i.on { box-shadow:0 0 0 2px #fff, 0 0 10px #ffc27a; }
+      .pt-sc i.on { box-shadow:0 0 0 2px #fff, 0 0 10px #8fd3ff; }
       .pt-cu { height:100%; display:grid; grid-template-columns:1fr 1fr auto; gap:5px; align-items:stretch; } .pt-cu span { display:flex; align-items:center; gap:5px; padding:0 6px; border-radius:4px; background:#14111f; font:600 10px var(--cond); letter-spacing:1px; color:var(--dim); white-space:nowrap; overflow:hidden; }
       .pt-cu span b { color:#7dffb2; font:11px var(--mono); } .pt-cu span:first-child { box-shadow:inset 3px 0 0 #7dffb2; color:#fff; }
       .pt-cu u { text-decoration:none; display:grid; place-items:center; padding:0 12px; border-radius:0 10px 0 10px; background:#7dffb2; color:#000; font:800 15px var(--cond); letter-spacing:3px; }
-      .pt-tp { height:100%; display:flex; align-items:center; gap:6px; } .pt-tp span { font:24px/1 var(--mono); color:#ff9f5a; } .pt-tp small { font:600 9px var(--cond); letter-spacing:1px; color:var(--dim); margin-right:auto; }
-      .pt-tp i { width:14px; height:7px; border-radius:3px; background:#1d1930; } .pt-tp i.on { background:#ff9f5a; box-shadow:0 0 8px #ff9f5a; }
+      .pt-tp { height:100%; display:flex; align-items:center; gap:6px; } .pt-tp span { font:24px/1 var(--mono); color:#3fb6ff; } .pt-tp small { font:600 9px var(--cond); letter-spacing:1px; color:var(--dim); margin-right:auto; }
+      .pt-tp i { width:14px; height:7px; border-radius:3px; background:#1d1930; } .pt-tp i.on { background:#3fb6ff; box-shadow:0 0 8px #3fb6ff; }
       .pt-zn { height:100%; display:grid; grid-template-columns:repeat(4, 1fr); gap:3px; } .pt-zn i { border-radius:3px; background:#14111f; } .pt-zn i.on { background:#4de8c8; box-shadow:0 0 10px #4de8c8; }
       .pt-pl { height:100%; display:flex; border-radius:6px; overflow:hidden; } .pt-pl i { flex:1; }`);
     el.innerHTML = PRO_FEATURES.map(f => `<div class="pt-f" style="--c:${f.c}">
@@ -577,7 +577,7 @@
     if (so.active) return {c: 'var(--orchid)', ic: 'movie', t: 'Song Show: ' + (so.title || 'this song'), sub: (so.pos != null ? GB.fmt(so.pos) + (so.dur ? ' / ' + GB.fmt(so.dur) : '') : 'on the beat') + (so.next ? ' · next: ' + (so.next.what || so.next.lane) + ' ' + GB.fmt(so.next.t) : ''), btn: 1};
     const pd = s.prodj || {};
     if (pd.pro && pd.blackout > 0.5) return {c: 'var(--red)', ic: 'lists', t: 'Cue: Blackout', sub: 'from the cue list · GO for the next cue', btn: 1};
-    if (pd.pro && pd.loop) return {c: '#ff9f5a', ic: 'loop', t: (pd.loop.kind === 'scene' ? 'Scene: ' : 'Autoloop: ') + pd.loop.name, sub: (pd.opts && pd.opts.mode === 'advance' && pd.loop.kind === 'loop' ? 'auto-advance every ' + pd.opts.bars + ' bars' : 'held until you change it') + (pd.palette ? ' · palette on' : ''), btn: 'Release', act: async () => { if (await GB.post('/api/autoloops', {release: true})) GB.toast('🎵 Back to the auto show'); }};
+    if (pd.pro && pd.loop) return {c: '#3fb6ff', ic: 'loop', t: (pd.loop.kind === 'scene' ? 'Scene: ' : 'Autoloop: ') + pd.loop.name, sub: (pd.opts && pd.opts.mode === 'advance' && pd.loop.kind === 'loop' ? 'auto-advance every ' + pd.opts.bars + ' bars' : 'held until you change it') + (pd.palette ? ' · palette on' : ''), btn: 'Release', act: async () => { if (await GB.post('/api/autoloops', {release: true})) GB.toast('🎵 Back to the auto show'); }};
     if (s.locked) return {c: 'var(--amber)', t: 'Locked: ' + s.locked, sub: 'the show keeps this effect until you release it', btn: 'Release', act: GB.release};
     if (s.held_look) return {c: 'var(--amber)', t: (s.pinned ? 'Pinned look: ' : 'Look for this song: ') + s.held_look, sub: s.pinned ? 'stays until you release it' : 'shuffle resumes on the next song', btn: 'Release', act: GB.release};
     return {c: 'var(--green)', t: 'Music show · listening', sub: ((s.feeds && (s.feeds.watching || []).length) ? '📡 ' + s.feeds.watching.join(' + ') + ' · ' : '') + (s.shuffle ? 'shuffle on · ' : '') + (s.listening ? 'hearing ' + s.listening.replace(' [Loopback]', '') : 'reacts to whatever is playing')};

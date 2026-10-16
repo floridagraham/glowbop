@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   const {$, esc} = GB;
-  const BANKC = {A: 'var(--pink)', B: 'var(--cyan)', C: '#c3ff4d', D: 'var(--amber)', MY: '#ffc27a'};
+  const BANKC = {A: 'var(--pink)', B: 'var(--cyan)', C: '#c3ff4d', D: 'var(--amber)', MY: '#8fd3ff'};
   const BANKS = [['A', 'Club'], ['B', 'Chill / Flow'], ['C', 'Big Room'], ['D', 'Color'], ['MY', 'My scenes']];
   const FADES = [[0, 'Cut'], [0.5, '0.5 s'], [1, '1 s'], [2, '2 s'], [4, '4 s']];
   const MULTS = [[0.25, '¼'], [0.5, '½'], [1, '1'], [2, '2'], [4, '4']];
@@ -22,21 +22,21 @@
   const post = GB.pdjPost;
 
   GB.css(`
-  #pg-autoloops { --c:#ff9f5a; }
+  #pg-autoloops { --c:#3fb6ff; }
   #alTempo, #alPanel { container-type:inline-size; }
   .tp-main { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .tp-bpm { display:flex; align-items:baseline; gap:6px; min-width:0; }
-  .tp-bpm b { font:400 calc(44px * var(--fs, 1))/1 var(--mono); color:#ff9f5a; text-shadow:0 0 18px color-mix(in srgb, #ff9f5a 55%, transparent); letter-spacing:-1px; }
+  .tp-bpm b { font:400 calc(44px * var(--fs, 1))/1 var(--mono); color:#3fb6ff; text-shadow:0 0 18px color-mix(in srgb, #3fb6ff 55%, transparent); letter-spacing:-1px; }
   .tp-bpm small { font:700 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:var(--label); }
   .tp-dots { display:flex; gap:5px; flex:1 1 60px; min-width:60px; }
   .tp-dots i { flex:1; height:8px; border-radius:4px; background:var(--dark); transition:background .05s; }
-  .tp-dots i.on { background:#ff9f5a; box-shadow:0 0 10px #ff9f5a; } .tp-dots i.on.d1 { background:#fff; box-shadow:0 0 12px #fff; }
-  #alLock { --c:#ff9f5a; flex:0 0 auto; }
+  .tp-dots i.on { background:#3fb6ff; box-shadow:0 0 10px #3fb6ff; } .tp-dots i.on.d1 { background:#fff; box-shadow:0 0 12px #fff; }
+  #alLock { --c:#3fb6ff; flex:0 0 auto; }
   .tp-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; }
   .tp-grid .btn { padding:0 4px; min-width:0; font-size:calc(15px * var(--fs, 1)); }
   .tp-grid .btn .ic { width:16px; height:16px; }
   .tp-more > summary { cursor:pointer; min-height:44px; display:flex; align-items:center; gap:8px; font:700 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; text-transform:uppercase; color:var(--label); }
-  .tp-more[open] > summary { color:#ff9f5a; } .tp-more > :not(summary) { margin-top:8px; }
+  .tp-more[open] > summary { color:#3fb6ff; } .tp-more > :not(summary) { margin-top:8px; }
   .tp-off { font:calc(12px * var(--fs, 1))/1 var(--mono); color:var(--dim); }
   .tp-amb { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .tp-amb .seg { flex:1 1 220px; }
@@ -70,9 +70,9 @@
   #alRel:not(:disabled) { background:var(--green); color:#000; box-shadow:0 0 16px -4px var(--green); }
   .al-opts { display:grid; grid-template-columns:minmax(0, 1fr); gap:8px; }
   .al-opts .lbl { font:600 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:var(--label); text-transform:uppercase; }
-  .al-opts .seg .btn { min-height:42px; font-size:calc(14px * var(--fs, 1)); --c:#ff9f5a; }
+  .al-opts .seg .btn { min-height:42px; font-size:calc(14px * var(--fs, 1)); --c:#3fb6ff; }
   .al-opts .seg.dim .btn:not(.on) { opacity:.55; }
-  .al-now { font:calc(13px * var(--fs, 1))/1.3 var(--mono); color:#ff9f5a; min-height:1.3em; }
+  .al-now { font:calc(13px * var(--fs, 1))/1.3 var(--mono); color:#3fb6ff; min-height:1.3em; }
   @container (min-width: 560px) { .al-pad { min-height:108px; font-size:calc(16px * var(--fs, 1)); } .al-opts { grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); } .tp-grid { grid-template-columns:repeat(8, minmax(0, 1fr)); } }
   @container (max-width: 420px) { .al-grid { gap:5px; } .al-pad { padding:19px 3px 16px; font-size:calc(12.5px * var(--fs, 1)); letter-spacing:0; min-height:84px; } .al-pad .id { left:5px; } .al-pad .bm { right:5px; }
     .al-banks small { display:none; } }
@@ -95,7 +95,7 @@
   // ------------------------------------------------------------------ the LOOPS & CUES switch (one rail key for both pages, so the phone rail fits)
   GB.css(`.lc-sw { padding:0 !important; background:none !important; border:0 !important; box-shadow:none !important; }
     .lc-sw .seg .btn { min-height:50px; font-size:calc(17px * var(--fs, 1)); letter-spacing:2px; }
-    .lc-sw .seg .btn[data-p=autoloops] { --c:#ff9f5a; } .lc-sw .seg .btn[data-p=cues] { --c:#7dffb2; }
+    .lc-sw .seg .btn[data-p=autoloops] { --c:#3fb6ff; } .lc-sw .seg .btn[data-p=cues] { --c:#7dffb2; }
     /* Pro has one more rail key (LOOPS & CUES): on short tablet / laptop screens the gaps tighten so SETUP stays on screen */
     @media (min-width: 700px) and (max-height: 860px) { body:not(.not-pro) #rail { gap:3px; } body:not(.not-pro) #rail button[data-p=music] { flex-basis:calc(var(--rk) * 1.35); } }`);
   ['autoloops', 'cues'].forEach(pg => GB.panel(pg, 1, el => {
@@ -106,7 +106,7 @@
 
   // ------------------------------------------------------------------ tempo toolbox
   GB.panel('autoloops', 10, el => {
-    el.classList.add('box'); el.style.setProperty('--c', '#ff9f5a'); el.id = 'alTempo';
+    el.classList.add('box'); el.style.setProperty('--c', '#3fb6ff'); el.id = 'alTempo';
     el.innerHTML = `<div class="ph"><span>Tempo toolbox</span><span class="r" id="alTR">AUTO BPM</span></div>
       <div class="tp-main"><div class="tp-bpm"><b id="alBpm">–</b><small>BPM</small></div><div class="tp-dots" id="alDots"><i class="d1"></i><i></i><i></i><i></i></div>
         <button class="btn sm" id="alLock" data-ctl="tempo.lock">${GB.svg('lock')}<span>Lock</span></button></div>
@@ -137,7 +137,7 @@
     if (!t || !$('alBpm')) return;
     $('alBpm').textContent = t.bpm ? Number(t.bpm).toFixed(1) : '–';
     $('alTR').textContent = t.locked ? 'LOCKED' : (t.mult !== 1 ? 'AUTO ×' + (t.mult < 1 ? '1/' + Math.round(1 / t.mult) : t.mult) : 'AUTO BPM');
-    $('alTR').style.color = t.locked ? '#ff9f5a' : '';
+    $('alTR').style.color = t.locked ? '#3fb6ff' : '';
     $('alLock').classList.toggle('on', !!t.locked); GB.lbl($('alLock'), t.locked ? 'lock' : 'unlock', t.locked ? 'Locked' : 'Lock');
     $('alOff').textContent = t.off_ms ? 'beat ' + (t.off_ms > 0 ? t.off_ms + ' ms early' : -t.off_ms + ' ms late') : '';
     document.querySelectorAll('#alAmb .btn').forEach(b => b.classList.toggle('on', +b.dataset.v === +(t.ambient || 0)));
@@ -154,7 +154,7 @@
 
   // ------------------------------------------------------------------ Autoloops + My scenes
   GB.panel('autoloops', 20, el => {
-    el.classList.add('box'); el.style.setProperty('--c', '#ff9f5a'); el.id = 'alPanel';
+    el.classList.add('box'); el.style.setProperty('--c', '#3fb6ff'); el.id = 'alPanel';
     el.innerHTML = `<div class="ph"><span>Autoloops</span><span class="r" id="alR">AUTO SHOW</span></div>
       <div class="al-banks" id="alBanks">${BANKS.map(([b, n]) => `<button class="btn" data-b="${b}" style="--bc:${BANKC[b]}"><b>${b === 'MY' ? GB.svg('save') : b}</b><small>${esc(n)}</small></button>`).join('')}</div>
       <div class="al-grid" id="alGrid"><p class="note">Loading…</p></div>
@@ -228,12 +228,12 @@
     });
     const r = $('alR');
     r.textContent = L ? (L.kind === 'scene' ? 'SCENE · ' : (L.id || '') + ' · ') + L.name.toUpperCase() : P ? 'NEXT BAR: ' + P.name.toUpperCase() : 'AUTO SHOW';
-    r.style.color = L ? '#ff9f5a' : '';
+    r.style.color = L ? '#3fb6ff' : '';
     $('alRel').disabled = !L && !P;
     $('alNow').textContent = L ? (L.kind === 'scene' ? 'Scene' : 'Autoloop') + ' held: ' + L.name + (adv && L.kind === 'loop' ? ` · bar ${Math.min(S.opts.bars, (S.bars || 0) + 1)} of ${S.opts.bars}` : '') + (P ? ' · next bar: ' + P.name : '') : (P ? 'Waiting for the bar: ' + P.name : '');
     paintOpts(); paintTempo(S.tempo);
     document.querySelectorAll('#alBeat .btn').forEach(b => { const cur = L && L.kind === 'loop' && D ? (D.presets.find(p => p.id === L.id) || {}).beat : null;
-      b.classList.toggle('on', cur != null && +b.dataset.v === +cur); b.disabled = !(L && L.kind === 'loop'); b.style.setProperty('--c', '#ff9f5a'); });
+      b.classList.toggle('on', cur != null && +b.dataset.v === +cur); b.disabled = !(L && L.kind === 'loop'); b.style.setProperty('--c', '#3fb6ff'); });
   }
   function paintOpts() {
     const o = (S && S.opts) || {};
@@ -248,11 +248,11 @@
   // ------------------------------------------------------------------ scenes: save / manage
   function saveScene() {
     const s = document.createElement('div'); s.className = 'sheet al-sheet';
-    s.innerHTML = `<div><div class="ph" style="--c:#ffc27a"><span>Save scene</span></div>
+    s.innerHTML = `<div><div class="ph" style="--c:#8fd3ff"><span>Save scene</span></div>
       <p class="note">Saves the wall as it looks right now: look, effect, colours, fader values, speed, transform and the override key colours.</p>
       <label class="field">Name<input type="text" id="alScName" maxlength="24" autocomplete="off" placeholder="First Dance"></label>
-      <div class="chips">${['Grand Entrance', 'First Dance', 'Cake', 'Party Time', 'Last Song'].map(n => `<button class="chip" data-n="${n}" style="--c:#ffc27a">${n}</button>`).join('')}</div>
-      <div class="row"><button class="btn c" id="alScGo" style="--c:#ffc27a">${GB.svg('save')}<span>Save scene</span></button><button class="btn ghost" id="alScX">Cancel</button></div></div>`;
+      <div class="chips">${['Grand Entrance', 'First Dance', 'Cake', 'Party Time', 'Last Song'].map(n => `<button class="chip" data-n="${n}" style="--c:#8fd3ff">${n}</button>`).join('')}</div>
+      <div class="row"><button class="btn c" id="alScGo" style="--c:#8fd3ff">${GB.svg('save')}<span>Save scene</span></button><button class="btn ghost" id="alScX">Cancel</button></div></div>`;
     document.body.appendChild(s);
     const inp = s.querySelector('#alScName'); setTimeout(() => { try { inp.focus({preventScroll: true}); } catch (e) {} }, 50);
     s.querySelectorAll('.chip').forEach(c => c.onclick = () => { inp.value = c.dataset.n; });

@@ -18,7 +18,7 @@
   let edit = false, IL = null, ovPro = true;
 
   GB.css(`
-  #pg-ops { --c:#e9e6ff; }
+  #pg-ops { --c:#ff5c7a; }
   .ov-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; user-select:none; -webkit-user-select:none; }
   .ov-key { appearance:none; border:0; position:relative; border-radius:0 16px 0 16px; background:var(--dark); color:var(--text); min-height:96px; padding:18px 6px 12px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; touch-action:none; -webkit-touch-callout:none; cursor:pointer;

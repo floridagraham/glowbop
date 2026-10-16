@@ -131,6 +131,10 @@
   const BUILD_SECS = 8;                                        // the wind-up peaks after 8 seconds (same as the engine)
   /* 🎲 one picker for builds and drops: One style | My mix (only the ones you tick) | Full random (default).
      Every build / drop picks again, never the same one twice in a row. */
+  // 🎨 real icons for the style chips (the app's own line icons; the old emoji only if an icon is missing)
+  const CHIP_IC = {rise: 'up', close: 'center', burst: 'burst', spin: 'refresh', rainbow: 'rainbow', zipper: 'xfade', heartbeat: 'heart', star: 'star',
+    classic: 'sparkle', supernova: 'star', starburst: 'burst', heartpop: 'heart', shatter: 'quake', colorbomb: 'colorbomb', rainbowwave: 'rainbow', bassslam: 'vol', lightning: 'lightning'};
+  const chipIc = (k, emo) => GB.ICON && GB.ICON[CHIP_IC[k]] ? GB.svg(CHIP_IC[k]) : emo;
   function chooser(key, list, defMode = 'all', defStyle = null) {
     const S = GB.store, keys = list.map(x => x[0]), dStyle = defStyle || keys[0];
     if (key === 'build' && S.get('gb_build_style', '') === 'auto') { S.set('gb_build_mode', 'all'); S.set('gb_build_style', 'rise'); }   // old "Auto"
@@ -143,7 +147,7 @@
         let ks = m === 'mix' ? C.pool() : keys.filter(k => k !== 'classic');
         if (ks.length > 1) ks = ks.filter(k => k !== C.last);
         return (C.last = ks[Math.floor(Math.random() * ks.length)]); },
-      label() { const m = C.mode(); return m === 'one' ? list.find(x => x[0] === C.one()).slice(1).join(' ').toUpperCase() : m === 'mix' ? '🎲 MY MIX · ' + C.pool().length : '🎲 FULL RANDOM'; },
+      label() { const m = C.mode(); return m === 'one' ? list.find(x => x[0] === C.one())[2].toUpperCase() : m === 'mix' ? 'MY MIX · ' + C.pool().length : 'FULL RANDOM'; },
       mount(wrap, onChange) {
         wrap.innerHTML = `<div class="seg dj-cmode"><button class="btn" data-m="one">One style</button><button class="btn" data-m="mix">🎲 My mix</button><button class="btn" data-m="all">🎲 Full random</button></div>
           <div class="dj-bwrap"><div class="chips dj-bstyles" role="group" style="--c:var(--pink)"></div></div>`;
@@ -155,7 +159,7 @@
           onChange && onChange(); };
         wrap.querySelectorAll('.dj-cmode .btn').forEach(b => b.onclick = () => { S.set('gb_' + key + '_mode', b.dataset.m); paint(); GB.sfx('tap'); });
         list.forEach(([k, ic, name]) => { const c = document.createElement('button'); c.className = 'chip'; c.dataset.v = k;
-          c.innerHTML = `<span class="ic">${ic}</span>${name}`;
+          c.innerHTML = `<span class="ic">${chipIc(k, ic)}</span>${name}`;
           c.onclick = () => { const m = C.mode();
             if (m === 'mix') { let p = C.pool(); p = p.includes(k) ? p.filter(x => x !== k) : p.concat(k); if (!p.length) p = [k]; S.set('gb_' + key + '_pool', JSON.stringify(p)); }
             else { S.set('gb_' + key + '_style', k); S.set('gb_' + key + '_mode', 'one'); }
@@ -194,6 +198,7 @@
   #djBuild[data-s="star"] .bfx { background:repeating-conic-gradient(from calc(var(--a) * 1turn), color-mix(in srgb, var(--gold) calc(100% - var(--p) * 60%), #ff3d9a) 0 6%, transparent 6% 20%),
     radial-gradient(circle, #fff 0 calc(6% + var(--p) * 10%), transparent calc(18% + var(--p) * 30%)); opacity:calc(.5 + var(--b) * .5); }
   .dj-cmode { margin-top:10px; } .dj-cmode .btn { min-height:34px; font-size:calc(13px * var(--fs, 1)); }
+  .dj-sub .ic { width:14px; height:14px; vertical-align:-2px; margin-right:4px; }
   .dj-sub { margin-top:12px; font:700 calc(12px * var(--fs, 1)) var(--mono); letter-spacing:1.5px; opacity:.8; display:flex; justify-content:space-between; }
   .dj-bwrap { container-type:inline-size; margin-top:10px; }
   .dj-bstyles { display:flex; flex-wrap:nowrap; gap:6px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; padding:2px 2px 4px;
@@ -208,8 +213,8 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--pink)');
     el.innerHTML = `<div class="ph"><span>Build &amp; drop</span><span class="r" id="djBuildR">HOLD, THEN LET GO</span></div>
       <button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">HOLD TO BUILD</span><span class="bcnt"></span><span class="bbar"></span></button>
-      <div class="dj-sub"><span>🎚️ BUILD STYLE</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div>
-      <div class="dj-sub"><span>💥 DROP STYLE</span><span id="djDropMode"></span></div><div id="djDropPick"></div>
+      <div class="dj-sub"><span>${GB.svg('faders')} BUILD STYLE</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div>
+      <div class="dj-sub"><span>${GB.svg('burst')} DROP STYLE</span><span id="djDropMode"></span></div><div id="djDropPick"></div>
       <p class="note">Hold it: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds. Let go: it drops. Slide your finger off the key to cancel.
         Pick one style, tick your own mix, or go full random: every build and every drop can be different.</p>`;
     const b = $('djBuild'), lbl = b.querySelector('.blbl'), cnt = b.querySelector('.bcnt'); let held = false, t0 = 0, raf = 0, cur = 'rise';
@@ -250,7 +255,7 @@
   GB.panel('dj', 5, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
     el.innerHTML = `<div class="ph"><span>Cool down</span><span class="r" id="djCoolR">HOLD, OR TAP TO LATCH</span></div>
-      <button class="btn c wide" id="djCool" style="--c:var(--lav)">🌙 COOL DOWN</button>
+      <button class="btn c wide" id="djCool" style="--c:var(--lav)">${GB.svg('moon')} COOL DOWN</button>
       <p class="note">Same look, just calmer: dimmer, half speed, no strobes or flashes, softer colors with light trails. Hold it for a breather, or tap once to keep it on and tap again to bring the lights back. If the song gets loud again, the lights come back up on their own.</p>`;
     const b = el.querySelector('#djCool'); let down = 0, keep = 0, latched = false;
     const show = (on, lat) => { b.classList.toggle('on', on); b.classList.toggle('latched', !!lat); const r = $('djCoolR'); if (r) r.textContent = lat ? 'LATCHED ON' : on ? 'COOLING DOWN' : 'HOLD, OR TAP TO LATCH'; };
@@ -292,7 +297,7 @@
     let latched = false;
     el.innerHTML = `<div class="ph"><span>Color</span><span class="r" id="djColorR">PICK UP TO 4, THEN TAP</span></div>
       <div class="djc-dots" id="djcDots"></div>
-      <button class="btn c wide" id="djColor" style="--c:var(--orange)">🎨 COLOR LOCK</button>
+      <button class="btn c wide" id="djColor" style="--c:var(--orange)">${GB.svg('palette')} COLOR LOCK</button>
       <p class="note">Pick 1 to 4 colors, then tap the key: everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on. The rainbow dot picks any color you like.</p>`;
     const dots = el.querySelector('#djcDots'), key = el.querySelector('#djColor');
     const save = () => { try { localStorage.setItem('gb_dj_colors', JSON.stringify(pick)); } catch (_) {} };
@@ -300,7 +305,7 @@
     const paint = () => {
       dots.querySelectorAll('.djc-dot[data-c]').forEach(d => { const i = pick.indexOf(d.dataset.c); d.classList.toggle('on', i >= 0); d.dataset.n = i >= 0 ? i + 1 : ''; });
       key.style.setProperty('--grad', grad()); key.classList.toggle('on', latched);
-      key.textContent = latched ? '🎨 LOCKED · TAP TO RELEASE' : '🎨 COLOR LOCK';
+      key.innerHTML = GB.svg('palette') + (latched ? ' LOCKED · TAP TO RELEASE' : ' COLOR LOCK');
       $('djColorR').textContent = latched ? 'LOCKED: ' + pick.length + (pick.length > 1 ? ' COLORS' : ' COLOR') : pick.length ? pick.length + ' PICKED · TAP TO LOCK' : 'PICK UP TO 4, THEN TAP';
     };
     const send = () => { if (latched) dj({colors: pick}); };
