@@ -77,11 +77,14 @@
   };
   const bump = k => { S.act[k] = wall(); };
   // ✨ (Oct 16) the home page's demo is the flashy part: no calm looks, songs or slow effects there (they stay in the full demo)
-  const SHOWY = /[?&]embed=1\b/.test(location.search);
+  const EMBED_SHOWY = /[?&]embed=1\b/.test(location.search);
+  const SHOWY = true;                                   // (Oct 16) the full demo opens with the same excitement; chill songs keep their calm shows
+  const CHILL_TITLES = ['Starlight Freeway', 'Silk Horizon', 'Blue Note Lanterns', 'Porch Light Saturday'];
+  const showyNow = () => EMBED_SHOWY || !(typeof M !== 'undefined' && M.queue[M.idx] && CHILL_TITLES.includes(M.queue[M.idx].title));
   const CALM_LOOKS = ['Cinematic', 'Concert Hall', 'Jazz Club', 'Moonlit', 'Silk', 'Golden Porch', 'Deep Space', 'Fairy Forest', 'Liquid Dreams', 'Midnight Galaxy', 'Blue Sky', 'Ice Palace', 'Deep Sea', 'Emerald Ocean'];
   const SHOWY_LOOKS = ['3D Object', '3D Depth', 'Hyperspace', 'Psychedelic', 'Rainbow Riot', 'Hypnotic', 'Warehouse Rave', 'Chaos', 'Neon Party', 'Wild Elements'];   // 🧊 the 3D shapes up front
   const SHOWY_FX = ['Tesseract', 'WireTorus', 'CrystalGem', 'CubeField', 'BarberSpin', 'RisingRings', 'ShapeTunnel', 'LaserFan', 'Kaleidoscope'];
-  const showyFx = list => { if (!SHOWY || !CAT || !CAT.effects) return list; const f = (list || []).filter(e => !CAT.effects[e] || CAT.effects[e].energy !== 'low'); return f.length ? f : list; };
+  const showyFx = list => { if (!showyNow() || !CAT || !CAT.effects) return list; const f = (list || []).filter(e => !CAT.effects[e] || CAT.effects[e].energy !== 'low'); return f.length ? f : list; };
   let BPM = 124, beatPos = 0, lastClock = now(), forceSec = null, songLook = 0;
   function clock() { const t = now(); beatPos += (t - lastClock) * pdTempoBpm() / 60; lastClock = t; return beatPos; }   // 🎛️ the Tempo toolbox can lock / scale it
   const SECS = ['groove', 'build', 'drop', 'break'];
@@ -101,12 +104,12 @@
       if (si.name === 'drop' && lastSecName !== 'drop' && DJ.cue) { setLook(DJ.cue, false); DJ.cue = null; }
       else if (si.name === 'drop' && lastSecName && lastSecName !== 'drop' && S.shuffle && !S.held) autoLook();
       lastSecK = si.k; lastSecName = si.name; S.lookK++;
-      const lk = CAT && CAT.looks[S.look]; if (lk) S.effect = pickOne(showyFx(SHOWY ? (si.name === 'build' ? lk.mid : lk.high.concat(si.name === 'drop' ? [] : lk.mid)) : si.name === 'drop' ? lk.high : si.name === 'break' ? lk.low : lk.mid));
+      const lk = CAT && CAT.looks[S.look]; if (lk) S.effect = pickOne(showyFx(showyNow() ? (si.name === 'build' ? lk.mid : lk.high.concat(si.name === 'drop' ? [] : lk.mid)) : si.name === 'drop' ? lk.high : si.name === 'break' ? lk.low : lk.mid));
       if (si.name === 'drop' && TX.s.drop_flash) TX.dropUntil = now() + 2.2;
     }
     return si;
   }
-  function autoLook() { const ls = SHOWY ? SHOWY_LOOKS.filter(n => n !== S.look && CAT.looks[n]) : Object.keys(CAT.looks).filter(n => n !== S.look && n !== 'Retro Arcade'); S.look = pickOne(ls); }
+  function autoLook() { const ls = showyNow() ? SHOWY_LOOKS.filter(n => n !== S.look && CAT.looks[n]) : Object.keys(CAT.looks).filter(n => n !== S.look && n !== 'Retro Arcade'); S.look = pickOne(ls); }
   function setLook(n, pin) { S.look = n; S.held = n; S.pinned = !!pin; S.lookK = 0; }
 
   // ======================================================================= text masks + a tiny pixel font
@@ -1100,7 +1103,8 @@
     neutral: [['Liquid Dreams', 'Deep Space', 'Lava Lounge', 'Midnight Galaxy', 'Hypnotic'], ['Hyperspace', 'Synthwave', 'Neon Grid'], ['Mainstage', 'Club Rig', 'Neon Party', 'Warehouse Rave', '3D Depth']],
     epic: [['Midnight Galaxy', 'Blue Sky', 'Deep Space', 'Liquid Dreams'], ['Hyperspace', 'Storm & Sea'], ['Big Wave', 'Hyperspace', 'Storm & Sea', 'Deep Space']]};
   const SH_LINES = {dark: ["LET'S GO", 'JUMP', 'MAKE SOME NOISE'], bright: ['HANDS UP', 'JUMP', 'SING IT'], neutral: ['HANDS UP', "LET'S GO", 'ONE MORE'], epic: ['SING IT', 'HANDS UP']};
-  function draftShow(song, variant) {                               // auto-draft (songshow.draft): looks per section, hits on the drops, a brightness curve, a crowd line
+  function draftShow(song, variant) {
+    const SHOWY = EMBED_SHOWY || !CHILL_TITLES.includes(song.title);   // chill songs keep their calm, matching shows in the full demo                               // auto-draft (songshow.draft): looks per section, hits on the drops, a brightness curve, a crowd line
     const bpm = song.bpm || 120, P = 60 / bpm, BAR = 4 * P, g = (song.grid || 0) % BAR, r3 = x => Math.round(x * 1000) / 1000;
     const bar = t => r3(g + Math.round((t - g) / BAR) * BAR), beat = t => r3(g + Math.round((t - g) / P) * P);
     let dur = song.dur || 0, drops = [];
@@ -1946,7 +1950,8 @@
     TX.s = Object.assign({}, ENG.text.state, {text: 'WELCOME TO THE PARTY'});
     TX.presets = [{name: 'HAPPY BIRTHDAY JACK', kind: 'text', text: 'HAPPY BIRTHDAY JACK *', mode: 'scroll', color: 'rainbow'}, {name: 'LETS DANCE', kind: 'text', text: 'LETS DANCE', mode: 'beat', color: 'look'}];
     FD.s = JSON.parse(JSON.stringify(FEEDS0));
-    if (SHOWY) { S.look = '3D Object'; M.queue = M.queue.filter(t => !CALM_LOOKS.concat(['Rock Arena']).includes(t.look) || t.look === 'Rock Arena'); M.queue = M.queue.filter(t => !['Silk', 'Jazz Club', 'Golden Porch', 'Deep Space'].includes(t.look)); M.idx = 0; S.pace = 'hype'; }
+    S.look = '3D Object'; S.pace = 'hype'; M.idx = 0;
+    M.queue = EMBED_SHOWY ? M.queue.filter(t => !CHILL_TITLES.includes(t.title)) : M.queue.filter(t => !CHILL_TITLES.includes(t.title)).concat(M.queue.filter(t => CHILL_TITLES.includes(t.title)));
     S.effect = pickOne(showyFx(CAT.looks[S.look].mid));
     BPM = songBpm(M.queue[M.idx]); M.posAt = now(); showsSeed(); pdSeed(); S.cameos = true;
     ['look-neon-party', 'live-storm'].forEach(loadClip);
