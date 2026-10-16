@@ -120,3 +120,12 @@
     io.observe(f);
   }
 })();
+
+// 📱 the ▶ Play the live demo bar slides up once you scroll past the top of the page, and hides near the demo itself and the footer
+(function () {
+  const d = document.querySelector('.demo-dock'); if (!d) return;
+  const away = [document.getElementById('tryLive')].filter(Boolean), ft = document.querySelector('footer');
+  const near = el => { const r = el.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; };
+  const tick = () => d.classList.toggle('show', scrollY > 520 && !away.some(near) && !(ft && near(ft)));
+  addEventListener('scroll', tick, {passive: true}); addEventListener('resize', tick); tick();
+})();

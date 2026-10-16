@@ -31,6 +31,8 @@
   #gbIntro circle{transition:fill .12s,r .12s,opacity .12s}
   #gbIntro .tap{font:700 20px/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.32em;padding-left:.32em;color:#33d6ff;text-shadow:0 0 12px rgba(51,214,255,.55);opacity:.85;animation:gbiP 1.6s ease-in-out infinite;text-transform:uppercase}
   #gbIntro.go .tap{visibility:hidden}
+  #gbIntro .snd{position:absolute;left:0;right:0;bottom:calc(36px + env(safe-area-inset-bottom));text-align:center;font:700 16px/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.3em;padding-left:.3em;color:#33d6ff;text-transform:uppercase;opacity:.9;transition:opacity .3s;animation:gbiP 1.6s ease-in-out infinite}
+  #gbIntro.bgout .snd{opacity:0}
   #gbIntro .word{font:800 24px/1 'Saira Condensed','Arial Narrow',sans-serif;padding-left:.5em;letter-spacing:.5em;color:#fff;opacity:0;transition:opacity .6s}
   #gbIntro.big .word{opacity:.9}
   @keyframes gbiP{50%{opacity:.35}}
@@ -198,7 +200,7 @@
       draw(); svg.style.visibility = 'hidden';
     };
     const run = withSound => {
-      if (started) return; started = true; markSeen(); el.classList.add('go');
+      if (started) return; started = true; runT = performance.now(); sndOn = !!(withSound && ctx && buf); if (sndOn) { const sn = el.querySelector('.snd'); if (sn) sn.remove(); } markSeen(); el.classList.add('go');
       if (withSound && ctx && buf) { try { const s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start(); } catch (e) {} }
       EV.forEach(([t, a, d]) => setTimeout(() => {
         if (a === 'boot') { const n = dot(d[0], d[1]); if (n && n.getAttribute('opacity') < 0.35) on(n, .35); }
@@ -211,7 +213,17 @@
       setTimeout(() => powerUp(0.85 - 0.04 + 0.22), 5100 - 220);   // ⚡ whoosh starts just before the fly, thump on ignite
       setTimeout(() => finish(false), 5100);                     // right after the Glow-BOP! the logo flies into the corner (the background already left)
     };
-    el.addEventListener('click', () => { if (started) return finish(true); prime().then(() => run(mode === 'sound')); });
+    let runT = 0, sndOn = false;
+    el.addEventListener('click', () => {
+      // 🔊 website demo on iPhone / iPad: the first tap turns the sound on right where the intro is (it doesn't skip); a second tap skips
+      if (started && AUTO && !sndOn && mode === 'sound' && !fin) {
+        sndOn = true; const sn = el.querySelector('.snd'); if (sn) sn.style.opacity = '0';
+        prime().then(() => { if (!ctx || ctx.state !== 'running' || !buf) return;
+          const at = (performance.now() - runT) / 1000;
+          try { const sr = ctx.createBufferSource(); sr.buffer = buf; sr.connect(ctx.destination); if (at < buf.duration - 0.05) sr.start(0, at); } catch (e) {} });
+        return;
+      }
+      if (started) return finish(true); prime().then(() => run(mode === 'sound')); });
     async function prime() {
       if (mode !== 'sound') return;
       try {
@@ -225,7 +237,8 @@
     // sound: start by itself when the browser allows audio, otherwise wait for the tap
     // 🌐 website demo: no "Tap to start", it plays straight away (with sound if the browser allows it, silent if not)
     const AUTO = !!(window.__demoUnhandled || window.GB_INTRO_AUTO);
-    if (AUTO) { const tp = el.querySelector('.tap'); if (tp) tp.style.visibility = 'hidden'; }
+    if (AUTO) { const tp = el.querySelector('.tap'); if (tp) tp.style.display = 'none';
+      if (mode === 'sound') { const sn = document.createElement('div'); sn.className = 'snd'; sn.textContent = 'Tap for sound'; el.appendChild(sn); } }
     prime().then(() => { if (ctx && ctx.state === 'running' && buf) setTimeout(() => run(true), 150); else if (AUTO) setTimeout(() => run(false), 150); });
     if (AUTO) setTimeout(() => { if (!started) run(false); }, 1200);   // a phone can leave the audio check hanging: don't wait for it
     setTimeout(() => { if (!started) { /* still waiting for a tap: fine */ } }, 0);

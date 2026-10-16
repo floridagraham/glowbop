@@ -388,3 +388,29 @@ html,body{overflow-x:clip}
 @media(min-width:1041px){.con-r .who{display:none}.con-r .row{padding-left:26px}}
 @media(max-width:1320px) and (min-width:1041px){.nav.con-hd ul{gap:4px}.nav.con-hd ul a{min-width:66px;padding:0 8px 6px 12px;letter-spacing:1px;font-size:14px}.nav.con-hd .cta{padding-left:12px;padding-right:12px}}
 @media(max-width:1140px) and (min-width:1041px){.nav.con-hd ul a{min-width:0;padding:0 7px 6px 9px;font-size:13px}}
+
+/* 📱 phones and tablets: a flashing ▶ DEMO key next to Try free in the header, plus a demo bar that rides along while you scroll */
+.nav.con-hd .demo-m{display:none}
+@media(max-width:1040px){
+  .nav.con-hd .demo-m{display:inline-flex;align-items:center;gap:5px;height:42px;margin-left:auto;padding:0 14px;border-radius:21px;background:var(--cyan);color:#000;font:800 15px/1 var(--cond);letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;white-space:nowrap;animation:demoFlash 3.2s steps(1,end) infinite}
+  .nav.con-hd .demo-m b{font-size:.7em}
+  .nav.con-hd .demo-m + .cta{margin-left:8px}
+}
+@media(max-width:560px){.nav.con-hd .ctax{display:none}.nav.con-hd .demo-m{padding:0 12px;letter-spacing:1px}.nav.con-hd .cta{padding-left:12px;padding-right:12px}.nav.con-hd .burger{padding:0 11px;letter-spacing:1px}}
+@media(max-width:350px){.nav.con-hd .demo-m{padding:0 9px}.nav.con-hd .demo-m b{display:none}}
+.demo-dock{display:none}
+@media(max-width:820px){
+  .demo-dock{display:flex;align-items:center;justify-content:center;gap:8px;position:fixed;left:16px;right:16px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:80;height:54px;border-radius:27px;
+    background:var(--cyan);color:#000;font:800 18px/1 var(--cond);letter-spacing:2px;text-transform:uppercase;text-decoration:none;
+    box-shadow:0 10px 30px -6px #000,0 0 18px -4px var(--cyan);transform:translateY(130%);transition:transform .35s cubic-bezier(.2,1.2,.4,1);animation:demoFlash 3.2s steps(1,end) infinite}
+  .demo-dock b{font-size:.75em}
+  .demo-dock.show{transform:none}
+  .demo-dock:hover{color:#000;text-decoration:none}
+}
+@media(prefers-reduced-motion:reduce){.nav.con-hd .demo-m,.demo-dock{animation:none}}
+/* ▶ drawn as a shape, not a character: iPhones turn the ▶ character into a play-button emoji */
+.nav.con-hd ul a.navdemo b,.nav.con-hd .demo-m b,.demo-dock b{display:inline-block;font-size:0;width:0;height:0;border-left:9px solid currentColor;border-top:6px solid transparent;border-bottom:6px solid transparent;margin:0 2px 0 0;align-self:center}
+.nav.con-hd ul a.navdemo b{margin-bottom:2px}
+.demo-dock b{border-left-width:12px;border-top-width:8px;border-bottom-width:8px}
+@media(max-width:350px){.nav.con-hd .demo-m b{display:inline-block}}
+@media(max-width:390px){.nav.con-hd .demo-m{padding:0 10px;font-size:14px;letter-spacing:.5px;gap:4px}.nav.con-hd .cta{padding-left:10px;padding-right:10px;font-size:12px;letter-spacing:.5px}.nav.con-hd .demo-m + .cta{margin-left:6px}.nav.con-hd .burger{margin-left:6px;padding:0 9px}}
