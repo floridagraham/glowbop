@@ -138,11 +138,11 @@
   }
 
   // ======================================================================= 🎧 DJ mode (same engine as the website's demo console)
-  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null, pfx: []};
-  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, pfx: []}); }
+  const DJ = {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, _lb: null, pfx: [], nfx: [], dstyle: 'random', lastDrop: ''};
+  function djReset() { Object.assign(DJ, {flash: 0, strobe: 0, black: false, build: null, parts: [], rings: [], word: null, queue: [], cue: null, taps: [], tap_bpm: null, pfx: [], nfx: []}); }
   // 🎛️ the six one-shot pads (padfx.py): sweep, shockwave, color bomb, lightning, 3-2-1, heartbeat. Short overlays in the look's colours.
-  const PAD_FX = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat'];
-  const PAD_SECS = {sweep: .9, shockwave: 1.1, colorbomb: 1.2, lightning: .8, countdown: 2.4, heartbeat: 1.8};
+  const PAD_FX = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat', 'star'];
+  const PAD_SECS = {sweep: .9, shockwave: 1.1, colorbomb: 1.2, lightning: .8, countdown: 2.4, heartbeat: 1.8, star: 1.3};
   function boltPath() {                                             // a jagged bolt from the top down, with one fork
     const pts = []; let x = 8 + R() * (W - 16), fork = null;
     for (let y = 0; y < H; y++) { x = clamp(x + (R() - .5) * 3.2, 1, W - 2); pts.push([x, y]); if (y === 6 + (R() * 5 | 0)) fork = {x, y}; }
@@ -150,6 +150,7 @@
     return pts.concat(f);
   }
   function padStart(k) {
+    if (k === 'heartbeat' || k === 'star' || k.startsWith('drop_')) return nStart(k);   // the newer pads draw with the ported padfx code
     const cols = lookCols(S.look).map(c => { const m = Math.max(...c); return m > 10 ? c.map(v => v * 255 / m) : [255, 255, 255]; });
     DJ.pfx.push({k, t0: now(), cols, dir: R() < .5 ? 1 : -1, bolt: k === 'lightning' ? boltPath() : null, c: pickOne(cols)});
     if (DJ.pfx.length > 6) DJ.pfx.shift();
@@ -184,11 +185,119 @@
       }
     });
   }
+  // ======================================================================= 💥 drop styles + ⭐ star / 💓 heartbeat pads (ported from padfx.py, Oct 16)
+  const DROP_FX = ['supernova', 'starburst', 'heartpop', 'shatter', 'colorbomb', 'rainbowwave', 'bassslam', 'lightning'];
+  const NG = (() => { const cx = (W - 1) / 2, cy = (H - 1) / 2, n = W * H, g = {cx, cy, dx: new Float32Array(n), dy: new Float32Array(n), d: new Float32Array(n), ang: new Float32Array(n),
+      xx: new Float32Array(n), yy: new Float32Array(n), R: Math.hypot(cx, cy) + 1.5, sq: Math.min(cx, cy) + .5, s: Math.max(1, Math.min(W, H) / 20)};
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const j = y * W + x, dx = x - cx, dy = y - cy; g.dx[j] = dx; g.dy[j] = dy; g.d[j] = Math.hypot(dx, dy); g.ang[j] = Math.atan2(dy, dx); g.xx[j] = x; g.yy[j] = y; }
+    return g; })();
+  const ss = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const hsv1 = h => { h = (((h % 1) + 1) % 1) * 6; return [clamp(Math.abs(h - 3) - 1, 0, 1), clamp(2 - Math.abs(h - 2), 0, 1), clamp(2 - Math.abs(h - 4), 0, 1)]; };
+  const RED = [1, .02, .1], PINK = [1, .2, .55];
+  function palc(P, u, offs) { const n = P.cols.length, x = (((u % 1) + 1) % 1) * n, i = Math.floor(x) % n, f = x - Math.floor(x), a = P.cols[i], b = P.cols[(i + 1) % n], h = hsv1(u + offs);
+    return [0, 1, 2].map(c => (a[c] * (1 - f) + b[c] * f) * .75 + .25 * h[c]); }
+  function starM(j, size, rot, inner = .42, soft = .09) { const f = .5 + .5 * Math.cos(5 * (NG.ang[j] - rot * 6.2832)), rs = size * (inner + (1 - inner) * f ** 2.2);
+    return clamp((rs - NG.d[j]) / Math.max(.6, size * soft) + .5, 0, 1); }
+  function heartM(j, size, rot = 0, sharp = 5) { const c = Math.cos(rot * 6.2832), s_ = Math.sin(rot * 6.2832), X0 = NG.dx[j] / size, Y0 = -NG.dy[j] / size;
+    const X = X0 * c - Y0 * s_, Y = X0 * s_ + Y0 * c + .15, v = (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3; return [clamp(.5 - v * sharp, 0, 1), Y]; }
+  const twk = (P, el, m, j, rate = .08) => { const ph = (P.spark[j] + el * 3) % 1; return ph < rate ? m * (1 - ph / rate) : 0; };
+  function nStart(k) {
+    const cols = lookCols(S.look).map(c => { const m = Math.max(...c); return m > 10 ? c.map(v => v / m) : [1, 1, 1]; });
+    let per = 60 / (DJ.tap_bpm || BPM || 120); while (per > .6) per /= 2; while (per < .3) per *= 2;
+    const P = {k, t0: now(), cols: cols.length ? cols : [[1, .2, .6], [.2, .8, 1]], per, spark: Float32Array.from({length: W * H}, R)};
+    P.ci = (R() * P.cols.length) | 0;
+    if (k === 'heartbeat') { P.dub = clamp(.5 * per, .2, .3); P.dur = P.dub + 1; P.tilt = R() < .5 ? -1 : 1; }
+    else if (k === 'star') { P.dur = 1.3; P.spin = (R() < .5 ? -1 : 1) * (.5 + R() * .3); P.rot0 = R(); }
+    else if (k === 'drop_supernova') { P.dark = .12; P.dur = 1.5; P.parts = Array.from({length: Math.round(40 + W * H / 8)}, () => [R() * 6.2832, .6 + R() * .8, R()]); }
+    else if (k === 'drop_starburst') { P.dur = 1.3; P.spin = (R() < .5 ? -1 : 1) * .9; P.rot0 = R(); }
+    else if (k === 'drop_heartpop') { P.dur = 1.6; P.parts = Array.from({length: Math.round(10 + W * H / 40)}, () => [R() * 6.2832, .5 + R() * .8, R()]); }
+    else if (k === 'drop_shatter') { P.dur = 1.4; const n = Math.round(8 + W * H / 30), seeds = Array.from({length: n}, () => [R() * W, R() * H]);
+      P.cell = new Int16Array(W * H); P.edge = new Float32Array(W * H);
+      for (let j = 0; j < W * H; j++) { let b1 = 1e9, b2 = 1e9, bi = 0; seeds.forEach(([sx, sy], i) => { const d = (NG.xx[j] - sx) ** 2 + (NG.yy[j] - sy) ** 2; if (d < b1) { b2 = b1; b1 = d; bi = i; } else if (d < b2) b2 = d; });
+        P.cell[j] = bi; P.edge[j] = clamp(1.5 - (Math.sqrt(b2) - Math.sqrt(b1)), 0, 1); }
+      P.fall = seeds.map(() => .6 + R()); P.delay = seeds.map(() => .05 + R() * .3); P.cc = seeds.map(() => (R() * P.cols.length) | 0); }
+    else if (k === 'drop_colorbomb') { P.dur = 1.5; P.col = P.cols[P.ci]; P.drip = Float32Array.from({length: W}, () => .6 + R() * .9); }
+    else if (k === 'drop_rainbowwave') { P.dur = 1.2; P.cx = pickOne([0, .5, 1]); }
+    else if (k === 'drop_bassslam') { P.dur = .9; P.sx = R() < .5 ? -1 : 1; }
+    else P.dur = 1;
+    DJ.nfx.push(P); if (DJ.nfx.length > 5) DJ.nfx.shift();
+  }
+  function nDraw(buf, t) {
+    DJ.nfx = DJ.nfx.filter(P => t - P.t0 < P.dur);
+    if (!DJ.nfx.length) return;
+    let img = new Float32Array(buf.length); for (let i = 0; i < buf.length; i++) img[i] = buf[i] / 255;
+    for (const P of DJ.nfx) img = nOne(img, P, t - P.t0);
+    for (let i = 0; i < buf.length; i++) buf[i] = clamp(img[i], 0, 1) * 255;
+  }
+  function nOne(img, P, el) {
+    const out = new Float32Array(img.length), u = el / P.dur, N = W * H, g = NG;
+    const set = (j, f) => { const i = j * 3, r = f(img[i], img[i + 1], img[i + 2]); out[i] = r[0]; out[i + 1] = r[1]; out[i + 2] = r[2]; };
+    switch (P.k) {
+      case 'heartbeat': { const dub = P.dub, env = Math.min(1, Math.exp(-el * 8) + (el >= dub ? .85 * Math.exp(-(el - dub) * 8) : 0)), fade = 1 - ss(dub + .45, P.dur, el);
+        const s = (.48 + .14 * env) * g.sq, rot = P.tilt * .05 * Math.sin(el * 6), lvl = (.55 + .6 * env) * fade, dim = 1 - (.65 + .3 * env) * fade;
+        for (let j = 0; j < N; j++) { const [m, Y] = heartM(j, s, rot), X = g.dx[j] / s, sh = clamp(.5 + .45 * Y, 0, 1), pc = palc(P, el * .7 + Y * .3, .9);
+          const hl = Math.exp(-(((X + .45) / .3) ** 2 + ((Y - .55) / .25) ** 2)) * .35, gl = Math.exp(-g.d[j] / (g.sq * (.45 + .45 * env))) * env * .4 * (1 - m), tw = twk(P, el, m, j) * fade * 1.1;
+          set(j, (r, gg, b) => [r, gg, b].map((v, c) => { const col = (RED[c] * (1 - sh) + PINK[c] * sh) * .8 + .2 * pc[c]; return v * dim * (1 - .6 * m * fade) + m * (col + hl) * lvl + gl * RED[c] * fade + tw; })); }
+        return out; }
+      case 'star': { const grow = ss(0, .18, el) * (1 + .15 * Math.sin(el * 14) * Math.exp(-el * 3)), size = g.sq * (.55 + .45 * grow) * (1 + .25 * u), rot = P.rot0 + P.spin * el, fade = 1 - ss(.65, 1, u);
+        for (let j = 0; j < N; j++) { const m = starM(j, size, rot), col = palc(P, P.ci / P.cols.length + el * .9 + g.d[j] / g.R * .6, el);
+          const tw = twk(P, el, clamp(m + .35 * Math.exp(-g.d[j] / (size * 1.4)), 0, 1), j), rays = (.5 + .5 * Math.cos(5 * (g.ang[j] - rot * 6.2832))) ** 8 * Math.exp(-g.d[j] / (size * 2.2)) * .5;
+          set(j, (r, gg, b) => [r, gg, b].map((v, c) => v * (1 - .7 * fade * m) * (1 - .35 * fade) + fade * (m * col[c] * 1.05 + rays * col[c] + tw * 1.2))); }
+        return out; }
+      case 'drop_supernova': { if (el < P.dark) { for (let i = 0; i < out.length; i++) out[i] = img[i] * .05; return out; }
+        const e = el - P.dark, v = e / (P.dur - P.dark), Rr = g.R * 1.25, front = Rr * ss(0, .8, v) ** .7, keep = ss(0, .6, v);
+        for (let j = 0; j < N; j++) { const core = Math.exp(-((g.d[j] / (1 + g.sq * .5 * ss(0, .25, e))) ** 2)) * (1 - ss(.1, .7, v)), ring = Math.exp(-(((g.d[j] - front) / (1.2 + 2 * v)) ** 2)) * (1 - v), col = palc(P, g.d[j] / g.R * .8 - e * .6, e);
+          set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * keep + core * (.6 + .4 * col[c]) * 1.4 + ring * col[c] * 1.3)); }
+        for (const [th, sp, ph] of P.parts) { if (ph >= .8 - v * .5) continue; const rr = front * sp * 1.1, x = Math.round(g.cx + Math.cos(th) * rr), y = Math.round(g.cy + Math.sin(th) * rr);
+          if (x >= 0 && x < W && y >= 0 && y < H) { const i = (y * W + x) * 3; for (let c = 0; c < 3; c++) out[i + c] = Math.max(out[i + c], 1 - .5 * v); } }
+        return out; }
+      case 'drop_starburst': { const size = g.sq * (.3 + 1.9 * ss(0, .7, u)), rot = P.rot0 + P.spin * el, fade = 1 - ss(.55, 1, u);
+        for (let j = 0; j < N; j++) { const m = starM(j, size, rot, .42, .12), edge = clamp(m * (1 - starM(j, size * .78, rot)), 0, 1), col = palc(P, el * 1.2 + g.d[j] / g.R, el), tw = twk(P, el, m, j, .1);
+          set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (1 - .5 * fade) + fade * ((m * .45 + edge * 1.1) * col[c] + tw))); }
+        return out; }
+      case 'drop_heartpop': { const pop = .35;
+        if (el < pop) { const k = ss(0, pop, el);
+          for (let j = 0; j < N; j++) { const [m, Y] = heartM(j, g.sq * (.4 + .5 * k), .04 * Math.sin(el * 30)), sh = clamp(.5 + .45 * Y, 0, 1);
+            set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (1 - .7 * m) + m * (RED[c] * (1 - sh) + PINK[c] * sh) * (.8 + .6 * k))); }
+          return out; }
+        const e = el - pop, v = (u - pop / P.dur) / (1 - pop / P.dur), flash = Math.max(0, 1 - e / .15), lay = new Float32Array(img.length);
+        for (const [th, sp, ph] of P.parts) { const rr = g.R * sp * e * 1.6, xi = g.cx + Math.cos(th) * rr, yi = g.cy + Math.sin(th) * rr + 9 * e * e * g.s; if (xi < 0 || xi >= W || yi < 0 || yi >= H) continue;
+          const col = ph < .5 ? PINK : RED, rad = Math.ceil(2 * g.s);
+          for (let y = Math.max(0, Math.floor(yi - rad)); y <= Math.min(H - 1, Math.ceil(yi + rad)); y++) for (let x = Math.max(0, Math.floor(xi - rad)); x <= Math.min(W - 1, Math.ceil(xi + rad)); x++) {
+            const hm = clamp(1.5 - Math.hypot(x - xi, y - yi) / (.9 * g.s), 0, 1), i = (y * W + x) * 3; for (let c = 0; c < 3; c++) lay[i + c] = Math.max(lay[i + c], hm * col[c]); } }
+        for (let j = 0; j < N; j++) { const gl = Math.exp(-g.d[j] / (g.sq * .5)) * flash; set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (.4 + .6 * v) + gl * PINK[c] + lay[j * 3 + c] * (1 - v) * 1.2)); }
+        return out; }
+      case 'drop_shatter': { if (el < .08) { for (let i = 0; i < out.length; i++) out[i] = Math.max(img[i], .9); return out; }
+        const keep = ss(.2, 1, u), fadeP = 1 - ss(.35, 1, u), crackK = 1 - ss(.08, .5, u);
+        for (let j = 0; j < N; j++) { const cell = P.cell[j], tt = Math.max(0, el - P.delay[cell]), dy = P.fall[cell] * 14 * tt * tt * g.s, src = g.yy[j] - dy;
+          let pc = [0, 0, 0]; if (src >= 0) { const sc = P.cell[clamp(Math.round(src), 0, H - 1) * W + g.xx[j]]; if (sc === cell) pc = P.cols[P.cc[sc]].map(v => v * fadeP); }
+          const cr = P.edge[j] * crackK; set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * keep + pc[c] * .9 + cr * 1.2)); }
+        return out; }
+      case 'drop_colorbomb': { const white = Math.max(0, 1 - el / .1) * .8, col = P.col.map(v => v * (1 - white) + white);
+        for (let j = 0; j < N; j++) { let a = 1; if (el >= .25) { const top = (el - .25) * P.drip[g.xx[j]] * H * 1.4; a = clamp(g.yy[j] - top + 1, 0, 1) * (1 - ss(.6, 1, u)); }
+          const tw = twk(P, el, a, j, .05) * .8; set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (1 - a) + a * col[c] * 1.05 + tw)); }
+        return out; }
+      case 'drop_rainbowwave': { const ox = P.cx * (W - 1), Rr = Math.hypot(W, H) * 1.1, front = Rr * ss(0, .85, u);
+        for (let j = 0; j < N; j++) { const d = Math.hypot(g.xx[j] - ox, g.dy[j]), band = Math.exp(-(((d - front) / (2 * g.s + 3 * u)) ** 2)), trail = clamp((front - d) / (Rr * .5), 0, 1) * (1 - u) * .35, col = hsv1(d / Rr * 1.5 - el * .8);
+          set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (1 - .3 * (1 - u)) + (band * 1.3 + trail) * col[c])); }
+        return out; }
+      case 'drop_bassslam': { if (el < .07) { for (let i = 0; i < out.length; i++) out[i] = 1; return out; }
+        const k = Math.exp(-(el - .07) / .18), sh = Math.round(P.sx * k * 2 * g.s * Math.cos(el * 45)), vs = Math.round(k * 1.5 * g.s * Math.abs(Math.sin(el * 38)));
+        for (let j = 0; j < N; j++) { const x = g.xx[j], y = g.yy[j], sx = ((x - sh) % W + W) % W, sy = ((y - vs) % H + H) % H, si = (sy * W + sx) * 3;
+          const floor = clamp(1 - (H - 1 - y) / (H * .45 * (1 - k * .5)), 0, 1) * k, col = palc(P, el * .5 + x / W, el), i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[si + c] * (.6 + .4 * (1 - k)) + floor * col[c] * 1.2; }
+        return out; }
+    }
+    return img;
+  }
   function djFire(a, beats, cue) {
     const P = DJ.parts;
     if (a === 'drop') {
-      DJ.flash = 1; DJ.black = false; DJ.rings.push({x: W / 2, y: H / 2, r: 0, c: [255, 255, 255]});
-      for (let i = 0; i < 70; i++) { const an = R() * 6.283, sp = 8 + R() * 22; P.push({x: W / 2, y: H / 2, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 0, c: pickOne([[255, 61, 154], [51, 214, 255], [255, 204, 102], [155, 61, 255]])}); }
+      let st = DJ.dstyle || 'random'; if (st === 'random' || !(st === 'classic' || DROP_FX.includes(st))) st = pickOne(DROP_FX.filter(x => x !== DJ.lastDrop)); DJ.lastDrop = st;
+      DJ.black = false;
+      if (st !== 'classic') { if (st === 'lightning') { padStart('lightning'); DJ.flash = .6; } else nStart('drop_' + st); }
+      else { DJ.flash = 1; DJ.rings.push({x: W / 2, y: H / 2, r: 0, c: [255, 255, 255]}); }
+      if (st === 'classic') for (let i = 0; i < 70; i++) { const an = R() * 6.283, sp = 8 + R() * 22; P.push({x: W / 2, y: H / 2, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 0, c: pickOne([[255, 61, 154], [51, 214, 255], [255, 204, 102], [155, 61, 255]])}); }
       forceSec = {name: 'drop', until: now() + 8};
       if (DJ.cue) { setLook(DJ.cue, false); DJ.cue = null; S.feature = {clip: lookClip(S.look), name: S.look, until: 0}; }
       else if (!cue) { const c = pickOne(SPECTACLE); S.feature = {clip: c, name: titleOf(c), until: now() + 24}; }
@@ -202,7 +311,7 @@
       P.push({x: side, y: H - 1, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1.6, g: 14, c: pickOne([[255, 61, 154], [51, 214, 255], [255, 204, 102], [60, 224, 138], [204, 153, 255], [255, 255, 255]])}); } }
   }
   // 🎚️ build styles (same as dj.py build_frame): each ramps over 8 s, uses the look's colours, tops out white-hot
-  const BUILD_STYLES = ['rise', 'close', 'burst', 'spin', 'rainbow', 'zipper', 'heartbeat'], BSECS = 8;
+  const BUILD_STYLES = ['rise', 'close', 'burst', 'spin', 'rainbow', 'zipper', 'heartbeat', 'star'], BSECS = 8;
   const BG = (() => { const cx = (W - 1) / 2, cy = (H - 1) / 2, g = {ex: [], ring: [], rad: [], ang: [], dx: [], dy: []};
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = x - cx, dy = y - cy, ex = Math.min(x, W - 1 - x) / cx, ey = Math.min(y, H - 1 - y) / cy;
       g.ex.push(ex); g.ring.push(Math.min(ex, ey)); g.rad.push(Math.hypot(dx / cx, dy / cy) / Math.SQRT2); g.ang.push(((Math.atan2(dy, dx) / 6.283) % 1 + 1) % 1); g.dx.push(dx); g.dy.push(dy); }
@@ -227,7 +336,10 @@
     let arms = 1, rev = 0, env = 0;
     if (style === 'spin') { arms = [1, 2, 3, 4, 6][Math.min(4, Math.floor(k * 5))]; rev = bTurns(el, .35, 2); }
     if (style === 'rainbow') { rev = bTurns(el, .15, 1.6); wk = Math.pow(Math.max(0, (k - .55) / .45), 2); }
-    if (style === 'heartbeat') { const f = bTurns(el, 55 / 60, 170 / 60) % 1; env = Math.max(Math.exp(-f * 9), f >= .3 ? .75 * Math.exp(-(f - .3) * 9) : 0); pulse = env; dim = .35 + .4 * k; }
+    if (style === 'heartbeat') { const f = bTurns(el, 55 / 60, 170 / 60) % 1; env = Math.max(Math.exp(-f * 9), f >= .3 ? .75 * Math.exp(-(f - .3) * 9) : 0); pulse = env; dim = .35 + .4 * k; wk = 0; }
+    let srot = 0, ssize = 0, senv = 0;
+    if (style === 'star') { srot = bTurns(el, .15, 1.4); const bb = bTurns(el, 1, 3) % 1; senv = Math.exp(-bb * 6); ssize = (.35 + .5 * k + .08 * senv) * Math.min((W - 1) / 2, (H - 1) / 2) * 1.15; pulse = senv; dim = .35 + .4 * k; wk = 0; }
+    const ra = (.06 + .1 * k) * Math.sin(t * (1.5 + 2.5 * k)) * 6.2832;
     const hs = (.42 + .22 * k + .14 * env) * Math.min((W - 1) / 2, (H - 1) / 2);
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       const j = y * W + x, i = j * 3; let m = 0, lv = 0, rim = 0, col;
@@ -241,10 +353,14 @@
         const head = Math.exp(-((u / .06) ** 2)) + Math.exp(-(((1 - u) / .03) ** 2));
         col = pal(r * .7 + u * .25 + t * .1).map(v => { v = v * (1 - .6 * head) + 153 * head; return v * (1 - hub) + 255 * hub; });
         lv = clamp(.04 + .16 * k + (.7 + .3 * k) * arm + hub, 0, 1) * (.8 + .2 * pulse); m = clamp(.2 + arm, 0, 1); }
-      else if (style === 'rainbow') { col = hue((x / W + y / H * .6) * (1 + 1.5 * k) - rev, 1, 1); lv = .35 + .65 * k * (.65 + .35 * pulse); m = 1; }
-      else if (style === 'heartbeat') { const X = BG.dx[j] / hs, Y = -BG.dy[j] / hs + .12, v = (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3;
+      else if (style === 'rainbow') { const fi = ss(0, 1.6, el); col = hue((x / W + y / H * .6) * (1 + 1.5 * k) - rev, 1, 1); lv = (.35 + .65 * k * (.65 + .35 * pulse)) * fi; m = fi; }   // 🌅 fades in
+      else if (style === 'star') { const d = Math.hypot(BG.dx[j], BG.dy[j]), f = .5 + .5 * Math.cos(5 * (Math.atan2(BG.dy[j], BG.dx[j]) - srot * 6.2832)), rs = ssize * (.42 + .58 * f ** 2.2);
+        const mm = clamp((rs - d) / Math.max(.6, ssize * .1) + .5, 0, 1), rays = f ** 10 * Math.exp(-d / (ssize * 2)) * (.3 + .6 * k);
+        col = pal(d / Math.max(1, ssize) * .5 - t * (.2 + .8 * k)).map((v, c) => v * (1 - .4 * k) + .4 * k * hue(d / Math.max(1, ssize) * .4 + t * .5, 1, 1)[c]);
+        lv = mm * (.55 + .45 * senv) + rays; m = Math.max(mm, clamp(rays, 0, 1)); if (R() < (.04 + .12 * k) * mm) { lv = 1.4; } }
+      else if (style === 'heartbeat') { const X0 = BG.dx[j] / hs, Y0 = -BG.dy[j] / hs, X = X0 * Math.cos(ra) - Y0 * Math.sin(ra), Y = X0 * Math.sin(ra) + Y0 * Math.cos(ra) + .12, v = (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3;
         const mm = clamp(.5 - v * 6, 0, 1), glow = Math.exp(-BG.rad[j] * 3) * env * (.25 + .5 * k);
-        col = pal(.15 * Y + t * .05); lv = mm * (.55 + .45 * env) + glow * (1 - mm); m = Math.max(mm, glow); }
+        col = pal(.15 * Y + t * (.05 + .5 * k)).map((v, c) => v * (1 - .35 * k) + .35 * k * hue(.2 * Y + t * .4, 1, 1)[c]); lv = mm * (.55 + .45 * env) + glow * (1 - mm); m = Math.max(mm, glow); }
       const keep = (1 - dim) * (1 - .5 * m);
       for (let c = 0; c < 3; c++) { const cc = col[c] * (1 - wk) + 255 * wk; buf[i + c] = Math.min(255, buf[i + c] * keep + lv * cc + rim * (127 + .5 * cc)); }
       if (R() < (.008 + .045 * k) * (.3 + .7 * m)) buf[i] = buf[i + 1] = buf[i + 2] = 255;
@@ -260,6 +376,7 @@
     for (const q of DJ.parts) { q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= .97; q.vy = q.vy * .97 + q.g * dt; q.l -= dt * .9; if (q.l > 0) put(buf, q.x, q.y, q.c, Math.min(1, q.l * 1.4)); }
     DJ.parts = DJ.parts.filter(q => q.l > 0);
     if (DJ.pfx.length) padDraw(buf, t);
+    if (DJ.nfx.length) nDraw(buf, t);
     if (DJ.word) {                                                  // big scrolling words over a dimmed show
       const el = t - DJ.word.t0, dur = 2.8; if (el > dur) DJ.word = null;
       else { const m = textMask(DJ.word.w, H), x0 = Math.round(W - (el / dur) * (W + m.w)), y0 = Math.max(0, ((H - m.h) / 2) | 0), hh = el / .7;
@@ -1738,6 +1855,7 @@
         case '/api/dj': {
           const t = now();
           lpObserve('dj', b); shObserve('dj', b);
+          if (b.drop_style) DJ.dstyle = String(b.drop_style);
           if (b.hit === 'blackout') DJ.black = 'on' in b ? !!b.on : !DJ.black;
           else if (b.hit && b.snap === false) djFire(b.hit, b.beats);     // ⚡ instant pads fire right now; snapped ones wait for the beat
           else if (b.hit) DJ.queue.push(b.hit);

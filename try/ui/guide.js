@@ -5,6 +5,7 @@
      previous / next. Rail keys in the text (DJ, LIGHTS ...) are tappable: they open that part of the app.
    - It opens on the section for the page you're on. ⧉ pops it out into its own window (laptop).
    Works on its own too (ui/guide.html = the popped-out window). */
+const GUIDE_URL = (() => { try { return new URL('guide_content.json?v=3', document.currentScript.src).href; } catch (e) { return '/ui/guide_content.json?v=3'; } })();   // works under /ui/ (app) and /try/ui/ (website demo)
 (function () {
   'use strict';
   const W = window, standalone = /[?&]standalone=1/.test(location.search);
@@ -85,7 +86,7 @@
 
   // ------------------------------------------------------------------ data
   let DATA = null, loading = null;
-  const load = () => loading || (loading = fetch('/ui/guide_content.json?v=3').then(r => r.json()).then(d => (DATA = d)).catch(e => { loading = null; throw e; }));
+  const load = () => loading || (loading = fetch(GUIDE_URL).then(r => r.json()).then(d => (DATA = d)).catch(e => { loading = null; throw e; }));
   const secIdx = slug => DATA.findIndex(s => s.slug === slug);
 
   // ------------------------------------------------------------------ the window

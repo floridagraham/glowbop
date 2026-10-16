@@ -1,0 +1,2639 @@
+{
+ "look-red-alert": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Red Alert",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-rainbow-riot": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Rainbow Riot",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-emerald-ocean": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Emerald Ocean",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-midnight-galaxy": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Midnight Galaxy",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-fairy-forest": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fairy Forest",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-deep-sea": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Deep Sea",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-neon-party": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Neon Party",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-ice-palace": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ice Palace",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-synthwave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Synthwave",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-royal-gold": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Royal Gold",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-toxic-rave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Toxic Rave",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-lava-lounge": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Lounge",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-blue-sky": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Blue Sky",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-hyperspace": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Hyperspace",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-digital-matrix": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Digital Matrix",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-psychedelic": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Psychedelic",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-molten": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Molten",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-chaos": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Chaos",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-wild-card": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Wild Card",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-studio-54": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Studio 54",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-liquid-dreams": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Liquid Dreams",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-warehouse-rave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Warehouse Rave",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-neon-grid": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Neon Grid",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-storm-sea": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Storm & Sea",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-mainstage": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Mainstage",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-deep-space": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Deep Space",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-hypnotic": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Hypnotic",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-club-rig": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Club Rig",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-3d-depth": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "3D Depth",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-dance-crew": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Dance Crew",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-retro-arcade": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Retro Arcade",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-wild-elements": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Wild Elements",
+  "group": "Looks",
+  "desc": ""
+ },
+ "fx-starroll": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "StarRoll",
+  "group": "New effects",
+  "desc": "Synthwave"
+ },
+ "fx-wiretorus": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "WireTorus",
+  "group": "New effects",
+  "desc": "3D Depth"
+ },
+ "fx-crystalgem": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "CrystalGem",
+  "group": "New effects",
+  "desc": "Hyperspace"
+ },
+ "fx-cubefield": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "CubeField",
+  "group": "New effects",
+  "desc": "Hyperspace"
+ },
+ "fx-atomorbit": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "AtomOrbit",
+  "group": "New effects",
+  "desc": "Deep Space"
+ },
+ "fx-tesseract": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "Tesseract",
+  "group": "New effects",
+  "desc": "Hyperspace"
+ },
+ "fx-laserweb": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "LaserWeb",
+  "group": "New effects",
+  "desc": "Warehouse Rave"
+ },
+ "fx-eqcity": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "EQCity",
+  "group": "New effects",
+  "desc": "Mainstage"
+ },
+ "fx-launchpad": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "LaunchPad",
+  "group": "New effects",
+  "desc": "Neon Party"
+ },
+ "fx-soundribbon": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "SoundRibbon",
+  "group": "New effects",
+  "desc": "Mainstage"
+ },
+ "fx-paintsplash": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "PaintSplash",
+  "group": "New effects",
+  "desc": "Neon Party"
+ },
+ "fx-crowdsurf": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "CrowdSurf",
+  "group": "New effects",
+  "desc": "Warehouse Rave"
+ },
+ "fx-rainonglass": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "RainOnGlass",
+  "group": "New effects",
+  "desc": "Storm & Sea"
+ },
+ "fx-volcano": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "Volcano",
+  "group": "New effects",
+  "desc": "Molten"
+ },
+ "fx-tornado": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "Tornado",
+  "group": "New effects",
+  "desc": "Storm & Sea"
+ },
+ "fx-waterfall": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "Waterfall",
+  "group": "New effects",
+  "desc": "Storm & Sea"
+ },
+ "fx-solarflare": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "SolarFlare",
+  "group": "New effects",
+  "desc": "Lava Lounge"
+ },
+ "fx-alienparade": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "AlienParade",
+  "group": "New effects",
+  "desc": "Retro Arcade"
+ },
+ "fx-breakout": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "Breakout",
+  "group": "New effects",
+  "desc": "Retro Arcade"
+ },
+ "fx-snakegame": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "SnakeGame",
+  "group": "New effects",
+  "desc": "Retro Arcade"
+ },
+ "fx-pongbattle": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "PongBattle",
+  "group": "New effects",
+  "desc": "Retro Arcade"
+ },
+ "fx-pixelfireworks": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "PixelFireworks",
+  "group": "New effects",
+  "desc": "Retro Arcade"
+ },
+ "fx-vectorrocks": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "VectorRocks",
+  "group": "New effects",
+  "desc": "Synthwave"
+ },
+ "holiday-christmas": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Christmas \ud83c\udf84",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-halloween": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Halloween \ud83c\udf83",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-july4": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "4th of July \ud83c\udf86",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-valentine": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Valentine's \ud83d\udc98",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-newyear": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "New Year's \ud83e\udd42",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-thanksgiving": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Thanksgiving \ud83e\udd83",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-stpatricks": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "St. Patrick's \u2618\ufe0f",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-birthday": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Birthday \ud83c\udf82",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "holiday-gameday": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Game Day \ud83c\udfc8",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "fire-classic-cozy": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Classic \u00b7 Cozy",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-classic-roar": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Classic \u00b7 Roaring",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-rainbow-cozy": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "Rainbow \u00b7 Cozy",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-blue-cozy": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Blue \u00b7 Cozy",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-purple-roar": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Purple \u00b7 Roaring",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-green-cozy": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Green \u00b7 Cozy",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-pink-cozy": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Pink \u00b7 Cozy",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-ice-cozy": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ice \u00b7 Cozy",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "score-soccer": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "Game Day \u00b7 Soccer",
+  "group": "Scoreboard",
+  "desc": ""
+ },
+ "score-f1": {
+  "w": 40,
+  "h": 21,
+  "n": 195,
+  "fps": 15,
+  "title": "F1: new leader",
+  "group": "Scoreboard",
+  "desc": "DRS attack, overtake, NEW LEADER, fastest lap"
+ },
+ "score-timer": {
+  "w": 40,
+  "h": 21,
+  "n": 90,
+  "fps": 15,
+  "title": "Countdown clock",
+  "group": "Scoreboard",
+  "desc": ""
+ },
+ "text-birthday": {
+  "w": 40,
+  "h": 21,
+  "n": 135,
+  "fps": 15,
+  "title": "Happy Birthday",
+  "group": "Text & logos",
+  "desc": ""
+ },
+ "text-beat": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Beat words",
+  "group": "Text & logos",
+  "desc": ""
+ },
+ "drop": {
+  "w": 40,
+  "h": 21,
+  "n": 135,
+  "fps": 15,
+  "title": "The drop",
+  "group": "Music",
+  "desc": ""
+ },
+ "climax": {
+  "w": 40,
+  "h": 21,
+  "n": 135,
+  "fps": 15,
+  "title": "Epic climax",
+  "group": "Music",
+  "desc": ""
+ },
+ "lineup": {
+  "w": 80,
+  "h": 21,
+  "n": 60,
+  "fps": 15,
+  "title": "Line-up wizard",
+  "group": "Setup",
+  "desc": ""
+ },
+ "groups": {
+  "w": 62,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Two groups",
+  "group": "Setup",
+  "desc": ""
+ },
+ "sparkle": {
+  "w": 40,
+  "h": 21,
+  "n": 75,
+  "fps": 15,
+  "title": "Sparkle",
+  "group": "Effects",
+  "desc": ""
+ },
+ "movie-halloweennight": {
+  "w": 40,
+  "h": 21,
+  "n": 240,
+  "fps": 15,
+  "title": "Halloween Night (movie)",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "movie-harvestday": {
+  "w": 40,
+  "h": 21,
+  "n": 240,
+  "fps": 15,
+  "title": "Harvest Day (movie)",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "movie-christmaseve": {
+  "w": 40,
+  "h": 21,
+  "n": 240,
+  "fps": 15,
+  "title": "Christmas Eve (movie)",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "movie-newyearcountdown": {
+  "w": 40,
+  "h": 21,
+  "n": 240,
+  "fps": 15,
+  "title": "New Year Countdown (movie)",
+  "group": "Holidays",
+  "desc": ""
+ },
+ "wave-bigwave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Big Wave",
+  "group": "Big Wave",
+  "desc": ""
+ },
+ "wave-serpent": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Serpent",
+  "group": "Big Wave",
+  "desc": ""
+ },
+ "wave-twinwaves": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Twin Waves",
+  "group": "Big Wave",
+  "desc": ""
+ },
+ "wave-oceanswell": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ocean Swell",
+  "group": "Big Wave",
+  "desc": ""
+ },
+ "shape-spinningglobe": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Spinning Globe",
+  "group": "3D shapes",
+  "desc": "globe"
+ },
+ "shape-barberspin": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Barber Spin",
+  "group": "3D shapes",
+  "desc": "cylinder"
+ },
+ "shape-risingrings": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Rising Rings",
+  "group": "3D shapes",
+  "desc": "cylinder"
+ },
+ "live-countdown": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Countdown",
+  "group": "Live feeds",
+  "desc": ""
+ },
+ "live-weather": {
+  "w": 40,
+  "h": 21,
+  "n": 195,
+  "fps": 15,
+  "title": "Weather",
+  "group": "Live feeds",
+  "desc": ""
+ },
+ "score-baseball": {
+  "w": 40,
+  "h": 21,
+  "n": 240,
+  "fps": 15,
+  "title": "Live Fan \u00b7 Baseball",
+  "group": "Scoreboard",
+  "desc": "Score, a new play, then the diamond with runners and the count"
+ },
+ "score-football": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Live Fan \u00b7 Football",
+  "group": "Scoreboard",
+  "desc": "Down and distance, then a touchdown"
+ },
+ "score-basketball": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "Game Day \u00b7 Basketball",
+  "group": "Scoreboard",
+  "desc": ""
+ },
+ "score-hockey": {
+  "w": 40,
+  "h": 21,
+  "n": 135,
+  "fps": 15,
+  "title": "Game Day \u00b7 Hockey",
+  "group": "Scoreboard",
+  "desc": ""
+ },
+ "live-nascar": {
+  "w": 40,
+  "h": 21,
+  "n": 292,
+  "fps": 15,
+  "title": "NASCAR",
+  "group": "Scoreboard",
+  "desc": "Running order, caution, a new leader, the white flag and the checkered flag (demo race)"
+ },
+ "live-golf": {
+  "w": 40,
+  "h": 21,
+  "n": 165,
+  "fps": 15,
+  "title": "Golf",
+  "group": "Scoreboard",
+  "desc": "The leaderboard, then a new leader celebration"
+ },
+ "live-overhead": {
+  "w": 40,
+  "h": 21,
+  "n": 225,
+  "fps": 15,
+  "title": "Overhead now",
+  "group": "Live feeds",
+  "desc": "Planes flying over the house, then the space station passing (demo sky)"
+ },
+ "live-storm": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Storm watch",
+  "group": "Live feeds",
+  "desc": "A warning flashes over the music show (test alert)"
+ },
+ "fire-campfire": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Campfire",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-bonfire": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Bonfire",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-candles": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Candle wall",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-torches": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Torch row",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-pixel": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Pixel flames",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-spirit": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Spirit fire",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-lava": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava rising",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-dragon": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Dragon breath",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-candles-rainbow": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Candle wall \u00b7 Rainbow",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "fire-campfire-team": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Campfire \u00b7 Team colors",
+  "group": "Fireplace",
+  "desc": ""
+ },
+ "look-3d-object": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "3D Object",
+  "group": "Looks",
+  "desc": ""
+ },
+ "look-big-wave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Big Wave",
+  "group": "Looks",
+  "desc": ""
+ },
+ "f1-safety": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "F1: safety car in the rain",
+  "group": "Scoreboard",
+  "desc": "Safety car, rain, a pit stop, green flag"
+ },
+ "f1-win": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "F1: chequered flag",
+  "group": "Scoreboard",
+  "desc": "WINNER in team colours"
+ },
+ "live-quakes": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Earthquakes",
+  "group": "Live feeds",
+  "desc": "A preview quake drops on the world map with a ripple (preview mode)"
+ },
+ "live-aurora": {
+  "w": 40,
+  "h": 21,
+  "n": 210,
+  "fps": 15,
+  "title": "Aurora",
+  "group": "Live feeds",
+  "desc": "Aurora curtains growing as the Kp index climbs (preview mode)"
+ },
+ "live-launches": {
+  "w": 40,
+  "h": 21,
+  "n": 360,
+  "fps": 15,
+  "title": "Rocket launches",
+  "group": "Live feeds",
+  "desc": "A launch countdown, then liftoff (preview mode)"
+ },
+ "live-moon": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "Moon & sun",
+  "group": "Live feeds",
+  "desc": "Tonight's moon phase and sun times"
+ },
+ "live-globe": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "Globe",
+  "group": "Live feeds",
+  "desc": "The spinning globe with the day's markers (preview data)"
+ },
+ "live-volcano": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "Volcanoes",
+  "group": "Live feeds",
+  "desc": "A volcano alert with an eruption (preview mode)"
+ },
+ "live-fires": {
+  "w": 40,
+  "h": 21,
+  "n": 150,
+  "fps": 15,
+  "title": "Wildfires",
+  "group": "Live feeds",
+  "desc": "Wildfire hotspots around you (preview mode)"
+ },
+ "fx-acidgrid": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Acid Grid",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-basscannon": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Bass Cannon",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-bioluminescence": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Bioluminescence",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-bounceball": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Bounce Ball",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-centerpulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Center Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-djbooth": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "DJBooth",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-discotiles": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Disco Tiles",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-explosion": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Explosion",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fireflies": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fireflies",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-forestworld": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Forest World",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fullwallpulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Full Wall Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-glowsticks": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Glowsticks",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-hiphotic": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Hiphotic",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-inkbloom": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ink Bloom",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-kaleidoscope": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Kaleidoscope",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavablue": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Blue",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavalamp": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Lamp",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavapurple": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Purple",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavawhite": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava White",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-liquidmelt": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Liquid Melt",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-marqueeframe": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Marquee Frame",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-moonlitsnow": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Moonlit Snow",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-oilslick": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Oil Slick",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-parallaxwaves": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Parallax Waves",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-pillarspin": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Pillar Spin",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-radar": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Radar",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-rainbowsweep": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Rainbow Sweep",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-roofchase": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Roof Chase",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-seeddrift": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Seed Drift",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-shapetunnel": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Shape Tunnel",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-shorewash": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Shore Wash",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-sirenbeacons": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Siren Beacons",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-smokeplumes": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Smoke Plumes",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-spaceworld": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Space World",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-spiralclimb": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Spiral Climb",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-strobeslam": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Strobe Slam",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-tetrisdrop": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Tetris Drop",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-tilewave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Tile Wave",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-tunnelrush": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Tunnel Rush",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-vumeters": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "VUMeters",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-windowbeat": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Window Beat",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-archpulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Arch Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-bassrings": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Bass Rings",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-blackhole": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Black Hole",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-bounceballs": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Bounce Balls",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-campfire": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Campfire",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-dna": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "DNA",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-discbattle": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Disc Battle",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-dragonflight": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Dragon Flight",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-eyeball": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Eyeball",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fireworks": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fireworks",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fountain": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fountain",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-gameoflife": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Game Of Life",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-gridpulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Grid Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-hyperstrobe": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Hyper Strobe",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-inkswirl": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ink Swirl",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-laserblast": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Laser Blast",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavaflow": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Flow",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavaorange": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Orange",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavarainbow": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Rainbow",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lightcycles": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Light Cycles",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-liquidtiles": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Liquid Tiles",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-matrixrain": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Matrix Rain",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-mosaic": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Mosaic",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-nestedmarquee": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Nested Marquee",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-opartchecker": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Op Art Checker",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-particleburst": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Particle Burst",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-pixeldancer": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Pixel Dancer",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-rain": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Rain",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-ribbondancer": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ribbon Dancer",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-scanner": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Scanner",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-sentinel": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Sentinel",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-shapes": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Shapes",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-sidepulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Side Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-skyclouds": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Sky Clouds",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-sparkle": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Sparkle",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-spiralhypnosis": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Spiral Hypnosis",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-stripes": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Stripes",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-sunrise": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Sunrise",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-thunderstorm": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Thunderstorm",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-triangles": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Triangles",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-twisttunnel": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Twist Tunnel",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-warpspeed": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Warp Speed",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-wormhole": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Wormhole",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-aurora": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Aurora",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-beaconsweep": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Beacon Sweep",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-blackholesuck": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Black Hole Suck",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-bowedstrings": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Bowed Strings",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-colortide": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Color Tide",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-dancerobot": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Dance Robot",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-discofloor": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Disco Floor",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-earthglobe": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Earth Globe",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fire": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fire",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fishschool": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fish School",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fractalbloom": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fractal Bloom",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-glitch": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Glitch",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-heartbeat": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Heartbeat",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-hyperjump": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Hyperjump",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-jellyfishswarm": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Jellyfish Swarm",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-laserfan": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Laser Fan",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavagold": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Gold",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavapalette": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Palette",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavared": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Red",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-linedance": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Line Dance",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lissajous": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lissajous",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-mercury": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Mercury",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-movingheads": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Moving Heads",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-oceanwaves": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ocean Waves",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-oscilloscope": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Oscilloscope",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-partyworld": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Party World",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-planetrise": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Planet Rise",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-rainbowrings": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Rainbow Rings",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-ripplepulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Ripple Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-scrolltext": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Scroll Text",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-shapedance": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Shape Dance",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-shatter": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Shatter",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-siderunners": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Side Runners",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-skylanterns": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Sky Lanterns",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-snowfall": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Snowfall",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-spectrumbars": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Spectrum Bars",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-spirograph": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Spirograph",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-strobe": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Strobe",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-sunshinewave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Sunshine Wave",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-tilepulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Tile Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-trusssweep": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Truss Sweep",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-underwaterworld": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Underwater World",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-zoomsquares": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Zoom Squares",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-beatcounter": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Beat Counter",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-blobparty": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Blob Party",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-breathing": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Breathing",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-caustics": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Caustics",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-curtainfolds": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Curtain Folds",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-dancingsprites": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Dancing Sprites",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-discosphere": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Disco Sphere",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-equalizer": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Equalizer",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-fireworld": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Fire World",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-frequencymountains": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Frequency Mountains",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-glitterbomb": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Glitter Bomb",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-hexhive": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Hex Hive",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-infinitezoom": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Infinite Zoom",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-kaleidoink": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Kaleido Ink",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-laserscan": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Laser Scan",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavagreen": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Green",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavapink": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Pink",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-lavateal": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Lava Teal",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-liquidchrome": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Liquid Chrome",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-marqueechase": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Marquee Chase",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-moire": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Moire",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-murmuration": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Murmuration",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-octopus": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Octopus",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-outlinetrace": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Outline Trace",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-pianokeys": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Piano Keys",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-plasma": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Plasma",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-rainbowspiral": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Rainbow Spiral",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-risingpulse": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Rising Pulse",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-searchlights": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Searchlights",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-shaperain": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Shape Rain",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-shockwave": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Shockwave",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-silkscarves": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Silk Scarves",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-smokebeams": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Smoke Beams",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-solosprite": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Solo Sprite",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-spinningcubes": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Spinning Cubes",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-starburst": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Star Burst",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-strobebank": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Strobe Bank",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-swirl": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Swirl",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-tilespin": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Tile Spin",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-tunnel": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Tunnel",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-updraft": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Updraft",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ },
+ "fx-waves": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Waves",
+  "group": "Demo effects",
+  "desc": "Recorded from the GlowBop engine"
+ }
+}
