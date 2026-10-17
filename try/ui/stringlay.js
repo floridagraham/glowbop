@@ -382,7 +382,7 @@
     el.id = 'slPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
     el.innerHTML = `<div class="sl-hd"><b>🧵 Lay out your lights</b><span class="r" id="slR2" style="font:700 12px var(--cond);letter-spacing:1px;color:var(--dim)"></span><button class="btn c" id="slDone" style="--c:var(--green)">✓ Done</button></div>
       <div class="ph"><span>🧵 Lay out your lights</span><span class="r" id="slR"></span></div>
-      <p class="note">This is your wall, live. Drag curtains to where they hang, drag each string's <b>START</b> and <b>END</b>. Right-click to add a bend or zoom, scroll to zoom, drag empty space to look around. The real bulb blinks while you drag. Tap <b>Save</b>.</p>
+      <p class="note">This is your wall, live. Drag curtains to where they hang, drag each string's <b>START</b> and <b>END</b>. Right-click (or press and hold) to add a bend, scroll or pinch to zoom, drag empty space to look around. The real bulb blinks while you drag. Tap <b>Save</b>.</p>
       <div class="sl-top" id="slTop"></div>
       <div class="sl-stage" id="slStage"><svg id="slSvg" aria-label="Your lights, laid out"></svg></div>
       <div class="sl-hint" id="slHint"></div>
@@ -408,8 +408,35 @@
       <div class="sl-row"><b>Snap</b><div class="seg" id="slSnap"><button class="btn" data-sn="1">🧲 Snap to grid</button><button class="btn" data-sn="0">Free</button></div></div>
       <div class="sl-row sl-zoom"><b>Zoom</b><div class="seg"><button class="btn" id="slZo" aria-label="Zoom out">−</button><button class="btn" id="slFit">Fit</button><button class="btn" id="slZi" aria-label="Zoom in">+</button></div></div></div>`;
     svg = el.querySelector('#slSvg');
-    svg.addEventListener('pointerdown', onDown); svg.addEventListener('pointermove', onMove);
-    svg.addEventListener('pointerup', onUp); svg.addEventListener('pointercancel', onUp);
+    // 📱 Oct 17 (Graham: "yes, moving things on the iPad"): two fingers pinch to zoom and slide; press and hold opens the menu
+    const PT = new Map(); let pinch = null, hold = null;
+    const midOf = () => { const a = [...PT.values()]; return [(a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1]; };
+    svg.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'touch') {
+        PT.set(e.pointerId, {x: e.clientX, y: e.clientY});
+        if (PT.size === 2) {                                   // second finger: stop whatever one finger was doing, start a pinch
+          clearTimeout(hold); hold = null; drag = null; if (!view) fit();
+          const [mx, my, d] = midOf(), m = svg.getScreenCTM(), r = svg.getBoundingClientRect();
+          const pt = svg.createSVGPoint(); pt.x = mx; pt.y = my; const w = pt.matrixTransform(m.inverse());
+          pinch = {d0: d, w0: view.w, h0: view.h, k0: m.a, P: [w.x, w.y], cxs: r.left + r.width / 2, cys: r.top + r.height / 2}; e.preventDefault(); return;
+        }
+        if (PT.size === 1) { const tgt = e.target, cx = e.clientX, cy = e.clientY;
+          clearTimeout(hold); hold = setTimeout(() => { hold = null; if (PT.size !== 1 || (drag && drag.moved2)) return;
+            drag = null; onMenu({preventDefault() {}, clientX: cx, clientY: cy, target: tgt}); if (navigator.vibrate) navigator.vibrate(15); }, 550); }
+      }
+      onDown(e);
+    });
+    svg.addEventListener('pointermove', e => {
+      if (e.pointerType === 'touch' && PT.has(e.pointerId)) {
+        const o = PT.get(e.pointerId); if (Math.hypot(e.clientX - o.x, e.clientY - o.y) > 8 && hold) { clearTimeout(hold); hold = null; }
+        if (pinch) { PT.set(e.pointerId, {x: e.clientX, y: e.clientY}); if (PT.size < 2) return; e.preventDefault();
+          const [mx, my, d] = midOf(), g = pinch.d0 / d, w = Math.max(4, Math.min(600, pinch.w0 * g)), k = pinch.k0 * (pinch.w0 / w);
+          view.w = w; view.h = pinch.h0 * (w / pinch.w0); view.cx = pinch.P[0] - (mx - pinch.cxs) / k; view.cy = pinch.P[1] - (my - pinch.cys) / k; return draw(); }
+      }
+      onMove(e);
+    });
+    const end = e => { if (e.pointerType === 'touch') { PT.delete(e.pointerId); clearTimeout(hold); hold = null; if (pinch) { if (PT.size < 2) pinch = null; drag = null; return; } } onUp(e); };
+    svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
     svg.addEventListener('contextmenu', onMenu);
     svg.addEventListener('wheel', e => { e.preventDefault(); hideMenu(); zoomAt(e.deltaY > 0 ? 1.15 : 1 / 1.15, toWorld(e)); }, {passive: false});
     document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#slMenu')) hideMenu(); }, true);
