@@ -131,7 +131,14 @@
     return out;
   }
   function partCounts(d, lay) { const out = []; let left = d.n; lay.parts.forEach((p, k) => { const c = k === lay.parts.length - 1 ? left : Math.max(0, Math.min(left, p.n | 0)); out.push(c); left -= c; }); return out; }
+  function wallPoints(N, lay) {                     // 🧱 same maths as lights.py: the whole string snakes in even rows
+    const R = Math.max(1, lay.wall | 0), P = Math.max(1, Math.ceil(N / R)), pp = lay.parts[0].pts, a = pp[0], z = pp[pp.length - 1];
+    const vx = z[0] - a[0], vy = z[1] - a[1], ln = Math.hypot(vx, vy) || 1, ux = vx / ln, uy = vy / ln, nx = -uy, ny = ux, pitch = ln / Math.max(1, P - 1), gap = lay.gap || 1, out = [];
+    for (let i = 0; i < N; i++) { const r = Math.floor(i / P); let c = i % P; if (r % 2) c = P - 1 - c; out.push([a[0] + c * pitch * ux + r * gap * nx, a[1] + c * pitch * uy + r * gap * ny]); }
+    return out;
+  }
   function layPoints(d, lay) {
+    if (lay.wall) { const all = wallPoints(d.n, lay), cs = partCounts(d, lay), res = []; let o = 0; cs.forEach(c => { res.push(all.slice(o, o + c)); o += c; }); return res; }
     const cs = partCounts(d, lay), res = [];
     lay.parts.forEach((p, k) => { if (cs[k] > 0) res.push(layOne(cs[k], p.pts, p.fold, lay.gap || 1, p.rev, p.smooth, p.pins)); });
     return res;                                    // [[x, y] per bulb] per strand
@@ -253,11 +260,20 @@
   function wallSync(lay) {
     if (!lay || !lay.wall) return; const S = lay.parts.length, rp = Math.max(1, Math.round(lay.wall / S)), gap = lay.gap || 1;
     const a = lay.parts[0].pts[0], z = lay.parts[0].pts[lay.parts[0].pts.length - 1], vx = z[0] - a[0], vy = z[1] - a[1], ln = Math.hypot(vx, vy) || 1, nx = -vy / ln, ny = vx / ln;
-    lay.parts.forEach((p, k) => { const sx = a[0] + nx * k * rp * gap, sy = a[1] + ny * k * rp * gap; p.pts = [[sx, sy], [sx + vx, sy + vy]]; p.fold = rp > 1 ? {rows: rp, mode: 'snake'} : null; });
+    void rp; void nx; void ny; lay.parts.forEach((p, k) => { if (k) p.pts = [a.slice(), [a[0] + vx, a[1] + vy]]; p.fold = null; });   // the wall maths places every bulb (wallPoints)
   }
   function wallPicker(lay) {
-    const S = lay.parts.length, opts = [2, 4, 6, 8, 10, 12, 16].filter(r => r >= S && r % S === 0);
-    $('slWallPick').innerHTML = opts.map(r => `<button class="btn${lay.wall === r ? ' on' : ''}" data-wr="${r}">${r}</button>`).join('') + (lay.wall ? '<button class="btn" data-wr="off">✕ Not a wall</button>' : '');
+    const d = dev(sel), R = lay.wall || 0, P = R ? Math.ceil(d.n / R) : 0;
+    $('slWallPick').innerHTML = `<button class="btn" data-wr="match">🟰 Match my curtains</button><button class="btn" data-wr="big">⬛ Biggest even wall</button>`
+      + `<button class="btn" data-wr="-1" aria-label="One row fewer">−</button><button class="btn" disabled style="opacity:1">${R ? R + ' rows × ' + P : 'rows'}</button><button class="btn" data-wr="+1" aria-label="One more row">+</button>`
+      + (lay.wall ? '<button class="btn" data-wr="off">✕ Not a wall</button>' : '');
+  }
+  function curtainBox() {                         // where your curtains are + how tall (in bulbs), for "Match my curtains"
+    let best = null, x1 = -Infinity;                // the tallest curtain sets the height; the wall goes right of all of them
+    (ST.devices || []).forEach(d => { if (d.id === sel) return; const pts = d.kind === 'grid' ? cpts(d) : (d.curtain && LAY[d.id] ? layPoints(d, LAY[d.id]).flat() : []);
+      if (!pts.length) return; const ys = pts.map(p => p[1]), xs = pts.map(p => p[0]), h = Math.round(Math.max(...ys) - Math.min(...ys)) + 1;
+      x1 = Math.max(x1, ...xs); if (!best || h > best.h) best = {h, y0: Math.min(...ys)}; });
+    return best ? {x1, y0: best.y0, h: best.h} : null;
   }
   function change() { dirty[sel] = true; view = view || null; commit(); draw(); }
   // ↶↷ undo / redo (Oct 17, Graham): every drag, bend, fold, flip and move is one step
@@ -295,7 +311,8 @@
     let best = 0, bd = Infinity; pts.forEach(([x, y], j) => { const q = (x - h[0]) ** 2 + (y - h[1]) ** 2; if (q < bd) { bd = q; best = j; } });
     return base + best;
   }
-  function blink(d, lay, k, i) { const now = Date.now(); if (now - lastPick < 220) return; lastPick = now; GB.post('/api/lights/pick', {id: d.id, i: bulbAt(d, lay, k, i), secs: 1.2}); }
+  function blink(d, lay, k, i) { const now = Date.now(); if (now - lastPick < 220) return; lastPick = now;
+    const idx = lay.wall ? (i ? Math.ceil(d.n / lay.wall) - 1 : 0) : bulbAt(d, lay, k, i); GB.post('/api/lights/pick', {id: d.id, i: idx, secs: 1.2}); }
   function onDown(e) {
     hideMenu(); if (e.button === 2) return;
     const c = e.target.closest && e.target.closest('.c');
@@ -575,17 +592,28 @@
     el.querySelector('#slWall').onclick = () => {
       const row = $('slWallRow'), d = dev(sel), lay = LAY[sel]; if (!d || !lay) return;
       if (row.style.display !== 'none' && !lay.wall) { row.style.display = 'none'; return; }
-      wallPicker(lay); row.style.display = ''; $('slHint').textContent = 'How many rows tall should the wall be?';
+      wallPicker(lay); row.style.display = ''; $('slHint').textContent = 'Match your curtains, make the biggest even wall, or pick the rows with − / +';
     };
     el.querySelector('#slWallPick').addEventListener('click', e => {
-      const b = e.target.closest('[data-wr]'); if (!b) return; const lay = LAY[sel]; if (!lay) return;
-      if (b.dataset.wr === 'off') { const d = dev(sel); LAY[sel] = fresh(d, lay.parts.length); strand = 0; $('slWallRow').style.display = 'none'; $('slHint').textContent = 'Back to plain strands'; return change(); }
-      const R = +b.dataset.wr;
-      const a = lay.parts[0].pts[0], z = lay.parts[0].pts[lay.parts[0].pts.length - 1];
-      const W = Math.max(10, Math.abs(z[0] - a[0]) || Math.hypot(z[0] - a[0], z[1] - a[1]));   // as wide as the first strand is now
-      lay.wall = R; lay.parts[0].pts = [a.slice(), [a[0] + W, a[1]]]; lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay);
-      $('slWallRow').style.display = 'none'; $('slHint').textContent = `🧱 ${R} rows, back and forth. Drag a START or END to make the wall wider or move it. Save when it matches.`;
-      change();
+      const b = e.target.closest('[data-wr]'); if (!b) return; const lay = LAY[sel], d = dev(sel); if (!lay || !d) return;
+      const v = b.dataset.wr, N = d.n;
+      if (v === 'off') { LAY[sel] = fresh(d, lay.parts.length); strand = 0; $('slWallRow').style.display = 'none'; $('slHint').textContent = 'Back to plain strands'; return change(); }
+      const a0 = lay.parts[0].pts[0], z0 = lay.parts[0].pts[lay.parts[0].pts.length - 1];
+      const place = (R, a, pitch) => { const P = Math.ceil(N / R); lay.wall = R; lay.parts[0].pts = [a, [a[0] + (P - 1) * pitch, a[1]]]; lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay); return P; };
+      let R, P;
+      if (v === 'match') {                         // 🟰 same bulb spacing as the curtains, as tall as them, right beside them
+        const cb = curtainBox(); R = cb ? cb.h : 21; P = place(R, cb ? [cb.x1 + 2, cb.y0] : a0.slice(), 1);
+        $('slHint').textContent = `🟰 Matches your curtains: ${R} rows of ${P}, same bulb spacing, right beside them.`;
+      } else if (v === 'big') {                    // ⬛ the biggest even wall: rows that divide the string evenly, as square as possible
+        const sq = Math.sqrt(N); let best = 0; for (let r = 2; r <= sq; r++) if (N % r === 0) best = r;
+        R = best >= sq / 2 ? best : Math.max(2, Math.round(sq)); P = place(R, lay.wall ? a0.slice() : a0.slice(), 1);
+        $('slHint').textContent = `⬛ ${R} rows of ${P}${N % R ? ' (last row a little short)' : ', every row full'}, at curtain bulb spacing.`;
+      } else {                                     // − / + one row, keeping the bulb spacing
+        const cur = lay.wall || 2, Pc = Math.ceil(N / cur), pitch = Math.hypot(z0[0] - a0[0], z0[1] - a0[1]) / Math.max(1, Pc - 1) || 1;
+        R = Math.max(2, Math.min(Math.floor(N / 2), cur + (+v))); P = place(R, a0.slice(), pitch);
+        $('slHint').textContent = `🧱 ${R} rows of ${P}`;
+      }
+      wallPicker(lay); change();
     });
     el.querySelector('#slRot').onclick = () => turn('rot'); el.querySelector('#slMir').onclick = () => turn('flip');
     const full = on => { el.classList.toggle('sl-full', on); document.body.classList.toggle('sl-open', on); view = null; setTimeout(draw, 30);
