@@ -580,18 +580,22 @@
   `);
   let LN = null, lnT = null, lnPop = null;
   const lnStatus = g => g.state === 'in' ? (g.detail || 'LIVE') : g.state === 'post' ? 'FINAL' : g.start ? new Date(g.start * 1000).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) : (g.detail || '');
-  const lnLive = g => SB && SB.on && SB.mode === 'live' && SB.league === g.league && [g.home.id, g.away.id].includes(String(SB.team_id || ''));
+  const lnLive = g => g.kind === 'f1' ? !!(SB && SB.on && SB.mode === 'f1') : SB && SB.on && SB.mode === 'live' && SB.league === g.league && [g.home.id, g.away.id].includes(String(SB.team_id || ''));
   function lnClose() { if (lnPop) { lnPop.remove(); lnPop = null; } }
   async function lnGo(g) {
     lnClose();
     if (lnLive(g)) { if (await score({action: 'off'})) { GB.toast('🎵 Back to the music show'); refresh(300); } return; }
+    if (g.kind === 'f1') { if (await score({action: 'f1'})) { GB.toast('🏎️ F1 running order on the wall'); GB.sfx && GB.sfx('on'); refresh(300); } return; }
     if (await score({action: 'live', league: g.league, team_id: g.home.id, team_name: g.home.name})) { GB.toast('📺 ' + g.away.abbr + ' at ' + g.home.abbr + ' on the wall'); GB.sfx && GB.sfx('on'); refresh(300); }
   }
   function lnOpen(row, g) {
     lnClose();
-    const ex = g.ex || {}, rec = ex.rec || {}, pop = document.createElement('div'); pop.className = 'ln-pop'; pop.style.setProperty('--lc', glow(g.home.color));
+    const ex = g.ex || {}, rec = ex.rec || {}, pop = document.createElement('div'); pop.className = 'ln-pop'; pop.style.setProperty('--lc', g.kind === 'f1' ? '#ff2a2a' : glow(g.home.color));
     const line = (k, v) => v ? `<div class="row2"><div class="k">${k}</div>${esc(v)}</div>` : '';
-    pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button>
+    if (g.kind === 'f1') pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button><div class="k">🏎️ Formula 1</div>
+      <div class="tm"><span>${esc(g.title)}</span></div>${line(g.state === 'in' ? 'Now' : g.state === 'post' ? 'Result' : 'Starts', g.state === 'in' ? 'On track now (live timing can run a little behind TV)' : lnStatus(g))}${line('Where', ex.venue)}
+      <button class="btn c wide" style="--c:var(--cyan);margin-top:8px">${lnLive(g) ? 'Take it off the wall' : '📺 GO LIVE: running order on the wall'}</button>`;
+    else pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button>
       <div class="k">${esc(ICON[g.sport] || '🏆')} ${esc(g.lname || g.league)}${ex.note ? ' · ' + esc(ex.note) : ''}</div>
       <div class="tm"><span style="color:${glow(g.away.color)}">${esc(g.away.name || g.away.abbr)}<small>${esc(rec.away || '')}</small></span><span class="sc">${g.state === 'pre' ? '' : g.away.score}</span>
         <span style="color:${glow(g.home.color)}">${esc(g.home.name || g.home.abbr)}<small>${esc(rec.home || '')}</small></span><span class="sc">${g.state === 'pre' ? '' : g.home.score}</span></div>
@@ -609,15 +613,15 @@
     const box = $('sbNowList'); if (!box || !LN) return;
     const gs = LN.games || [], live = gs.filter(g => g.state === 'in').length;
     $('sbNowR').textContent = live ? live + ' LIVE' : gs.length ? 'NOTHING LIVE' : LN.loading ? 'LOADING…' : 'NOTHING ON';
-    const key = JSON.stringify(gs.map(g => [g.key, g.state, g.home.score, g.away.score, g.detail])) + (SB && SB.on ? SB.team_id : '');
+    const key = JSON.stringify(gs.map(g => [g.key, g.state, g.home && g.home.score, g.away && g.away.score, g.detail])) + (SB && SB.on ? SB.team_id : '');
     if (box._k === key) return; box._k = key;
     if (!gs.length) { box.innerHTML = `<div class="ln-empty">${LN.loading ? 'Looking for games…' : 'No games on right now. Games show up here a few hours before they start.'}</div>`; return; }
     box.innerHTML = '';
     gs.forEach(g => {
-      const r = document.createElement('div'); r.className = 'ln-row' + (lnLive(g) ? ' on' : ''); r.style.setProperty('--lc', glow(g.home.color)); r.tabIndex = 0;
+      const r = document.createElement('div'); r.className = 'ln-row' + (lnLive(g) ? ' on' : ''); r.style.setProperty('--lc', g.kind === 'f1' ? '#ff2a2a' : glow(g.home.color)); r.tabIndex = 0;
       const pre = g.state === 'pre';
-      r.innerHTML = `<span class="lg"><b>${ICON[g.sport] || '🏆'}</b>${esc(g.league.toUpperCase())}</span>
-        <span class="mu"><span style="color:${glow(g.away.color)}">${esc(g.away.abbr)}</span>${pre ? '<i>at</i>' : `<i>${g.away.score}–${g.home.score}</i>`}<span style="color:${glow(g.home.color)}">${esc(g.home.abbr)}</span></span>
+      r.innerHTML = `<span class="lg"><b>${g.kind === 'f1' ? '🏎️' : ICON[g.sport] || '🏆'}</b>${esc(g.league.toUpperCase())}</span>
+        ${g.kind === 'f1' ? `<span class="mu">${esc(g.title)}</span>` : `<span class="mu"><span style="color:${glow(g.away.color)}">${esc(g.away.abbr)}</span>${pre ? '<i>at</i>' : `<i>${g.away.score}–${g.home.score}</i>`}<span style="color:${glow(g.home.color)}">${esc(g.home.abbr)}</span></span>`}
         <span class="st${g.state === 'in' ? ' live' : ''}">${esc(lnStatus(g))}</span><button class="btn">${lnLive(g) ? 'ON WALL' : 'GO LIVE'}</button>`;
       r.querySelector('.btn').onclick = e => { e.stopPropagation(); lnGo(g); };
       r.onclick = () => lnOpen(r, g);
@@ -633,7 +637,7 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
     el.innerHTML = `<div class="ph"><span>📋 Live now</span><span class="r" id="sbNowR">LOADING…</span></div>
       <div class="ln-list" id="sbNowList"><div class="ln-empty">Looking for games…</div></div>
-      <p class="note">Every game on right now in the big leagues (plus your teams'). Tap a game for details, <b>GO LIVE</b> puts its scoreboard on the wall.</p>`;
+      <p class="note">Every game on right now in the big leagues (plus your teams'), and any F1 session. Tap a game for details, <b>GO LIVE</b> puts its scoreboard on the wall.</p>`;
   });
   GB.on('page', id => { if (id === 'score') lnLoad(); });
   GB.on('ready', () => { if (GB.page === 'score') lnLoad(); });

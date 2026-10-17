@@ -530,7 +530,8 @@
       ['nba', 2, 3, 'pre', 'basketball', 'NBA', 0, 0, ''], ['mls', 0, 1, 'in', 'soccer', 'MLS', 1, 1, "67'"]];
     return {t: now, games: G.map(([lg, a, h, st, sport, ln, as, hs, det], i) => { const A = T(lg, a), H = T(lg, h); A.score = as; H.score = hs;
       return {key: lg + ':' + i, league: lg, lname: ln, sport, state: st, detail: st === 'post' ? 'Final' : det, period: 3, start: st === 'pre' ? now + 3600 * (i - 2) : now - 7200,
-        home: H, away: A, ex: {rec: {home: '5-2', away: '4-3'}, venue: 'Demo Arena', tv: 'Demo TV', last: st === 'in' ? 'A big play just happened (demo).' : '', note: ''}}; })};
+        home: H, away: A, ex: {rec: {home: '5-2', away: '4-3'}, venue: 'Demo Arena', tv: 'Demo TV', last: st === 'in' ? 'A big play just happened (demo).' : '', note: ''}}; })
+      .concat([{kind: 'f1', key: 'f1:demo', league: 'f1', lname: 'Formula 1', sport: 'f1', state: 'in', detail: 'LIVE', period: 0, start: now - 1800, title: 'Demo GP · Race', ex: {venue: 'Demo Circuit', session: 'Race'}}])};
   }
   const TEAMS = {
     nfl: [['MIA', 'Miami Dolphins', '#008e97'], ['BUF', 'Buffalo Bills', '#00338d'], ['KC', 'Kansas City Chiefs', '#e31837'], ['DAL', 'Dallas Cowboys', '#003594'], ['PHI', 'Philadelphia Eagles', '#004c54'], ['SF', 'San Francisco 49ers', '#aa0000'], ['GB', 'Green Bay Packers', '#203731'], ['NE', 'New England Patriots', '#c60c30']],

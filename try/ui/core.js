@@ -402,7 +402,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCube); else buildCube();
   // 🥚 EASTER EGG (Oct 17, Graham): tap the corner logo and GlowBop pretends to wreck everything. Every tap plays it, and a
   //   different "disaster" is picked each time (never the same twice in a row). The boxes vanish, the rail keys fall off,
-  //   then it HOLDS the dead screen: every tap makes it worse, and only after 2 frantic taps the first time (3 to 5 after that) (or 40 s) does it say
+  //   then it HOLDS the dead screen: every tap makes it worse, and only after 2 taps (or 40 s) does it say
   //   "Just kidding 😎" and fly everything back. Only the screen plays along; the lights keep going and nothing is touched.
   const EGGS = [
     {k: 'erase', a: '#ff2a4d', b: '#ff8a3d', t: '⚠️ ERASING ALL SHOWS…', pre: 'Deleting: ', files: ['Looks', 'Song Shows', 'Saved scenes', 'Your layouts', 'Light map', 'Holiday shows', 'Logos', 'Settings', 'Everything'],
@@ -454,9 +454,7 @@
       while (fallen < keys.length * e) { const n = keys[fallen++]; n.style.setProperty('--egr', (Math.random() * 60 - 30) + 'deg'); n.classList.add('eg-fall'); }
       while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.off = '1'; n.setAttribute('fill', '#221d33'); }
       if (k < 1) requestAnimationFrame(tick); else done(); };
-    let seen = false; try { seen = localStorage.getItem('gb_egg_seen') === '1'; localStorage.setItem('gb_egg_seen', '1'); } catch (x) {}
-    // first time ever: 2 taps; after that a surprise, 3 to 5
-    const NEED = seen ? 3 + ((Math.random() * 3) | 0) : 2; let taps = 0, held = null, revealed = false;
+    const NEED = 2;                                                     // Oct 17 (Graham): always 2 taps let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
       tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = 'A little joke from the GlowBop team. We truly love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
