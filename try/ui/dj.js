@@ -327,6 +327,10 @@
   .djc-mine2 .djc-dot.add { background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red); border-style:dashed; border-color:#fff8; }
   .djc-mine2 .djc-dot.add input { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
   .djc-mine2 .djc-dot.add::before { content:'+'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:800 18px/1 var(--cond); color:#fff; text-shadow:0 0 4px #000; }
+  /* Oct 17 (Graham): the two lock keys sit side by side */
+  .djc-keys { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; } .djc-keys .btn { min-width:0; overflow:hidden; }
+  .djc-keys .btn { min-height:60px !important; font-size:calc(17px * var(--fs, 1)) !important; letter-spacing:1.5px; padding:0 10px; white-space:nowrap; }
+  @media (max-width: 420px) { .djc-keys .btn { font-size:calc(14px * var(--fs, 1)) !important; letter-spacing:1px; padding:0 6px; gap:5px; } }
   #djPal { min-height:56px; font-size:calc(18px * var(--fs, 1)); letter-spacing:2px; --c:var(--violet); transition:background .4s, color .4s, box-shadow .4s; }
   #djPal.on { background:var(--grad); color:#000; box-shadow:0 0 30px #ffffff55; text-shadow:0 0 6px #fff8; }
   #djPal:disabled { opacity:.4; }
@@ -342,9 +346,8 @@
     let mode = null;                                                    // 'dots' | 'pal' | null
     el.innerHTML = `<div class="ph"><span>Color</span><span class="r" id="djColorR">PICK UP TO 4, THEN TAP</span></div>
       <div class="djc-dots" id="djcDots"></div>
-      <button class="btn c wide" id="djColor" style="--c:var(--orange)">${GB.svg('palette')} COLOR LOCK</button>
-      <button class="btn c wide" id="djPal">${GB.svg('palette')} MY PALETTE LOCK</button>
-      <p class="note">Tap the dots (up to 4) and COLOR LOCK. Make your own colors with the rainbow + (up to 4): they live in the glowing oval, and MY PALETTE LOCK plays just those. Press and hold one of yours to remove it. Everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on.</p>`;
+      <div class="djc-keys"><button class="btn c" id="djColor" style="--c:var(--orange)">${GB.svg('palette')} COLOR LOCK</button><button class="btn c" id="djPal">${GB.svg('palette')} MY PALETTE</button></div>
+      <p class="note">Tap the dots (up to 4) and COLOR LOCK. Make your own colors with the rainbow + (up to 4): they live in the glowing oval, and MY PALETTE locks in just those. Tap a lit key again to go back to the full show. Press and hold one of yours to remove it. Everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on.</p>`;
     const dots = el.querySelector('#djcDots'), key = el.querySelector('#djColor'), pkey = el.querySelector('#djPal');
     const save = () => { try { localStorage.setItem('gb_dj_colors', JSON.stringify(pick)); localStorage.setItem('gb_dj_palette', JSON.stringify(pal)); } catch (_) {} };
     const mine = () => pal.filter(Boolean);   // (kept as 4 slots in storage; shown packed)
@@ -353,9 +356,9 @@
     const paint = () => {
       dots.querySelectorAll('.djc-dot[data-c]').forEach(d => { const i = pick.indexOf(d.dataset.c); d.classList.toggle('on', i >= 0); d.dataset.n = i >= 0 ? i + 1 : ''; });
       key.style.setProperty('--grad', grad(pick)); key.classList.toggle('on', mode === 'dots');
-      key.innerHTML = GB.svg('palette') + (mode === 'dots' ? ' LOCKED · TAP TO RELEASE' : ' COLOR LOCK');
+      key.innerHTML = GB.svg('palette') + (mode === 'dots' ? ' COLORS ON' : ' COLOR LOCK');
       pkey.style.setProperty('--grad', grad(mine())); pkey.classList.toggle('on', mode === 'pal'); pkey.disabled = !mine().length && mode !== 'pal';
-      pkey.innerHTML = GB.svg('palette') + (mode === 'pal' ? ' PALETTE LOCKED' : ' MY PALETTE LOCK');
+      pkey.innerHTML = GB.svg('palette') + (mode === 'pal' ? ' PALETTE ON' : ' MY PALETTE');
       $('djColorR').textContent = mode === 'pal' ? 'LOCKED: MY PALETTE' : mode === 'dots' ? 'LOCKED: ' + pick.length + (pick.length > 1 ? ' COLORS' : ' COLOR') : pick.length + ' PICKED · TAP TO LOCK';
     };
     const send = () => { if (mode && live().length) dj({colors: live()}); };
