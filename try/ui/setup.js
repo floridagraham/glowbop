@@ -685,11 +685,11 @@
     @keyframes gbFrIn{from{opacity:0}}
     #gbFreed .card{width:min(560px,100%);max-height:88vh;overflow:auto;background:linear-gradient(160deg,#1b0f2a,#0b0f1d);border:2px solid #ff3d9a;border-radius:0 28px 0 28px;padding:22px 22px 20px;box-shadow:0 0 60px -10px #ff3d9a,0 30px 80px #000c;text-align:left}
     #gbFreed .k{font:800 calc(13px * var(--fs, 1)) var(--cond);letter-spacing:3px;color:#ffd21a}
-    #gbFreed h2{margin:6px 0 4px;font:800 calc(40px * var(--fs, 1))/1 var(--cond);letter-spacing:1px;text-transform:uppercase;color:#fff}
+    #gbFreed h2{margin:8px 0 8px;font:800 calc(clamp(48px, 9vw, 66px) * var(--fs, 1))/.95 var(--cond);letter-spacing:1px;text-transform:uppercase;color:#fff}
     #gbFreed h2 b{background:linear-gradient(90deg,#ff3d9a,#9b3dff 55%,#33d6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
-    #gbFreed p.lead{margin:0 0 14px;color:var(--text,#eee);font-size:calc(16px * var(--fs, 1))}
+    #gbFreed p.lead{margin:0 0 14px;color:var(--text,#eee);font-size:calc(19px * var(--fs, 1))}
     #gbFreed ul{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:8px}
-    #gbFreed li{display:flex;gap:10px;align-items:flex-start;background:#ffffff0d;border-radius:12px;padding:9px 12px;font-size:calc(15px * var(--fs, 1));color:var(--text,#eee)}
+    #gbFreed li{display:flex;gap:10px;align-items:flex-start;background:#ffffff0d;border-radius:12px;padding:10px 12px;font-size:calc(17px * var(--fs, 1));color:var(--text,#eee)}
     #gbFreed li i{font-style:normal;font-size:calc(20px * var(--fs, 1));line-height:1.1}
     #gbFreed li b{color:#fff}
     #gbFreed .row{display:flex;gap:10px;flex-wrap:wrap}
