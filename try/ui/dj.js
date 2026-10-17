@@ -318,46 +318,79 @@
   .djc-mine i { width:16px; height:16px; border-radius:50%; background:var(--d); display:inline-block; }
   `);
   const DOTS = ['#ff1a1a', '#ff7a1a', '#ffcc00', '#2bff4a', '#1ad9ff', '#2b4dff', '#9b3dff', '#ff3dc8'];
+  // Oct 17 (Graham): two keys. COLOR LOCK uses the dots above it; MY PALETTE is four open boxes the user fills with any colors they like,
+  //   with its own lock key. Only one of the two can be on at a time.
+  GB.css(`
+  .djc-pal { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin:12px 0 8px; }
+  .djc-slot { position:relative; aspect-ratio:1.6; min-height:38px; border-radius:10px; border:2px dashed #ffffff40; background:transparent; display:flex; align-items:center; justify-content:center;
+    color:#ffffff80; font:800 calc(20px * var(--fs, 1)) var(--cond); cursor:pointer; overflow:hidden; transition:transform .12s, box-shadow .2s; }
+  .djc-slot.full { border:2px solid #ffffff55; background:var(--d); box-shadow:0 0 14px color-mix(in srgb, var(--d) 60%, transparent); color:transparent; }
+  .djc-slot input { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
+  .djc-slot .x { position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; border:0; background:#000a; color:#fff; font:800 11px/18px var(--mono); padding:0; cursor:pointer; z-index:2; }
+  .djc-slot:not(.full) .x { display:none; }
+  .djc-palh { display:flex; align-items:center; justify-content:space-between; margin-top:14px; font:600 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:var(--dim); text-transform:uppercase; }
+  #djPal { min-height:56px; font-size:calc(18px * var(--fs, 1)); letter-spacing:2px; --c:var(--violet); transition:background .4s, color .4s, box-shadow .4s; }
+  #djPal.on { background:var(--grad); color:#000; box-shadow:0 0 30px #ffffff55; text-shadow:0 0 6px #fff8; }
+  #djPal:disabled { opacity:.4; }
+  `);
   GB.panel('dj', 6, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--orange)');
-    let pick = []; try { pick = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 4); } catch (_) {}
+    let pick = []; try { pick = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => DOTS.includes(c)).slice(0, 4); } catch (_) {}
     if (!pick.length) pick = ['#ff1a1a'];
-    let latched = false;
+    let pal = [null, null, null, null]; try { const v = JSON.parse(localStorage.getItem('gb_dj_palette') || 'null'); if (Array.isArray(v)) pal = [0, 1, 2, 3].map(i => /^#[0-9a-f]{6}$/i.test(v[i] || '') ? v[i] : null); } catch (_) {}
+    // custom colours saved by the old single key move into the palette boxes
+    if (!pal.some(Boolean)) try { const old = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => /^#[0-9a-f]{6}$/i.test(c) && !DOTS.includes(c)).slice(0, 4); old.forEach((c, i) => pal[i] = c); } catch (_) {}
+    let mode = null;                                                    // 'dots' | 'pal' | null
     el.innerHTML = `<div class="ph"><span>Color</span><span class="r" id="djColorR">PICK UP TO 4, THEN TAP</span></div>
       <div class="djc-dots" id="djcDots"></div>
       <button class="btn c wide" id="djColor" style="--c:var(--orange)">${GB.svg('palette')} COLOR LOCK</button>
-      <p class="note">Pick 1 to 4 colors, then tap the key: everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on. The rainbow dot picks any color you like.</p>`;
-    const dots = el.querySelector('#djcDots'), key = el.querySelector('#djColor');
-    const save = () => { try { localStorage.setItem('gb_dj_colors', JSON.stringify(pick)); } catch (_) {} };
-    const grad = () => pick.length > 1 ? `linear-gradient(90deg,${pick.join(',')})` : pick[0];
+      <div class="djc-palh"><span>🎨 My palette</span><span id="djPalN">TAP A BOX TO ADD A COLOR</span></div>
+      <div class="djc-pal" id="djcPal"></div>
+      <button class="btn c wide" id="djPal">${GB.svg('palette')} MY PALETTE LOCK</button>
+      <p class="note">Tap the dots (up to 4) and COLOR LOCK, or fill your own four boxes with any colors and use MY PALETTE LOCK. Everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on.</p>`;
+    const dots = el.querySelector('#djcDots'), key = el.querySelector('#djColor'), pbox = el.querySelector('#djcPal'), pkey = el.querySelector('#djPal');
+    const save = () => { try { localStorage.setItem('gb_dj_colors', JSON.stringify(pick)); localStorage.setItem('gb_dj_palette', JSON.stringify(pal)); } catch (_) {} };
+    const mine = () => pal.filter(Boolean);
+    const grad = a => a.length > 1 ? `linear-gradient(90deg,${a.join(',')})` : (a[0] || '#333');
+    const live = () => mode === 'pal' ? mine() : pick;
     const paint = () => {
       dots.querySelectorAll('.djc-dot[data-c]').forEach(d => { const i = pick.indexOf(d.dataset.c); d.classList.toggle('on', i >= 0); d.dataset.n = i >= 0 ? i + 1 : ''; });
-      key.style.setProperty('--grad', grad()); key.classList.toggle('on', latched);
-      key.innerHTML = GB.svg('palette') + (latched ? ' LOCKED · TAP TO RELEASE' : ' COLOR LOCK');
-      $('djColorR').textContent = latched ? 'LOCKED: ' + pick.length + (pick.length > 1 ? ' COLORS' : ' COLOR') : pick.length ? pick.length + ' PICKED · TAP TO LOCK' : 'PICK UP TO 4, THEN TAP';
+      key.style.setProperty('--grad', grad(pick)); key.classList.toggle('on', mode === 'dots');
+      key.innerHTML = GB.svg('palette') + (mode === 'dots' ? ' LOCKED · TAP TO RELEASE' : ' COLOR LOCK');
+      pkey.style.setProperty('--grad', grad(mine())); pkey.classList.toggle('on', mode === 'pal'); pkey.disabled = !mine().length && mode !== 'pal';
+      pkey.innerHTML = GB.svg('palette') + (mode === 'pal' ? ' PALETTE LOCKED' : ' MY PALETTE LOCK');
+      $('djPalN').textContent = mine().length ? mine().length + ' OF 4' : 'TAP A BOX TO ADD A COLOR';
+      $('djColorR').textContent = mode === 'pal' ? 'LOCKED: MY PALETTE' : mode === 'dots' ? 'LOCKED: ' + pick.length + (pick.length > 1 ? ' COLORS' : ' COLOR') : pick.length + ' PICKED · TAP TO LOCK';
     };
-    const send = () => { if (latched) dj({colors: pick}); };
+    const send = () => { if (mode && live().length) dj({colors: live()}); };
     const toggle = c => {
       const i = pick.indexOf(c);
       if (i >= 0) { if (pick.length > 1) pick.splice(i, 1); }
       else { if (pick.length >= 4) pick.shift(); pick.push(c); }
-      save(); render(); send();
+      save(); paint(); if (mode === 'dots') send();
     };
-    const render = () => {
-      const all = DOTS.concat(pick.filter(c => !DOTS.includes(c)));
-      dots.innerHTML = all.map(c => `<button class="djc-dot" data-c="${c}" style="--d:${c}" aria-label="Color ${c}"></button>`).join('') +
-        `<label class="djc-dot more" title="Any color"><input type="color" value="${pick[pick.length - 1] || '#ff1a1a'}" aria-label="Pick any color"></label>`;
-      dots.querySelectorAll('.djc-dot[data-c]').forEach(d => d.onclick = () => { toggle(d.dataset.c); GB.sfx && GB.sfx('tap'); });
-      dots.querySelector('input').addEventListener('change', e => toggle(e.target.value.toLowerCase()));
+    dots.innerHTML = DOTS.map(c => `<button class="djc-dot" data-c="${c}" style="--d:${c}" aria-label="Color ${c}"></button>`).join('');
+    dots.querySelectorAll('.djc-dot[data-c]').forEach(d => d.onclick = () => { toggle(d.dataset.c); GB.sfx && GB.sfx('tap'); });
+    const drawPal = () => {
+      pbox.innerHTML = pal.map((c, i) => `<label class="djc-slot${c ? ' full' : ''}" style="--d:${c || 'transparent'}" aria-label="Palette box ${i + 1}">+<input type="color" value="${c || '#ff3d9a'}" data-i="${i}"><button class="x" data-i="${i}" aria-label="Clear box ${i + 1}">✕</button></label>`).join('');
+      pbox.querySelectorAll('input').forEach(inp => {
+        const set = () => { pal[+inp.dataset.i] = inp.value.toLowerCase(); save(); drawPal(); if (mode === 'pal') send(); };
+        inp.addEventListener('change', set); inp.addEventListener('input', () => { const sl = inp.parentNode; sl.classList.add('full'); sl.style.setProperty('--d', inp.value); });
+      });
+      pbox.querySelectorAll('.x').forEach(x => x.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); pal[+x.dataset.i] = null; save(); drawPal();
+        if (mode === 'pal') { if (mine().length) send(); else { mode = null; dj({color: false}); } } });
       paint();
     };
-    render();
-    key.onclick = async () => {
-      latched = !latched; paint(); GB.sfx && GB.sfx('tap');
-      if (latched) { await dj({colors: pick, color: true}); GB.toast && GB.toast('🎨 Color locked. Tap again to go back to the full show'); }
-      else { await dj({color: false}); GB.toast && GB.toast('🌈 Back to the full show'); }
+    drawPal();
+    const lock = async m => {
+      GB.sfx && GB.sfx('tap');
+      if (mode === m) { mode = null; paint(); await dj({color: false}); GB.toast && GB.toast('🌈 Back to the full show'); return; }
+      mode = m; paint(); await dj({colors: live(), color: true});
+      GB.toast && GB.toast(m === 'pal' ? '🎨 Your palette is locked in. Tap again to go back to the full show' : '🎨 Color locked. Tap again to go back to the full show');
     };
-    GB.on('status', s => { const d = s.dj || {}; if (typeof d.color === 'boolean' && d.color !== latched) { latched = d.color; paint(); } });
+    key.onclick = () => lock('dots');
+    pkey.onclick = () => { if (mine().length || mode === 'pal') lock('pal'); };
+    GB.on('status', s => { const d = s.dj || {}; if (typeof d.color === 'boolean' && d.color !== !!mode) { mode = d.color ? (mode || 'dots') : null; paint(); } });
   });
 
   GB.panel('dj', 30, el => {
