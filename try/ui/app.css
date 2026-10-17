@@ -435,7 +435,16 @@ html.door-dj .pt-buy { background:linear-gradient(160deg, #ffd0ea, #ff3d9a 45%, 
 /* ⚡ Oct 17 (Graham): the GLOWBOP label in the top bar is still when nothing plays. While a show runs it has an energy pulse on the beat;
    holding HOLD TO BUILD powers it up a little (brighter, a slight tremble near the top); the drop releases it in one burst. core.js drives it. */
 #hd .bars b { position:relative; transition:filter .25s, text-shadow .25s, box-shadow .25s; will-change:filter; }
-#hd .bars b.beat { animation:hdBeat var(--beat, .5s) ease-out infinite; }
+/* 🔋 POWER CORE (Oct 17, Graham: "pulse with real energy"): while the lights are powered on the label breathes like a glowing reactor,
+   bright energy rolls through it, and a soft halo swells. With music it rolls faster and also kicks on the beat. */
+#hd .bars b.core { background-color:var(--pink); background-image:linear-gradient(90deg, rgba(255,140,200,0) 0%, rgba(255,140,200,0) 22%, rgba(255,150,210,.28) 40%, rgba(255,190,230,.42) 50%, rgba(255,150,210,.28) 60%, rgba(255,140,200,0) 78%, rgba(255,140,200,0) 100%),
+    radial-gradient(120% 140% at 50% 50%, #ff6fb7 0%, var(--pink) 55%, #d81f78 100%);
+  background-size:260% 100%, 100% 100%; background-repeat:no-repeat;
+  animation:hdFlow var(--flow, 3.6s) linear infinite, hdBreathe 2.6s ease-in-out infinite; }
+@keyframes hdFlow { 0% { background-position:130% 0, 0 0; } 100% { background-position:-130% 0, 0 0; } }
+@keyframes hdBreathe { 0%, 100% { box-shadow:0 0 6px 0 rgba(255,61,154,.35); filter:brightness(1); } 50% { box-shadow:0 0 16px 3px rgba(255,61,154,.6), 0 0 34px 6px rgba(255,61,154,.18); filter:brightness(1.12); } }
+#hd .bars b.core.beat { animation:hdFlow var(--flow, 1.8s) linear infinite, hdBeat var(--beat, .5s) ease-out infinite; }
+#hd .bars b.beat:not(.core) { animation:hdBeat var(--beat, .5s) ease-out infinite; }
 @keyframes hdBeat { 0% { filter:brightness(calc(1.1 + var(--e, .5) * .25)); transform:scale(calc(1 + var(--e, .5) * .035)); box-shadow:0 0 calc(4px + var(--e, .5) * 10px) var(--pink); }
   40%, 100% { filter:none; transform:none; box-shadow:none; } }
 #hd .bars b.build { animation:hdTremble .09s linear infinite; filter:brightness(calc(1 + var(--bp, 0) * .55)) saturate(calc(1 + var(--bp, 0) * .4));

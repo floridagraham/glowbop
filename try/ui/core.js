@@ -698,7 +698,10 @@
       { const nb = document.querySelector('#hd .bars b'), on = !!s.bpm && s.section && s.section !== 'silence' && (s.energy == null || s.energy > 0.05);   // ⚡ a show is running: energy pulse on the beat
         if (nb) { if (on) { const per = (60 / Math.max(60, Math.min(200, s.bpm))).toFixed(3) + 's'; if (nb.style.getPropertyValue('--beat') !== per) nb.style.setProperty('--beat', per);
             nb.style.setProperty('--e', Math.max(.25, Math.min(1, +s.energy || .5)).toFixed(2)); }
-          nb.classList.toggle('beat', on && !nb.classList.contains('build') && !nb.classList.contains('drop')); } }
+          nb.classList.toggle('beat', on && !nb.classList.contains('build') && !nb.classList.contains('drop'));
+          nb.classList.toggle('core', s.power !== false);                                   // 🔋 lights powered on: the label glows like a power core
+          const fl = on ? Math.max(0.9, Math.min(2.4, 4 * 60 / Math.max(60, Math.min(200, s.bpm)))).toFixed(2) + 's' : '3.6s';   // energy rolls once per bar with music
+          if (nb.style.getPropertyValue('--flow') !== fl) nb.style.setProperty('--flow', fl); } }
       const hol = s.holiday && cat && cat.holidays && cat.holidays[s.holiday];
       $('rLook').textContent = gi ? gi.look : hol ? hol.emoji + ' ' + hol.name : (s.look || '–');
       $('rEff').innerHTML = gi ? GB.esc(gi.effect) : ((s.locked ? GB.svg('lock') : '') + GB.esc(s.effect || '–'));
