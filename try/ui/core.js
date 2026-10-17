@@ -689,6 +689,9 @@
       const gi = GB.grpInfo(), cat = GB.catalog;
       $('rBpm').innerHTML = s.bpm ? Math.round(s.bpm) + '<small> BPM</small>' : '–';
       $('rSec').textContent = (s.section || '–').toUpperCase();
+      { const nb = document.querySelector('#hd .bars b'), on = !!s.bpm && s.section && s.section !== 'silence' && (s.energy == null || s.energy > 0.05);   // 💓 the label breathes on the beat while music plays
+        if (nb) { if (on) { const per = (60 / Math.max(60, Math.min(200, s.bpm))).toFixed(3) + 's'; if (nb.style.getPropertyValue('--beat') !== per) nb.style.setProperty('--beat', per); }
+          nb.classList.toggle('beat', on); } }
       const hol = s.holiday && cat && cat.holidays && cat.holidays[s.holiday];
       $('rLook').textContent = gi ? gi.look : hol ? hol.emoji + ' ' + hol.name : (s.look || '–');
       $('rEff').innerHTML = gi ? GB.esc(gi.effect) : ((s.locked ? GB.svg('lock') : '') + GB.esc(s.effect || '–'));

@@ -431,3 +431,14 @@ html.door-dj .pt-buy { background:linear-gradient(160deg, #ffd0ea, #ff3d9a 45%, 
 #rail { overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }   /* height set by core.js fitRail(): it fits between the header and the bottom bar */
 #rail #railArr { opacity:1; }
 @media (max-width: 699px) { #rail #railArr > .ic, #rail #railArr > svg { display:none; } }
+
+/* ✨ Oct 17 (Graham): the GLOWBOP label in the top bar lives a little. A soft glint sweeps across it every ~8 s,
+   and while music plays it breathes gently on the beat (core.js sets --beat and .beat). Both very subtle. */
+#hd .bars b { position:relative; overflow:hidden; }
+#hd .bars b::after { content:''; position:absolute; top:0; bottom:0; left:-60%; width:45%; pointer-events:none;
+  background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.0) 20%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 80%, transparent 100%);
+  animation:hdGlint 8s ease-in-out infinite; animation-delay:2s; }
+@keyframes hdGlint { 0%, 78% { left:-60%; } 100% { left:120%; } }
+#hd .bars b.beat { animation:hdBeat var(--beat, .5s) ease-out infinite; }
+@keyframes hdBeat { 0% { filter:brightness(1.18); text-shadow:0 0 6px rgba(255,255,255,.45); } 35%, 100% { filter:none; text-shadow:none; } }
+@media (prefers-reduced-motion: reduce) { #hd .bars b::after, #hd .bars b.beat { animation:none; } }
