@@ -212,7 +212,75 @@
   <div class="btns" style="justify-content:center"><a class="btn" href="/lights.html">Check your lights →</a></div>
 </div></section>
 
-<section class="tight"><div class="wrap"><a class="launchban reveal" href="/pricing.html"><img src="/img/launch-banner.jpg" alt="GlowBop is out now. Light up Halloween. Start your free trial." loading="lazy"></a></div></section>
+<section class="tight"><div class="wrap"><a class="holban reveal" id="holban" href="/pricing.html" aria-label="GlowBop is out now: the controller for the LED lights you already own. Light up every holiday. Take control free for 7 days.">
+<div class="hb-bg"><img data-k="halloween" class="on" src="/img/hol-halloween.jpg" srcset="/img/hol-halloween-s.jpg 900w, /img/hol-halloween.jpg 1600w" sizes="(max-width:900px) 100vw, 1200px" alt="" loading="lazy">
+<img data-k="thanksgiving" data-src="/img/hol-thanksgiving.jpg" data-srcset="/img/hol-thanksgiving-s.jpg 900w, /img/hol-thanksgiving.jpg 1600w" sizes="(max-width:900px) 100vw, 1200px" alt="">
+<img data-k="christmas" data-src="/img/hol-christmas.jpg" data-srcset="/img/hol-christmas-s.jpg 900w, /img/hol-christmas.jpg 1600w" sizes="(max-width:900px) 100vw, 1200px" alt="">
+<img data-k="newyear" data-src="/img/hol-newyear.jpg" data-srcset="/img/hol-newyear-s.jpg 900w, /img/hol-newyear.jpg 1600w" sizes="(max-width:900px) 100vw, 1200px" alt="">
+<img data-k="home" data-src="/img/galaxy-patio.jpg" alt=""></div>
+<div class="hb-mosaic" aria-hidden="true"><i style="--d:0s"></i><i style="--d:.08s"></i><i style="--d:.16s"></i><i style="--d:.24s"></i></div>
+<div class="hb-flash" aria-hidden="true"></div>
+<div class="hb-txt"><span class="hb-kick">OUT NOW &middot; YOU BRING THE LIGHTS</span><h2><span class="hb-l1">Light up</span><span class="hb-word" data-k="halloween">Halloween.</span></h2>
+<p><b>GlowBop is the controller.</b> Total command of the LED lights you already own.</p><span class="hb-btn">Take control free for 7 days</span></div></a></div></section>
+<style>
+.holban{position:relative;display:block;aspect-ratio:1600/686;border-radius:22px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -40px var(--hb-glow,rgba(255,120,0,.55));isolation:isolate;color:#fff;text-decoration:none;transition:box-shadow 1.2s}
+@media (max-width:700px){.holban{aspect-ratio:4/3.4}}
+.hb-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:75% 50%;opacity:0;transform:scale(1.03);transition:opacity 1.3s ease,transform 9s linear}
+.hb-bg img.on{opacity:1;transform:scale(1.1)}
+.holban::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,rgba(5,4,10,.86) 0%,rgba(5,4,10,.55) 38%,rgba(5,4,10,0) 66%)}
+@media (max-width:700px){.holban::after{background:linear-gradient(180deg,rgba(5,4,10,.15) 0%,rgba(5,4,10,.55) 45%,rgba(5,4,10,.9) 100%)}}
+.hb-mosaic{position:absolute;inset:0;z-index:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;opacity:0;transition:opacity .5s}
+.hb-mosaic i{background-size:cover;background-position:75% 50%;transform:scale(.6);opacity:0}
+.holban.big .hb-mosaic{opacity:1}
+.holban.big .hb-mosaic i{animation:hbPop .7s cubic-bezier(.2,1.4,.4,1) var(--d) forwards}
+@keyframes hbPop{to{transform:none;opacity:1}}
+.hb-flash{position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(circle at 30% 50%,#fff,rgba(255,255,255,0) 70%);opacity:0}
+.holban.big .hb-flash{animation:hbFlash 1.1s ease}
+@keyframes hbFlash{12%{opacity:.85}100%{opacity:0}}
+.hb-txt{position:absolute;z-index:3;left:5.5%;top:50%;transform:translateY(-50%);width:min(60%,640px)}
+@media (max-width:700px){.hb-txt{left:6%;right:6%;width:auto;top:auto;bottom:6%;transform:none}}
+.hb-kick{display:block;font:800 clamp(11px,1.35vw,17px)/1 Sora,sans-serif;letter-spacing:3px;color:var(--hb-k,#ff8c32);transition:color 1s;margin-bottom:.7em}
+.holban h2{margin:0;font-size:clamp(32px,6vw,86px);line-height:.98;letter-spacing:-1.5px;text-shadow:0 0 40px rgba(0,0,0,.4)}
+.hb-l1{display:block;color:#fff}
+.hb-word{display:inline-block;white-space:nowrap;background:var(--hb-g,linear-gradient(90deg,#ff8c32,#b84dff));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px var(--hb-gl,rgba(184,77,255,.45)));transform-origin:0 60%}
+.holban.big .hb-word{animation:hbGrow 1s cubic-bezier(.2,1.5,.4,1)}
+@keyframes hbGrow{0%{transform:scale(.55);letter-spacing:-6px}100%{transform:none;letter-spacing:-1.5px}}
+.holban p{margin:.7em 0 1em;font-size:clamp(14px,1.6vw,22px);color:#e9e6ff}
+.hb-btn{display:inline-block;padding:.75em 1.4em;border-radius:999px;font:700 clamp(13px,1.45vw,19px)/1 Sora,sans-serif;color:#fff;background:linear-gradient(90deg,#ff3d9a,#9b3dff);box-shadow:0 10px 30px -10px rgba(255,61,154,.8);transition:transform .2s}
+.holban:hover .hb-btn{transform:translateY(-2px) scale(1.03)}
+@media (prefers-reduced-motion:reduce){.hb-bg img{transition:opacity .6s}.hb-bg img.on{transform:none}.holban.big .hb-word,.holban.big .hb-flash{animation:none}}
+</style>
+<script>
+/* 🎃🦃🎄🎆 Holiday banner (Oct 16, Graham): "Light up ___." morphs through the holidays (starting with the one coming up), then
+   "home." grows into "the holidays." with a big reveal of all four porches. */
+(function(){
+  var B=document.getElementById('holban'); if(!B) return;
+  var W=B.querySelector('.hb-word'), imgs=[].slice.call(B.querySelectorAll('.hb-bg img')), tiles=B.querySelectorAll('.hb-mosaic i');
+  var S=[{k:'halloween',w:'Halloween.',g:'linear-gradient(90deg,#ff8c32,#b84dff)',gl:'rgba(184,77,255,.45)',kc:'#ff8c32',gw:'rgba(255,120,0,.55)'},
+         {k:'thanksgiving',w:'Thanksgiving.',g:'linear-gradient(90deg,#ffd21a,#ff7a3d 55%,#e8452c)',gl:'rgba(255,140,50,.45)',kc:'#ffc23d',gw:'rgba(255,140,40,.55)'},
+         {k:'christmas',w:'Christmas.',g:'linear-gradient(90deg,#3ce08a,#ffffff 50%,#ff3d5a)',gl:'rgba(60,224,138,.4)',kc:'#3ce08a',gw:'rgba(60,224,138,.45)'},
+         {k:'newyear',w:"New Year's.",g:'linear-gradient(90deg,#ffd21a,#ff3d9a 50%,#33d6ff)',gl:'rgba(255,61,154,.45)',kc:'#ffd21a',gw:'rgba(255,61,154,.5)'},
+         {k:'home',w:'home.',g:'linear-gradient(90deg,#ffffff,#ffd0ea)',gl:'rgba(255,255,255,.35)',kc:'#ff8fc8',gw:'rgba(155,61,255,.5)'},
+         {k:'big',w:'the holidays.',g:'linear-gradient(90deg,#ff8c32,#ffd21a 25%,#3ce08a 50%,#33d6ff 75%,#ff3d9a)',gl:'rgba(255,210,26,.45)',kc:'#ffd21a',gw:'rgba(255,210,26,.55)'}];
+  var d=new Date(), m=d.getMonth(), day=d.getDate();
+  var i = (m===9) ? 0 : (m===10 && day<=27) ? 1 : (m===10 || (m===11 && day<=26)) ? 2 : ((m===11)||(m===0&&day<=6)) ? 3 : 4;   // start on the holiday that's coming up
+  var calm=matchMedia('(prefers-reduced-motion: reduce)').matches, vis=true, t=0;
+  function load(img){ if(img.dataset.src){ if(img.dataset.srcset) img.srcset=img.dataset.srcset; img.src=img.dataset.src; delete img.dataset.src; } }
+  imgs.forEach(function(im,j){ if(j) setTimeout(function(){load(im)},2500+j*400); });
+  tiles.forEach(function(ti,j){ ti.style.backgroundImage='url(/img/hol-'+['halloween','thanksgiving','christmas','newyear'][j]+'-s.jpg)'; });
+  var GL='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz*+#%&!?';
+  function morph(to){ if(calm){W.textContent=to;return;} var from=W.textContent, n=Math.max(from.length,to.length), f=0, F=18;
+    (function step(){ var out=''; for(var c=0;c<n;c++){ var p=f/F, pos=c/n; if(p>pos+.25) out+=to[c]||''; else if(p>pos-.15) out+=(to[c]===' '||to[c]==='.'||to[c]==="'")?to[c]:GL[(Math.random()*GL.length)|0]; else out+=from[c]||''; }
+      W.textContent=out; if(++f<=F+6) requestAnimationFrame(step); else W.textContent=to; })(); }
+  function show(n){ var s=S[n]; B.style.setProperty('--hb-g',s.g); B.style.setProperty('--hb-gl',s.gl); B.style.setProperty('--hb-k',s.kc); B.style.setProperty('--hb-glow',s.gw);
+    B.classList.toggle('big', s.k==='big'); if(s.k==='big'){ void B.offsetWidth; }
+    imgs.forEach(function(im){ var on=im.dataset.k===(s.k==='big'?'home':s.k); if(on) load(im); im.classList.toggle('on',on && s.k!=='big'); });
+    morph(s.w); }
+  function tick(){ if(!vis||document.hidden){t=setTimeout(tick,800);return;} i=(i+1)%S.length; show(i); t=setTimeout(tick, S[i].k==='big'?5200:3600); }
+  show(i); t=setTimeout(tick,3600);
+  if('IntersectionObserver' in window) new IntersectionObserver(function(e){vis=e[0].isIntersecting;}).observe(B);
+})();
+</script>
 <section><div class="wrap">
   <div class="center reveal"><span class="eyebrow">Pricing</span><h2>A whole light show crew for $5.99 a month</h2>
   <p class="lead"><b>Home DJ</b>: $5.99 a month, $59 a year, or $379 once. <a href="/pro.html"><b>Pro DJ</b></a> for gigs and venues from $8.99 a month. 🎃 <b>Founder launch deal: lifetime for $129</b> during launch week or for the first 100 buyers. Monthly and yearly plans start with a 7-day free trial.</p>
