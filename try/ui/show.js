@@ -28,11 +28,9 @@
   .sh-segrow .seg > .btn { --c:inherit; }
   /* 🎨 Color mood (Oct 17): six bright keys, each painted in its own colours */
   .sh-mood { display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px; }
-  .sh-mood .btn { min-height:46px; padding:2px 4px; border-radius:12px; background:var(--g); color:#000; font-size:calc(15px * var(--fs, 1)); letter-spacing:1px;
-    text-shadow:0 0 6px rgba(255,255,255,.75), 0 0 2px rgba(255,255,255,.6);   /* Oct 17 (Graham): black words, a soft light halo keeps them readable on the darker colours */ flex-direction:column; gap:2px; line-height:1; white-space:nowrap; }
-  .sh-mood .btn small { font:600 calc(10.5px * var(--fs, 1)) var(--cond); letter-spacing:.5px; opacity:.85; text-transform:none; }
+  .sh-mood .btn { min-height:48px; padding:0 12px; border-radius:999px;   /* Oct 17 (Graham): same pill shape as every other key, own colours, no small words */ background:var(--g); color:#000; font-size:calc(15px * var(--fs, 1)); letter-spacing:1px;
+    text-shadow:0 0 6px rgba(255,255,255,.75), 0 0 2px rgba(255,255,255,.6);   /* Oct 17 (Graham): black words, a soft light halo keeps them readable on the darker colours */ line-height:1; white-space:nowrap; }
   .sh-mood .btn.on { box-shadow:0 0 0 3px #fff inset, 0 0 18px color-mix(in srgb, var(--k) 80%, transparent); transform:scale(1.03); }
-  .sh-mood .btn.on::after { content:'✓'; position:absolute; top:3px; right:7px; font-size:12px; }
   .sh-mood .btn { position:relative; }
   .lv > span svg { width:16px; height:16px; fill:currentColor; flex:0 0 auto; }
   .sh-effs { height:320px; border:1px solid var(--line); border-radius:12px; padding:0 6px; background:#06050c; }
@@ -90,7 +88,7 @@
       ['party', 'Party', 'neon', 'linear-gradient(135deg,#ff0099,#9900ff 35%,#00e6ff 70%,#59ff00)', '#ff0099'],
       ['rainbow', 'Rainbow', 'every color', 'linear-gradient(90deg,#ff0000,#ff8c00,#ffff00,#00ff1a,#0099ff,#8000ff)', '#ffff00'],
       ['holiday', holidayNow()[0], holidayNow()[1], holidayNow()[2], '#ff6b00']];
-    $('shMood').innerHTML = MOODS.map(([k, n, sub, g, kc]) => `<button class="btn" data-mood="${k}" style="--g:${g};--k:${kc}">${n}<small>${sub}</small></button>`).join('');
+    $('shMood').innerHTML = MOODS.map(([k, n, sub, g, kc]) => `<button class="btn" data-mood="${k}" style="--g:${g};--k:${kc}">${n}</button>`).join('');
     $('shMood').querySelectorAll('[data-mood]').forEach(x => x.onclick = async () => {
       if (await GB.control({mood: x.dataset.mood})) { markSeg('[data-mood]', 'mood', x.dataset.mood);
         GB.toast(x.dataset.mood === 'auto' ? '🎨 Colors: each look picks its own' : '🎨 ' + x.firstChild.textContent + ' colors on every effect'); } });
