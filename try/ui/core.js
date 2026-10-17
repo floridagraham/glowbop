@@ -774,6 +774,14 @@
   // ------------------------------------------------------------- 🖼️ the live wall (every group side by side at its true shape)
   const DEVCOL = GB.DEVCOL = ['#ff3d9a', '#33d6ff', '#3ce08a', '#ffc04d', '#c58bff', '#ff7a3d'];
   const hexRGB = h => (typeof h === 'string') ? h.match(/.{6}/g) || [] : h;
+  // 🧵 sparse frames: occ = which spots have a bulb (bit per spot, hex), rgb = colours of just those spots, in order
+  let OCC = {k: '', bits: null};
+  function occRGB(b) {
+    if (OCC.k !== b.occ) { const bits = new Uint8Array(b.w * b.h); for (let i = 0; i < bits.length; i++) bits[i] = (parseInt(b.occ.substr((i >> 3) * 2, 2), 16) >> (7 - (i & 7))) & 1; OCC = {k: b.occ, bits}; }
+    const cols = hexRGB(b.rgb), out = new Array(b.w * b.h); let j = 0;
+    for (let i = 0; i < out.length; i++) out[i] = OCC.bits[i] ? cols[j++] : null;
+    return out;
+  }
   let PV = [], PVHIT = [], FULL = false, cv, cx;
   // 🧊 curtains wrapped around a cylinder / box / globe: a turning 3D model with the real lights on it (drag to spin)
   const V3 = {yaw: 0.6, pitch: 0.38, drag: null, moved: false, t: performance.now()};
@@ -856,9 +864,10 @@
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.fillStyle = '#05040a'; cx.fillRect(0, 0, cssW, cssH);
     let ox = ox0; PVHIT = [];
     blocks.forEach(b => {
-      const rgb = hexRGB(b.rgb), r = st * 0.42, top = lab, sel = many && GB.gsel === b.id;
+      const rgb = b.occ ? occRGB(b) : hexRGB(b.rgb), r = st * (b.occ ? 0.46 : 0.42), top = lab, sel = many && GB.gsel === b.id;
       for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
         const c = rgb[y * b.w + x], px = ox + x * st + st / 2, py = top + y * st + st / 2;
+        if (c === null) continue;                                          // 🧵 no bulb here (laid-out strings): leave it empty
         if (!c || c === '000000') { cx.fillStyle = '#16121f'; cx.beginPath(); cx.arc(px, py, r * 0.55, 0, 6.283); cx.fill(); continue; }
         cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, r, 0, 6.283); cx.fill();
       }
@@ -869,7 +878,7 @@
       if ((b.devices || []).length > 1) b.devices.forEach((d, k) => {
         const col = DEVCOL[k % DEVCOL.length]; cx.strokeStyle = col + '88'; cx.lineWidth = 1;
         cx.strokeRect(ox + d.x0 * st + 0.5, top + d.y0 * st + 0.5, (d.x1 - d.x0 + 1) * st - 1, (d.y1 - d.y0 + 1) * st - 1);
-        cx.fillStyle = col; cx.font = "11px 'Saira Condensed', system-ui"; cx.fillText(d.name.slice(0, Math.max(4, Math.floor((d.x1 - d.x0 + 1) * st / 7))), ox + d.x0 * st + 2, (many ? 18 : 0) + 1);
+        cx.fillStyle = col; cx.font = "11px 'Saira Condensed', system-ui"; cx.fillText(d.name.slice(0, Math.max(4, Math.floor((d.x1 - d.x0 + 1) * st / 7))), ox + d.x0 * st + 2, d.y0 > 0 ? top + d.y0 * st - 13 : (many ? 18 : 0) + 1);   // 🧵 a light lower down: its name just above its own box
       });
       if (sel) { cx.strokeStyle = '#ff3d9a'; cx.lineWidth = 2; cx.strokeRect(ox - 1, top - 1, b.w * st + 2, b.h * st + 2); }
       PVHIT.push({id: b.id, name: b.name, x0: ox, x1: ox + b.w * st});
