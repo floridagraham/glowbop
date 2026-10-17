@@ -76,9 +76,9 @@
     surplife: 'Surplife curtain: Find my lights finds it over Bluetooth (close the Surplife app on your phone first: only one connection at a time). Or type its Bluetooth address, e.g. AA:BB:CC:DD:EE:FF.',
     daybetter: 'DayBetter strips and light poles: Find my lights finds them over Bluetooth (close the DayBetter app on your phone first: only one connection at a time). Each strip glows one color at a time, picked from the show and pulsing with the beat.',
     blecheap: 'Bluetooth LED strips (names like MELK, ELK-BLEDOM, LEDBLE): the cheap strips that come with furniture, TV backlights and neon signs. Find my lights finds them; close the strip\'s phone app first. Each one glows one color, following the show.',
-    nanoleaf: 'Nanoleaf (string lights, lightstrips, panels): set it up on Wi-Fi in the Nanoleaf app first. When you tap Add, open the light in the Nanoleaf app and tap "Connect to API" within 30 seconds; GlowBop is listening and pairs once.'};
+    nanoleaf: 'Nanoleaf, 3 steps: 1) In the Nanoleaf app, connect the light to your Wi-Fi (not just Bluetooth). 2) Open the light\'s settings and turn on the API ("Connect to API"). GlowBop can only see a Nanoleaf once its API is on. 3) Tap Find my lights, then tap the Nanoleaf. If it asks again, tap "Connect to API" once more within 30 seconds. You only pair once.'};
   // 🌿 Nanoleaf pairs once: GlowBop listens for 30 s while the owner taps "Connect to API" in the Nanoleaf app
-  const nlHint = () => { const t = $('toast'); t.innerHTML = '<span></span>'; t.firstChild.textContent = '🌿 Now open the light in the Nanoleaf app and tap "Connect to API". GlowBop is listening for 30 seconds…'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 30000); };
+  const nlHint = () => { const t = $('toast'); t.innerHTML = '<span></span>'; t.firstChild.textContent = '🌿 Pairing… if it doesn\'t connect, open the light in the Nanoleaf app and tap "Connect to API". GlowBop is listening for 30 seconds.'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 30000); };
   const BRAND = {twinkly: 'Twinkly', wled: 'WLED', govee: 'Govee', surplife: 'Surplife curtain (Bluetooth)', daybetter: 'DayBetter (Bluetooth)', blecheap: 'Bluetooth LED strip', nanoleaf: 'Nanoleaf'};
   // ⭐ Full show: every LED is drawn separately (the real GlowBop look). Basic sync: the whole light shows one color.
   const FULL = new Set(['twinkly', 'wled', 'surplife', 'xlights']);
@@ -450,7 +450,7 @@
     $('suScan').disabled = true;
     const r = await GB.post('/api/lights/scan', {}); $('suScan').disabled = false;
     if (!r) { box.innerHTML = ''; return; }
-    box.innerHTML = r.found.length ? '<div class="sub">🔓 Found your lights · tap one to set it free</div>' : '<p class="note">No lights found. For Govee, turn on LAN Control in the Govee app first. You can also Add by brand with the IP.</p>';
+    box.innerHTML = r.found.length ? '<div class="sub">🔓 Found your lights · tap one to set it free</div>' : '<p class="note">No lights found. For Govee, turn on LAN Control in the Govee app first. For Nanoleaf, put it on Wi-Fi and turn on its API in the Nanoleaf app first. You can also Add by brand with the IP.</p>';
     r.found.forEach(f => {
       const row = document.createElement('div'); row.className = 'item';
       row.innerHTML = `<span class="su-dot" style="background:#555;color:transparent"></span><div class="su-tx"><b>${esc(f.name)}</b>${tier(f.type)}<small>${esc(BRAND[f.type] || f.type)} · ${esc(f.ip)}${f.n ? ' · ' + f.n + ' lights' : ''}${f.model ? ' · ' + esc(f.model) : ''}</small></div>`;
