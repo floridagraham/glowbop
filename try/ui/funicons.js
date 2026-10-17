@@ -187,10 +187,10 @@
     canadaday: '#ff1a1a', australiaday: '#00cc40', bastille: '#3d6bff', kingsday: '#ff8a1a', bonfire: '#ff3d1a', carnival: '#8c1ad9', mothersday: '#ff4d8c', easter: '#ff9ad0'})[k] || '';
   I.scn_campfire = I.fire_campfire;
   GB.funIcon = k => I[k] ? `<svg class="fi" viewBox="0 0 48 48" aria-hidden="true">${I[k]}</svg>` : '';
-  GB.css(`/* Oct 17 (Graham): the SCENES keys (fireplace styles, flame colours, quick scenes) glow in their own colour instead of plain grey */
-    .sh-tiles .tile:not(.on), .md-stiles .tile:not(.on), .md-ftiles .tile:not(.on) { background:linear-gradient(150deg, color-mix(in srgb, var(--c, #ff3d9a) 34%, #120d1e) 0%, color-mix(in srgb, var(--c, #ff3d9a) 12%, #0d0a16) 70%);
+  GB.css(`/* Oct 17 (Graham): the SCENES keys (fireplace styles, flame colours, quick scenes) and the GAMES keys glow in their own colour instead of plain grey */
+    .sh-tiles .tile:not(.on), .md-stiles .tile:not(.on), .md-ftiles .tile:not(.on), .gm-tiles .tile:not(.on) { background:linear-gradient(150deg, color-mix(in srgb, var(--c, #ff3d9a) 34%, #120d1e) 0%, color-mix(in srgb, var(--c, #ff3d9a) 12%, #0d0a16) 70%);
       box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--c, #ff3d9a) 50%, transparent); color:#fff; text-shadow:0 1px 3px #000a; }
-    .sh-tiles .tile:not(.on):hover, .md-stiles .tile:not(.on):hover, .md-ftiles .tile:not(.on):hover { filter:brightness(1.15); }
+    .sh-tiles .tile:not(.on):hover, .md-stiles .tile:not(.on):hover, .md-ftiles .tile:not(.on):hover, .gm-tiles .tile:not(.on):hover { filter:brightness(1.15); }
     .tile .em .fi, .md-hh .em .fi { width:1.45em; height:1.45em; display:block; overflow:visible; filter:drop-shadow(0 0 4px rgba(255,255,255,.25)) drop-shadow(0 0 10px color-mix(in srgb, var(--c, #ff3d9a) 45%, transparent)); }
     .tile.on .em .fi { filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px var(--c, #ff3d9a)); }`);
 })();

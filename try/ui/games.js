@@ -15,11 +15,12 @@
   ];
   GB.GAME_NAMES = GAMES.map(g => g[0]);
   GB.css(`
-  .gm-tiles { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-  .gm-tiles .tile { min-height:104px; align-items:flex-start; justify-content:flex-end; text-align:left; padding:12px; }
-  .gm-tiles .tile .em { font-size:calc(34px * var(--fs, 1)); }
-  .gm-tiles .tile small { display:block; font:400 calc(12.5px * var(--fs, 1))/1.3 var(--body); letter-spacing:0; text-transform:none; opacity:.8; }
-  @media (min-width: 700px) { .gm-tiles { grid-template-columns:repeat(4, minmax(0, 1fr)); } }
+  /* Oct 17 (Graham): a neat, even grid. As many columns as the box fits (2 on a phone), every key the same height,
+     icon on top, name, then a short description, all centred. */
+  .gm-tiles { grid-template-columns:repeat(auto-fill, minmax(min(100%, 128px), 1fr)) !important; gap:8px; }
+  .gm-tiles .tile { min-height:140px; height:100%; align-items:center; justify-content:flex-start; text-align:center; padding:12px 8px 10px; gap:6px; }
+  .gm-tiles .tile .em { height:calc(46px * var(--fs, 1)); display:flex; align-items:center; justify-content:center; font-size:calc(30px * var(--fs, 1)); }
+  .gm-tiles .tile small { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; font:400 calc(12px * var(--fs, 1))/1.3 var(--body); letter-spacing:0; text-transform:none; opacity:.8; }
   `);
   GB.panel('games', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--lime)');
