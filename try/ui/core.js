@@ -484,18 +484,25 @@
     document.documentElement.classList.toggle('door-dj', GB.proDoor !== 'home'); document.documentElement.classList.toggle('door-home', GB.proDoor === 'home');
     let art = hero.querySelector('.pt-art'); if (!art) { art = document.createElement('div'); art.className = 'pt-art'; art.setAttribute('aria-hidden', 'true'); hero.appendChild(art); }
     art.innerHTML = GB.proDoor === 'home' ? DOOR_ART.home : DOOR_ART.dj;
-    const o = PRO_ORDER[GB.proDoor] || PRO_LIST; [...list.children].sort((a, b) => o.indexOf(a.dataset.f) - o.indexOf(b.dataset.f)).forEach(n => list.appendChild(n));
+    // 🎲 Oct 17 (Graham): a new random order every visit. The door's own headline card (Pro DJ mode / Pro Home) still leads.
+    const o = PRO_ORDER[GB.proDoor] || PRO_LIST, lead = o[0], cards = [...list.children];
+    for (let i = cards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cards[i], cards[j]] = [cards[j], cards[i]]; }
+    cards.sort((a, b) => (b.dataset.f === lead) - (a.dataset.f === lead)).forEach(n => list.appendChild(n));
     if (GB.proDJ && GB.proDJ.recompact) GB.proDJ.recompact();
   }
   // ✨ Spotlight tour (Oct 16 night, Graham: "so many words, it's overwhelming"): the cards take turns lighting up, one at a time,
   //   in the order of the door you came through. The lit card glows and lifts, the rest step back. Touch or scroll and it waits for you.
-  let spotT = 0, spotI = -1, idleAt = 0;
+  let spotT = 0, spotI = -1, idleAt = 0, bag = [];
   const spotOff = () => { clearInterval(spotT); spotT = 0; const l = document.querySelector('#pg-pro .pt-feats'); if (l) { l.classList.remove('touring'); l.querySelectorAll('.spot').forEach(n => n.classList.remove('spot')); } };
   function spotOn() {
-    spotOff(); const list = document.querySelector('#pg-pro .pt-feats'); if (!list) return; spotI = -1; list.classList.add('touring');
+    spotOff(); const list = document.querySelector('#pg-pro .pt-feats'); if (!list) return; spotI = -1; bag = []; list.classList.add('touring');
     const step = () => {
       if (GB.page !== 'pro' || document.hidden) return; const cards = [...list.children]; if (!cards.length) return;
-      cards.forEach(n => n.classList.remove('spot')); spotI = (spotI + 1) % cards.length; const n = cards[spotI]; n.classList.add('spot');
+      cards.forEach(n => n.classList.remove('spot'));
+      // 🎲 the spotlight hops around at random: every card gets its turn before any repeats, never the same one twice in a row
+      if (!bag.length) { bag = cards.map((_, i) => i); for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+        if (bag.length > 1 && bag[bag.length - 1] === spotI) bag.unshift(bag.pop()); }
+      spotI = bag.pop(); const n = cards[spotI] || cards[0]; n.classList.add('spot');
       if (Date.now() - idleAt > 7000) { const r = n.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 20) try { n.scrollIntoView({behavior: 'smooth', block: 'center'}); } catch (e) {} }
     };
     step(); spotT = setInterval(step, 2600);
