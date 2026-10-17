@@ -344,67 +344,103 @@
     stop() { clearTimeout(cubeT); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCube); else buildCube();
-  // 🥚 EASTER EGG (Oct 17, Graham): tap the corner logo and GlowBop pretends to ERASE EVERYTHING: a progress bar races to 100%,
-  //   the boxes blink out, the rail keys fall off the screen, "ALL SHOWS DELETED"... then "Just kidding 😎" and it all flies back.
-  //   Only the screen plays along; the lights keep going and nothing is touched. Not advertised.
-  let eggAt = 0;
-  document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('#gbLogo, #hd .elbow'))) return; if (Date.now() - eggAt < 20000 || document.getElementById('gbEgg')) return; eggAt = Date.now(); egg(); });
+  // 🥚 EASTER EGG (Oct 17, Graham): tap the corner logo and GlowBop pretends to wreck everything. Every tap plays it, and a
+  //   different "disaster" is picked each time (never the same twice in a row). The boxes vanish, the rail keys fall off,
+  //   then it HOLDS the dead screen: every tap makes it worse, and only after a frantic 12 taps (or 40 s) does it say
+  //   "Just kidding 😎" and fly everything back. Only the screen plays along; the lights keep going and nothing is touched.
+  const EGGS = [
+    {k: 'erase', a: '#ff2a4d', b: '#ff8a3d', t: '⚠️ ERASING ALL SHOWS…', pre: 'Deleting: ', files: ['Looks', 'Song Shows', 'Saved scenes', 'Your layouts', 'Light map', 'Holiday shows', 'Logos', 'Settings', 'Everything'],
+      dead: '❌ ALL SHOWS DELETED', sub: 'GlowBop has been reset to nothing.',
+      oops: ['❌ Restore failed: no backup found.', 'Looking for your shows… 0 found.', 'Error 404: lights not found.', 'Rebooting… failed.', 'Undo is not available.',
+        'Contacting GlowBop support… no answer.', 'Your lights have forgotten you.', 'Please stop tapping. It makes it worse.', 'Scanning for anything at all… nothing.', 'Reinstalling the universe… 1%', 'Okay. Okay okay okay…'],
+      joke: 'Nothing was deleted. Your lights are still free.'},
+    {k: 'rainbow', a: '#ff3d9a', b: '#33d6ff', t: '🌈 RAINBOW OVERLOAD', pre: 'Too much color in: ', files: ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink', 'Colors that don\'t exist yet', 'ALL OF THEM'],
+      dead: '💥 THE COLORS MELTED', sub: 'Your lights can only show beige now.',
+      oops: ['Beige mode locked in.', 'Searching for red… not found.', 'Rainbow.dll has stopped working.', 'Color reserve: 0%', 'Mixing new colors… it\'s brown.', 'Calling the rainbow… straight to voicemail.',
+        'All 16 million colors have left the building.', 'Tapping uses up more color. Please stop.', 'Unicorns contacted… they\'re busy.', 'Remelting the rainbow… 2%', 'Wait… is that a little pink?'],
+      joke: 'The rainbow is fine. Your lights are still free.'},
+    {k: 'dots', a: '#33d6ff', b: '#9b3dff', t: '● ● ● LOSING DOTS…', pre: 'Dots escaping from: ', files: ['Top row', 'Left curtain', 'Right curtain', 'The middle', 'The sparkly ones', 'The logo', 'The last dot', 'Even the dark ones', 'Every dot'],
+      dead: '○ ○ ○ NO DOTS LEFT', sub: 'All your little lights wandered off.',
+      oops: ['Counting dots… 0.', 'Dot 1 of 0 not found.', 'Calling the dots home… no answer.', 'Dot retrieval failed.', 'A dot was seen heading for the neighbors.',
+        'Ordering new dots… backordered until 2031.', 'Dots do not respond to tapping.', 'Please stop poking. You\'re scaring the dots.', 'Searching under the couch… just crumbs.', 'Re-dotting… 1 dot.', 'Hold on. I hear something.'],
+      joke: 'Every dot is home. Your lights are still free.'},
+    {k: 'holiday', a: '#ffcc33', b: '#2bd96b', t: '🎄 CANCELLING THE HOLIDAYS…', pre: 'Cancelling: ', files: ['Halloween', 'Thanksgiving', 'Christmas', 'New Year\'s', 'Valentine\'s', 'St. Patrick\'s', 'Fourth of July', 'Your birthday', 'Every holiday'],
+      dead: '🚫 ALL HOLIDAYS CANCELLED', sub: 'Next holiday: never.',
+      oops: ['Santa has been notified.', 'Rescheduling Christmas… no dates available.', 'The pumpkins are disappointed.', 'Restoring fireworks… fizzled.', 'Holiday backup is in the attic. The attic is gone.',
+        'The elves have unionized.', 'The neighbors\' lights are now brighter than yours.', 'Tapping is not a holiday. Please stop.', 'Calling the North Pole… busy signal.', 'Rebuilding Christmas… 1 ornament.', 'Is that… sleigh bells?'],
+      joke: 'Every holiday is safe. Your lights are still free.'},
+  ];
+  let eggLast = -1;
+  document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('#gbLogo, #hd .elbow'))) return; if (document.getElementById('gbEgg')) return; egg(); });
   function egg() {
+    let pick = (Math.random() * EGGS.length) | 0; if (pick === eggLast) pick = (pick + 1 + ((Math.random() * (EGGS.length - 1)) | 0)) % EGGS.length; eggLast = pick;
+    const V = EGGS[pick];
     const quiet = GB.store.get('gb_sfx', '1') !== '1'; let C = null;
     const beep = (f, d, type, vol, slideTo) => { if (quiet) return; try { C = C || new (window.AudioContext || window.webkitAudioContext)(); const t = C.currentTime, o = C.createOscillator(), g = C.createGain();
       o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + d); g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
       o.connect(g); g.connect(C.destination); o.start(t); o.stop(t + d + .02); } catch (x) {} };
-    const ov = document.createElement('div'); ov.id = 'gbEgg';
-    ov.innerHTML = '<div class="eg-card"><div class="eg-t">⚠️ ERASING ALL SHOWS…</div><div class="eg-f">Looks</div><div class="eg-bar"><i></i></div><div class="eg-p">0%</div></div>';
+    const ov = document.createElement('div'); ov.id = 'gbEgg'; ov.className = 'eg-' + V.k; ov.style.setProperty('--ea', V.a); ov.style.setProperty('--eb', V.b);
+    ov.innerHTML = '<div class="eg-card"><div class="eg-t"></div><div class="eg-f"></div><div class="eg-bar"><i></i></div><div class="eg-p">0%</div></div>';
     document.body.appendChild(ov);
     const bar = ov.querySelector('.eg-bar i'), pct = ov.querySelector('.eg-p'), fl = ov.querySelector('.eg-f'), tt = ov.querySelector('.eg-t');
+    tt.textContent = V.t; fl.textContent = V.pre + V.files[0];
     const boxes = [...document.querySelectorAll('#main .panel, #main .modebar')].filter(n => { const r = n.getBoundingClientRect(); return r.width && r.bottom > 0 && r.top < innerHeight; });
     const keys = [...document.querySelectorAll('#rail button:not([hidden])')];
-    const FILES = ['Looks', 'Song Shows', 'Saved scenes', 'Your layouts', 'Light map', 'Holiday shows', 'Logos', 'Settings', 'Everything'];
-    const T0 = 2600; let t0 = performance.now(), fallen = 0, gone = 0;
+    const dots = V.k === 'dots' ? [...document.querySelectorAll('#gbLogo circle[data-l="1"]')].sort(() => Math.random() - .5) : [];
+    const T0 = 2600; let t0 = performance.now(), fallen = 0, gone = 0, dark = 0;
     const tick = () => { const k = Math.min(1, (performance.now() - t0) / T0), e = 1 - Math.pow(1 - k, 1.6), p = Math.round(e * 100);
-      bar.style.width = p + '%'; pct.textContent = p + '%'; fl.textContent = 'Deleting: ' + FILES[Math.min(FILES.length - 1, Math.floor(e * FILES.length))];
-      while (gone < boxes.length * e) { const n = boxes[gone++]; n.classList.add('eg-gone'); if (gone % 2) beep(300 + Math.random() * 500, .06, 'square', .04); }
+      bar.style.width = p + '%'; pct.textContent = p + '%'; fl.textContent = V.pre + V.files[Math.min(V.files.length - 1, Math.floor(e * V.files.length))];
+      while (gone < boxes.length * e) { const n = boxes[gone++]; n.classList.add('eg-gone'); if (gone % 2) beep(V.k === 'rainbow' ? 500 + Math.random() * 900 : 300 + Math.random() * 500, .06, V.k === 'dots' ? 'sine' : 'square', .04); }
       while (fallen < keys.length * e) { const n = keys[fallen++]; n.style.setProperty('--egr', (Math.random() * 60 - 30) + 'deg'); n.classList.add('eg-fall'); }
+      while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.ef = n.getAttribute('fill'); n.setAttribute('fill', '#221d33'); n.dataset.l = '0'; }
       if (k < 1) requestAnimationFrame(tick); else done(); };
-    // 😱 hold the joke: the screen stays "dead" and every tap makes it worse, until they've tapped a bunch (or 40 s go by)
-    const OOPS = ['❌ Restore failed: no backup found.', 'Looking for your shows… 0 found.', 'Error 404: lights not found.', 'Rebooting… failed.',
-      'Undo is not available.', 'Contacting GlowBop support… no answer.', 'Your lights have forgotten you.', 'Please stop tapping. It makes it worse.',
-      'Scanning for anything at all… nothing.', 'Reinstalling the universe… 1%', 'Okay. Okay okay okay…'];
     const NEED = 12; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
-      tt.textContent = 'JUST KIDDING 😎'; fl.textContent = 'Nothing was deleted. Your lights are still free.'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
+      tt.textContent = 'JUST KIDDING 😎'; fl.textContent = V.joke; pct.textContent = ''; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
+      dots.forEach((n, i) => setTimeout(() => { if (n.dataset.ef) n.setAttribute('fill', n.dataset.ef); n.dataset.l = '1'; }, i * 30));
       keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
-      setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); eggAt = Date.now(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 3600); };
+      setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 3600); };
     const tap = ev => { ev.preventDefault(); ev.stopPropagation(); taps++;
       const card = ov.querySelector('.eg-card'); card.classList.remove('eg-shake'); void card.offsetWidth; card.classList.add('eg-shake');
       beep(120 + Math.random() * 60, .18, 'sawtooth', .1, 60);
       if (taps >= NEED) return setTimeout(reveal, 700);
-      fl.textContent = OOPS[(taps - 1) % OOPS.length]; pct.textContent = taps > 3 ? '⚠️ ' + taps + ' errors' : ''; };
-    const done = () => { tt.textContent = '❌ ALL SHOWS DELETED'; fl.textContent = 'GlowBop has been reset to nothing.'; pct.textContent = ''; ov.classList.add('eg-dead', 'eg-hold');
+      fl.textContent = V.oops[(taps - 1) % V.oops.length]; pct.textContent = taps > 3 ? '⚠️ ' + taps + ' errors' : ''; };
+    const done = () => { tt.textContent = V.dead; fl.textContent = V.sub; pct.textContent = ''; ov.classList.add('eg-dead', 'eg-hold');
       beep(160, .8, 'sawtooth', .14, 50);
       setTimeout(() => { if (!revealed) ov.addEventListener('pointerdown', tap); }, 400);
       held = setTimeout(reveal, 40000); };
     beep(660, .12, 'square', .06); requestAnimationFrame(tick);
   }
-  setTimeout(() => GB.css(`#gbEgg { position:fixed; inset:0; z-index:20000; display:flex; align-items:center; justify-content:center; pointer-events:none; background:rgba(0,0,0,.25); transition:background .4s; }
-    #gbEgg .eg-card { background:#0b0712f0; border:2px solid #ff2a4d; border-radius:16px; padding:18px 22px; width:min(92vw, 520px); box-shadow:0 0 50px -6px #ff2a4d; font-family:var(--cond); color:#fff; text-align:center; }
-    #gbEgg .eg-t { font:800 clamp(20px, 4vw, 34px)/1.1 var(--cond); letter-spacing:3px; color:#ff4d6d; text-shadow:0 0 16px #ff2a4d; }
-    #gbEgg .eg-f { font:600 calc(14px * var(--fs, 1)) var(--mono); color:var(--dim); margin:10px 0 8px; min-height:1.3em; }
-    #gbEgg .eg-bar { height:14px; border-radius:7px; background:#2a0d16; overflow:hidden; } #gbEgg .eg-bar i { display:block; height:100%; width:0; background:linear-gradient(90deg, #ff2a4d, #ff8a3d); box-shadow:0 0 12px #ff2a4d; }
-    #gbEgg .eg-p { font:700 calc(15px * var(--fs, 1)) var(--mono); margin-top:6px; color:#ffb3c0; }
+  setTimeout(() => GB.css(`#gbEgg { --ea:#ff2a4d; --eb:#ff8a3d; position:fixed; inset:0; z-index:20000; display:flex; align-items:center; justify-content:center; pointer-events:none; background:rgba(0,0,0,.25); transition:background .4s; }
+    #gbEgg .eg-card { background:#0b0712f0; border:2px solid var(--ea); border-radius:16px; padding:18px 22px; width:min(92vw, 520px); box-shadow:0 0 50px -6px var(--ea); font-family:var(--cond); color:#fff; text-align:center; }
+    #gbEgg .eg-t { font:800 clamp(20px, 4vw, 34px)/1.1 var(--cond); letter-spacing:3px; color:var(--ea); text-shadow:0 0 16px var(--ea); }
+    #gbEgg .eg-f { font:600 calc(14px * var(--fs, 1)) var(--mono); color:#d9d2ff; margin:10px 0 8px; min-height:1.3em; }
+    #gbEgg .eg-bar { height:14px; border-radius:7px; background:#1a0d22; overflow:hidden; } #gbEgg .eg-bar i { display:block; height:100%; width:0; background:linear-gradient(90deg, var(--ea), var(--eb)); box-shadow:0 0 12px var(--ea); }
+    #gbEgg .eg-p { font:700 calc(15px * var(--fs, 1)) var(--mono); margin-top:6px; color:var(--eb); min-height:1.2em; }
     #gbEgg.eg-dead { background:rgba(0,0,0,.92); } #gbEgg.eg-dead .eg-bar { opacity:.3; }
-    #gbEgg.eg-joke .eg-card { border-color:#33d6ff; box-shadow:0 0 50px -6px #ff3d9a, 0 0 30px -10px #33d6ff; } #gbEgg.eg-joke .eg-t { color:#fff; text-shadow:0 0 18px #ff3d9a, 0 0 30px #33d6ff; }
-    #gbEgg.eg-joke .eg-bar { display:none; } #gbEgg.eg-joke { background:rgba(0,0,0,0); }
-    #gbEgg.eg-out { opacity:0; transition:opacity .5s; }
     #gbEgg.eg-hold { pointer-events:auto; cursor:not-allowed; touch-action:none; }
     #gbEgg .eg-card.eg-shake { animation:egShake .35s; } @keyframes egShake { 0%,100% { transform:none; } 20% { transform:translate(-9px,2px) rotate(-1deg); } 40% { transform:translate(8px,-2px) rotate(1deg); } 60% { transform:translate(-6px,1px); } 80% { transform:translate(4px,0); } }
+    /* 🌈 rainbow: the border, title and bar cycle through every color, then drain to beige when it "melts" */
+    #gbEgg.eg-rainbow .eg-card { border-image:linear-gradient(90deg, #ff2a4d, #ffcc33, #2bd96b, #33d6ff, #9b3dff, #ff3d9a) 1; border-radius:0; animation:egHue 1.2s linear infinite; }
+    #gbEgg.eg-rainbow .eg-bar i { background:linear-gradient(90deg, #ff2a4d, #ff8a3d, #ffcc33, #2bd96b, #33d6ff, #9b3dff, #ff3d9a); }
+    #gbEgg.eg-rainbow.eg-dead .eg-card { animation:none; filter:sepia(1) saturate(1.8) hue-rotate(-12deg) brightness(1.05); }
+    @keyframes egHue { to { filter:hue-rotate(360deg); } }
+    /* ● dots: a dot-matrix card, like the lights themselves (and the corner logo's dots go dark one by one) */
+    #gbEgg.eg-dots .eg-card { border-style:dotted; border-width:4px; background:radial-gradient(circle, #33d6ff22 1.6px, transparent 2px) 0 0/12px 12px, #0b0712f2; }
+    #gbEgg.eg-dots .eg-t { font-family:var(--mono); letter-spacing:5px; }
+    #gbEgg.eg-dots .eg-bar { background:radial-gradient(circle, #33d6ff33 3px, transparent 3.5px) 0 50%/14px 14px; } #gbEgg.eg-dots .eg-bar i { background:radial-gradient(circle, #ff3d9a 4px, transparent 4.5px) 0 50%/14px 14px; box-shadow:none; }
+    #gbEgg.eg-dots.eg-dead .eg-card { background:radial-gradient(circle, #ffffff10 1.6px, transparent 2px) 0 0/12px 12px, #050308f6; }
+    /* 🎄 holiday: gold and green, a candy-cane bar */
+    #gbEgg.eg-holiday .eg-bar i { background:repeating-linear-gradient(45deg, #ff2a4d 0 10px, #ffffff 10px 20px); box-shadow:0 0 12px #ffcc33; }
+    #gbEgg.eg-joke .eg-card { border-color:#33d6ff; border-image:none; border-radius:16px; border-style:solid; border-width:2px; filter:none; animation:none; box-shadow:0 0 50px -6px #ff3d9a, 0 0 30px -10px #33d6ff; } #gbEgg.eg-joke .eg-t { color:#fff; font-family:var(--cond); text-shadow:0 0 18px #ff3d9a, 0 0 30px #33d6ff; }
+    #gbEgg.eg-joke .eg-bar { display:none; } #gbEgg.eg-joke { background:rgba(0,0,0,0); }
+    #gbEgg.eg-out { opacity:0; transition:opacity .5s; }
     .eg-gone { opacity:0 !important; transform:scale(.85) !important; filter:blur(3px) brightness(2) !important; transition:opacity .25s, transform .25s, filter .25s !important; }
     #rail button.eg-fall { transform:translateY(110vh) rotate(var(--egr, 15deg)) !important; transition:transform .9s cubic-bezier(.55,0,.9,.4) !important; }
     #rail button:not(.eg-fall) { transition:transform .6s cubic-bezier(.2,1.4,.4,1), filter .15s; }
     #gbLogo, #hd .elbow { cursor:pointer; }
-    @media (prefers-reduced-motion: reduce) { #rail button.eg-fall { transform:none !important; opacity:.15; } }`), 0);
+    @media (prefers-reduced-motion: reduce) { #rail button.eg-fall { transform:none !important; opacity:.15; } #gbEgg.eg-rainbow .eg-card { animation:none; } }`), 0);
   GB.css = text => { const st = document.createElement('style'); st.textContent = text; document.head.appendChild(st); };
   GB.lbl = (el, ic, text) => { el.innerHTML = (ic ? GB.svg(ic) : '') + '<span>' + GB.esc(text) + '</span>'; };
 
