@@ -783,9 +783,11 @@
       //   Each dot gets sized to how far its nearest neighbour is (1 or 2 spots), so a curtain draws solid again.
       const W = b.w, H = b.h, sc = new Float32Array(W * H), has = (x, y) => x >= 0 && y >= 0 && x < W && y < H && bits[y * W + x];
       const [kx, ky] = b.sc || [1, 1];                                   // spots per bulb-spacing on each axis (2 = that axis runs at double detail)
-      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (!bits[y * W + x]) continue; let nd = 1;
-        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { if ((dx || dy) && has(x + dx, y + dy)) nd = Math.min(nd, Math.hypot(dx / kx, dy / ky)); }
-        sc[y * W + x] = Math.max(0.3, nd); }
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (!bits[y * W + x]) continue;
+        let nx = 9, ny = 9;                                              // nearest bulb side-to-side and up-down (in bulb spacings)
+        for (let d = 1; d <= 2; d++) { if (has(x + d, y) || has(x - d, y)) nx = Math.min(nx, d / kx); if (has(x, y + d) || has(x, y - d)) ny = Math.min(ny, d / ky); }
+        const m = Math.max(nx > 8 ? 0 : nx, ny > 8 ? 0 : ny);            // size for the WIDER gap, so rows / columns never show blank lines
+        sc[y * W + x] = m ? Math.max(0.3, Math.min(1, m)) : 1; }
       OCC = {k: b.occ, bits, sc}; }
     GB.occScale = OCC.sc;
     const cols = hexRGB(b.rgb), out = new Array(b.w * b.h); let j = 0;
