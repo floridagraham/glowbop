@@ -27,7 +27,10 @@
   .mu-sty > span { font:calc(12px * var(--fs, 1))/1 var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
   .mu-sty .seg { flex:1; min-width:0; } .mu-sty .btn { min-height:34px; padding:4px 6px; font-size:calc(13px * var(--fs, 1)); --c:var(--gold); }
   .mu-sty .btn { gap:4px; } .mu-sty .btn .ic { width:15px; height:15px; }
-  @media (max-width: 699px) { .mu-sty { gap:6px; } .mu-sty > span { flex-basis:100%; } .mu-sty .seg { flex-basis:100%; } .mu-sty .btn { flex-direction:column; gap:2px; padding:4px 2px; font-size:calc(12px * var(--fs, 1)); letter-spacing:.5px; } .mu-sty .btn .ic { width:16px; height:16px; } }
+  /* Oct 17 (Graham): when the box gets narrow the keys wrap onto a second row instead of squishing; each key is a pill */
+  .mu-sty { gap:6px; } .mu-sty > span, .mu-sty .seg { flex-basis:100%; }
+  .mu-sty .seg { flex-wrap:wrap; gap:5px; } .mu-sty .seg > .btn { flex:1 1 84px; border-radius:999px; white-space:nowrap; }
+  @media (max-width: 699px) { .mu-sty { gap:6px; } .mu-sty > span { flex-basis:100%; } .mu-sty .seg { flex-basis:100%; } .mu-sty .seg > .btn { flex-basis:78px; } }
   .mu-np { display:flex; align-items:center; gap:14px; min-width:0; }
   .mu-art { width:88px; height:88px; flex:0 0 auto; border-radius:0 16px 0 16px; overflow:hidden; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(135deg, color-mix(in srgb, var(--pink) 35%, #000), color-mix(in srgb, var(--cyan) 30%, #000)); box-shadow:0 0 0 2px var(--violet), 0 0 22px color-mix(in srgb, var(--violet) 45%, transparent); }
