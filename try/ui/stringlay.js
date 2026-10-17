@@ -259,12 +259,17 @@
   // 🔔 Oct 17: tap when a light's power box beeps: GlowBop logs the moment (beeps.jsonl) and turns that light's power down a notch
   function paintBeep() {
     const box = $('slBeep'), lim = (ST && ST.limits) || []; if (!box) return; box.hidden = !lim.length;
-    $('slBeepNote').innerHTML = lim.map(l => `${esc(l.name)}: power ${Math.round(l.power * 100)}%`).join(' · ') + (lim.length ? ' · each tap turns it down a notch and saves what was happening' : '');
+    $('slBeepNote').innerHTML = lim.map(l => `${esc(l.name)}: power ${Math.round(l.power * 100)}% <a href="#" data-pw="${esc(l.id)}">Reset</a>`).join(' · ') + (lim.length ? '<br>Each tap saves what was happening and turns it down a notch (at most once every 2 minutes).' : '');
+    box.querySelectorAll('[data-pw]').forEach(a => a.onclick = async e => { e.preventDefault(); if (await GB.post('/api/lights/power', {id: a.dataset.pw, power: 0.12})) { GB.toast('↺ Power back to normal (12%)'); load(true); } });
   }
   async function beep() {
     const r = await GB.post('/api/lights/beep', {}); if (!r) return;
-    const t = (r.lights || []).map(l => `${l.name} ${Math.round(l.before * 100)}% → ${Math.round(l.after * 100)}%`).join(', ');
-    GB.toast(t ? '🔔 Got it. Turned it down: ' + t + '. Tap again if it beeps again.' : '🔔 Noted'); GB.sfx && GB.sfx('ok'); load(true);
+    const L = r.lights || [], down = L.filter(l => l.after < l.before);
+    if (down.length) GB.toast('🔔 Got it. Turned it down: ' + down.map(l => `${l.name} ${Math.round(l.before * 100)}% → ${Math.round(l.after * 100)}%`).join(', ') + '. Give it a couple of minutes.');
+    else if (L.some(l => l.floor)) GB.toast('🔔 Noted. It is already as low as it goes (5%). If it still beeps, check the power box and plug.');
+    else if (L.some(l => l.waiting)) GB.toast('🔔 Noted. Already turned down just now, give it a minute. Tap again if it still beeps after that.');
+    else GB.toast('🔔 Noted');
+    GB.sfx && GB.sfx('ok'); load(true);
   }
   function paintUR() { const u = $('slUndo'), r = $('slRedo'); if (u) u.disabled = !HIST.length; if (r) r.disabled = !FUT.length; }
 
