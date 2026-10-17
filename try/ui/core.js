@@ -839,7 +839,10 @@
     const lab = (many ? 18 : 0) + (anyDev ? 16 : 0);
     // 💡 Oct 17: strings with no map (Nanoleaf etc.) show under the wall as live rows of dots, two rows for two strands
     const strips = blocks.flatMap(b => b.strips || []);
-    const stripGeo = s => { const fit = Math.max(8, Math.floor((cssW - 16) / 7));          // aim for dots at least ~7 px apart; wrap into more rows when narrow
+    const foldOf = s => { if (!s.fold) return null; const st = Math.max(1, s.fold.strands | 0), fo = Math.max(1, s.fold.fold | 0), L = Math.ceil(s.n / st);
+      return {R: st * fo, P: Math.ceil(L / fo), at: i => { const k = Math.floor(i / L), j = i % L; return [k * fo + j % fo, Math.floor(j / fo)]; }}; };
+    const stripGeo = s => { const F = foldOf(s); if (F) { const sp = Math.max(2, Math.min(14, (cssW - 16) / F.P)); return {rows: F.R, per: F.P, sp, h: 18 + F.R * sp + 6, F}; }
+      const fit = Math.max(8, Math.floor((cssW - 16) / 7));          // aim for dots at least ~7 px apart; wrap into more rows when narrow
       let rows = s.n >= 100 ? 2 : 1; if (Math.ceil(s.n / rows) > fit) { rows = Math.ceil(s.n / fit); if (s.n >= 100 && rows % 2) rows++; }
       const per = Math.ceil(s.n / rows), sp = Math.max(4, Math.min(14, (cssW - 16) / per)); return {rows, per, sp, h: 18 + rows * sp + 6}; };
     const stripH = strips.reduce((a, s) => a + stripGeo(s).h, 0);
@@ -877,7 +880,7 @@
       const g = stripGeo(s), rgb = hexRGB(s.rgb), x0 = (cssW - g.per * g.sp) / 2, r = Math.max(1, g.sp * 0.38);
       cx.font = "600 12px 'Saira Condensed', system-ui"; cx.textBaseline = 'top'; cx.fillStyle = '#ffcc33'; cx.fillText(s.name.toUpperCase() + ' · ' + s.n + ' BULBS', x0, sy + 3);
       for (let i = 0; i < s.n; i++) {
-        const row = Math.floor(i / g.per), col = i % g.per;     // both strands leave the splitter at the same end
+        const [row, col] = g.F ? g.F.at(i) : [Math.floor(i / g.per), i % g.per];     // folded strings: their real rows; else both strands leave the splitter at the same end
         const px = x0 + col * g.sp + g.sp / 2, py = sy + 18 + row * g.sp + g.sp / 2, c = rgb[i];
         if (!c || c === '000000') { cx.fillStyle = '#16121f'; cx.beginPath(); cx.arc(px, py, r * 0.6, 0, 6.283); cx.fill(); continue; }
         cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, r, 0, 6.283); cx.fill();
