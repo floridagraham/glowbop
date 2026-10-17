@@ -196,7 +196,7 @@
     });
   }
   // ======================================================================= 💥 drop styles + ⭐ star / 💓 heartbeat pads (ported from padfx.py, Oct 16)
-  const DROP_FX = ['supernova', 'starburst', 'heartpop', 'shatter', 'colorbomb', 'rainbowwave', 'bassslam', 'lightning'];
+  const DROP_FX = ['supernova', 'starburst', 'heartpop', 'shatter', 'colorbomb', 'rainbowwave', 'bassslam'];   // ⚡ not a drop any more (Oct 17)
   const NG = (() => { const cx = (W - 1) / 2, cy = (H - 1) / 2, n = W * H, g = {cx, cy, dx: new Float32Array(n), dy: new Float32Array(n), d: new Float32Array(n), ang: new Float32Array(n),
       xx: new Float32Array(n), yy: new Float32Array(n), R: Math.hypot(cx, cy) + 1.5, sq: Math.min(cx, cy) + .5, s: Math.max(1, Math.min(W, H) / 20)};
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const j = y * W + x, dx = x - cx, dy = y - cy; g.dx[j] = dx; g.dy[j] = dy; g.d[j] = Math.hypot(dx, dy); g.ang[j] = Math.atan2(dy, dx); g.xx[j] = x; g.yy[j] = y; }

@@ -128,7 +128,7 @@
                   ['rainbow', '🌈', 'Rainbow'], ['zipper', '↔️', 'Zipper'], ['heartbeat', '💓', 'Heartbeat'], ['star', '⭐', 'Star']];
   // 💥 drop styles: what the wall does when the drop lands (padfx.py DROP_FX; Classic = the plain drop, no extra move)
   const DROPS = [['classic', '🎆', 'Classic'], ['supernova', '🌟', 'Supernova'], ['starburst', '✴️', 'Star burst'], ['heartpop', '💖', 'Heart pop'],
-                 ['shatter', '🪟', 'Shatter'], ['colorbomb', '🎨', 'Color bomb'], ['rainbowwave', '🌈', 'Rainbow wave'], ['bassslam', '🔊', 'Bass slam'], ['lightning', '⚡', 'Lightning']];
+                 ['shatter', '🪟', 'Shatter'], ['colorbomb', '🎨', 'Color bomb'], ['rainbowwave', '🌈', 'Rainbow wave'], ['bassslam', '🔊', 'Bass slam']];   // ⚡ Lightning stays a hit pad, not a drop (Oct 17)
   const BUILD_SECS = 8;                                        // the wind-up peaks after 8 seconds (same as the engine)
   /* 🎲 one picker for builds and drops: One style | My mix (only the ones you tick) | Full random (default).
      Every build / drop picks again, never the same one twice in a row. */
