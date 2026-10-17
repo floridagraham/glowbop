@@ -17,6 +17,12 @@
   .md-off::before { box-shadow:none; opacity:.5; }
   .md-tiles { grid-template-columns:repeat(3, minmax(0, 1fr)) !important; }
   .md-tiles .tile { --c:var(--cyan); }
+  /* Oct 17 (Graham): every holiday key glows in its own colour instead of plain grey */
+  .md-tiles .tile.md-tint { background:linear-gradient(150deg, color-mix(in srgb, var(--ht) 38%, #120d1e) 0%, color-mix(in srgb, var(--ht) 14%, #0d0a16) 70%);
+    box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--ht) 55%, transparent); color:#fff; text-shadow:0 1px 3px #000a; }
+  .md-tiles .tile.md-tint:hover { filter:brightness(1.15); }
+  .md-tiles .tile.md-tint.open { box-shadow:inset 0 0 0 3px #fff, 0 0 18px color-mix(in srgb, var(--ht) 60%, transparent); }
+  .md-tiles .tile.md-tint.on { background:var(--ht); color:#000; text-shadow:0 0 6px #fff8; box-shadow:0 0 22px var(--ht); }
   @media (min-width: 700px) and (max-width: 999px) { .md-tiles { grid-template-columns:repeat(5, minmax(0, 1fr)) !important; } }
   @media (max-width: 480px) { .md-tiles .tile { font-size:calc(12px * var(--fs, 1)); letter-spacing:0; padding:10px 3px; } }
   .md-tiles .tile .md-on { position:absolute; top:6px; right:8px; font:600 calc(10px * var(--fs, 1)) var(--mono); letter-spacing:1px; }
@@ -183,6 +189,7 @@
     if (others.includes(hOpen) || others.includes(hLive)) hMore = true;
     const tile = (k, h) => {
       const b = document.createElement('button'); b.className = 'tile' + (k === hOpen ? ' open' : '') + (k === hLive ? ' on' : '');
+      const tc = GB.funTint && GB.funTint(k); if (tc) { b.classList.add('md-tint'); b.style.setProperty('--ht', tc); }
       b.innerHTML = `<span class="em">${GB.funIcon(k) || esc(h.emoji)}</span><span>${esc(hName(k))}</span>` + (k === hLive ? '<span class="md-on">● ON</span>' : '');
       b.setAttribute('aria-pressed', k === hOpen ? 'true' : 'false');
       b.onclick = () => { hOpen = hOpen === k ? null : k; renderHolidays(); };

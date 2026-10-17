@@ -129,6 +129,10 @@
     sfx_crystal: `<path d="M12 6h24l9 12-21 26L3 18z" fill="#7ae6ff"/><path d="M12 6l6 12h12l6-12zM3 18h15l6 26zM45 18H30l-6 26z" fill="#33b8ff"/><path d="M18 18h12l-6 26z" fill="#c8f4ff"/><path d="M18 18l6-12 6 12z" fill="#e6fbff"/>
       ${star(40, 6, 3.4, 1.1, '#fff')}${star(6, 34, 2.4, .9, '#ff9ad0')}`,
   };
+  // each holiday's own colour, for tinting its key (so the keys aren't plain grey)
+  GB.funTint = k => ({christmas: '#14c94a', halloween: '#ff7a00', july4: '#3d6bff', valentine: '#ff1a59', newyear: '#ffcc40', thanksgiving: '#ff8a1a', stpatricks: '#22c64a',
+    birthday: '#ff3d9a', gameday: '#c8632a', lunarnewyear: '#ff1a1a', diwali: '#ff8a1a', eid: '#00b3a6', hanukkah: '#3d78ff', holi: '#ff1a99', dayofthedead: '#ff7a00',
+    canadaday: '#ff1a1a', australiaday: '#00cc40', bastille: '#3d6bff', kingsday: '#ff8a1a', bonfire: '#ff3d1a', carnival: '#8c1ad9', mothersday: '#ff4d8c', easter: '#ff9ad0'})[k] || '';
   GB.funIcon = k => I[k] ? `<svg class="fi" viewBox="0 0 48 48" aria-hidden="true">${I[k]}</svg>` : '';
   GB.css(`.tile .em .fi, .md-hh .em .fi { width:1.45em; height:1.45em; display:block; overflow:visible; filter:drop-shadow(0 0 4px rgba(255,255,255,.25)) drop-shadow(0 0 10px color-mix(in srgb, var(--c, #ff3d9a) 45%, transparent)); }
     .tile.on .em .fi { filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px var(--c, #ff3d9a)); }`);
