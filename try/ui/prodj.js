@@ -41,7 +41,7 @@
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+5) { --c:#cc99ff !important; }
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+6) { --c:#4de8c8 !important; }
   html.prodj #pg-dj > .panel.box { box-shadow:inset 0 0 0 1px #4de8c822; }
-  #rail #pdTab { background:#ff3d9a; }   /* GlowBop pink */
+  #rail #pdTab { background:#ff3d7a; }   /* sunset pink (between SHOWS orange and LOOPS+CUES magenta) */
   #rail .rail-sep[data-g=pro], #rail button[data-p=pro] { display:none !important; }   /* the PRO DJ / PRO HOME tabs say it; no label row, no tour key */
   #rail button.locked { position:relative; box-shadow:none !important; }   /* Oct 16 night: locked Pro tabs keep their full colour and wear a gold lock badge */
   #rail button.locked::after { content:'🔒 PRO'; position:absolute; top:5px; right:6px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }

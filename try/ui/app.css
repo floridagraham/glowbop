@@ -366,3 +366,6 @@ html.door-dj .pt-buy { background:linear-gradient(160deg, #ffd0ea, #ff3d9a 45%, 
 .pt-art { position:absolute; right:14px; bottom:10px; width:min(34%, 240px); opacity:.9; pointer-events:none; } .pt-art svg { width:100%; height:auto; display:block; }
 #proTour .pt-cta, #proTour .pt-h { position:relative; z-index:1; max-width:calc(100% - min(36%, 250px)); }
 @media (max-width:699px) { .pt-art { display:none; } #proTour .pt-cta, #proTour .pt-h { max-width:none; } }
+
+/* Oct 16 night: the deep tabs in the warm & cool rail get white words */
+/* (Graham: black words on every tab; the deep ones were lifted a shade so black reads well) */
