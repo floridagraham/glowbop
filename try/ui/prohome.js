@@ -204,7 +204,7 @@
   function headerKey() {
     const old = $('phHd'); if (old) old.remove();
     const b = document.querySelector('#rail button[data-p=home]'); if (!b) return;
-    const after = $('pdTab') || document.querySelector('#rail .rail-sep[data-g=pro]');
+    const after = document.querySelector('#rail .rail-sep[data-g=pro]');   // PRO HOME leads the Pro tabs (PRO DJ moved down above LOOPS+CUES)
     if (after && after.nextElementSibling !== b) after.after(b);
     b.hidden = GB.pro == null; b.classList.toggle('locked', GB.pro === false);
     b.onclick = () => { if (GB.pro !== true) { GB.proLockedTap ? GB.proLockedTap(b, 'Pro Home') : GB.go('pro'); return; } GB.go('home'); };

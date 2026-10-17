@@ -127,8 +127,8 @@
         if (GB.page !== 'dj') GB.go('dj');
         if (!isOn()) setOn(true, true); else paintTabs();
       }; }
-    const sep = rail.querySelector('.rail-sep[data-g=pro]');
-    if (sep && sep.nextElementSibling !== b) sep.after(b);
+    const lc = rail.querySelector('button[data-p=autoloops]'), sep = rail.querySelector('.rail-sep[data-g=pro]');   // Oct 16: PRO DJ sits right above LOOPS+CUES
+    if (lc) { if (lc.previousElementSibling !== b) lc.before(b); } else if (sep && sep.nextElementSibling !== b) sep.after(b);
     b.hidden = GB.pro == null; b.classList.toggle('locked', GB.pro === false);
     paintTabs();
   }
