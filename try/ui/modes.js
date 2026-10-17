@@ -79,7 +79,7 @@
   .md-livebtn { appearance:none; border:0; background:color-mix(in srgb, currentColor 14%, transparent); color:var(--c, var(--green)); border-radius:999px; min-height:32px; padding:0 12px; cursor:pointer;
     font:700 calc(12px * var(--fs, 1))/1 var(--mono); letter-spacing:1px; }
   .md-livebtn:not(.md-off) { color:var(--green); }
-  .md-more { border-top:2px solid var(--line); padding-top:4px; }
+  .md-more { border-top:2px solid var(--line); padding-top:10px; }
   .md-more > summary { min-height:48px; }
   .md-morein { display:flex; flex-direction:column; gap:10px; padding-bottom:4px; }
   .md-lgwarn { color:var(--gold); }
@@ -409,7 +409,8 @@
     return sendText(b, none ? '✨ No picture yet, so here is the GlowBop logo' : v === 'both' ? '🔁 Text and logo take turns every 8 bars' : '🖼️ Logo on the wall');
   }
   const liveBtn = id => `<button type="button" class="md-live md-off md-livebtn" id="${id}" aria-label="Turn on or off">OFF</button>`;
-  const more = (id, inner) => `<details class="md-more" id="${id}"><summary>More options</summary><div class="md-morein">${inner}</div></details>`;
+  // Oct 17 (Graham): no 'More options' to tap; the extra settings are simply always showing
+  const more = (id, inner) => `<div class="md-more" id="${id}"><div class="md-morein">${inner}</div></div>`;
   const keepOpen = el => el.querySelectorAll('details.md-more').forEach(d => { try { d.open = localStorage.getItem('gb_' + d.id) === '1'; } catch (e) {}
     d.addEventListener('toggle', () => { try { localStorage.setItem('gb_' + d.id, d.open ? '1' : '0'); } catch (e) {} }); });
 
