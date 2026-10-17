@@ -46,6 +46,7 @@
   #rail button.locked { position:relative; box-shadow:none !important; }   /* Oct 16 night: locked Pro tabs keep their full colour and wear a gold lock badge */
   #rail button.locked::after { content:'🔒 PRO'; position:absolute; top:5px; right:6px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
   #rail button.nope { animation:pdNope .35s ease; } @keyframes pdNope { 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
+  #rail button.tease { animation:pdTease .7s ease; } @keyframes pdTease { 0% { box-shadow:0 0 0 0 #ffd21a; } 40% { box-shadow:0 0 22px 6px #ffd21a; filter:brightness(1.35); } 100% { box-shadow:0 0 0 0 #ffd21a00; } }
   /* ---- Pro DJ is a tighter console: smaller paddings and keys so more fits on one screen */
   html.prodj #pg-dj > .panel.box { padding:8px 10px 10px; gap:8px; }
   html.prodj #djBuild { min-height:64px; font-size:calc(20px * var(--fs, 1)); }
@@ -139,8 +140,8 @@
     if (t) t.classList.toggle('on', on); if (dj) dj.classList.toggle('on', GB.page === 'dj' && !on);
   }
   function lockedTap(b, name) {
-    GB.sfx && GB.sfx('err'); b.classList.remove('nope'); void b.offsetWidth; b.classList.add('nope');
-    GB.toast && GB.toast('🔒 ' + name + ' is part of GlowBop Pro');
+    proSound('tease'); b.classList.remove('tease'); void b.offsetWidth; b.classList.add('tease');
+    GB.toast && GB.toast('✨ ' + name + ' comes with GlowBop Pro. Take a peek!');
     GB.proDoor = /home/i.test(name) ? 'home' : 'dj'; setTimeout(() => GB.go('pro'), 700);
   }
   GB.proLockedTap = lockedTap;
@@ -188,7 +189,10 @@
       const env = (g, a, peak, d, at) => { g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + a); g.gain.exponentialRampToValueAtTime(0.0001, at + a + d); };
       const osc = (type, f, at, dur, peak, a, dest) => { const o = C.createOscillator(), g = C.createGain(); o.type = type; o.frequency.setValueAtTime(f, at);
         env(g, a, peak, dur, at); o.connect(g); g.connect(dest || out); o.start(at); o.stop(at + a + dur + 0.05); return o; };
-      if (on) {
+      if (on === 'tease') {   // ✨ a locked Pro key: a bright, curious "ooh, what's that?" (Oct 16 night, Graham: make them want it)
+        [783.99, 987.77, 1174.66, 1567.98, 1975.53].forEach((f, i) => { osc('triangle', f, t + i * 0.055, 0.32, 0.12, 0.006); osc('sine', f * 2, t + i * 0.055, 0.18, 0.03, 0.004); });   // rising sparkle run
+        [1318.5, 1567.98, 1975.53].forEach(f => osc('sine', f, t + 0.3, 0.7, 0.05, 0.03));   // shimmering open chord that hangs in the air
+      } else if (on) {
         const k = osc('sine', 90, t, 0.35, 0.9, 0.005); k.frequency.exponentialRampToValueAtTime(42, t + 0.3);          // thump
         const lp = C.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 9; lp.frequency.setValueAtTime(300, t); lp.frequency.exponentialRampToValueAtTime(5200, t + 0.62); lp.connect(out);
         [0, 7].forEach(dt => { const sw = osc('sawtooth', 110, t + 0.04, 0.55, 0.22, 0.12, lp); sw.detune.value = dt * 2; sw.frequency.exponentialRampToValueAtTime(880, t + 0.64); });   // the rise
@@ -536,16 +540,16 @@
   });
   document.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('#suEach');
-    if (b && GB.pro === false) { e.stopPropagation(); e.preventDefault(); GB.sfx && GB.sfx('err'); GB.toast('🔒 Each group running its own show is part of Pro. Home DJ plays all your lights together.'); }
+    if (b && GB.pro === false) { e.stopPropagation(); e.preventDefault(); proSound('tease'); GB.toast('✨ Each group running its own show comes with Pro. Home DJ plays all your lights together.'); }
   }, true);
   try { const wb = $('wallBox'); if (wb) { let rq = 0; new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => GB.redrawWall && GB.redrawWall()); }).observe(wb); } } catch (e) {}
   // a tidy template grows with its boxes: when one fills up (a list loaded, a card opened), the template refits itself
   let fitT = 0, fits = [];
-  const fit = () => { clearTimeout(fitT); fitT = setTimeout(() => { if (!cur || arranging || document.hidden || !['1', '2'].includes(S.get(store(cur.key) + ':auto'))) return;
+  const fit = () => { clearTimeout(fitT); fitT = setTimeout(() => { if (!cur || arranging || document.hidden) return;
     const full = [...document.querySelectorAll('#main .lay-it')].filter(el => el.dataset.lk !== 'v:wall' && el.scrollHeight > el.clientHeight + 12); if (!full.length) return;
     const now = Date.now(); fits = fits.filter(t => now - t < 20000); if (fits.length >= 4) return;   // never chase a box that can't settle
     fits.push(now);
-    if (S.get(store(cur.key) + ':auto') === '2') {   // a shipped arrangement keeps its places; a box that filled up just grows
+    if (S.get(store(cur.key) + ':auto') !== '1') {   // your own (or a shipped) arrangement keeps its places; a box that's cut off on this screen just grows to fit
       full.forEach(el => { const p = cur.L[el.dataset.lk]; if (p) p.h += Math.ceil((el.scrollHeight - el.clientHeight) / ROW) + 1; });
       full.forEach(el => settle(cur.L, el.dataset.lk)); save(cur.key, cur.L); layout(); return; }
     recompact(); }, 300); };

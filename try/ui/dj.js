@@ -71,7 +71,7 @@
   // ⚡ instant by default: a pad fires the moment your finger touches it. Snap to beat (switch) holds it for the next beat.
   const snap = () => GB.store.get('gb_dj_snap', '0') === '1';
   async function hit(k, src) {
-    if (GB.pro === false && PRO_PADS.includes(k)) { GB.sfx('err'); GB.toast('🔒 ' + PADS.find(p => p[0] === k)[2] + ' is a Pro hit pad. Upgrade to Pro to unlock all 13.'); return; }
+    if (GB.pro === false && PRO_PADS.includes(k)) { GB.proSound ? GB.proSound('tease') : GB.sfx('ok'); GB.toast('✨ ' + PADS.find(p => p[0] === k)[2] + ' is a Pro hit pad. Pro unlocks all 13!'); return; }
     const st = (GB.status || {}).dj || {};
     document.querySelectorAll(`.dj-pads [data-k="${k}"]`).forEach(b => { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); });
     if (k === 'blackout') { const on = !st.blackout; if (await dj({hit: 'blackout', on})) GB.toast(on ? '⬛ Blackout (tap again to bring it back)' : '💡 Lights back'); }
