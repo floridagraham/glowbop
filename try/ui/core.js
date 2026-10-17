@@ -323,7 +323,7 @@
       CUBE.map((c, i) => `<span class="hdf" data-i="${i}" style="--fb:${c.bg};--ff:${c.fg};--n:${i}">${GB.esc(txt)}</span>`).join('') + '</span>';
     // 🎲 Oct 17 (Graham): a different move every time. 1, 2, 3 or 4 sides forward or backward (8 ways), plus a few tricks:
     //   tease (starts to go, snaps back, goes the other way), ratchet (tick tick tick), whirl (a spin and a half with a big bounce),
-    //   knock (a little jiggle, then it turns). The side it lands on gets the next announcement picture every other move.
+    //   knock (a little jiggle, then it turns), wild (winds up and whips around 5+ times). The side it lands on gets the next announcement picture every other move.
     const cube = () => b.querySelector('.hdcube');
     const go = (n, ms, ease) => { const c = cube(); if (!c) return; c.style.transition = 'transform ' + ms + 'ms ' + (ease || 'cubic-bezier(.45,-0.35,.25,1.4)'); GB.hdCube.show(n); };
     const raw = (deg, ms, ease) => { const c = cube(); if (!c) return; c.style.transition = 'transform ' + ms + 'ms ' + ease; c.style.setProperty('--rx', deg + 'deg'); };
@@ -335,6 +335,11 @@
       {w: 1, run: n0 => { const d = Math.random() < .5 ? 1 : -1; go(n0 + 6 * d, 2000, 'cubic-bezier(.2,.9,.25,1.25)'); return n0 + 6 * d; }},
       {w: 1, run: n0 => { [8, -6, 4, -2, 0].forEach((a, i) => setTimeout(() => raw(-90 * n0 + a, 90, 'ease-in-out'), i * 95));
         const d = Math.random() < .5 ? 1 : -1; setTimeout(() => go(n0 + d, 900), 560); return n0 + d; }},
+      // 🌪️ WILD (Graham: "a real spinning one"): winds up, then whips around 5+ times with a glow and motion blur, and slams to a stop
+      {w: 1, run: n0 => { const d = Math.random() < .5 ? 1 : -1, q = 20 + ((Math.random() * 4) | 0), n = n0 + q * d;
+        raw(-90 * n0 + 24 * d, 300, 'cubic-bezier(.3,0,.3,1)');
+        setTimeout(() => { b.classList.add('wild'); go(n, 3400, 'cubic-bezier(.55,0,.12,1)'); }, 320);
+        setTimeout(() => b.classList.remove('wild'), 3300); return n; }},
     ];
     const pickMove = () => { const tot = MOVES.reduce((a, m) => a + m.w, 0); let r = Math.random() * tot; return MOVES.find(m => (r -= m.w) < 0) || MOVES[0]; };
     let turns = 0;
@@ -389,7 +394,11 @@
       joke: 'Every holiday is safe. Your lights are still free.'},
   ];
   let eggLast = -1;
-  document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('#gbLogo, #hd .elbow'))) return; if (document.getElementById('gbEgg')) return; egg(); });
+  // 🚫 never on the working pages, where a DJ could hit the logo by accident mid-show (Graham, Oct 17):
+  //   Pro Home, Pro DJ, Shows, Loops+Cues, Cues, Live Board, Override and Live
+  const NO_EGG = ['home', 'shows', 'autoloops', 'cues', 'board', 'ops', 'feeds'];
+  const eggOff = () => NO_EGG.includes(GB.page) || (GB.page === 'dj' && document.documentElement.classList.contains('prodj'));
+  document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('#gbLogo, #hd .elbow'))) return; if (eggOff() || document.getElementById('gbEgg')) return; egg(); });
   function egg() {
     let pick = (Math.random() * EGGS.length) | 0; if (pick === eggLast) pick = (pick + 1 + ((Math.random() * (EGGS.length - 1)) | 0)) % EGGS.length; eggLast = pick;
     const V = EGGS[pick];
@@ -414,7 +423,7 @@
       if (k < 1) requestAnimationFrame(tick); else done(); };
     const NEED = 5; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
-      tt.textContent = 'JUST KIDDING 😎'; fl.textContent = V.joke; pct.textContent = ''; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
+      tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = ''; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
       dots.forEach((n, i) => setTimeout(() => { if (n.dataset.ef) n.setAttribute('fill', n.dataset.ef); n.dataset.l = '1'; }, i * 30));
       keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
@@ -452,6 +461,7 @@
     /* 🎄 holiday: gold and green, a candy-cane bar */
     #gbEgg.eg-holiday .eg-bar i { background:repeating-linear-gradient(45deg, #ff2a4d 0 10px, #ffffff 10px 20px); box-shadow:0 0 12px #ffcc33; }
     #gbEgg.eg-joke .eg-card { border-color:#33d6ff; border-image:none; border-radius:16px; border-style:solid; border-width:2px; filter:none; animation:none; box-shadow:0 0 50px -6px #ff3d9a, 0 0 30px -10px #33d6ff; } #gbEgg.eg-joke .eg-t { color:#fff; font-family:var(--cond); text-shadow:0 0 18px #ff3d9a, 0 0 30px #33d6ff; }
+    #gbEgg.eg-joke .eg-t { font-size:clamp(44px, 10vw, 84px); letter-spacing:5px; animation:egPop .5s cubic-bezier(.2,1.6,.4,1); } @keyframes egPop { from { transform:scale(.3); opacity:0; } }
     #gbEgg.eg-joke .eg-bar { display:none; } #gbEgg.eg-joke { background:rgba(0,0,0,0); }
     #gbEgg.eg-out { opacity:0; transition:opacity .5s; }
     .eg-gone { opacity:0 !important; transform:scale(.85) !important; filter:blur(3px) brightness(2) !important; transition:opacity .25s, transform .25s, filter .25s !important; }
