@@ -428,7 +428,6 @@ html.door-dj .pt-buy { background:linear-gradient(160deg, #ffd0ea, #ff3d9a 45%, 
 }
 
 /* ⬇️ Oct 17 (Graham): the rail stops above the bottom bar, so the bar's rounded corner never sits over SETUP / ARRANGE */
-#rail { padding-bottom:46px; }
-@media (max-width: 699px), (max-height: 500px) and (orientation: landscape) { #rail { padding-bottom:36px; } }
+#rail { overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }   /* height set by core.js fitRail(): it fits between the header and the bottom bar */
 #rail #railArr { opacity:1; }
 @media (max-width: 699px) { #rail #railArr > .ic, #rail #railArr > svg { display:none; } }

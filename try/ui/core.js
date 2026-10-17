@@ -404,6 +404,13 @@
       host.appendChild(pg); mount(p, pg);
     });
     const tail = document.createElement('div'); tail.className = 'tail'; rail.appendChild(tail);
+    // 📏 Oct 17 (Graham): the rail always fits the part of the screen you can see (below the header, above the bottom bar),
+    // so its own scroll reaches SETUP / ARRANGE without dragging the whole page along.
+    let fitQ = 0;
+    const fitRail = () => { fitQ = 0; const hd = $('hd'), ft = $('ft'); const top = Math.max(0, hd ? hd.getBoundingClientRect().bottom : 0);
+      const bot = Math.min(innerHeight, ft ? ft.getBoundingClientRect().top : innerHeight); rail.style.height = Math.max(120, bot - top) + 'px'; };
+    const askFit = () => { if (!fitQ) fitQ = requestAnimationFrame(fitRail); };
+    addEventListener('scroll', askFit, {passive: true}); addEventListener('resize', askFit); fitRail(); setTimeout(fitRail, 300);
   }
 
   // 🎃 seasonal: when one of your holidays is on or within 10 days, HOLIDAY moves up next to LOOKS (back to its spot after)
