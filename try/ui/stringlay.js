@@ -304,13 +304,20 @@
   function onMenu(e) {
     e.preventDefault(); hideMenu();
     const [x, y] = toWorld(e), stage = $('slStage'), sr = stage.getBoundingClientRect(), items = [];
-    const h = e.target.closest && e.target.closest('.h'), c = e.target.closest && e.target.closest('.c'), lay = LAY[sel];
+    const h = e.target.closest && e.target.closest('.h');
+    let c = e.target.closest && e.target.closest('.c');
+    if (!h) {                                       // 👆 on (or right next to) a string: pick it first, so "Add a bend here" is right there
+      let best = null; const lim = Math.max(0.8, (view ? Math.min(view.w, view.h) : 20) / 25) ** 2;
+      strings().forEach(d => { const L = LAY[d.id]; if (!L) return; layPoints(d, L).forEach((pts, k) => pts.forEach(([px, py]) => { const q = (px - x) ** 2 + (py - y) ** 2; if (q < lim && (!best || q < best.q)) best = {id: d.id, k, q}; })); });
+      if (best) { c = null; if (sel !== best.id || strand !== best.k) { sel = best.id; strand = best.k; paintTop(); draw(); } }
+    }
+    const lay = LAY[sel];
     if (h && lay) { const k = +h.dataset.s, i = +h.dataset.p, pp = lay.parts[k].pts; strand = k;
       if (i > 0 && i < pp.length - 1) items.push(['✖ Remove this bend', () => { pp.splice(i, 1); change(); }]);
       else items.push(['⇄ Flip this strand', () => { lay.parts[k].rev = !lay.parts[k].rev; change(); }]); }
     else if (c) { const id = c.dataset.id; if (sel !== id) { sel = id; paintTop(); draw(); }
       items.push(['↻ Turn 90°', () => turn('rot')], ['⇋ Mirror', () => turn('flip')]); }
-    else if (lay) { const ns = nearestSeg(lay, x, y);
+    else if (lay && dev(sel) && dev(sel).kind === 'string') { const ns = nearestSeg(lay, x, y);
       if (ns) items.push(['＋ Add a bend here', () => { strand = ns.k; lay.parts[ns.k].pts.splice(ns.i, 0, [snap(x), snap(y)]); $('slHint').textContent = 'Bend added: drag it into place'; change(); }]);
       else items.push(['Folded strands bend at their ends only', null]); }
     if (items.length) items.push(null);
