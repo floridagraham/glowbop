@@ -254,6 +254,16 @@
     Object.keys(LAY).forEach(id => dirty[id] = true); Object.keys(MOVE).forEach(id => dirty[id] = true); draw(); paintUR(); }
   function undo() { if (!HIST.length) return GB.toast('Nothing to undo'); FUT.push(LAST); restore(HIST.pop()); GB.toast('↶ Undone'); }
   function redo() { if (!FUT.length) return GB.toast('Nothing to redo'); HIST.push(LAST); restore(FUT.pop()); GB.toast('↷ Redone'); }
+  // 🔔 Oct 17: tap when a light's power box beeps: GlowBop logs the moment (beeps.jsonl) and turns that light's power down a notch
+  function paintBeep() {
+    const box = $('slBeep'), lim = (ST && ST.limits) || []; if (!box) return; box.hidden = !lim.length;
+    $('slBeepNote').innerHTML = lim.map(l => `${esc(l.name)}: power ${Math.round(l.power * 100)}%`).join(' · ') + (lim.length ? ' · each tap turns it down a notch and saves what was happening' : '');
+  }
+  async function beep() {
+    const r = await GB.post('/api/lights/beep', {}); if (!r) return;
+    const t = (r.lights || []).map(l => `${l.name} ${Math.round(l.before * 100)}% → ${Math.round(l.after * 100)}%`).join(', ');
+    GB.toast(t ? '🔔 Got it. Turned it down: ' + t + '. Tap again if it beeps again.' : '🔔 Noted'); GB.sfx && GB.sfx('ok'); load(true);
+  }
   function paintUR() { const u = $('slUndo'), r = $('slRedo'); if (u) u.disabled = !HIST.length; if (r) r.disabled = !FUT.length; }
 
   // ---------------- dragging handles
@@ -388,7 +398,7 @@
     strings().forEach(d => { if (!dirty[d.id]) LAY[d.id] = fromSaved(d) || fresh(d, d.n >= 200 ? 2 : 1); });
     Object.keys(MOVE).forEach(id => { if (!dirty[id]) delete MOVE[id]; });
     if (!keepView) view = null;
-    LAST = stateNow(); paintUR();
+    LAST = stateNow(); paintUR(); paintBeep();
     paintTop(); draw();
   }
   async function placeCurtain(d, extra) {          // ▦ save where a curtain hangs (its top-left), plus a turn / mirror
@@ -423,7 +433,7 @@
       <div class="sl-stage" id="slStage"><svg id="slSvg" aria-label="Your lights, laid out"></svg></div>
       <div class="sl-hint" id="slHint"></div>
       <button class="btn c wide sl-go" id="slBig" style="--c:var(--cyan)">✏️ Customize full screen</button>
-      <div class="sl-side"><div class="sl-row" id="slUR"><b>Steps</b><div class="seg"><button class="btn" id="slUndo" disabled>↶ Undo</button><button class="btn" id="slRedo" disabled>↷ Redo</button></div></div><div id="slCurt" hidden>
+      <div class="sl-side"><div id="slBeep" hidden><button class="btn c wide" id="slBeepGo" style="--c:var(--amber)">🔔 My lights are beeping</button><p class="note" id="slBeepNote" style="margin:4px 0 0"></p></div><div class="sl-row" id="slUR"><b>Steps</b><div class="seg"><button class="btn" id="slUndo" disabled>↶ Undo</button><button class="btn" id="slRedo" disabled>↷ Redo</button></div></div><div id="slCurt" hidden>
         <p class="note">Drag the curtain to where it hangs. Turn or mirror it if its lights run another way.</p>
         <div class="sl-tools"><button class="btn" id="slRot">↻ Turn 90°</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
       </div><div id="slTools">
@@ -503,6 +513,7 @@
     el.querySelector('#slUnpin').onclick = () => { const lay = LAY[sel]; if (!lay) return; delete lay.parts[strand].pins; GB.toast('↺ Every bulb back on its line'); change(); };
     el.querySelector('#slFlip').onclick = () => { const lay = LAY[sel]; if (!lay) return; lay.parts[strand].rev = !lay.parts[strand].rev; GB.toast('⇄ START and END swapped'); change(); };
     el.querySelector('#slReset').onclick = () => { const d = dev(sel); if (!d) return; LAY[sel] = fresh(d, (LAY[sel] && LAY[sel].parts.length) || 1); strand = 0; view = null; change(); };
+    el.querySelector('#slBeepGo').onclick = beep;
     el.querySelector('#slUndo').onclick = undo; el.querySelector('#slRedo').onclick = redo;
     window.addEventListener('keydown', e => {                       // ⌨️ Ctrl/⌘+Z undo, Ctrl/⌘+Shift+Z or Ctrl+Y redo (LIGHTS page only, not while typing)
       if (GB.page !== 'lights' || !(e.ctrlKey || e.metaKey) || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName))) return;
