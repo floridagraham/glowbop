@@ -500,7 +500,7 @@
     @container sfxbox (min-width:360px){#sfxStyles{grid-template-columns:repeat(4,minmax(0,1fr))}}
     @container sfxbox (min-width:600px){#sfxStyles{grid-template-columns:repeat(6,minmax(0,1fr))}}
     #sfxStyles .tile{min-width:0;min-height:76px;padding:8px 4px;font-size:calc(12.5px * var(--fs, 1));letter-spacing:.5px;overflow-wrap:break-word}
-    #sfxStyles .tile .em{font-size:calc(24px * var(--fs, 1));white-space:nowrap;letter-spacing:-.1em}`);
+    #sfxStyles .tile .em{font-size:calc(24px * var(--fs, 1));white-space:nowrap;letter-spacing:-.1em} #sfxStyles .tile .em .fi{width:1.5em;height:1.5em}`);
   GB.panel('setup', 56, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
     el.innerHTML = `<div class="ph"><span>Console sounds</span><span class="r" id="sfxNow"></span></div>
@@ -521,7 +521,7 @@
     el.querySelectorAll('#sfxMode .btn').forEach(b => b.onclick = () => { GB.store.set('gb_sfx_mode', b.dataset.m); paint(); });
     GB.SFX_STYLES.forEach(([k, name, em]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.s = k; b.style.setProperty('--c', 'var(--lav)');
-      b.innerHTML = `<span class="em">${em}</span>${name}`;
+      b.innerHTML = `<span class="em">${GB.funIcon('sfx_' + k) || em}</span>${name}`;
       b.onclick = () => {
         const m = mode();
         if (m === 'mix') { let p = pool().slice(); p = p.includes(k) ? p.filter(x => x !== k) : p.concat(k); if (!p.length) p = [k]; GB.store.set('gb_sfx_pool', JSON.stringify(p)); }

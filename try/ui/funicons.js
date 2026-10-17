@@ -86,6 +86,48 @@
       <path d="M41 11h5l-1 6h-4z" fill="#cff6ff"/><path d="M7 5H2l1 6h4z" fill="#ffd1e8"/>`,
     GameOfLife: px(['.........', '..a......', '...a.....', '.aaa.....', '.....bb..', '.....bb..', '..c...ddd', '..c......', '..c......'], {a: '#ffcc33', b: '#2bd96b', c: '#33d6ff', d: '#ff3d9a'}, 5, 1.5, 1.5) +
       `<rect x="11.5" y="6.5" width="5" height="5" fill="none" stroke="#ffcc3355" stroke-width="1"/>`,
+
+    // ---------------------------------------------------------------- console sound styles (SETUP → Console sounds)
+    sfx_console: `<rect x="3" y="8" width="42" height="32" rx="6" fill="#1c1430"/><path d="M3 18V14a6 6 0 0 1 6-6h10v10z" fill="#ff9a3d"/><rect x="21" y="8" width="24" height="4" rx="2" fill="#cc99ff"/>
+      <rect x="3" y="20" width="16" height="6" rx="1.5" fill="#ff6aa8"/><rect x="3" y="28" width="16" height="11" rx="1.5" fill="#9b8cff"/>
+      ${[[22, '#33d6ff'], [27, '#ffcc33'], [32, '#ff6aa8']].map(([y, c], i) => `<rect x="${23 + i * 3}" y="${y - 6}" width="${18 - i * 6}" height="3.4" rx="1.7" fill="${c}"/>`).join('')}
+      <circle cx="26" cy="33" r="2.2" fill="#ff2a4d"/><circle cx="33" cy="33" r="2.2" fill="#2bd96b"/><circle cx="40" cy="33" r="2.2" fill="#ffcc33"/>`,
+    sfx_computer: `<rect x="5" y="6" width="38" height="28" rx="4" fill="#9b8cff"/><rect x="9" y="10" width="30" height="20" rx="2" fill="#0a1a12"/>
+      <path d="M12 15h10M12 19h16M12 23h7" stroke="#2bff7a" stroke-width="2" stroke-linecap="round"/><rect x="21" y="22" width="3" height="3" fill="#2bff7a"/>
+      <path d="M18 34h12l2 6H16z" fill="#7a6ad9"/><rect x="10" y="40" width="28" height="4" rx="2" fill="#cfc6ff"/>`,
+    sfx_arcade: `<rect x="6" y="28" width="36" height="14" rx="4" fill="#ff3d9a"/><rect x="6" y="38" width="36" height="5" rx="2" fill="#b3236b"/>
+      <path d="M17 29V14" stroke="#cfd6e6" stroke-width="3" stroke-linecap="round"/><circle cx="17" cy="11" r="6" fill="#ff2a2a"/><circle cx="15" cy="9" r="1.8" fill="#fff9"/>
+      <circle cx="30" cy="33" r="3.2" fill="#33d6ff"/><circle cx="38" cy="31" r="3.2" fill="#ffcc33"/><ellipse cx="17" cy="30" rx="5" ry="2" fill="#1c1430"/>`,
+    sfx_bubble: `<circle cx="18" cy="28" r="13" fill="#33d6ff33" stroke="#33d6ff" stroke-width="2.4"/><circle cx="34" cy="14" r="8" fill="#ff3d9a33" stroke="#ff3d9a" stroke-width="2.2"/>
+      <circle cx="37" cy="34" r="5" fill="#9b3dff33" stroke="#b98cff" stroke-width="2"/><path d="M11 22a8 8 0 0 1 6-5" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M30 10a4 4 0 0 1 3-2" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
+    sfx_galaxy: `${star(8, 9, 2, .8, '#fff')}${star(40, 38, 2, .8, '#fff')}<circle cx="38" cy="10" r="1.2" fill="#ffcc33"/><circle cx="7" cy="34" r="1" fill="#33d6ff"/>
+      <g transform="rotate(45 24 24)"><path d="M24 4c6 5 8 12 7 22H17c-1-10 1-17 7-22z" fill="#e6ecff"/><circle cx="24" cy="15" r="3.4" fill="#33d6ff"/><path d="M17 20l-6 9v4l6-3zM31 20l6 9v4l-6-3z" fill="#ff3d9a"/>
+      <path d="M19 27h10l-2 4h-6z" fill="#9b8cff"/><path d="M21 31c0 6 3 10 3 12 0-2 3-6 3-12z" fill="#ff9a1a"/><path d="M22.5 31c0 4 1.5 6 1.5 7 0-1 1.5-3 1.5-7z" fill="#ffe14d"/></g>`,
+    sfx_wasteland: `<rect x="4" y="5" width="40" height="34" rx="6" fill="#2a2008"/><rect x="8" y="9" width="32" height="26" rx="3" fill="#0c0a02" stroke="#ffb31a" stroke-width="1.6"/>
+      <path d="M12 15h12M12 19h18M12 23h9" stroke="#ffb31a" stroke-width="2" stroke-linecap="round"/><path d="M12 29h4" stroke="#ffb31a" stroke-width="2.4" stroke-linecap="round"/>
+      ${[0, 120, 240].map(r => `<path transform="rotate(${r} 33 26)" d="M33 26l-3.4-5.8a6.7 6.7 0 0 1 6.8 0z" fill="#ffcc33"/>`).join('')}<circle cx="33" cy="26" r="1.4" fill="#ffcc33"/>
+      <rect x="14" y="39" width="20" height="5" rx="1.5" fill="#6b5414"/>`,
+    sfx_synthwave: `<defs><linearGradient id="fiSun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe14d"/><stop offset="1" stop-color="#ff3d9a"/></linearGradient><clipPath id="fiSunC"><rect x="0" y="0" width="48" height="26"/></clipPath></defs>
+      <circle cx="24" cy="24" r="14" fill="url(#fiSun)" clip-path="url(#fiSunC)"/><path d="M10 17h28M10 21h28" stroke="#1c0a2a" stroke-width="1.6"/>
+      <path d="M2 26h44" stroke="#33d6ff" stroke-width="2"/><path d="M24 26L4 46M24 26 14 46M24 26v20M24 26l10 20M24 26l20 20M8 32h32M4 39h40M1 46h46" stroke="#b33dff" stroke-width="1.4"/>`,
+    sfx_magic: `<path d="M8 42 30 20" stroke="#9b3dff" stroke-width="4" stroke-linecap="round"/><path d="M26 24l4-4" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+      ${star(34, 14, 7, 2.8, '#ffcc33')}${star(16, 10, 3.4, 1.3, '#ff3d9a')}${star(42, 30, 3, 1.2, '#33d6ff')}${star(26, 6, 2, .8, '#fff')}<circle cx="38" cy="5" r="1.2" fill="#fff"/><circle cx="12" cy="22" r="1" fill="#ffcc33"/>`,
+    sfx_spooky: `<path d="M10 42V20a14 14 0 0 1 28 0v22l-4.6-4-4.6 4-4.8-4-4.8 4-4.6-4z" fill="#e8eaff"/><path d="M38 20v22l-4.6-4-4.6 4-4.8-4V6a14 14 0 0 1 14 14z" fill="#c8ccf2"/>
+      <ellipse cx="18.5" cy="21" rx="2.6" ry="3.6" fill="${K}"/><ellipse cx="29.5" cy="21" rx="2.6" ry="3.6" fill="${K}"/><ellipse cx="24" cy="30" rx="3" ry="3.8" fill="${K}"/>
+      <path d="M38 26c4 0 6-3 7-6M10 26c-4 0-6-3-7-6" stroke="#c8ccf2" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+    sfx_reactor: `${[0, 60, 120].map((r, i) => `<ellipse cx="24" cy="24" rx="20" ry="7.5" fill="none" stroke="${['#33d6ff', '#2bd96b', '#b98cff'][i]}" stroke-width="2.2" transform="rotate(${r} 24 24)"/>`).join('')}
+      <circle cx="24" cy="24" r="4.6" fill="#ffcc33"/><circle cx="24" cy="24" r="8" fill="#ffcc3333"/><circle cx="44" cy="24" r="2.2" fill="#33d6ff"/><circle cx="14" cy="6.7" r="2.2" fill="#2bd96b"/><circle cx="14" cy="41.3" r="2.2" fill="#b98cff"/>`,
+    sfx_deepsea: `<path d="M8 22a16 14 0 0 1 32 0c0 2-1 3-3 3H11c-2 0-3-1-3-3z" fill="#1ad1b8"/><path d="M8 22a16 14 0 0 1 32 0" fill="none" stroke="#ffcc33" stroke-width="1.6"/>
+      <path d="M14 10l4 12M24 8v14M34 10l-4 12" stroke="#ffcc33" stroke-width="1.2" opacity=".8"/>
+      ${[12, 18, 24, 30, 36].map((x, i) => `<path d="M${x} 25c-2 5 2 8 0 12s2 6 0 9" stroke="${i % 2 ? '#ff6aa8' : '#7ae6ff'}" stroke-width="2" fill="none" stroke-linecap="round"/>`).join('')}`,
+    sfx_chamber: `<ellipse cx="14" cy="24" rx="9" ry="16" fill="#33a3ff22" stroke="#33a3ff" stroke-width="3.4"/><ellipse cx="34" cy="24" rx="9" ry="16" fill="#ff8a1a22" stroke="#ff8a1a" stroke-width="3.4"/>
+      <circle cx="24" cy="24" r="2.6" fill="#fff"/><path d="M17 24h4M27 24h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.4 1.6"/>`,
+    sfx_softbubble: `<circle cx="22" cy="26" r="15" fill="#ffc8e8"/><circle cx="22" cy="26" r="15" fill="none" stroke="#fff" stroke-width="1.4" opacity=".7"/><circle cx="36" cy="12" r="7" fill="#c8e6ff"/><circle cx="40" cy="30" r="4.4" fill="#e0ccff"/>
+      <ellipse cx="16" cy="19" rx="5" ry="3" fill="#fff" opacity=".85" transform="rotate(-35 16 19)"/><circle cx="33.5" cy="9.5" r="1.8" fill="#fff" opacity=".9"/><circle cx="10" cy="43" r="2" fill="#ffe1a8"/>`,
+    sfx_glass: `<path d="M14 6h20c0 10-3 18-10 18S14 16 14 6z" fill="#c8f0ff55" stroke="#7ae6ff" stroke-width="2"/><path d="M15.5 12h17c-1 6-4 10-8.5 10s-7.5-4-8.5-10z" fill="#ff3d9a"/>
+      <path d="M24 24v14M16 40h16" stroke="#7ae6ff" stroke-width="2.4" stroke-linecap="round"/><path d="M36 8a8 8 0 0 1 0 10M40 5a13 13 0 0 1 0 16M12 8a8 8 0 0 0 0 10M8 5a13 13 0 0 0 0 16" stroke="#ffcc33" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
+    sfx_crystal: `<path d="M12 6h24l9 12-21 26L3 18z" fill="#7ae6ff"/><path d="M12 6l6 12h12l6-12zM3 18h15l6 26zM45 18H30l-6 26z" fill="#33b8ff"/><path d="M18 18h12l-6 26z" fill="#c8f4ff"/><path d="M18 18l6-12 6 12z" fill="#e6fbff"/>
+      ${star(40, 6, 3.4, 1.1, '#fff')}${star(6, 34, 2.4, .9, '#ff9ad0')}`,
   };
   GB.funIcon = k => I[k] ? `<svg class="fi" viewBox="0 0 48 48" aria-hidden="true">${I[k]}</svg>` : '';
   GB.css(`.tile .em .fi, .md-hh .em .fi { width:1.45em; height:1.45em; display:block; overflow:visible; filter:drop-shadow(0 0 4px rgba(255,255,255,.25)) drop-shadow(0 0 10px color-mix(in srgb, var(--c, #ff3d9a) 45%, transparent)); }

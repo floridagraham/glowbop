@@ -304,7 +304,7 @@
     GB.on('status', s => { const d = s.dj || {}; if (down) return; latched = !!d.cool_latched; show(!!d.cool, latched); });
   });
 
-  // ------------------------------------------------------------------ 🎨 colour key (Oct 16): pick up to 4 colours, tap to latch the whole show into them
+  // ------------------------------------------------------------------ 🎨 colour key (Oct 16; unlimited colours since Oct 17): pick colours, tap to latch the whole show into them
   GB.css(`
   .djc-dots { display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 10px; }
   .djc-dot { width:calc(32px * var(--fs, 1)); height:calc(32px * var(--fs, 1));   /* Oct 17 (Graham): smaller dots */ border-radius:50%; border:3px solid #ffffff22; background:var(--d); position:relative; padding:0; cursor:pointer; box-shadow:0 0 0 0 var(--d); transition:transform .15s, box-shadow .2s, border-color .2s; }
@@ -337,17 +337,17 @@
   `);
   GB.panel('dj', 6, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--orange)');
-    let pick = []; try { pick = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 4); } catch (_) {}
+    let pick = []; try { pick = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 64); } catch (_) {}
     if (!pick.length) pick = ['#ff1a1a'];
-    let pal = [null, null, null, null]; try { const v = JSON.parse(localStorage.getItem('gb_dj_palette') || 'null'); if (Array.isArray(v)) pal = [0, 1, 2, 3].map(i => /^#[0-9a-f]{6}$/i.test(v[i] || '') ? v[i] : null); } catch (_) {}
+    let pal = []; try { const v = JSON.parse(localStorage.getItem('gb_dj_palette') || 'null'); if (Array.isArray(v)) pal = v.filter(c => /^#[0-9a-f]{6}$/i.test(c || '')).slice(0, 64); } catch (_) {}
     // custom colours saved by the old single key move into the palette boxes
-    if (!pal.some(Boolean)) try { const old = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => /^#[0-9a-f]{6}$/i.test(c) && !DOTS.includes(c)).slice(0, 4); old.forEach((c, i) => pal[i] = c); } catch (_) {}
+    if (!pal.some(Boolean)) try { const old = JSON.parse(localStorage.getItem('gb_dj_colors') || '[]').filter(c => /^#[0-9a-f]{6}$/i.test(c) && !DOTS.includes(c)).slice(0, 64); pal = old; } catch (_) {}
     pick = pick.filter(c => DOTS.includes(c) || pal.includes(c)); if (!pick.length) pick = ['#ff1a1a'];   // every picked colour must be on screen
     let mode = null;                                                    // 'dots' | 'pal' | null
-    el.innerHTML = `<div class="ph"><span>Color</span><span class="r" id="djColorR">PICK UP TO 4, THEN TAP</span></div>
+    el.innerHTML = `<div class="ph"><span>Color</span><span class="r" id="djColorR">PICK COLORS, THEN TAP</span></div>
       <div class="djc-dots" id="djcDots"></div>
       <div class="djc-keys"><button class="btn c" id="djColor" style="--c:var(--orange)">${GB.svg('palette')} COLOR LOCK</button><button class="btn c" id="djPal">${GB.svg('palette')} MY PALETTE</button></div>
-      <p class="note">Tap the dots (up to 4) and COLOR LOCK. Make your own colors with the rainbow + (up to 4): they live in the glowing oval, and MY PALETTE locks in just those. Tap a lit key again to go back to the full show. Press and hold one of yours to remove it. Everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on.</p>`;
+      <p class="note">Tap as many dots as you like and COLOR LOCK. Make as many of your own colors as you like with the rainbow +: they live in the glowing oval, and MY PALETTE locks in just those. Tap a lit key again to go back to the full show. Press and hold one of yours to remove it. Everything on the wall (looks, effects, builds, drops, even the white flashes) plays in only those colors until you tap again. Change colors any time, even while it's on.</p>`;
     const dots = el.querySelector('#djcDots'), key = el.querySelector('#djColor'), pkey = el.querySelector('#djPal');
     const save = () => { try { localStorage.setItem('gb_dj_colors', JSON.stringify(pick)); localStorage.setItem('gb_dj_palette', JSON.stringify(pal)); } catch (_) {} };
     const mine = () => pal.filter(Boolean);   // (kept as 4 slots in storage; shown packed)
@@ -365,25 +365,25 @@
     const toggle = c => {
       const i = pick.indexOf(c);
       if (i >= 0) { if (pick.length > 1) pick.splice(i, 1); }
-      else { if (pick.length >= 4) pick.shift(); pick.push(c); }
+      else { if (pick.length >= 64) pick.shift(); pick.push(c); }
       save(); paint(); if (mode === 'dots') send();
     };
     const draw = () => {
       const m = mine();
       dots.innerHTML = DOTS.map(c => `<button class="djc-dot" data-c="${c}" style="--d:${c}" aria-label="Color ${c}"></button>`).join('') +
         `<span class="djc-mine2" title="Your colors">` + m.map(c => `<button class="djc-dot mine" data-c="${c}" style="--d:${c}" aria-label="Your color ${c}"></button>`).join('') +
-        (m.length < 4 ? `<label class="djc-dot add" title="Add your own color"><input type="color" value="#ff3d9a" aria-label="Add your own color"></label>` : '') + `</span>`;
+        (m.length < 64 ? `<label class="djc-dot add" title="Add your own color"><input type="color" value="#ff3d9a" aria-label="Add your own color"></label>` : '') + `</span>`;
       dots.querySelectorAll('.djc-dot[data-c]').forEach(d => {
         let t = 0, held = false;
         d.onpointerdown = () => { if (!d.classList.contains('mine')) return; held = false; t = setTimeout(() => { held = true; const c = d.dataset.c;    // hold = remove your colour
-          pal = mine().filter(x => x !== c); while (pal.length < 4) pal.push(null); const i = pick.indexOf(c); if (i >= 0 && pick.length > 1) pick.splice(i, 1); else if (i >= 0) pick = ['#ff1a1a'];
+          pal = mine().filter(x => x !== c); const i = pick.indexOf(c); if (i >= 0 && pick.length > 1) pick.splice(i, 1); else if (i >= 0) pick = ['#ff1a1a'];
           save(); draw(); GB.sfx && GB.sfx('off'); GB.toast && GB.toast('Removed from your colors');
           if (mode === 'pal') { if (mine().length) send(); else { mode = null; paint(); dj({color: false}); } } else if (mode === 'dots') send(); }, 650); };
         d.onpointerup = d.onpointerleave = d.onpointercancel = () => clearTimeout(t);
         d.onclick = () => { if (held) return; toggle(d.dataset.c); GB.sfx && GB.sfx('tap'); };
       });
       const add = dots.querySelector('.add input');
-      if (add) add.addEventListener('change', () => { const c = add.value.toLowerCase(); const m2 = mine(); if (!m2.includes(c) && !DOTS.includes(c)) { m2.push(c); pal = m2.concat([null, null, null, null]).slice(0, 4); }
+      if (add) add.addEventListener('change', () => { const c = add.value.toLowerCase(); const m2 = mine(); if (!m2.includes(c) && !DOTS.includes(c)) { m2.push(c); pal = m2; }
         save(); draw(); if (mode === 'pal') send(); GB.toast && GB.toast('🎨 Added to your colors'); });
       paint();
     };
@@ -511,7 +511,7 @@
   }
   GB.on('ready', () => {
     const gate = (el, pitch) => el && GB.proGate(el, 'DJ power tools', {pitch});
-    gate($('djColor') && $('djColor').closest('.panel'), 'Color lock: pick up to 4 colors and the whole show (looks, effects, builds, drops, even the white flashes) plays only in those colors until you tap again. Part of GlowBop Pro.');
+    gate($('djColor') && $('djColor').closest('.panel'), 'Color lock: pick your colors and the whole show (looks, effects, builds, drops, even the white flashes) plays only in those colors until you tap again. Part of GlowBop Pro.');
     gate($('djLooks') && $('djLooks').closest('.panel'), 'Cue the next look: pick what comes in on the next drop, so the show changes exactly when you want. Part of GlowBop Pro.');
     gate($('djMidiCard'), 'DJ controllers: plug in a USB DJ controller or pad and play every GlowBop key from real buttons and faders. Part of GlowBop Pro.');
     proPaint();

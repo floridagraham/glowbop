@@ -1975,7 +1975,7 @@
               if (iv.length >= 2) DJ.tap_bpm = clamp(60 / iv[iv.length >> 1], 60, 200); } }
           if (b.tap_off) { DJ.tap_bpm = null; DJ.taps = []; }
           if (b.say) { const w = String(b.say).toUpperCase().slice(0, 40).trim(); if (w) DJ.word = {w, t0: t}; }
-          if (Array.isArray(b.colors)) { const cs = b.colors.slice(0, 4).map(c => String(c).trim().replace('#', '')).filter(h => /^[0-9a-f]{6}$/i.test(h)).map(h => [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16))); if (cs.length) DJ.colorCols = cs; }   // 🎨 colour key
+          if (Array.isArray(b.colors)) { const cs = b.colors.slice(0, 64).map(c => String(c).trim().replace('#', '')).filter(h => /^[0-9a-f]{6}$/i.test(h)).map(h => [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16))); if (cs.length) DJ.colorCols = cs; }   // 🎨 colour key
           if ('color' in b) DJ.colorOn = !!b.color && DJ.colorCols.length > 0;
           if ('cool' in b) { if (b.cool) { if (b.latch) DJ.coolLatch = true; else DJ.coolUntil = t + clamp(num(b.ttl, 1.5), .3, 5); } else { DJ.coolLatch = false; DJ.coolUntil = 0; } }   // 🌙 cool down
           if (b.reset) djReset();
