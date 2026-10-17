@@ -197,13 +197,13 @@
         const pins = lay.parts[k].pins || {}, big = BULB && act ? Math.max(r, 0.3) : r;
         const off = partCounts(d, lay).slice(0, k).reduce((a, b) => a + b, 0);
         h += `<g class="lv" data-d="${esc(d.id)}" data-o="${off}" opacity="${on ? (act ? 1 : 0.85) : 0.7}">${pts.map(([x, y], i) => `<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${i === 0 && act && lay.kind !== 'curtain' ? Math.max(big * 1.8, 0.3) : big}" fill="${col}"${pins[i] ? ` stroke="#fff" stroke-width="0.08"` : ''}/>`).join('')}</g>`;
-        if (on && !BULB && (act || lay.parts.length <= 4)) {      // many drops / strands: only the one you're laying shows its handles
+        if (on && !BULB && (lay.wall ? k === 0 : (act || lay.parts.length <= 4))) {      // many drops / strands: only the one you're laying shows its handles; a wall: one START + END for the whole wall
           const pp = lay.parts[k].pts;
           h += `<polyline points="${(lay.parts[k].smooth && !(lay.parts[k].fold && lay.parts[k].fold.rows > 1) ? smoothPath(pp) : pp).map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="${HR * 0.1}" stroke-dasharray="${HR * 0.35} ${HR * 0.2}" opacity="${act ? 0.85 : 0.35}"/>`;
           pp.forEach((p, i) => {
-            const end = i === 0 || i === pp.length - 1, lbl = i === 0 ? (lay.parts[k].rev ? 'END' : 'START') : (i === pp.length - 1 ? (lay.parts[k].rev ? 'START' : 'END') : '');
+            const end = i === 0 || i === pp.length - 1, lbl = lay.wall ? (i === 0 ? 'WALL ✥ MOVE' : 'WALL ↔ SIZE') : i === 0 ? (lay.parts[k].rev ? 'END' : 'START') : (i === pp.length - 1 ? (lay.parts[k].rev ? 'START' : 'END') : '');
             h += `<g class="h" data-s="${k}" data-p="${i}"><circle cx="${p[0]}" cy="${p[1]}" r="${end ? HR : HR * 0.75}" fill="${act ? col : '#000'}" fill-opacity="${act ? 0.18 : 0.4}" stroke="${col}" stroke-width="${HR * 0.15}"/>`
-              + (lbl ? `<text x="${p[0]}" y="${p[1] - HR * 1.3}" font-size="${HR * 0.8}" fill="${col}" text-anchor="middle" font-family="Saira Condensed, system-ui" font-weight="800" letter-spacing="0.05">${lbl}${lay.parts.length > 1 ? ' ' + (k + 1) : ''}</text>` : '') + `</g>`;
+              + (lbl ? `<text x="${p[0]}" y="${p[1] - HR * 1.3}" font-size="${HR * 0.8}" fill="${col}" text-anchor="middle" font-family="Saira Condensed, system-ui" font-weight="800" letter-spacing="0.05">${lbl}${lay.parts.length > 1 && !lay.wall ? ' ' + (k + 1) : ''}</text>` : '') + `</g>`;
           });
         }
       });
@@ -231,21 +231,33 @@
     if (!d || !lay) { box.hidden = true; return; } box.hidden = false;
     if (strand >= lay.parts.length) strand = 0;
     const p = lay.parts[strand], cs = partCounts(d, lay), fr = p.fold ? p.fold.rows : 1;
-    const isCur = lay.kind === 'curtain'; $('slStraight').style.display = isCur ? '' : 'none'; $('slReset').style.display = isCur ? 'none' : ''; $('slWall').style.display = isCur ? 'none' : '';
-    $('slStrands').closest('.sl-row').style.display = isCur ? 'none' : ''; $('slFold').closest('.sl-row').style.display = isCur ? 'none' : '';
+    const isCur = lay.kind === 'curtain', isWall = !!lay.wall;
+    if (isWall) { $('slWallRow').style.display = ''; wallPicker(lay); } else if (!$('slWallPick').querySelector('[data-wr]')) $('slWallRow').style.display = 'none'; $('slStraight').style.display = isCur ? '' : 'none'; $('slReset').style.display = isCur ? 'none' : ''; $('slWall').style.display = isCur ? 'none' : '';
+    $('slStrands').closest('.sl-row').style.display = isCur || isWall ? 'none' : ''; $('slFold').closest('.sl-row').style.display = isCur || isWall ? 'none' : '';
     $('slStrands').innerHTML = [1, 2, 3, 4].map(k => `<button class="btn${lay.parts.length === k ? ' on' : ''}" data-ns="${k}">${k}</button>`).join('');
     $('slWhich').innerHTML = lay.parts.length > 1 ? lay.parts.map((q, k) => `<button class="chip${k === strand ? ' on' : ''}" data-st="${k}" style="--c:${SCOL[k % SCOL.length]}">${isCur ? 'Drop' : 'Strand'} ${k + 1}${isCur ? '' : ' · ' + cs[k]}</button>`).join('') : '';
-    $('slWhichRow').style.display = lay.parts.length < 2 ? 'none' : '';
+    $('slWhichRow').style.display = lay.parts.length < 2 || isWall ? 'none' : '';
     $('slFold').innerHTML = [[1, 'Line'], [2, '2 rows'], [3, '3 rows'], [4, '4 rows'], [6, '6 rows'], [8, '8 rows']].map(([k, t]) => `<button class="btn${fr === k ? ' on' : ''}" data-fr="${k}">${t}</button>`).join('');
-    $('slModeRow').style.display = fr < 2 ? 'none' : '';
+    $('slModeRow').style.display = fr < 2 || isWall ? 'none' : '';
     $('slMode').innerHTML = [['snake', 'Back & forth'], ['alt', 'Every other bulb']].map(([m, t]) => `<button class="btn${p.fold && p.fold.mode === m ? ' on' : ''}" data-md="${m}">${t}</button>`).join('');
-    $('slBendRow').style.display = fr > 1 ? 'none' : 'contents';
-    $('slCurveRow').style.display = fr > 1 ? 'none' : '';
+    $('slBendRow').style.display = fr > 1 || isWall ? 'none' : 'contents';
+    $('slCurveRow').style.display = fr > 1 || isWall ? 'none' : '';
+    $('slBulb').style.display = isWall ? 'none' : ''; $('slFlip').style.display = isWall ? 'none' : '';
     $('slBulb').classList.toggle('on', BULB); $('slBulb').textContent = BULB ? '✋ Moving bulbs: tap to stop' : '✋ Move single bulbs';
     $('slUnpin').style.display = Object.keys(p.pins || {}).length ? '' : 'none';
     $('slCurveRow').querySelectorAll('[data-cv]').forEach(b => { b.classList.toggle('on', !!p.smooth === (b.dataset.cv === '1')); if (b.dataset.cv === '1') b.innerHTML = GB.pro === false ? '🔒 Smooth curves · PRO' : '💎 Smooth curves'; });
     $('slSave').classList.toggle('pulse', !!dirty[sel]);
     $('slR').textContent = $('slR2').textContent = d.lay ? (dirty[sel] ? 'NOT SAVED' : 'LAID OUT') : (dirty[sel] ? 'NOT SAVED' : 'A PLAIN LINE');
+  }
+  // 🧱 a wall is ONE piece: its START moves the whole wall, its END stretches / turns it; every strand keeps its rows, stacked in order
+  function wallSync(lay) {
+    if (!lay || !lay.wall) return; const S = lay.parts.length, rp = Math.max(1, Math.round(lay.wall / S)), gap = lay.gap || 1;
+    const a = lay.parts[0].pts[0], z = lay.parts[0].pts[lay.parts[0].pts.length - 1], vx = z[0] - a[0], vy = z[1] - a[1], ln = Math.hypot(vx, vy) || 1, nx = -vy / ln, ny = vx / ln;
+    lay.parts.forEach((p, k) => { const sx = a[0] + nx * k * rp * gap, sy = a[1] + ny * k * rp * gap; p.pts = [[sx, sy], [sx + vx, sy + vy]]; p.fold = rp > 1 ? {rows: rp, mode: 'snake'} : null; });
+  }
+  function wallPicker(lay) {
+    const S = lay.parts.length, opts = [2, 4, 6, 8, 10, 12, 16].filter(r => r >= S && r % S === 0);
+    $('slWallPick').innerHTML = opts.map(r => `<button class="btn${lay.wall === r ? ' on' : ''}" data-wr="${r}">${r}</button>`).join('') + (lay.wall ? '<button class="btn" data-wr="off">✕ Not a wall</button>' : '');
   }
   function change() { dirty[sel] = true; view = view || null; commit(); draw(); }
   // ↶↷ undo / redo (Oct 17, Graham): every drag, bend, fold, flip and move is one step
@@ -315,6 +327,12 @@
       const now = Date.now(); if (now - lastPick > 300) { lastPick = now; GB.post('/api/lights/pick', {id: sel, i: drag.real, secs: 1.2}); } return draw(); }
     if (drag.curt) { const [x, y] = toWorld(e); MOVE[drag.curt] = [snap(drag.from[0] + x - drag.at[0]), snap(drag.from[1] + y - drag.at[1])]; dirty[drag.curt] = true; return draw(); }
     const [x, y] = toWorld(e), lay = LAY[sel], p = lay.parts[drag.k].pts;
+    if (lay.wall) {                                                   // 🧱 the whole wall moves / stretches together
+      const p0 = lay.parts[0].pts, nx = snap(x), ny = snap(y);
+      if (drag.i === 0) { const dx = nx - p0[0][0], dy = ny - p0[0][1]; p0[0] = [nx, ny]; p0[1] = [p0[1][0] + dx, p0[1][1] + dy]; }
+      else p0[1] = [nx, ny];
+      wallSync(lay); dirty[sel] = true; draw(); blink(dev(sel), lay, 0, drag.i ? 1 : 0); return;
+    }
     p[drag.i] = [snap(x), snap(y)]; dirty[sel] = true; draw(); blink(dev(sel), lay, drag.k, drag.i);
   }
   function onUp() {
@@ -545,17 +563,16 @@
     // 🧱 Oct 17 (Graham: "make a string a wall: bend it back and forth and staple it"): the whole string snakes into rows, strand by strand
     el.querySelector('#slWall').onclick = () => {
       const row = $('slWallRow'), d = dev(sel), lay = LAY[sel]; if (!d || !lay) return;
-      if (row.style.display !== 'none') { row.style.display = 'none'; return; }
-      const S = lay.parts.length, opts = [2, 4, 6, 8, 10, 12, 16].filter(r => r >= S && r % S === 0);
-      $('slWallPick').innerHTML = opts.map(r => `<button class="btn" data-wr="${r}">${r}</button>`).join('');
-      row.style.display = ''; $('slHint').textContent = 'How many rows tall should the wall be?';
+      if (row.style.display !== 'none' && !lay.wall) { row.style.display = 'none'; return; }
+      wallPicker(lay); row.style.display = ''; $('slHint').textContent = 'How many rows tall should the wall be?';
     };
     el.querySelector('#slWallPick').addEventListener('click', e => {
       const b = e.target.closest('[data-wr]'); if (!b) return; const lay = LAY[sel]; if (!lay) return;
-      const R = +b.dataset.wr, S = lay.parts.length, rp = Math.max(1, R / S), gap = lay.gap || 1;
+      if (b.dataset.wr === 'off') { const d = dev(sel); LAY[sel] = fresh(d, lay.parts.length); strand = 0; $('slWallRow').style.display = 'none'; $('slHint').textContent = 'Back to plain strands'; return change(); }
+      const R = +b.dataset.wr;
       const a = lay.parts[0].pts[0], z = lay.parts[0].pts[lay.parts[0].pts.length - 1];
       const W = Math.max(10, Math.abs(z[0] - a[0]) || Math.hypot(z[0] - a[0], z[1] - a[1]));   // as wide as the first strand is now
-      lay.parts.forEach((p, k) => { const y = a[1] + k * rp * gap; p.pts = [[a[0], y], [a[0] + W, y]]; p.fold = rp > 1 ? {rows: rp, mode: 'snake'} : null; p.smooth = false; delete p.pins; });
+      lay.wall = R; lay.parts[0].pts = [a.slice(), [a[0] + W, a[1]]]; lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay);
       $('slWallRow').style.display = 'none'; $('slHint').textContent = `🧱 ${R} rows, back and forth. Drag a START or END to make the wall wider or move it. Save when it matches.`;
       change();
     });
