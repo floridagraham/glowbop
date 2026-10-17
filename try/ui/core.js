@@ -457,7 +457,7 @@
     // Oct 17 (Graham): always 2 taps
     const NEED = 2; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
-      tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = 'A little joke from the GlowBop team. We truly love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
+      tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'You found our hidden Easter egg! 🥚 Nothing was deleted.'; pct.textContent = 'Thanks for playing. We love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
       dots.forEach((n, i) => setTimeout(() => { delete n.dataset.off; n.setAttribute('fill', n.dataset.c); }, i * 30));
       keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
