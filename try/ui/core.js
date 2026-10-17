@@ -395,8 +395,8 @@
   ];
   let eggLast = -1;
   // 🚫 never on the working pages, where a DJ could hit the logo by accident mid-show (Graham, Oct 17):
-  //   Pro Home, Pro DJ, Shows, Loops+Cues, Cues, Live Board, Override and Live
-  const NO_EGG = ['home', 'shows', 'autoloops', 'cues', 'board', 'ops', 'feeds'];
+  //   Text, Pro Home, Shows, Pro DJ, Loops+Cues, Cues, Live Board and Override. Every other page has it.
+  const NO_EGG = ['text', 'home', 'shows', 'autoloops', 'cues', 'board', 'ops'];
   const eggOff = () => NO_EGG.includes(GB.page) || (GB.page === 'dj' && document.documentElement.classList.contains('prodj'));
   document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('#gbLogo, #hd .elbow'))) return; if (eggOff() || document.getElementById('gbEgg')) return; egg(); });
   function egg() {
