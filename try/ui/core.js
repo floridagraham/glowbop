@@ -298,20 +298,49 @@
   // 🧊 Oct 17 (Graham): the GLOWBOP label in the top bar is a 4-sided box that turns over every so often, one brand colour per side.
   //   Later a side can carry an announcement: GB.hdCube.face(i, {text, bg, fg, onclick}) then GB.hdCube.show(i).
   const CUBE = [{bg: 'var(--pink)', fg: '#000'}, {bg: 'var(--violet)', fg: '#fff'}, {bg: 'var(--cyan)', fg: '#000'}, {bg: 'var(--gold)', fg: '#000'}];
-  let cubeN = 0, cubeT = 0;
+  let cubeN = 0, cubeT = 0, ANN = [], annI = 0;
+  // 📢 the box's pictures come from a folder on the website: put an image in glowbop.com/cube/ (and, if it should open a page when tapped,
+  //   a .txt with the same name holding the link) and every app picks it up within the hour. Take it out and it's gone. No code changes.
+  async function loadAnn() {
+    const now = Date.now(); let c = null; try { c = JSON.parse(localStorage.getItem('gb_cube') || 'null'); } catch (e) {}
+    if (c && now - c.t < 3600e3) { ANN = c.items || []; return; }
+    try {
+      const r = await fetch('https://api.github.com/repos/floridagraham/glowbop/contents/cube', {cache: 'no-store'}); if (!r.ok) throw 0;
+      const files = (await r.json()).filter(f => f && f.type === 'file'), names = new Set(files.map(f => f.name));
+      const imgs = files.filter(f => /\.(png|jpe?g|webp|gif|svg)$/i.test(f.name)).sort((a, b) => a.name.localeCompare(b.name));
+      const items = [];
+      for (const f of imgs) { const base = f.name.replace(/\.[^.]+$/, ''), it = {img: 'https://glowbop.com/cube/' + encodeURIComponent(f.name), title: base.replace(/[-_]+/g, ' ')};
+        if (names.has(base + '.txt')) try { const t = (await (await fetch('https://glowbop.com/cube/' + encodeURIComponent(base + '.txt'), {cache: 'no-store'})).text()).trim().split(/\s+/)[0]; if (/^https:\/\//.test(t)) it.link = t; } catch (e) {}
+        items.push(it); }
+      ANN = items; try { localStorage.setItem('gb_cube', JSON.stringify({t: now, items})); } catch (e) {}
+    } catch (e) { if (c) ANN = c.items || []; }
+  }
+  loadAnn(); setInterval(loadAnn, 3600e3);
   function buildCube() {
     const b = document.querySelector('#hd .bars b'); if (!b || b.querySelector('.hdcube')) return;
     const txt = b.textContent.trim() || 'GLOWBOP';
     b.classList.add('cube3'); b.innerHTML = '<span class="hdsz">' + GB.esc(txt) + '</span><span class="hdcube">' +
       CUBE.map((c, i) => `<span class="hdf" data-i="${i}" style="--fb:${c.bg};--ff:${c.fg};--n:${i}">${GB.esc(txt)}</span>`).join('') + '</span>';
-    const turn = () => { if (!document.hidden && !b.classList.contains('build') && !b.classList.contains('drop')) GB.hdCube.show(cubeN + (Math.random() < .2 ? 2 : 1)); cubeT = setTimeout(turn, 6000 + Math.random() * 6000); };
+    let turns = 0;
+    const turn = () => {
+      if (!document.hidden && !b.classList.contains('build') && !b.classList.contains('drop')) {
+        const n = cubeN + (Math.random() < .2 ? 2 : 1), fi = ((n % 4) + 4) % 4; turns++;
+        // 📢 announcements: every other turn the side coming up shows the next picture from glowbop.com/cube/ (if there are any)
+        if (ANN.length && turns % 2 === 0) { const a = ANN[annI++ % ANN.length]; GB.hdCube.face(fi, {img: a.img, onclick: a.link ? () => window.open(a.link, '_blank', 'noopener') : null, title: a.title}); }
+        else GB.hdCube.face(fi, {reset: true});
+        GB.hdCube.show(n);
+      }
+      cubeT = setTimeout(turn, 6000 + Math.random() * 6000); };
     clearTimeout(cubeT); cubeT = setTimeout(turn, 5000);
   }
   GB.hdCube = {
     show(n) { const c = document.querySelector('#hd .hdcube'); if (!c) return; cubeN = n; c.style.setProperty('--rx', (-90 * n) + 'deg'); },
     face(i, o) { const f = document.querySelector('#hd .hdf[data-i="' + (i % 4) + '"]'); if (!f || !o) return;
+      if (o.reset) { const c = CUBE[i % 4]; f.textContent = 'GLOWBOP'; f.style.backgroundImage = ''; f.classList.remove('img'); f.style.setProperty('--fb', c.bg); f.style.setProperty('--ff', c.fg);
+        f.onclick = null; f.style.cursor = ''; f.removeAttribute('title'); return; }
+      if (o.img) { f.textContent = ''; f.classList.add('img'); f.style.backgroundImage = 'url("' + String(o.img).replace(/"/g, '%22') + '")'; }
       if (o.text != null) f.textContent = o.text; if (o.bg) f.style.setProperty('--fb', o.bg); if (o.fg) f.style.setProperty('--ff', o.fg);
-      f.onclick = o.onclick || null; f.style.cursor = o.onclick ? 'pointer' : ''; },
+      if (o.title) f.title = o.title; f.onclick = o.onclick || null; f.style.cursor = o.onclick ? 'pointer' : ''; },
     stop() { clearTimeout(cubeT); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCube); else buildCube();

@@ -500,3 +500,4 @@ body:not([data-page=music]):not([data-page=dj]) #view .panel.reads-panel { displ
 @media (max-width: 699px) { #hd .bars b.cube3 { --hh:24px; } } @media (max-height: 500px) and (orientation: landscape) { #hd .bars b.cube3 { --hh:18px; --hpad:10px; } }
 @media (prefers-reduced-motion: reduce) { #hd .bars b.cube3 .hdcube { transition:none; } }
 #hd .bars b.cube3.build, #hd .bars b.cube3.drop { background:transparent; }
+#hd .bars b.cube3 .hdf.img { background-size:cover; background-position:center; background-repeat:no-repeat; }
