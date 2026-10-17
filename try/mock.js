@@ -58,8 +58,9 @@
     'Trip': 'look-psychedelic', 'Silk': 'look-liquid-dreams'};
   function lookClip(look, k) { const set = LOOK_SET[look]; if (set) return set[(k || 0) % set.length];
     const c = 'look-' + slug(look); return has(c) ? c : has(LOOK_STAND[look]) ? LOOK_STAND[look] : 'look-neon-party'; }
+  const TEXTY = new Set(['ScrollText', 'LuckyText', 'BeatCounter', 'Countdown', 'NewYearCountdown', 'Touchdown']);   // 🔤 effects that write words / numbers: never in the demo's own show
   function effectClip(e) {
-    if (!e) return null; const l = String(e).toLowerCase();
+    if (!e || TEXTY.has(e)) return null; const l = String(e).toLowerCase();
     for (const p of ['fx-', 'wave-', 'shape-']) if (has(p + l)) return p + l;
     if (FX_ALIAS[e] && has(FX_ALIAS[e])) return FX_ALIAS[e];
     for (const [k, v] of Object.entries((CAT && CAT.looks) || {})) if ([...v.low, ...v.mid, ...v.high].includes(e)) return lookClip(k);
@@ -85,7 +86,7 @@
   const CALM_LOOKS = ['Cinematic', 'Concert Hall', 'Jazz Club', 'Moonlit', 'Silk', 'Golden Porch', 'Deep Space', 'Fairy Forest', 'Liquid Dreams', 'Midnight Galaxy', 'Blue Sky', 'Ice Palace', 'Deep Sea', 'Emerald Ocean'];
   const SHOWY_LOOKS = ['3D Object', '3D Depth', 'Hyperspace', 'Psychedelic', 'Rainbow Riot', 'Hypnotic', 'Warehouse Rave', 'Chaos', 'Neon Party', 'Wild Elements'];   // 🧊 the 3D shapes up front
   const SHOWY_FX = ['Tesseract', 'WireTorus', 'CrystalGem', 'CubeField', 'BarberSpin', 'RisingRings', 'ShapeTunnel', 'LaserFan', 'Kaleidoscope'];
-  const showyFx = list => { if (!showyNow() || !CAT || !CAT.effects) return list; const f = (list || []).filter(e => !CAT.effects[e] || CAT.effects[e].energy !== 'low'); return f.length ? f : list; };
+  const showyFx = list0 => { const list = (list0 || []).filter(e => !TEXTY.has(e)).length ? (list0 || []).filter(e => !TEXTY.has(e)) : list0; if (!showyNow() || !CAT || !CAT.effects) return list; const f = (list || []).filter(e => !CAT.effects[e] || CAT.effects[e].energy !== 'low'); return f.length ? f : list; };
   let BPM = 124, beatPos = 0, lastClock = now(), forceSec = null, songLook = 0;
   function clock() { const t = now(); beatPos += (t - lastClock) * pdTempoBpm() / 60; lastClock = t; return beatPos; }   // 🎛️ the Tempo toolbox can lock / scale it
   const SECS = ['groove', 'build', 'drop', 'break'];
@@ -1165,7 +1166,7 @@
         if (epic) add({lane: 'hit', t: beat(D - 2 * P), hit: 'flash'});
         else if (isbig && D - BAR >= 0) { add({lane: 'hit', t: D - BAR, hit: 'strobe', beats: 3}); add({lane: 'hit', t: D - P, end: D, hit: 'blackout'}); }
         else if (D - BAR >= 0) add({lane: 'hit', t: D - BAR, hit: 'strobe', beats: 4});
-        if (isbig) { if (!epic) add({lane: 'hit', t: D, hit: burst}); const tt = D + (epic ? P : BAR); add({lane: 'text', t: tt, end: tt + 2 * BAR, text: pickLine(SH_LINES[epic ? 'epic' : mood], dk)}); }
+        if (isbig) { if (!epic) add({lane: 'hit', t: D, hit: burst}); }   // (Oct 17, Graham: no words on the demo wall, they're hard to read on the dots)
         for (let k = 8; D + k * BAR < e - 2 * BAR; k += 8) add({lane: 'hit', t: D + k * BAR, hit: k === 8 && !isbig && !epic ? burst : 'flash'});
         dk++; }
       else if (kind === 'breakdown') { const lo = SHOWY ? 90 : 65; bp.push([s, 100], [s + 2 * P, lo], [Math.max(s + 2 * P, e - P), lo]);
