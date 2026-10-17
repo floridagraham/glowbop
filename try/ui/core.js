@@ -876,7 +876,21 @@
     else { try { document.fullscreenElement && document.exitFullscreen(); } catch (e) {} }
     if (PV.length) drawSetup(PV);
   };
+  // 📡 Oct 17: phones/iPads lagged polling over Wi-Fi (a new request + 120 ms wait per picture). Now the laptop pushes every
+  //   picture down one open stream; polling stays as the fallback (demo, older browsers, stream dropped).
+  let ES = null, esOk = 0, esFails = 0;
+  function showGroups(r) { if (r.groups && r.groups.length) drawSetup(r.groups.map(g => g.shape ? g : Object.assign(g, {shape: null}))); GB.lastOk = Date.now(); }
+  function streamOn() {
+    if (ES || !window.EventSource || window.__demoWall || esFails > 3) return false;
+    try { ES = new EventSource('/api/frames/live'); } catch (e) { ES = null; return false; }
+    ES.onmessage = ev => { esOk = Date.now(); esFails = 0; try { showGroups(JSON.parse(ev.data)); } catch (e) {} };
+    ES.onerror = () => { if (!esOk || Date.now() - esOk > 3000) { esFails++; try { ES.close(); } catch (e) {} ES = null; } };
+    return true;
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden && ES) { try { ES.close(); } catch (e) {} ES = null; } else if (!document.hidden) streamOn(); });
   async function frameLoop() {
+    if (!document.hidden) streamOn();
+    if (ES && Date.now() - esOk < 1500) { setTimeout(frameLoop, 500); return; }    // the stream is drawing, just keep watch
     try {
       const r = await GB.get('/api/frames');
       if (r.groups && r.groups.length) drawSetup(r.groups.map(g => g.shape ? g : Object.assign(g, {shape: null})));
