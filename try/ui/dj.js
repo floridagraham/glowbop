@@ -423,8 +423,8 @@
   // Pro adds: the 7 extra pads, build & drop style pickers, Color lock, Cue the next look and DJ controllers (MIDI). The engine checks too.
   const PRO_PADS = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat', 'star'];
   GB.css(`
-  .dj-pads .tile.pro-pad.locked { opacity:.62; filter:saturate(.45) !important; }
-  .dj-pads .tile.pro-pad.locked::after { content:'PRO'; position:absolute; top:4px; right:10px; font:800 9px var(--mono); letter-spacing:1px; background:#000; color:#fff; border-radius:6px; padding:1px 5px; }
+  .dj-pads .tile.pro-pad.locked { opacity:1; filter:none !important; }   /* Oct 16 night: full colour, the gold lock badge says it's Pro */
+  .dj-pads .tile.pro-pad.locked::after { content:'🔒 PRO'; position:absolute; top:4px; right:8px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
   .dj-lockline { display:flex; align-items:center; gap:8px; margin-top:10px; padding:8px 12px; border-radius:14px; background:#0007; border:1px dashed color-mix(in srgb, var(--orchid) 50%, transparent); color:var(--dim); font-size:calc(13px * var(--fs, 1)); cursor:pointer; }
   .dj-lockline b { color:var(--orchid); }
   `);

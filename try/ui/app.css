@@ -352,3 +352,17 @@ body.wallfull #hd, body.wallfull #rail { z-index:0; }
 #rail .rail-sep[data-g=pro]::before { display:none; }
 #rail .rail-sep[data-g=pro] span { background:linear-gradient(90deg, #fff1c2, var(--gold) 45%, var(--amber)); -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:800; }
 #rail .rail-sep[data-g=pro] .ic { fill:var(--gold); }
+
+/* ===== Oct 16 night (Graham): the two Pro doors each get their own look; the upgrade page drops the Live wall so the cards fill the screen */
+body[data-page=pro] #view { display:none !important; }
+html.door-dj { --panel:#170c1d; --line:#3b1b44; }
+html.door-home { --panel:#1b120a; --line:#43301b; }
+#proTour { position:relative; overflow:hidden; }
+html.door-dj #proTour { background:radial-gradient(120% 140% at 100% 0%, #ff3d9a33, transparent 55%), radial-gradient(90% 120% at 0% 100%, #9b3dff2e, transparent 60%), var(--panel); }
+html.door-home #proTour { background:radial-gradient(120% 140% at 100% 0%, #ff7a3d38, transparent 55%), radial-gradient(90% 120% at 0% 100%, #ffd21a24, transparent 60%), var(--panel); }
+html.door-dj .pt-h { background:linear-gradient(90deg, #ffd0ea, #ff3d9a 45%, #9b3dff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+html.door-home .pt-h { background:linear-gradient(90deg, #fff4cc, #ffb23d 45%, #ff7a3d); -webkit-background-clip:text; background-clip:text; color:transparent; }
+html.door-dj .pt-buy { background:linear-gradient(160deg, #ffd0ea, #ff3d9a 45%, #9b3dff) !important; color:#fff !important; box-shadow:0 0 22px -6px #ff3d9a; }
+.pt-art { position:absolute; right:14px; bottom:10px; width:min(34%, 240px); opacity:.9; pointer-events:none; } .pt-art svg { width:100%; height:auto; display:block; }
+#proTour .pt-cta, #proTour .pt-h { position:relative; z-index:1; max-width:calc(100% - min(36%, 250px)); }
+@media (max-width:699px) { .pt-art { display:none; } #proTour .pt-cta, #proTour .pt-h { max-width:none; } }

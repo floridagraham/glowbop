@@ -332,7 +332,7 @@
   const PAGES = GB.PAGES = [
     {id: 'music', label: 'MUSIC', c: 'var(--cyan)', big: 2, g: 'perform'},   // Oct 16: GlowBop cyan (Graham)
     {id: 'dj', label: 'DJ', c: 'var(--pink)', g: 'perform'},       // Oct 16: GlowBop pink (Graham)
-    {id: 'text', label: 'TEXT', c: 'var(--gold)', g: 'perform'},
+    {id: 'text', label: 'TEXT', c: '#e9e6ff', g: 'perform'},   // Oct 16: white-lavender, so it doesn't look like PRO HOME
     {id: 'home', label: 'PRO HOME', c: '#ffb23d', pro: true, g: 'pro'},           // 🏠 Pro Home control center (prohome.js): its rail key shows only in Pro Home mode
     {id: 'shows', label: 'SHOWS', c: 'var(--orchid)', pro: true, g: 'pro'},
     {id: 'autoloops', label: 'LOOPS+CUES', c: '#3fb6ff', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
@@ -472,10 +472,20 @@
     const d = DOOR[GB.proDoor] || DOOR.dj, hero = $('proTour'), list = document.querySelector('#pg-pro .pt-feats'); if (!hero || !list) return;
     hero.style.setProperty('--c', d.c); hero.querySelector('.ph > span').textContent = d.t; hero.querySelector('.ph .r').textContent = d.r;
     hero.querySelector('.pt-h').textContent = d.h; hero.querySelector(':scope > p.note').textContent = d.p;
+    document.documentElement.classList.toggle('door-dj', GB.proDoor !== 'home'); document.documentElement.classList.toggle('door-home', GB.proDoor === 'home');
+    let art = hero.querySelector('.pt-art'); if (!art) { art = document.createElement('div'); art.className = 'pt-art'; art.setAttribute('aria-hidden', 'true'); hero.appendChild(art); }
+    art.innerHTML = GB.proDoor === 'home' ? DOOR_ART.home : DOOR_ART.dj;
     const o = PRO_ORDER[GB.proDoor] || PRO_LIST; [...list.children].sort((a, b) => o.indexOf(a.dataset.f) - o.indexOf(b.dataset.f)).forEach(n => list.appendChild(n));
     if (GB.proDJ && GB.proDJ.recompact) GB.proDJ.recompact();
   }
-  GB.on('page', id => { if (id === 'pro') setTimeout(paintDoor, 0); });
+  GB.on('page', id => { if (id === 'pro') setTimeout(paintDoor, 0); else document.documentElement.classList.remove('door-dj', 'door-home'); });
+  // the hero art for each door: an equalizer for PRO DJ, a glowing house at sunset for PRO HOME
+  const DOOR_ART = {
+    dj: '<svg viewBox="0 0 160 70">' + [18, 42, 30, 58, 36, 64, 26, 48, 54, 22, 40, 60].map((h, i) => `<rect x="${4 + i * 13}" y="${68 - h}" width="9" height="${h}" rx="3" fill="${['#ff3d9a', '#9b3dff', '#33d6ff'][i % 3]}"><animate attributeName="height" values="${h};${Math.max(8, h * .4)};${h}" dur="${.6 + (i % 4) * .17}s" repeatCount="indefinite"/><animate attributeName="y" values="${68 - h};${68 - Math.max(8, h * .4)};${68 - h}" dur="${.6 + (i % 4) * .17}s" repeatCount="indefinite"/></rect>`).join('') + '</svg>',
+    home: '<svg viewBox="0 0 160 70"><circle cx="128" cy="40" r="20" fill="#ff7a3d" opacity=".85"/><rect x="0" y="52" width="160" height="18" fill="#2a1a10"/>'
+      + '<path d="M30 52 V30 L58 10 L86 30 V52 Z" fill="#3a2414" stroke="#ffb23d" stroke-width="2"/><rect x="40" y="34" width="12" height="10" rx="2" fill="#ffd21a"><animate attributeName="fill" values="#ffd21a;#ff9f5a;#ffd21a" dur="3s" repeatCount="indefinite"/></rect>'
+      + '<rect x="64" y="34" width="12" height="10" rx="2" fill="#ff3d9a"><animate attributeName="fill" values="#ff3d9a;#9b3dff;#33d6ff;#ff3d9a" dur="4s" repeatCount="indefinite"/></rect>'
+      + [0, 1, 2, 3, 4, 5, 6, 7].map(i => `<circle cx="${30 + i * 8}" cy="${12 + Math.abs(3.5 - i) * 5}" r="2" fill="${['#ffd21a', '#ff3d9a', '#33d6ff', '#7dffb2'][i % 4]}"><animate attributeName="opacity" values="1;.2;1" dur="${1 + (i % 3) * .4}s" repeatCount="indefinite"/></circle>`).join('') + '</svg>'};
   GB.panel('pro', 30, el => {
     el.classList.add('pt-foot');
     el.innerHTML = `<button class="btn c wide pt-buy" style="--c:var(--gold)">${GB.svg('star')}<span>Upgrade to Pro</span></button>

@@ -24,7 +24,7 @@
              tall: [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', '#djCool', '#djColor']], [24, 24, ['#djBuild', 'djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]]},
     prohome:{wide: [[0, 17, ['v:wall', 'v:mode', 'v:reads']], [17, 15, ['phScenes']], [32, 16, ['phSched']]], tall: [[0, 24, ['v:wall', 'phScenes']], [24, 24, ['phSched']]]},
   };
-  TPL.pro = {wide: [[0, 17, W3], [17, 31, ['#proTour']]], tall: [[0, 24, W3], [24, 24, ['#proTour']]], full: ['.pt-feats', '.pt-foot']};   // the Pro tour: feature cards across the whole width
+  TPL.pro = {wide: [[0, 48, ['#proTour']]], tall: [[0, 48, ['#proTour']]], full: ['.pt-feats', '.pt-foot']};   // the upgrade page: no Live wall, cards across the whole width   // the Pro tour: feature cards across the whole width
   GB.layTPL = TPL;                                 // pages add their own templates (GB.layTPL.music = {...})
   // 🧑‍🎨 Graham's own arrangements (Oct 16) ship as the starting layout on those pages
   const DEFAULTS = {"prohome:wide":{"v:wall":{"x":0,"y":10,"w":17,"h":63},"v:mode":{"x":0,"y":0,"w":17,"h":10},"v:reads":{"x":0,"y":123,"w":48,"h":25},"phScenes":{"x":17,"y":0,"w":15,"h":47},"phSched":{"x":32,"y":0,"w":16,"h":47},"v:keys":{"x":0,"y":211,"w":24,"h":6},"grpPanel":{"x":17,"y":47,"w":31,"h":52},"znSubs":{"x":0,"y":99,"w":48,"h":24},"mdHolPanel":{"x":0,"y":148,"w":24,"h":63}},"prohome:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":60},"phScenes":{"x":0,"y":60,"w":24,"h":47},"phSched":{"x":24,"y":0,"w":24,"h":50},"v:keys":{"x":0,"y":107,"w":24,"h":6},"v:mode":{"x":24,"y":50,"w":24,"h":12},"grpPanel":{"x":0,"y":113,"w":24,"h":62},"znSubs":{"x":24,"y":62,"w":24,"h":20},"mdHolPanel":{"x":24,"y":82,"w":24,"h":54}}};
@@ -43,7 +43,8 @@
   html.prodj #pg-dj > .panel.box { box-shadow:inset 0 0 0 1px #4de8c822; }
   #rail #pdTab { background:#ff3d9a; }   /* GlowBop pink */
   #rail .rail-sep[data-g=pro], #rail button[data-p=pro] { display:none !important; }   /* the PRO DJ / PRO HOME tabs say it; no label row, no tour key */
-  #rail button.locked { filter:saturate(.4) brightness(.78); opacity:.8; box-shadow:none !important; }   /* Oct 16: locked Pro tabs keep a soft version of their colour */
+  #rail button.locked { position:relative; box-shadow:none !important; }   /* Oct 16 night: locked Pro tabs keep their full colour and wear a gold lock badge */
+  #rail button.locked::after { content:'🔒 PRO'; position:absolute; top:5px; right:6px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
   #rail button.nope { animation:pdNope .35s ease; } @keyframes pdNope { 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
   /* ---- Pro DJ is a tighter console: smaller paddings and keys so more fits on one screen */
   html.prodj #pg-dj > .panel.box { padding:8px 10px 10px; gap:8px; }
@@ -356,7 +357,7 @@
     const pg = $('pg-' + GB.page); if (!pg) return [];
     const view = $('view'), out = [];
     const v = [[view.querySelector(':scope > .panel:not(.reads-panel):not(#proKeysBox)'), 'v:wall'], [$('proKeysBox'), 'v:keys'], [view.querySelector(':scope > .modebar'), 'v:mode'], [view.querySelector(':scope > .reads-panel'), 'v:reads']];
-    v.forEach(([el, id]) => { if (el) { el.dataset.lk = id; out.push(el); } });
+    if (GB.page !== 'pro') v.forEach(([el, id]) => { if (el) { el.dataset.lk = id; out.push(el); } });   // the upgrade page has no Live wall
     let n = 0;
     [...pg.children].forEach(el => { if (!el.classList.contains('panel')) return; if (el.hidden || el.id === 'pdPanel' && false) return;
       el.dataset.lk = el.id || ('p' + (n)); if (!el.id) n++; out.push(el); });
