@@ -369,7 +369,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCube); else buildCube();
   // 🥚 EASTER EGG (Oct 17, Graham): tap the corner logo and GlowBop pretends to wreck everything. Every tap plays it, and a
   //   different "disaster" is picked each time (never the same twice in a row). The boxes vanish, the rail keys fall off,
-  //   then it HOLDS the dead screen: every tap makes it worse, and only after 5 frantic taps (or 40 s) does it say
+  //   then it HOLDS the dead screen: every tap makes it worse, and only after 3 frantic taps (or 40 s) does it say
   //   "Just kidding 😎" and fly everything back. Only the screen plays along; the lights keep going and nothing is touched.
   const EGGS = [
     {k: 'erase', a: '#ff2a4d', b: '#ff8a3d', t: '⚠️ ERASING ALL SHOWS…', pre: 'Deleting: ', files: ['Looks', 'Song Shows', 'Saved scenes', 'Your layouts', 'Light map', 'Holiday shows', 'Logos', 'Settings', 'Everything'],
@@ -421,7 +421,7 @@
       while (fallen < keys.length * e) { const n = keys[fallen++]; n.style.setProperty('--egr', (Math.random() * 60 - 30) + 'deg'); n.classList.add('eg-fall'); }
       while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.ef = n.getAttribute('fill'); n.setAttribute('fill', '#221d33'); n.dataset.l = '0'; }
       if (k < 1) requestAnimationFrame(tick); else done(); };
-    const NEED = 5; let taps = 0, held = null, revealed = false;
+    const NEED = 3; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
       tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = ''; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
