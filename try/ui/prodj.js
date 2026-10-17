@@ -416,6 +416,8 @@
   let cur = null;                                   // {key, L}
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
+    // 📉 Oct 17: the readout strip got slim. Saved layouts (yours and the shipped ones) give it a short box once and everything below floats up.
+    if (L && L['v:reads'] && L['v:reads'].h > 9 && S.get('gb_rmini:' + store(k)) !== '1') { L['v:reads'].h = 9; settle(L, 'v:reads'); save(k, L); S.set('gb_rmini:' + store(k), '1'); }
     if (k && L && !arranging && S.get(store(k) + ':auto') === '1' && items().some(el => !L[el.dataset.lk])) return compact(true);   // an untouched template + new boxes: rebuild it
     if (k && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); const D = DEFAULTS[k + ':' + bucket()] || DEFAULTS[k + ':' + BASE[bucket()]];   // every page starts on its tidy template
       if (D && items().every(el => D[el.dataset.lk])) { save(k, JSON.parse(JSON.stringify(D))); put(store(k) + ':auto', '2'); return layout(); }   // Graham's own arrangement ships as the default
