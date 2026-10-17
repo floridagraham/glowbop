@@ -136,6 +136,8 @@
   const CHIP_IC = {rise: 'up', close: 'center', burst: 'burst', spin: 'refresh', rainbow: 'rainbow', zipper: 'xfade', heartbeat: 'heart', star: 'star',
     classic: 'sparkle', supernova: 'star', starburst: 'burst', heartpop: 'heart', shatter: 'quake', colorbomb: 'colorbomb', rainbowwave: 'rainbow', bassslam: 'vol', lightning: 'lightning'};
   const chipIc = (k, emo) => GB.ICON && GB.ICON[CHIP_IC[k]] ? GB.svg(CHIP_IC[k]) : emo;
+  // 🏠 Home users pick from 3 (Oct 16 night, Graham): 🎲 Random (draws from every style, a free taste of Pro) + 2 favorites. Pro gets them all.
+  const HOME_FREE = {build: ['spin', 'rise'], drop: ['classic', 'supernova']};
   function chooser(key, list, defMode = 'all', defStyle = null) {
     const S = GB.store, keys = list.map(x => x[0]), dStyle = defStyle || keys[0];
     if (key === 'build' && S.get('gb_build_style', '') === 'auto') { S.set('gb_build_mode', 'all'); S.set('gb_build_style', 'rise'); }   // old "Auto"
@@ -144,15 +146,29 @@
       one: () => { const v = S.get('gb_' + key + '_style', dStyle); return keys.includes(v) ? v : dStyle; },
       pool: () => { try { const p = JSON.parse(S.get('gb_' + key + '_pool', '') || 'null'); const q = Array.isArray(p) ? p.filter(k => keys.includes(k)) : []; return q.length ? q : keys.slice(); } catch (e) { return keys.slice(); } },
       last: null,
-      pick() { if (GB.pro === false) return keys[Math.floor(Math.random() * keys.length)];   // Home DJ: a random style each time
+      home: () => { const v = GB.store.get('gb_' + key + '_home', 'random'); return HOME_FREE[key].includes(v) ? v : 'random'; },
+      pick() { if (GB.pro === false) { const h = C.home(); if (h !== 'random') return h;   // Home DJ: their pick, or 🎲 a random style from all of them
+          const ks = keys.filter(k => k !== C.last); return (C.last = ks[Math.floor(Math.random() * ks.length)]); }
         const m = C.mode(); if (m === 'one') return C.one();
         let ks = m === 'mix' ? C.pool() : keys.filter(k => k !== 'classic');
         if (ks.length > 1) ks = ks.filter(k => k !== C.last);
         return (C.last = ks[Math.floor(Math.random() * ks.length)]); },
-      label() { const m = C.mode(); return m === 'one' ? list.find(x => x[0] === C.one())[2].toUpperCase() : m === 'mix' ? 'MY MIX · ' + C.pool().length : 'FULL RANDOM'; },
+      label() { if (GB.pro === false) { const h = C.home(); return h === 'random' ? 'RANDOM' : list.find(x => x[0] === h)[2].toUpperCase(); }
+        const m = C.mode(); return m === 'one' ? list.find(x => x[0] === C.one())[2].toUpperCase() : m === 'mix' ? 'MY MIX · ' + C.pool().length : 'FULL RANDOM'; },
       mount(wrap, onChange) {
-        wrap.innerHTML = `<div class="seg dj-cmode"><button class="btn" data-m="one">One style</button><button class="btn" data-m="mix">🎲 My mix</button><button class="btn" data-m="all">🎲 Full random</button></div>
-          <div class="dj-bwrap"><div class="chips dj-bstyles" role="group" style="--c:var(--pink)"></div></div>`;
+        wrap.innerHTML = `<div class="dj-homepick chips" role="group"></div><div class="dj-propick"><div class="seg dj-cmode"><button class="btn" data-m="one">One style</button><button class="btn" data-m="mix">🎲 My mix</button><button class="btn" data-m="all">🎲 Full random</button></div>
+          <div class="dj-bwrap"><div class="chips dj-bstyles" role="group" style="--c:var(--pink)"></div></div></div>`;
+        // the Home picker: 🎲 Random + 2 free styles, then the Pro styles wearing a gold lock (tap one: a teaser, not a no)
+        const hp = wrap.querySelector('.dj-homepick');
+        const hpaint = () => { const h = C.home(); hp.querySelectorAll('.chip[data-h]').forEach(c => { const on = c.dataset.h === h; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); }); onChange && onChange(); };
+        [['random', '🎲', 'Random']].concat(list.filter(x => HOME_FREE[key].includes(x[0]))).forEach(([k, ic, name]) => {
+          const c = document.createElement('button'); c.className = 'chip'; c.dataset.h = k; c.innerHTML = `<span class="ic">${k === 'random' ? '🎲' : chipIc(k, ic)}</span>${name}`;
+          c.onclick = () => { GB.store.set('gb_' + key + '_home', k); hpaint(); GB.sfx('tap'); }; hp.appendChild(c); });
+        list.filter(x => !HOME_FREE[key].includes(x[0])).forEach(([k, ic, name]) => {
+          const c = document.createElement('button'); c.className = 'chip dj-lockchip'; c.innerHTML = `<span class="ic">${chipIc(k, ic)}</span>${name}`;
+          c.onclick = () => { GB.proSound ? GB.proSound('tease') : GB.sfx('ok'); GB.toast('✨ ' + name + ' comes with GlowBop Pro. 🎲 Random still shows it off sometimes!'); };
+          hp.appendChild(c); });
+        hpaint(); C.hpaint = hpaint;
         const box = wrap.querySelector('.dj-bstyles');
         const paint = () => { const m = C.mode(), p = C.pool();
           wrap.querySelectorAll('.dj-cmode .btn').forEach(b => { b.classList.toggle('on', b.dataset.m === m); b.style.setProperty('--c', 'var(--pink)'); });
@@ -427,14 +443,20 @@
   .dj-pads .tile.pro-pad.locked::after { content:'🔒 PRO'; position:absolute; top:4px; right:8px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
   .dj-lockline { display:flex; align-items:center; gap:8px; margin-top:10px; padding:8px 12px; border-radius:14px; background:#0007; border:1px dashed color-mix(in srgb, var(--orchid) 50%, transparent); color:var(--dim); font-size:calc(13px * var(--fs, 1)); cursor:pointer; }
   .dj-lockline b { color:var(--orchid); }
+  .dj-homepick { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .dj-homepick .chip { min-height:38px; padding:0 11px; font-size:calc(13px * var(--fs, 1)); gap:4px; white-space:nowrap; --c:var(--pink); }
+  .dj-homepick .chip.dj-lockchip { position:relative; padding-right:44px; }
+  .dj-homepick .chip.dj-lockchip::after { content:'🔒 PRO'; position:absolute; right:5px; top:50%; transform:translateY(-50%); font:800 8px/1 var(--mono); letter-spacing:.5px; background:#ffd21a; color:#000; border-radius:5px; padding:3px 4px; }
   `);
   function proPaint() {
     const locked = GB.pro === false;
     document.querySelectorAll('.dj-pads .tile').forEach(t => { const pro = PRO_PADS.includes(t.dataset.k); t.classList.toggle('pro-pad', pro); t.classList.toggle('locked', pro && locked); });
-    ['djBuildPick', 'djDropPick'].forEach(id => { const n = $(id); if (!n) return; n.hidden = locked; const sub = n.previousElementSibling; if (sub && sub.classList.contains('dj-sub')) sub.hidden = locked; });
+    ['djBuildPick', 'djDropPick'].forEach(id => { const n = $(id); if (!n) return; n.hidden = false; const sub = n.previousElementSibling; if (sub && sub.classList.contains('dj-sub')) sub.hidden = false;
+      const hp = n.querySelector('.dj-homepick'), pp = n.querySelector('.dj-propick'); if (hp) hp.hidden = !locked; if (pp) pp.hidden = locked; });
+    [BUILD, DROP].forEach(C => { C.hpaint && C.hpaint(); });
     let line = $('djStyleLock');
     if (locked && !line && $('djDropPick')) { line = document.createElement('div'); line.id = 'djStyleLock'; line.className = 'dj-lockline';
-      line.innerHTML = GB.svg('lock') + '<span>Every build and drop picks its own style. <b>Pro</b> lets you choose the build and drop styles.</span>';
+      line.innerHTML = GB.svg('lock') + '<span><b>Pro</b> unlocks all 8 builds and 9 drops, plus My mix.</span>';
       line.onclick = () => GB.go('pro'); $('djDropPick').after(line); }
     if (line) line.hidden = !locked;
   }
