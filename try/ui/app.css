@@ -466,3 +466,13 @@ html body #view .reads-panel .read .v small { font-size:calc(10px * var(--fs, 1)
 html body #view .reads-panel .read.sm .v { max-width:22ch; }
 html body #view .reads-panel .meter { order:9; flex:1 0 100%; height:5px; gap:2px; }
 html body #view .reads-panel #rMore { order:10; flex:1 0 100%; font-size:calc(10.5px * var(--fs, 1)) !important; line-height:1.3; margin:0; }
+
+/* 🎵 the show status bar now sits in the header (Oct 17): one slim line with its Back to music key */
+#hd .line .modebar.in-hd { flex:1 1 auto; min-width:0; background:none; border:0; border-radius:0; padding:0; gap:8px; }
+#hd .modebar.in-hd .t b { font:600 calc(12px * var(--fs, 1))/1.15 var(--cond); letter-spacing:2px; color:var(--c, var(--green)); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+#hd .modebar.in-hd .t b .ic { width:1em; height:1em; }
+#hd .modebar.in-hd .t small { font:calc(12px * var(--fs, 1)) var(--mono); color:var(--cyan); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#hd .modebar.in-hd #mBtn { min-height:32px; padding:0 12px; font-size:calc(12.5px * var(--fs, 1)); box-shadow:0 0 12px -2px var(--pink); }
+#hd .modebar.in-hd .mfad, #hd .modebar.in-hd .mloop, #hd .modebar.in-hd .mov { position:static; min-height:30px; padding:0 8px; }
+@media (min-width: 700px) { #hd .modebar.in-hd .t b { font-size:calc(13px * var(--fs, 1)); } #hd .modebar.in-hd .t small { font-size:calc(14px * var(--fs, 1)); } }
+@media (max-width: 699px) { #hd .modebar.in-hd .t small { display:none; } #hd .modebar.in-hd #mBtn { padding:0 8px; font-size:calc(11px * var(--fs, 1)); min-height:30px; } }

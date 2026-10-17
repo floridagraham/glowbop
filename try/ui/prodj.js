@@ -416,6 +416,8 @@
   let cur = null;                                   // {key, L}
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
+    // 🎵 Oct 17: the show status bar moved up into the header: drop its box from saved layouts and let everything float up
+    if (L && L['v:mode']) { delete L['v:mode']; const ids = Object.keys(L); if (ids.length) settle(L, ids[0]); save(k, L); }
     // 📉 Oct 17: the readout strip got slim. Saved layouts (yours and the shipped ones) give it a short box once and everything below floats up.
     if (L && L['v:reads'] && L['v:reads'].h > 9 && S.get('gb_rmini:' + store(k)) !== '1') { L['v:reads'].h = 9; settle(L, 'v:reads'); save(k, L); S.set('gb_rmini:' + store(k), '1'); }
     if (k && L && !arranging && S.get(store(k) + ':auto') === '1' && items().some(el => !L[el.dataset.lk])) return compact(true);   // an untouched template + new boxes: rebuild it

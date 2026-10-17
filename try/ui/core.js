@@ -290,6 +290,11 @@
     nb.classList.remove('beat', 'drop'); nb.classList.add('build'); nb.style.setProperty('--bp', Math.max(0, Math.min(1, p)).toFixed(3)); };
   GB.hdDrop = () => { const nb = hdName(); if (!nb) return; nb.classList.remove('build', 'beat', 'drop'); void nb.offsetWidth; nb.classList.add('drop');
     setTimeout(() => nb.classList.remove('drop'), 800); };
+  // 🎵 Oct 17 (Graham): "MUSIC SHOW · LISTENING" moves out of the control board up into the header, where it's always there
+  //   (and its Back to music key with it). The board gets that room back.
+  const moveMode = () => { const mb = $('modeBar'), line = document.querySelector('#hd .line'), who = line && line.querySelector('.who');
+    if (!mb || !line || mb.closest('#hd')) return; (who ? who.after(mb) : line.prepend(mb)); mb.classList.add('in-hd'); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', moveMode); else moveMode();
   GB.css = text => { const st = document.createElement('style'); st.textContent = text; document.head.appendChild(st); };
   GB.lbl = (el, ic, text) => { el.innerHTML = (ic ? GB.svg(ic) : '') + '<span>' + GB.esc(text) + '</span>'; };
 
@@ -730,6 +735,7 @@
     const live = Date.now() - GB.lastOk < 3000, ct = $('ctext');
     ct.textContent = live ? ((GB.status.groups || []).length > 1 ? (GB.status.groups.length + ' GROUPS LINKED · ONLINE') : 'ONLINE · ' + (GB.status.listening ? 'LISTENING' : 'READY')) : 'NOT CONNECTED';
     ct.classList.toggle('bad', !live);
+    { const who = ct.closest('.who'), mb = $('modeBar'); if (who && mb && mb.closest('#hd')) { who.hidden = live; mb.hidden = !live; } }   // 🎵 the show status lives in the header; NOT CONNECTED takes its place when the link drops
     setTimeout(statusLoop, 1000);
   }
   async function loadCatalog() {
