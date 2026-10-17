@@ -218,6 +218,16 @@
   .dj-cmode { margin-top:10px; } .dj-cmode .btn { min-height:34px; font-size:calc(13px * var(--fs, 1)); }
   .dj-sub .ic { width:14px; height:14px; vertical-align:-2px; margin-right:4px; }
   .dj-sub { margin-top:12px; font:700 calc(12px * var(--fs, 1)) var(--mono); letter-spacing:1.5px; opacity:.8; display:flex; justify-content:space-between; }
+  /* Oct 16 night (Graham): BUILD and DROP side by side as two columns, so the box is short and the big button can be huge.
+     The button grows into any room the box has (stretch the box in Arrange and the button gets bigger). */
+  .dj-buildbox { display:flex; flex-direction:column; } .dj-buildbox > #djBuild { flex:1 1 auto; }
+  .dj-cols { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; flex:none; }
+  .dj-col { min-width:0; } .dj-col .dj-sub { margin-top:10px; gap:6px; } .dj-col .dj-sub > span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--pink); }
+  .dj-col .dj-homepick, .dj-col .dj-bstyles { flex-direction:column; flex-wrap:nowrap !important; overflow:visible !important; -webkit-mask:none !important; mask:none !important; gap:5px; margin-top:6px; }
+  .dj-col .chip { width:100%; justify-content:flex-start; min-height:32px !important; padding:0 8px !important; margin-right:0 !important; font-size:calc(12.5px * var(--fs, 1)) !important; overflow:hidden; }
+  .dj-col .dj-homepick .chip.dj-lockchip { padding-right:40px !important; }
+  .dj-col .dj-cmode { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; } .dj-col .dj-cmode .btn { flex:1 1 auto; min-height:30px; padding:0 6px; font-size:calc(11px * var(--fs, 1)); letter-spacing:.5px; }
+  .dj-col .dj-bwrap { margin-top:6px; } .dj-col .dj-sub > span:first-child { white-space:nowrap; flex:none; }
   .dj-bwrap { container-type:inline-size; margin-top:10px; }
   .dj-bstyles { display:flex; flex-wrap:nowrap; gap:6px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; padding:2px 2px 4px;
     -webkit-mask:linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask:linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
@@ -228,11 +238,11 @@
   .dj-bstyles .chip .ic { font-size:calc(14px * var(--fs, 1)); }
   `);
   GB.panel('dj', 3, el => {                                    // 🔝 Build & drop sits at the very top of the DJ page
-    el.classList.add('box'); el.style.setProperty('--c', 'var(--pink)');
+    el.classList.add('box', 'dj-buildbox'); el.style.setProperty('--c', 'var(--pink)');
     el.innerHTML = `<div class="ph"><span>Build &amp; drop</span><span class="r" id="djBuildR">HOLD, THEN LET GO</span></div>
       <button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">HOLD TO BUILD</span><span class="bcnt"></span><span class="bbar"></span></button>
-      <div class="dj-sub"><span>${GB.svg('faders')} BUILD STYLE</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div>
-      <div class="dj-sub"><span>${GB.svg('burst')} DROP STYLE</span><span id="djDropMode"></span></div><div id="djDropPick"></div>
+      <div class="dj-cols"><div class="dj-col"><div class="dj-sub"><span>${GB.svg('faders')} BUILD</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div></div>
+        <div class="dj-col"><div class="dj-sub"><span>${GB.svg('burst')} DROP</span><span id="djDropMode"></span></div><div id="djDropPick"></div></div></div>
       <p class="note">Hold it: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds. Let go: it drops. Slide your finger off the key to cancel.
         Pick one style, tick your own mix, or go full random: every build and every drop can be different.</p>`;
     const b = $('djBuild'), lbl = b.querySelector('.blbl'), cnt = b.querySelector('.bcnt'); let held = false, t0 = 0, raf = 0, cur = 'rise';
@@ -457,7 +467,7 @@
     let line = $('djStyleLock');
     if (locked && !line && $('djDropPick')) { line = document.createElement('div'); line.id = 'djStyleLock'; line.className = 'dj-lockline';
       line.innerHTML = GB.svg('lock') + '<span><b>Pro</b> unlocks all 8 builds and 9 drops, plus My mix.</span>';
-      line.onclick = () => GB.go('pro'); $('djDropPick').after(line); }
+      line.onclick = () => GB.go('pro'); ($('djDropPick').closest('.dj-cols') || $('djDropPick')).after(line); }
     if (line) line.hidden = !locked;
   }
   GB.on('ready', () => {
