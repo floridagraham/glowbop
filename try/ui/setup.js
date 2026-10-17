@@ -75,8 +75,11 @@
     govee: 'Govee: first turn on "LAN Control" for the light in the Govee app (light → settings ⚙). Govee lights show one color at a time.',
     surplife: 'Surplife curtain: Find my lights finds it over Bluetooth (close the Surplife app on your phone first: only one connection at a time). Or type its Bluetooth address, e.g. AA:BB:CC:DD:EE:FF.',
     daybetter: 'DayBetter strips and light poles: Find my lights finds them over Bluetooth (close the DayBetter app on your phone first: only one connection at a time). Each strip glows one color at a time, picked from the show and pulsing with the beat.',
-    blecheap: 'Bluetooth LED strips (names like MELK, ELK-BLEDOM, LEDBLE): the cheap strips that come with furniture, TV backlights and neon signs. Find my lights finds them; close the strip\'s phone app first. Each one glows one color, following the show.'};
-  const BRAND = {twinkly: 'Twinkly', wled: 'WLED', govee: 'Govee', surplife: 'Surplife curtain (Bluetooth)', daybetter: 'DayBetter (Bluetooth)', blecheap: 'Bluetooth LED strip'};
+    blecheap: 'Bluetooth LED strips (names like MELK, ELK-BLEDOM, LEDBLE): the cheap strips that come with furniture, TV backlights and neon signs. Find my lights finds them; close the strip\'s phone app first. Each one glows one color, following the show.',
+    nanoleaf: 'Nanoleaf (string lights, lightstrips, panels): set it up on Wi-Fi in the Nanoleaf app first. When you tap Add, open the light in the Nanoleaf app and tap "Connect to API" within 30 seconds; GlowBop is listening and pairs once.'};
+  // 🌿 Nanoleaf pairs once: GlowBop listens for 30 s while the owner taps "Connect to API" in the Nanoleaf app
+  const nlHint = () => { const t = $('toast'); t.innerHTML = '<span></span>'; t.firstChild.textContent = '🌿 Now open the light in the Nanoleaf app and tap "Connect to API". GlowBop is listening for 30 seconds…'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 30000); };
+  const BRAND = {twinkly: 'Twinkly', wled: 'WLED', govee: 'Govee', surplife: 'Surplife curtain (Bluetooth)', daybetter: 'DayBetter (Bluetooth)', blecheap: 'Bluetooth LED strip', nanoleaf: 'Nanoleaf'};
   // ⭐ Full show: every LED is drawn separately (the real GlowBop look). Basic sync: the whole light shows one color.
   const FULL = new Set(['twinkly', 'wled', 'surplife', 'xlights']);
   const tier = t => FULL.has(t) ? '<span class="su-tier full" title="Every LED moves on its own: the full GlowBop show">Full show</span>' : '<span class="su-tier basic" title="The whole light glows one color that follows the music">Basic sync</span>';
@@ -139,7 +142,7 @@
       <div class="seg"><button class="btn c" id="suScan" style="--c:var(--cyan)">${lbl('search', 'Find my lights')}</button><button class="btn" id="suAddBtn">${lbl('add', 'Add by brand')}</button></div>
       <div id="suFound" class="list"></div>
       <div id="suAdd" class="su-inset" hidden>
-        <select id="suBrand" aria-label="Brand"><optgroup label="⭐ Full show"><option value="twinkly">Twinkly</option><option value="wled">WLED</option><option value="surplife">Surplife curtain (Bluetooth)</option></optgroup><optgroup label="Basic sync (one color)"><option value="govee">Govee</option><option value="daybetter">DayBetter (Bluetooth)</option><option value="blecheap">Bluetooth LED strip</option></optgroup></select>
+        <select id="suBrand" aria-label="Brand"><optgroup label="⭐ Full show"><option value="twinkly">Twinkly</option><option value="wled">WLED</option><option value="surplife">Surplife curtain (Bluetooth)</option></optgroup><optgroup label="Basic sync (one color)"><option value="govee">Govee</option><option value="daybetter">DayBetter (Bluetooth)</option><option value="blecheap">Bluetooth LED strip</option><option value="nanoleaf">Nanoleaf (Wi-Fi)</option></optgroup></select>
         <div class="su-addrow"><input type="search" id="suIp" placeholder="IP address, e.g. 192.168.0.50" aria-label="IP address" autocapitalize="off" spellcheck="false"><button class="btn c" id="suAddGo" style="--c:var(--cyan)">Add</button></div>
         <p class="note" id="suHelp"></p>
       </div>
@@ -150,6 +153,7 @@
     $('suAddGo').onclick = async () => {
       const ip = $('suIp').value.trim(); if (!ip) return GB.toast('Type the light\'s IP address');
       GB.toast('Checking ' + ip + '…');
+      if ($('suBrand').value === 'nanoleaf') nlHint();
       if (await GB.post('/api/lights/add', {type: $('suBrand').value, ip})) { lsDirty = true; GB.toast('💡 Added'); $('suIp').value = ''; loadLights(); GB.freed && GB.freed(''); }
     };
     $('suIp').addEventListener('keydown', e => { if (e.key === 'Enter') $('suAddGo').click(); });
@@ -451,7 +455,7 @@
       const row = document.createElement('div'); row.className = 'item';
       row.innerHTML = `<span class="su-dot" style="background:#555;color:transparent"></span><div class="su-tx"><b>${esc(f.name)}</b>${tier(f.type)}<small>${esc(BRAND[f.type] || f.type)} · ${esc(f.ip)}${f.n ? ' · ' + f.n + ' lights' : ''}${f.model ? ' · ' + esc(f.model) : ''}</small></div>`;
       const b = btn('c sm', f.added ? 'Added' : lbl('add', 'Add')); b.style.setProperty('--c', 'var(--cyan)'); b.style.flex = '0 0 auto'; b.disabled = !!f.added;
-      b.onclick = async () => { if (await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name, style: f.style, model: f.model})) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; GB.toast('💡 Added ' + f.name); loadLights(); GB.freed && GB.freed(f.name); } };
+      b.onclick = async () => { if (f.type === 'nanoleaf') nlHint(); if (await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name, style: f.style, model: f.model, port: f.port})) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; GB.toast('💡 Added ' + f.name); loadLights(); GB.freed && GB.freed(f.name); } };
       row.appendChild(b); box.appendChild(row);
     });
   }
