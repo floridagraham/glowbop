@@ -355,6 +355,7 @@ body.wallfull #hd, body.wallfull #rail { z-index:0; }
 
 /* ===== Oct 16 night (Graham): the two Pro doors each get their own look; the upgrade page drops the Live wall so the cards fill the screen */
 body[data-page=pro] #view { display:none !important; }
+body[data-page=lights] #view { display:none !important; }   /* 🧵 Oct 17: on LIGHTS the editor IS the live wall */
 html.door-dj { --panel:#170c1d; --line:#3b1b44; }
 html.door-home { --panel:#1b120a; --line:#43301b; }
 #proTour { position:relative; overflow:hidden; }

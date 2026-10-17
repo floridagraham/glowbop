@@ -374,7 +374,8 @@
     let n = 0;
     [...pg.children].forEach(el => { if (!el.classList.contains('panel')) return; if (el.hidden || el.id === 'pdPanel' && false) return;
       el.dataset.lk = el.id || ('p' + (n)); if (!el.id) n++; out.push(el); });
-    return out.filter(el => !el.hidden && getComputedStyle(el).display !== 'none' || el.classList.contains('lay-it'));
+    const viewOff = getComputedStyle(view).display === 'none';     // 🧵 LIGHTS hides the Live wall (its editor is the live wall there)
+    return out.filter(el => !(viewOff && view.contains(el)) && (!el.hidden && getComputedStyle(el).display !== 'none' || el.classList.contains('lay-it')));
   }
   function measure(list) {
     const m = $('main'), mr = m.getBoundingClientRect(), cs = getComputedStyle(m);

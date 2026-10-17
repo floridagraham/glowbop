@@ -15,7 +15,7 @@
   GB.css(`
   .sl-top { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
   .sl-top .chip { min-height:40px; }
-  .sl-stage { position:relative; height:min(56vh, 480px); min-height:260px; border-radius:0 14px 0 14px; background:#06050c; border:1px solid var(--line); overflow:hidden; touch-action:none; }
+  .sl-stage { position:relative; height:min(64vh, 640px); min-height:280px; border-radius:0 14px 0 14px; background:#06050c; border:1px solid var(--line); overflow:hidden; touch-action:none; }
   .sl-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; user-select:none; -webkit-user-select:none; }
   .sl-stage .h { cursor:grab; }
   .sl-zoom .btn { min-width:52px; }
@@ -25,15 +25,53 @@
   .sl-tools { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 130px), 1fr)); gap:6px; }
   .sl-tools .btn { min-height:48px; }
   .sl-hint { font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:.5px; color:var(--cyan); min-height:1.3em; }
+  .sl-hd { display:none; }
+  .sl-go { min-height:52px; font-size:calc(16px * var(--fs, 1)); }
+  /* ✏️ full-screen editor (Oct 17, Graham: "make that draw thing bigger... so it looks like you're actually customizing it") */
+  .sl-full { position:fixed !important; inset:0; z-index:240; margin:0 !important; border-radius:0 !important; background:#05040a !important;
+    display:grid !important; grid-template-columns:minmax(0, 1fr) minmax(280px, 360px); grid-template-rows:auto auto minmax(0, 1fr) auto; gap:8px 12px;
+    padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left)); overflow:hidden; }
+  .sl-full > .ph, .sl-full > .note, .sl-full > .sl-go { display:none !important; }
+  .sl-full .sl-hd { display:flex; grid-column:1 / -1; align-items:center; gap:8px; border-bottom:2px solid var(--cyan); padding-bottom:6px; }
+  .sl-full .sl-hd b { flex:1; min-width:0; font:800 calc(18px * var(--fs, 1)) var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--cyan); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sl-full .sl-hd .btn { min-height:46px; }
+  .sl-full .sl-top { grid-column:1; grid-row:2; }
+  .sl-full .sl-stage { grid-column:1; grid-row:3; height:auto; min-height:0; }
+  .sl-full .sl-hint { grid-column:1; grid-row:4; }
+  .sl-full .sl-side { grid-column:2; grid-row:2 / 5; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:2px; }
+  @media (max-width: 760px), (max-height: 520px) and (max-width: 900px) {
+    .sl-full { grid-template-columns:minmax(0, 1fr); grid-template-rows:auto auto minmax(240px, 1fr) auto minmax(0, 42%); }
+    .sl-full .sl-side { grid-column:1; grid-row:5; }
+  }
+  body.sl-open { overflow:hidden; }
+  .sl-full > .sl-more { display:none !important; }
+  .sl-more { border-top:1px solid var(--line); padding-top:4px; }
+  .sl-more > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; min-height:48px; font:800 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; text-transform:uppercase; color:var(--c, var(--cyan)); }
+  .sl-more > summary::-webkit-details-marker { display:none; }
+  .sl-more > summary::after { content:'▸'; margin-left:auto; transition:transform .15s; }
+  .sl-more[open] > summary::after { transform:rotate(90deg); }
+  .sl-sub { background:none !important; border:0 !important; padding:0 0 8px !important; margin:0 !important; box-shadow:none !important; }
+  .sl-sub > .ph { display:none !important; }
   `);
 
-  let ST = null, sel = '', strand = 0, LAY = {}, dirty = {}, svg = null, view = null, zoom = 1, drag = null, lastPick = 0;
+  let ST = null, sel = '', strand = 0, BULB = false, LAY = {}, dirty = {}, svg = null, view = null, zoom = 1, drag = null, lastPick = 0, MOVE = {};
   const strings = () => (ST ? ST.devices.filter(d => d.kind === 'string') : []);
+  const curtains = () => (ST ? ST.devices.filter(d => d.kind === 'grid') : []);
+  const cpts = d => { const m = MOVE[d.id] || [0, 0]; return d.pts.map(([x, y]) => [x + m[0], y + m[1]]); };     // a curtain where you dragged it
+  const bbox = pts => { const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]); return {x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys)}; };
   const dev = id => (ST ? ST.devices.find(d => d.id === id) : null);
 
   // ---------------- maths: the same as lights.py _lay_one / lay_points
-  function layOne(n, pts, fold, gap, rev) {
+  function smoothPath(p, per = 16) {             // 💎 Catmull-Rom through the points, same as lights.py smooth_path
+    if (p.length < 3) return p; const q = [p[0], ...p, p[p.length - 1]], out = [];
+    for (let i = 1; i < q.length - 2; i++) { const [p0, p1, p2, p3] = [q[i - 1], q[i], q[i + 1], q[i + 2]];
+      for (let s = 0; s < per; s++) { const t = s / per, t2 = t * t, t3 = t2 * t;
+        out.push([0, 1].map(c => 0.5 * ((2 * p1[c]) + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t2 + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t3))); } }
+    out.push(p[p.length - 1]); return out;
+  }
+  function layOne(n, pts, fold, gap, rev, smooth, pins) {
     n = Math.max(1, n | 0); pts = (pts && pts.length >= 2) ? pts : [[0, 0], [Math.max(1, n - 1), 0]];
+    if (smooth && !(fold && (fold.rows | 0) > 1)) pts = smoothPath(pts);
     let out = [];
     if (fold && (fold.rows | 0) > 1) {
       const R = fold.rows | 0, k = R, L = n, P = Math.max(1, Math.ceil(L / k));
@@ -54,12 +92,14 @@
         out.push([pts[s - 1][0] + t * (pts[s][0] - pts[s - 1][0]), pts[s - 1][1] + t * (pts[s][1] - pts[s - 1][1])]);
       }
     }
-    return rev ? out.reverse() : out;
+    if (rev) out.reverse();
+    if (pins) Object.entries(pins).forEach(([j, xy]) => { j = +j; if (j >= 0 && j < out.length) out[j] = [xy[0], xy[1]]; });   // ✋ single bulbs you moved
+    return out;
   }
   function partCounts(d, lay) { const out = []; let left = d.n; lay.parts.forEach((p, k) => { const c = k === lay.parts.length - 1 ? left : Math.max(0, Math.min(left, p.n | 0)); out.push(c); left -= c; }); return out; }
   function layPoints(d, lay) {
     const cs = partCounts(d, lay), res = [];
-    lay.parts.forEach((p, k) => { if (cs[k] > 0) res.push(layOne(cs[k], p.pts, p.fold, lay.gap || 1, p.rev)); });
+    lay.parts.forEach((p, k) => { if (cs[k] > 0) res.push(layOne(cs[k], p.pts, p.fold, lay.gap || 1, p.rev, p.smooth, p.pins)); });
     return res;                                    // [[x, y] per bulb] per strand
   }
 
@@ -68,7 +108,7 @@
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     ST.devices.forEach(d => {
       if (d.id === skip) return;
-      const pts = d.kind === 'grid' ? d.pts : (LAY[d.id] ? layPoints(d, LAY[d.id]).flat() : []);
+      const pts = d.kind === 'grid' ? cpts(d) : (LAY[d.id] ? layPoints(d, LAY[d.id]).flat() : []);
       pts.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
     });
     return isFinite(x0) ? {x0, y0, x1, y1} : {x0: 0, y0: 0, x1: 19, y1: 0};
@@ -89,7 +129,7 @@
   function fit() {
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     ST.devices.forEach(d => {
-      const pts = d.kind === 'grid' ? d.pts : (LAY[d.id] ? layPoints(d, LAY[d.id]).flat().concat(LAY[d.id].parts.flatMap(p => p.pts)) : []);
+      const pts = d.kind === 'grid' ? cpts(d) : (LAY[d.id] ? layPoints(d, LAY[d.id]).flat().concat(LAY[d.id].parts.flatMap(p => p.pts)) : []);
       pts.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
     });
     if (!isFinite(x0)) { x0 = 0; y0 = 0; x1 = 20; y1 = 10; }
@@ -103,12 +143,14 @@
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     const R = 0.36, HR = Math.max(0.7, Math.min(view.w, view.h) / 26);
     let h = '';
+    if (SNAP) h += `<defs><pattern id="slGrid" patternUnits="userSpaceOnUse" x="-0.5" y="-0.5" width="1" height="1"><circle cx="0.5" cy="0.5" r="0.07" fill="#8f86ff" fill-opacity="0.35"/></pattern></defs>`
+      + `<rect x="${view.cx - view.w}" y="${view.cy - view.h}" width="${view.w * 2}" height="${view.h * 2}" fill="url(#slGrid)" pointer-events="none"/>`;
     let ci = 0;
     ST.devices.forEach(d => {
-      if (d.kind !== 'grid') return; const col = CCOL[ci++ % CCOL.length];
-      h += `<g opacity="0.55">${d.pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${R}" fill="${col}"/>`).join('')}</g>`;
-      const xs = d.pts.map(p => p[0]), ys = d.pts.map(p => p[1]);
-      h += `<text x="${Math.min(...xs)}" y="${Math.min(...ys) - 0.8}" font-size="${HR * 0.9}" fill="${col}" font-family="Saira Condensed, system-ui" font-weight="700">${esc(d.name)}</text>`;
+      if (d.kind !== 'grid') return; const col = CCOL[ci++ % CCOL.length], on = d.id === sel, pts = cpts(d), b = bbox(pts);
+      h += `<g class="lv" data-d="${esc(d.id)}" data-o="0" opacity="${on ? 1 : 0.85}">${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${R}" fill="${col}"/>`).join('')}</g>`;
+      h += `<rect class="c" data-id="${esc(d.id)}" x="${b.x0 - 0.6}" y="${b.y0 - 0.6}" width="${b.x1 - b.x0 + 1.2}" height="${b.y1 - b.y0 + 1.2}" rx="0.6" fill="${col}" fill-opacity="${on ? 0.12 : 0.02}" stroke="${col}" stroke-width="${on ? HR * 0.12 : HR * 0.05}" stroke-dasharray="${on ? 'none' : HR * 0.3}" style="cursor:move"/>`;
+      h += `<text x="${b.x0}" y="${b.y0 - 0.9}" font-size="${HR * 0.9}" fill="${col}" font-family="Saira Condensed, system-ui" font-weight="700" pointer-events="none">${esc(d.name)}${on ? '  ✥ drag to move' : ''}</text>`;
     });
     strings().forEach(d => {
       const lay = LAY[d.id]; if (!lay) return;
@@ -118,10 +160,12 @@
         const fk = (lay.parts[k].fold && lay.parts[k].fold.rows) || 1; let near = Infinity;     // spacing along a row (folded: every rows-th bulb)
         for (const st of new Set([1, fk])) for (let i = st; i < pts.length; i++) { const q = Math.hypot(pts[i][0] - pts[i - st][0], pts[i][1] - pts[i - st][1]); if (q > 1e-6) near = Math.min(near, q); }
         const r = Math.max(0.16, Math.min(R, (isFinite(near) ? near : 1) * 0.42));          // close-set bulbs: smaller dots so each one still shows
-        h += `<g opacity="${on ? (act ? 1 : 0.75) : 0.45}">${pts.map(([x, y], i) => `<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${i === 0 ? Math.max(r * 1.8, 0.3) : r}" fill="${col}"/>`).join('')}</g>`;
-        if (on) {
+        const pins = lay.parts[k].pins || {}, big = BULB && act ? Math.max(r, 0.3) : r;
+        const off = partCounts(d, lay).slice(0, k).reduce((a, b) => a + b, 0);
+        h += `<g class="lv" data-d="${esc(d.id)}" data-o="${off}" opacity="${on ? (act ? 1 : 0.85) : 0.7}">${pts.map(([x, y], i) => `<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${i === 0 ? Math.max(big * 1.8, 0.3) : big}" fill="${col}"${pins[i] ? ` stroke="#fff" stroke-width="0.08"` : ''}/>`).join('')}</g>`;
+        if (on && !BULB) {
           const pp = lay.parts[k].pts;
-          h += `<polyline points="${pp.map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="${HR * 0.06}" stroke-dasharray="${HR * 0.3} ${HR * 0.25}" opacity="${act ? 0.5 : 0.25}"/>`;
+          h += `<polyline points="${(lay.parts[k].smooth && !(lay.parts[k].fold && lay.parts[k].fold.rows > 1) ? smoothPath(pp) : pp).map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="${HR * 0.06}" stroke-dasharray="${HR * 0.3} ${HR * 0.25}" opacity="${act ? 0.5 : 0.25}"/>`;
           pp.forEach((p, i) => {
             const end = i === 0 || i === pp.length - 1, lbl = i === 0 ? (lay.parts[k].rev ? 'END' : 'START') : (i === pp.length - 1 ? (lay.parts[k].rev ? 'START' : 'END') : '');
             h += `<g class="h" data-s="${k}" data-p="${i}"><circle cx="${p[0]}" cy="${p[1]}" r="${end ? HR : HR * 0.75}" fill="${act ? col : '#000'}" fill-opacity="${act ? 0.18 : 0.4}" stroke="${col}" stroke-width="${HR * 0.15}"/>`
@@ -131,46 +175,69 @@
       });
     });
     svg.innerHTML = h;
-    paintTools();
+    paintTools(); if (LIVE) paintLive();
   }
 
   // ---------------- tools
   function paintTop() {
     const box = $('slTop'); if (!box) return;
-    const ss = strings();
-    if (!ss.length) { box.innerHTML = '<p class="note">Add a string light (Nanoleaf, Govee strip, WLED strip…) above, then lay it out here.</p>'; return; }
-    if (!ss.some(d => d.id === sel)) sel = ss[0].id;
-    box.innerHTML = ss.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${SCOL[i % SCOL.length]}">🧵 ${esc(d.name)} · ${d.n}</button>`).join('');
+    const ss = strings(), cc = curtains();
+    if (!ss.length && !cc.length) { box.innerHTML = '<p class="note">Add your lights above, then lay them out here.</p>'; return; }
+    if (!ST.devices.some(d => d.id === sel)) sel = (ss[0] || cc[0]).id;
+    box.innerHTML = ss.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${SCOL[i % SCOL.length]}">🧵 ${esc(d.name)} · ${d.n}</button>`).join('')
+      + cc.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${CCOL[i % CCOL.length]}">▦ ${esc(d.name)}</button>`).join('');
     box.querySelectorAll('[data-sl]').forEach(b => b.onclick = () => { sel = b.dataset.sl; strand = 0; paintTop(); draw(); });
   }
   function paintTools() {
-    const d = dev(sel), lay = d && LAY[sel], box = $('slTools'); if (!box) return;
+    document.querySelectorAll('#slSnap [data-sn]').forEach(b => b.classList.toggle('on', (b.dataset.sn === '1') === SNAP));
+    const d = dev(sel), lay = d && LAY[sel], box = $('slTools'), cb = $('slCurt'); if (!box) return;
+    const isC = !!(d && d.kind === 'grid'); cb.hidden = !isC;
+    if (isC) { box.hidden = true; $('slR').textContent = $('slR2').textContent = Object.keys(MOVE).length ? 'NOT SAVED' : 'CURTAIN'; return; }
     if (!d || !lay) { box.hidden = true; return; } box.hidden = false;
     if (strand >= lay.parts.length) strand = 0;
     const p = lay.parts[strand], cs = partCounts(d, lay), fr = p.fold ? p.fold.rows : 1;
     $('slStrands').innerHTML = [1, 2, 3, 4].map(k => `<button class="btn${lay.parts.length === k ? ' on' : ''}" data-ns="${k}">${k}</button>`).join('');
     $('slWhich').innerHTML = lay.parts.length > 1 ? lay.parts.map((q, k) => `<button class="chip${k === strand ? ' on' : ''}" data-st="${k}" style="--c:${SCOL[k % SCOL.length]}">Strand ${k + 1} · ${cs[k]}</button>`).join('') : '';
-    $('slWhichRow').hidden = lay.parts.length < 2;
+    $('slWhichRow').style.display = lay.parts.length < 2 ? 'none' : '';
     $('slFold').innerHTML = [[1, 'Line'], [2, '2 rows'], [3, '3 rows'], [4, '4 rows'], [6, '6 rows'], [8, '8 rows']].map(([k, t]) => `<button class="btn${fr === k ? ' on' : ''}" data-fr="${k}">${t}</button>`).join('');
-    $('slModeRow').hidden = fr < 2;
+    $('slModeRow').style.display = fr < 2 ? 'none' : '';
     $('slMode').innerHTML = [['snake', 'Back & forth'], ['alt', 'Every other bulb']].map(([m, t]) => `<button class="btn${p.fold && p.fold.mode === m ? ' on' : ''}" data-md="${m}">${t}</button>`).join('');
     $('slBendRow').style.display = fr > 1 ? 'none' : 'contents';
+    $('slCurveRow').style.display = fr > 1 ? 'none' : '';
+    $('slBulb').classList.toggle('on', BULB); $('slBulb').textContent = BULB ? '✋ Moving bulbs: tap to stop' : '✋ Move single bulbs';
+    $('slUnpin').style.display = Object.keys(p.pins || {}).length ? '' : 'none';
+    $('slCurveRow').querySelectorAll('[data-cv]').forEach(b => { b.classList.toggle('on', !!p.smooth === (b.dataset.cv === '1')); if (b.dataset.cv === '1') b.innerHTML = GB.pro === false ? '🔒 Smooth curves · PRO' : '💎 Smooth curves'; });
     $('slSave').classList.toggle('pulse', !!dirty[sel]);
-    $('slR').textContent = d.lay ? (dirty[sel] ? 'NOT SAVED' : 'LAID OUT') : (dirty[sel] ? 'NOT SAVED' : 'A PLAIN LINE');
+    $('slR').textContent = $('slR2').textContent = d.lay ? (dirty[sel] ? 'NOT SAVED' : 'LAID OUT') : (dirty[sel] ? 'NOT SAVED' : 'A PLAIN LINE');
   }
   function change() { dirty[sel] = true; view = view || null; draw(); }
 
   // ---------------- dragging handles
   function toWorld(e) { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const m = svg.getScreenCTM(); if (!m) return [0, 0]; const q = pt.matrixTransform(m.inverse()); return [q.x, q.y]; }
-  const snap = v => Math.round(v * 2) / 2;
+  let SNAP = true; try { SNAP = localStorage.getItem('gb_sl_snap') !== '0'; } catch (e) {}
+  const snap = v => SNAP ? Math.round(v) : Math.round(v * 20) / 20;      // 🧲 snap to grid: whole bulb spots (off = place freely)
   function bulbAt(d, lay, k, i) {                // the real bulb at handle i of strand k (first / last / nearest the bend)
     const cs = partCounts(d, lay), base = cs.slice(0, k).reduce((a, b) => a + b, 0), p = lay.parts[k], c = cs[k];
-    const pts = layOne(c, p.pts, p.fold, lay.gap || 1, p.rev), h = p.pts[i];
+    const pts = layOne(c, p.pts, p.fold, lay.gap || 1, p.rev, p.smooth, p.pins), h = p.pts[i];
     let best = 0, bd = Infinity; pts.forEach(([x, y], j) => { const q = (x - h[0]) ** 2 + (y - h[1]) ** 2; if (q < bd) { bd = q; best = j; } });
     return base + best;
   }
   function blink(d, lay, k, i) { const now = Date.now(); if (now - lastPick < 220) return; lastPick = now; GB.post('/api/lights/pick', {id: d.id, i: bulbAt(d, lay, k, i), secs: 1.2}); }
   function onDown(e) {
+    const c = e.target.closest && e.target.closest('.c');
+    if (c && !(e.target.closest('.h'))) {                               // ▦ grab a curtain anywhere and move it
+      e.preventDefault(); const id = c.dataset.id; if (sel !== id) { sel = id; paintTop(); }
+      drag = {curt: id, at: toWorld(e), from: (MOVE[id] || [0, 0]).slice()}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+      $('slHint').textContent = 'Drag the curtain to where it really hangs'; draw(); return;
+    }
+    if (BULB && LAY[sel]) {                                           // ✋ grab the nearest bulb of this strand
+      const lay = LAY[sel], d = dev(sel), per = layPoints(d, lay), pts = per[strand] || [], [x, y] = toWorld(e);
+      let best = -1, bd = Math.max(0.6, Math.min(view.w, view.h) / 30) ** 2; pts.forEach(([px, py], j) => { const q = (px - x) ** 2 + (py - y) ** 2; if (q < bd) { bd = q; best = j; } });
+      if (best < 0) return; e.preventDefault();
+      drag = {bulb: best}; try { svg.setPointerCapture(e.pointerId); } catch (x2) {}
+      const base = partCounts(d, lay).slice(0, strand).reduce((a, b) => a + b, 0); drag.real = base + best;
+      GB.post('/api/lights/pick', {id: d.id, i: drag.real, secs: 1.2}); $('slHint').textContent = 'Bulb ' + (drag.real + 1) + ' is blinking: drag it to where it really is'; return;
+    }
     const g = e.target.closest && e.target.closest('.h'); if (!g) return;
     e.preventDefault(); const k = +g.dataset.s, i = +g.dataset.p; strand = k;
     drag = {k, i, id: e.pointerId}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
@@ -179,45 +246,98 @@
   }
   function onMove(e) {
     if (!drag) return; e.preventDefault();
+    if (drag.bulb !== undefined) { const [x, y] = toWorld(e), p = LAY[sel].parts[strand]; p.pins = p.pins || {}; p.pins[drag.bulb] = [snap(x), snap(y)]; dirty[sel] = true;
+      const now = Date.now(); if (now - lastPick > 300) { lastPick = now; GB.post('/api/lights/pick', {id: sel, i: drag.real, secs: 1.2}); } return draw(); }
+    if (drag.curt) { const [x, y] = toWorld(e); MOVE[drag.curt] = [snap(drag.from[0] + x - drag.at[0]), snap(drag.from[1] + y - drag.at[1])]; dirty[drag.curt] = true; return draw(); }
     const [x, y] = toWorld(e), lay = LAY[sel], p = lay.parts[drag.k].pts;
     p[drag.i] = [snap(x), snap(y)]; dirty[sel] = true; draw(); blink(dev(sel), lay, drag.k, drag.i);
   }
   function onUp() { if (drag) { drag = null; $('slHint').textContent = ''; } }
 
+  // ---------------- 📺 live colours: every bulb shows what it is showing right now (this editor IS the live wall on LIGHTS)
+  let PTS = {}, LIVE = false;
+  async function loadPts() { try { const L = await GB.get('/api/lights'); PTS = {}; (L.points || []).forEach(p => PTS[p.id] = p); } catch (e) {} }
+  function paintLive() {
+    if (!svg || GB.page !== 'lights' || document.hidden) return;
+    const frs = GB.wallFrames || []; if (!frs.length) { if (LIVE) { LIVE = false; draw(); } return; }
+    const pix = {}, strip = {};
+    frs.forEach(g => { pix[g.id] = {w: g.w, c: g.occ && GB.occRGB ? GB.occRGB(g) : (g.rgb || '').match(/.{6}/g) || []}; (g.strips || []).forEach(t => strip[t.id] = (t.rgb || '').match(/.{6}/g) || []); });
+    LIVE = true;
+    svg.querySelectorAll('g.lv').forEach(gr => {
+      const id = gr.dataset.d, off = +gr.dataset.o || 0, P = PTS[id], st = strip[id], F = P && pix[P.group] || (P && Object.values(pix)[0]);
+      const cs = gr.children;
+      for (let j = 0; j < cs.length; j++) {
+        const led = off + j; let c = null;
+        if (st) c = st[led];
+        else if (P && F && led < P.x.length) c = F.c[P.y[led] * F.w + P.x[led]];
+        cs[j].setAttribute('fill', !c || c === '000000' ? '#1c1830' : '#' + c);
+      }
+    });
+  }
+  setInterval(paintLive, 125);
+
   // ---------------- load / save
   async function load(keepView) {
     try { ST = await GB.get('/api/lights/stage'); } catch (e) { return; }
     if (!ST || !Array.isArray(ST.devices)) ST = {devices: []};          // the website demo has no stage
+    await loadPts();
     strings().forEach(d => { if (!dirty[d.id]) LAY[d.id] = fromSaved(d) || fresh(d, d.n >= 200 ? 2 : 1); });
+    Object.keys(MOVE).forEach(id => { if (!dirty[id]) delete MOVE[id]; });
     if (!keepView) view = null;
     paintTop(); draw();
   }
+  async function placeCurtain(d, extra) {          // ▦ save where a curtain hangs (its top-left), plus a turn / mirror
+    const b = bbox(cpts(d)); return GB.post('/api/lights/place', Object.assign({id: d.id, place: [b.x0, b.y0]}, extra || {}));
+  }
   async function save() {
-    const d = dev(sel), lay = LAY[sel]; if (!d || !lay) return;
-    const r = await GB.post('/api/lights/lay', {id: d.id, lay});
-    if (r && r.ok) { dirty[sel] = false; GB.sfx && GB.sfx('ok'); GB.toast('🧵 Saved. The live wall now shows ' + d.name + ' where you laid it'); await load(true); }
+    const ids = Object.keys(dirty).filter(id => dirty[id]); if (!ids.length && LAY[sel]) ids.push(sel);
+    let ok = 0;
+    for (const id of ids) {
+      const d = dev(id); if (!d) continue;
+      const r = d.kind === 'grid' ? await placeCurtain(d) : (LAY[id] ? await GB.post('/api/lights/lay', {id, lay: LAY[id]}) : null);
+      if (r && r.ok) { dirty[id] = false; delete MOVE[id]; ok++; }
+    }
+    if (ok) { GB.sfx && GB.sfx('ok'); GB.toast('💾 Saved. The live wall now shows your lights where you put them'); await load(true); }
+  }
+  async function turn(extra) {
+    const d = dev(sel); if (!d || d.kind !== 'grid') return;
+    const o = d.orient || {rot: 0, flip: false}, b = bbox(cpts(d)), cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+    let body = {};
+    if (extra === 'rot') { const w = b.x1 - b.x0, hh = b.y1 - b.y0; body = {rot: ((o.rot || 0) + 90) % 360, place: [snap(cx - hh / 2), snap(cy - w / 2)]}; }   // turn around its middle
+    else body = {flip: !o.flip, place: [b.x0, b.y0]};
+    const r = await GB.post('/api/lights/place', Object.assign({id: d.id}, body));
+    if (r && r.ok) { dirty[d.id] = false; delete MOVE[d.id]; await load(true); }
   }
 
-  GB.panel('lights', 25, el => {
+  GB.panel('lights', 5, el => {
     el.id = 'slPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
-    el.innerHTML = `<div class="ph"><span>🧵 Lay out your string lights</span><span class="r" id="slR"></span></div>
-      <p class="note">Your curtains sit where they hang. Drag the <b>START</b> and <b>END</b> of each string to where they really are, add bends, or fold it into rows. The real bulb blinks white while you drag, so you can match it up. Strings with a splitter: pick how many strands, then lay each one, perfect for signs and logos. Tap <b>Save</b> and the live wall shows it all.</p>
+    el.innerHTML = `<div class="sl-hd"><b>🧵 Lay out your lights</b><span class="r" id="slR2" style="font:700 12px var(--cond);letter-spacing:1px;color:var(--dim)"></span><button class="btn c" id="slDone" style="--c:var(--green)">✓ Done</button></div>
+      <div class="ph"><span>🧵 Lay out your lights</span><span class="r" id="slR"></span></div>
+      <p class="note">This is your wall, live. Drag curtains to where they hang, drag each string's <b>START</b> and <b>END</b>, add bends or fold it into rows. The real bulb blinks white while you drag. Tap <b>Save</b>.</p>
       <div class="sl-top" id="slTop"></div>
       <div class="sl-stage" id="slStage"><svg id="slSvg" aria-label="Your lights, laid out"></svg></div>
-      <div class="sl-row sl-zoom"><b>Zoom</b><div class="seg"><button class="btn" id="slZo" aria-label="Zoom out">−</button><button class="btn" id="slFit">Fit</button><button class="btn" id="slZi" aria-label="Zoom in">+</button></div></div>
       <div class="sl-hint" id="slHint"></div>
-      <div id="slTools">
+      <button class="btn c wide sl-go" id="slBig" style="--c:var(--cyan)">✏️ Customize full screen</button>
+      <div class="sl-side"><div id="slCurt" hidden>
+        <p class="note">Drag the curtain to where it hangs. Turn or mirror it if its lights run another way.</p>
+        <div class="sl-tools"><button class="btn" id="slRot">↻ Turn 90°</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
+      </div><div id="slTools">
         <div class="sl-row"><b>Strands</b><div class="seg" id="slStrands"></div></div>
         <div class="sl-row" id="slWhichRow"><b>Laying</b><div class="sl-row" id="slWhich"></div></div>
         <div class="sl-row"><b>Shape</b><div class="seg" id="slFold"></div></div>
         <div class="sl-row" id="slModeRow"><b>Rows go</b><div class="seg" id="slMode"></div></div>
+        <div class="sl-row" id="slCurveRow"><b>Bends</b><div class="seg"><button class="btn" data-cv="0">Sharp corners</button><button class="btn" data-cv="1">💎 Smooth curves</button></div></div>
         <div class="sl-tools">
           <span id="slBendRow" style="display:contents"><button class="btn" id="slBend">＋ Add a bend</button><button class="btn" id="slUnbend">− Remove bend</button></span>
+          <button class="btn" id="slBulb">✋ Move single bulbs</button>
+          <button class="btn" id="slUnpin">↺ Reset bulbs</button>
           <button class="btn" id="slFlip">⇄ Flip direction</button>
           <button class="btn" id="slReset">↺ Start over</button>
           <button class="btn c" id="slSave" style="--c:var(--green)">💾 Save</button>
         </div>
-      </div>`;
+      </div>
+      <div class="sl-row"><b>Snap</b><div class="seg" id="slSnap"><button class="btn" data-sn="1">🧲 Snap to grid</button><button class="btn" data-sn="0">Free</button></div></div>
+      <div class="sl-row sl-zoom"><b>Zoom</b><div class="seg"><button class="btn" id="slZo" aria-label="Zoom out">−</button><button class="btn" id="slFit">Fit</button><button class="btn" id="slZi" aria-label="Zoom in">+</button></div></div></div>`;
     svg = el.querySelector('#slSvg');
     svg.addEventListener('pointerdown', onDown); svg.addEventListener('pointermove', onMove);
     svg.addEventListener('pointerup', onUp); svg.addEventListener('pointercancel', onUp);
@@ -225,7 +345,13 @@
     el.querySelector('#slZo').onclick = () => { zoom = Math.max(0.4, zoom / 1.35); view = null; draw(); };
     el.querySelector('#slFit').onclick = () => { zoom = 1; view = null; draw(); };
     el.addEventListener('click', e => {
-      const t = e.target.closest('button'); if (!t || !LAY[sel]) return;
+      const t = e.target.closest('button'); if (!t) return;
+      if (t.dataset.sn) { SNAP = t.dataset.sn === '1'; try { localStorage.setItem('gb_sl_snap', SNAP ? '1' : '0'); } catch (x) {} GB.toast(SNAP ? '🧲 Snap to grid on: everything clicks onto bulb spots' : '✋ Free placement'); return draw(); }
+      if (!LAY[sel]) return;
+      if (t.dataset.cv) {                       // 💎 smooth curves: GlowBop Pro
+        if (t.dataset.cv === '1' && GB.pro === false) { GB.toast('🔒 Smooth, snaky curves are a GlowBop Pro feature'); GB.sfx && GB.sfx('err'); return; }
+        LAY[sel].parts[strand].smooth = t.dataset.cv === '1'; return change();
+      }
       const d = dev(sel), lay = LAY[sel], p = lay.parts[strand];
       if (t.dataset.ns) {                       // how many strands come off the splitter: re-split, keep the first strand's spot
         const S = +t.dataset.ns; if (S === lay.parts.length) return;
@@ -238,12 +364,39 @@
     el.querySelector('#slBend').onclick = () => { const lay = LAY[sel]; if (!lay) return; const p = lay.parts[strand].pts, a = p[p.length - 2], b = p[p.length - 1];
       p.splice(p.length - 1, 0, [snap((a[0] + b[0]) / 2), snap((a[1] + b[1]) / 2 - 2)]); $('slHint').textContent = 'New bend in the middle of the last stretch: drag it into place'; change(); };
     el.querySelector('#slUnbend').onclick = () => { const lay = LAY[sel]; if (!lay) return; const p = lay.parts[strand].pts; if (p.length > 2) { p.splice(p.length - 2, 1); change(); } else GB.toast('No bends on this strand'); };
+    el.querySelector('#slBulb').onclick = () => { BULB = !BULB; $('slHint').textContent = BULB ? 'Tap and drag any bulb of this strand' : ''; draw(); };
+    el.querySelector('#slUnpin').onclick = () => { const lay = LAY[sel]; if (!lay) return; delete lay.parts[strand].pins; GB.toast('↺ Every bulb back on its line'); change(); };
     el.querySelector('#slFlip').onclick = () => { const lay = LAY[sel]; if (!lay) return; lay.parts[strand].rev = !lay.parts[strand].rev; GB.toast('⇄ START and END swapped'); change(); };
     el.querySelector('#slReset').onclick = () => { const d = dev(sel); if (!d) return; LAY[sel] = fresh(d, (LAY[sel] && LAY[sel].parts.length) || 1); strand = 0; view = null; change(); };
-    el.querySelector('#slSave').onclick = save;
+    el.querySelector('#slSave').onclick = save; el.querySelector('#slSaveC').onclick = save;
+    el.querySelector('#slRot').onclick = () => turn('rot'); el.querySelector('#slMir').onclick = () => turn('flip');
+    const full = on => { el.classList.toggle('sl-full', on); document.body.classList.toggle('sl-open', on); view = null; setTimeout(draw, 30);
+      if (on) history.pushState && history.pushState({sl: 1}, ''); };
+    el.querySelector('#slBig').onclick = () => full(true);
+    el.querySelector('#slDone').onclick = async () => { if (Object.values(dirty).some(Boolean)) await save(); full(false); };
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && el.classList.contains('sl-full')) full(false); });
+    window.addEventListener('popstate', () => { if (el.classList.contains('sl-full')) full(false); });
   });
   GB.on('page', id => { if (id === 'lights') setTimeout(() => load(false), 80); });
-  GB.on('ready', () => { if (GB.page === 'lights') load(false); });
+  // 🧩 Oct 17 (Graham: "combine all these little boxes into one"): the other layout tools fold into this panel
+  function foldIn() {
+    const host = $('slPanel'); if (!host || host.dataset.folded) return; host.dataset.folded = '1';
+    [['layoutPanel', '🗺️ Canvas & shape'], ['lineupPanel', '🧭 Line up my curtains'], ['drawPanel', '🏠 Draw on a photo (house, stage)'], ['camPanel', '📷 Map with camera']].forEach(([id, t]) => {
+      const p = $(id); if (!p) return;
+      const det = document.createElement('details'); det.className = 'sl-more'; det.style.setProperty('--c', getComputedStyle(p).getPropertyValue('--c') || 'var(--cyan)');
+      det.innerHTML = `<summary>${t}</summary>`; p.classList.remove('box'); p.classList.add('sl-sub'); det.appendChild(p); host.appendChild(det);
+    });
+  }
+  // 📐 the LIGHTS page: the editor is the big box (two-thirds wide on a laptop / iPad, full width on phones), everything else beside / below it
+  if (GB.layTPL) GB.layTPL.lights = {wide: [[0, 31, ['#slPanel']], [31, 17, []]], tall: [[0, 48, ['#slPanel']]]};
+  function freshLayout() {                         // once: drop any automatic LIGHTS layout made before the editor led the page (hand-made ones stay)
+    try {
+      if (localStorage.getItem('gb_sl_lay') === '2') return; localStorage.setItem('gb_sl_lay', '2');
+      const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('gb_lay3:lights:') && !k.endsWith(':auto')) ks.push(k); }
+      ks.forEach(k => { const a = localStorage.getItem(k + ':auto'); if (a === '1' || a === '2' || a === null) { localStorage.removeItem(k); localStorage.removeItem(k + ':auto'); GB.layPut && (GB.layPut(k, ''), GB.layPut(k + ':auto', '')); } });
+    } catch (e) {}
+  }
+  GB.on('ready', () => { foldIn(); freshLayout(); if (GB.page === 'lights') { load(false); GB.proDJ && setTimeout(() => GB.proDJ.relayout(), 300); } });
   window.addEventListener('resize', () => { if (GB.page === 'lights' && ST) draw(); });
   GB.stringLay = {layOne, reload: load};
 })();

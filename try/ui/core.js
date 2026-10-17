@@ -776,6 +776,7 @@
   const hexRGB = h => (typeof h === 'string') ? h.match(/.{6}/g) || [] : h;
   // 🧵 sparse frames: occ = which spots have a bulb (bit per spot, hex), rgb = colours of just those spots, in order
   let OCC = {k: '', bits: null};
+  GB.occRGB = b => occRGB(b);                                         // 🧵 shared with the Lights editor
   function occRGB(b) {
     if (OCC.k !== b.occ) { const bits = new Uint8Array(b.w * b.h); for (let i = 0; i < bits.length; i++) bits[i] = (parseInt(b.occ.substr((i >> 3) * 2, 2), 16) >> (7 - (i & 7))) & 1; OCC = {k: b.occ, bits}; }
     const cols = hexRGB(b.rgb), out = new Array(b.w * b.h); let j = 0;
@@ -909,7 +910,7 @@
   // 📡 Oct 17: phones/iPads lagged polling over Wi-Fi (a new request + 120 ms wait per picture). Now the laptop pushes every
   //   picture down one open stream; polling stays as the fallback (demo, older browsers, stream dropped).
   let ES = null, esOk = 0, esFails = 0;
-  function showGroups(r) { if (r.groups && r.groups.length) drawSetup(r.groups.map(g => g.shape ? g : Object.assign(g, {shape: null}))); GB.lastOk = Date.now(); }
+  function showGroups(r) { GB.wallFrames = r.groups || []; if (r.groups && r.groups.length) drawSetup(r.groups.map(g => g.shape ? g : Object.assign(g, {shape: null}))); GB.lastOk = Date.now(); }
   function streamOn() {
     if (ES || !window.EventSource || window.__demoWall || esFails > 3) return false;
     try { ES = new EventSource('/api/frames/live'); } catch (e) { ES = null; return false; }
@@ -923,6 +924,7 @@
     if (ES && Date.now() - esOk < 1500) { setTimeout(frameLoop, 500); return; }    // the stream is drawing, just keep watch
     try {
       const r = await GB.get('/api/frames');
+      GB.wallFrames = r.groups || [];                                   // 🧵 the Lights editor paints its bulbs from this
       if (r.groups && r.groups.length) drawSetup(r.groups.map(g => g.shape ? g : Object.assign(g, {shape: null})));
       else { const f = await GB.get('/api/frame'); if (f.rgb && f.rgb.length) drawSetup([{id: f.id || '', name: f.name || '', w: f.w, h: f.h, rgb: f.rgb, devices: f.devices || []}]); }
       GB.lastOk = Date.now();

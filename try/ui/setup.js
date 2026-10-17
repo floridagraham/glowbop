@@ -130,7 +130,7 @@
   });
 
   // 💡 1a. your lights: the list + find / add
-  GB.panel('lights', 10, el => {
+  GB.panel('lights', 85, el => {                                 // Oct 17: lower on the page, the layout editor leads LIGHTS now
     el.id = 'lightsPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--peri)');
     el.innerHTML = `
       <div class="ph"><span>Your lights</span><span class="r" id="suCount"></span></div>
