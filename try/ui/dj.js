@@ -75,7 +75,7 @@
     const st = (GB.status || {}).dj || {};
     document.querySelectorAll(`.dj-pads [data-k="${k}"]`).forEach(b => { b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 220); });
     if (k === 'blackout') { const on = !st.blackout; if (await dj({hit: 'blackout', on})) GB.toast(on ? '⬛ Blackout (tap again to bring it back)' : '💡 Lights back'); }
-    else { GB.sfx('on'); if (await dj(k === 'drop' ? {hit: k, snap: snap(), drop_style: dropStyle()} : {hit: k, snap: snap()}) && src !== 'midi' && snap()) GB.toast(PADS.find(p => p[0] === k)[2] + ' on the next beat'); }
+    else { GB.sfx('on'); if (k === 'drop') GB.hdDrop && GB.hdDrop(); if (await dj(k === 'drop' ? {hit: k, snap: snap(), drop_style: dropStyle()} : {hit: k, snap: snap()}) && src !== 'midi' && snap()) GB.toast(PADS.find(p => p[0] === k)[2] + ' on the next beat'); }
   }
   GB.panel('dj', 10, el => {
     el.classList.add('box'); el.style.setProperty('--c', 'var(--red)'); el.id = 'djPadsPanel';
@@ -259,14 +259,14 @@
       b.style.setProperty('--a', (turns(.35, 2) % 1).toFixed(3)); b.style.setProperty('--arms', [1, 2, 3, 4, 6][Math.min(4, Math.floor(p * 5))]);
       b.style.setProperty('--h', (turns(.15, 1.6) % 1).toFixed(3));
       const hb = turns(55 / 60, 170 / 60) % 1; b.style.setProperty('--b', Math.max(Math.exp(-hb * 9), hb >= .3 ? .75 * Math.exp(-(hb - .3) * 9) : 0).toFixed(3));
-      cnt.textContent = el2.toFixed(1) + 's';
+      cnt.textContent = el2.toFixed(1) + 's'; GB.hdBuild && GB.hdBuild(p);
       b.classList.toggle('full', p >= 1); lbl.textContent = p >= 1 ? 'FULL! LET GO TO DROP' : 'BUILDING… LET GO TO DROP';
       raf = requestAnimationFrame(tick);
     };
     const start = e => { e.preventDefault(); if (held) return; held = true; cur = buildStyle(); b.dataset.s = cur; t0 = performance.now();
-      b.classList.add('held'); lbl.textContent = 'BUILDING… LET GO TO DROP'; paint(); tick(); dj({build: true, style: cur}); GB.sfx('nav'); };
+      b.classList.add('held'); lbl.textContent = 'BUILDING… LET GO TO DROP'; paint(); tick(); dj({build: true, style: cur}); GB.sfx('nav'); GB.hdBuild && GB.hdBuild(0); };
     const end = (cancel) => { if (!held) return; held = false; cancelAnimationFrame(raf); b.classList.remove('held', 'full'); b.style.setProperty('--p', 0);
-      lbl.textContent = 'HOLD TO BUILD'; cnt.textContent = ''; paint(); dj(cancel ? {build: false, cancel: true} : {build: false, snap: snap(), drop_style: dropStyle()}); if (!cancel) GB.sfx('ok'); };
+      lbl.textContent = 'HOLD TO BUILD'; cnt.textContent = ''; paint(); dj(cancel ? {build: false, cancel: true} : {build: false, snap: snap(), drop_style: dropStyle()}); if (!cancel) GB.sfx('ok'); if (cancel) GB.hdBuild && GB.hdBuild(null); else GB.hdDrop && GB.hdDrop(); };
     b.addEventListener('pointerdown', start); b.addEventListener('pointerup', () => end(false));
     b.addEventListener('pointerleave', () => end(true)); b.addEventListener('pointercancel', () => end(true));
     b.addEventListener('contextmenu', e => e.preventDefault());

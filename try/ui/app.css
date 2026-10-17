@@ -432,13 +432,17 @@ html.door-dj .pt-buy { background:linear-gradient(160deg, #ffd0ea, #ff3d9a 45%, 
 #rail #railArr { opacity:1; }
 @media (max-width: 699px) { #rail #railArr > .ic, #rail #railArr > svg { display:none; } }
 
-/* ✨ Oct 17 (Graham): the GLOWBOP label in the top bar lives a little. A soft glint sweeps across it every ~8 s,
-   and while music plays it breathes gently on the beat (core.js sets --beat and .beat). Both very subtle. */
-#hd .bars b { position:relative; overflow:hidden; }
-#hd .bars b::after { content:''; position:absolute; top:0; bottom:0; left:-60%; width:45%; pointer-events:none;
-  background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.0) 20%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 80%, transparent 100%);
-  animation:hdGlint 8s ease-in-out infinite; animation-delay:2s; }
-@keyframes hdGlint { 0%, 78% { left:-60%; } 100% { left:120%; } }
+/* ⚡ Oct 17 (Graham): the GLOWBOP label in the top bar is still when nothing plays. While a show runs it has an energy pulse on the beat;
+   holding HOLD TO BUILD powers it up a little (brighter, a slight tremble near the top); the drop releases it in one burst. core.js drives it. */
+#hd .bars b { position:relative; transition:filter .25s, text-shadow .25s, box-shadow .25s; will-change:filter; }
 #hd .bars b.beat { animation:hdBeat var(--beat, .5s) ease-out infinite; }
-@keyframes hdBeat { 0% { filter:brightness(1.18); text-shadow:0 0 6px rgba(255,255,255,.45); } 35%, 100% { filter:none; text-shadow:none; } }
-@media (prefers-reduced-motion: reduce) { #hd .bars b::after, #hd .bars b.beat { animation:none; } }
+@keyframes hdBeat { 0% { filter:brightness(calc(1.1 + var(--e, .5) * .25)); transform:scale(calc(1 + var(--e, .5) * .035)); box-shadow:0 0 calc(4px + var(--e, .5) * 10px) var(--pink); }
+  40%, 100% { filter:none; transform:none; box-shadow:none; } }
+#hd .bars b.build { animation:hdTremble .09s linear infinite; filter:brightness(calc(1 + var(--bp, 0) * .55)) saturate(calc(1 + var(--bp, 0) * .4));
+  box-shadow:0 0 calc(4px + var(--bp, 0) * 18px) calc(var(--bp, 0) * 2px) var(--pink), inset 0 0 calc(var(--bp, 0) * 10px) rgba(255,255,255,.45); }
+@keyframes hdTremble { 0%, 100% { transform:translate(0, 0); } 25% { transform:translate(calc(var(--bp, 0) * .8px), calc(var(--bp, 0) * -.5px)); }
+  50% { transform:translate(calc(var(--bp, 0) * -.7px), calc(var(--bp, 0) * .6px)); } 75% { transform:translate(calc(var(--bp, 0) * .5px), calc(var(--bp, 0) * .7px)); } }
+#hd .bars b.drop { animation:hdDrop .75s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes hdDrop { 0% { background:#fff; color:var(--pink); filter:brightness(1.6); transform:scale(1.08); box-shadow:0 0 30px 8px #fff, 0 0 60px 10px var(--pink); }
+  35% { background:var(--pink); filter:brightness(1.3); transform:scale(1.03); box-shadow:0 0 22px 4px var(--pink); } 100% { filter:none; transform:none; box-shadow:none; } }
+@media (prefers-reduced-motion: reduce) { #hd .bars b.beat, #hd .bars b.build, #hd .bars b.drop { animation:none; transform:none; } }

@@ -284,6 +284,12 @@
   GB.svg = (n, extra) => { let d = ICON[n] || '', a = '';
     if (d[0] === '~') { d = d.slice(1); a = ' transform="matrix(-1 0 0 1 24 0)"'; } else if (d[0] === '!') { d = d.slice(1); a = ' fill-rule="evenodd"'; }
     return `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"${extra || ''}><path${a} d="${d}"/></svg>`; };
+  // ⚡ the top-bar GLOWBOP label follows the DJ: GB.hdBuild(p) while HOLD TO BUILD is held (0..1), GB.hdBuild(null) to let go quietly, GB.hdDrop() on the drop
+  const hdName = () => document.querySelector('#hd .bars b');
+  GB.hdBuild = p => { const nb = hdName(); if (!nb) return; if (p == null) { nb.classList.remove('build'); return; }
+    nb.classList.remove('beat', 'drop'); nb.classList.add('build'); nb.style.setProperty('--bp', Math.max(0, Math.min(1, p)).toFixed(3)); };
+  GB.hdDrop = () => { const nb = hdName(); if (!nb) return; nb.classList.remove('build', 'beat', 'drop'); void nb.offsetWidth; nb.classList.add('drop');
+    setTimeout(() => nb.classList.remove('drop'), 800); };
   GB.css = text => { const st = document.createElement('style'); st.textContent = text; document.head.appendChild(st); };
   GB.lbl = (el, ic, text) => { el.innerHTML = (ic ? GB.svg(ic) : '') + '<span>' + GB.esc(text) + '</span>'; };
 
@@ -689,9 +695,10 @@
       const gi = GB.grpInfo(), cat = GB.catalog;
       $('rBpm').innerHTML = s.bpm ? Math.round(s.bpm) + '<small> BPM</small>' : '–';
       $('rSec').textContent = (s.section || '–').toUpperCase();
-      { const nb = document.querySelector('#hd .bars b'), on = !!s.bpm && s.section && s.section !== 'silence' && (s.energy == null || s.energy > 0.05);   // 💓 the label breathes on the beat while music plays
-        if (nb) { if (on) { const per = (60 / Math.max(60, Math.min(200, s.bpm))).toFixed(3) + 's'; if (nb.style.getPropertyValue('--beat') !== per) nb.style.setProperty('--beat', per); }
-          nb.classList.toggle('beat', on); } }
+      { const nb = document.querySelector('#hd .bars b'), on = !!s.bpm && s.section && s.section !== 'silence' && (s.energy == null || s.energy > 0.05);   // ⚡ a show is running: energy pulse on the beat
+        if (nb) { if (on) { const per = (60 / Math.max(60, Math.min(200, s.bpm))).toFixed(3) + 's'; if (nb.style.getPropertyValue('--beat') !== per) nb.style.setProperty('--beat', per);
+            nb.style.setProperty('--e', Math.max(.25, Math.min(1, +s.energy || .5)).toFixed(2)); }
+          nb.classList.toggle('beat', on && !nb.classList.contains('build') && !nb.classList.contains('drop')); } }
       const hol = s.holiday && cat && cat.holidays && cat.holidays[s.holiday];
       $('rLook').textContent = gi ? gi.look : hol ? hol.emoji + ' ' + hol.name : (s.look || '–');
       $('rEff').innerHTML = gi ? GB.esc(gi.effect) : ((s.locked ? GB.svg('lock') : '') + GB.esc(s.effect || '–'));
