@@ -1,1 +1,1 @@
-6551e18d4ce707ff9cfb6c7dae61eb1c45faae6601ef6ca2185bc6ac02173bd4  GlowBop-Setup.exe
+3baefdcad5efc74736680bfb63dadd654b42a35faa87cac42b52279c047e1eef  GlowBop-Setup.exe
