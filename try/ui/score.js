@@ -269,10 +269,13 @@
   const BOARDS = {golf: ['⛳ Golf leaderboard', '⛳ Golf leaderboard on the wall', 'golf'], nascar: ['🏁 Racing: NASCAR & IndyCar', '🏁 Racing running order on the wall', 'racing'],
                   tennis: ['🎾 Tennis: live matches', '🎾 Tennis scores on the wall', 'tennis'], ufc: ['🥊 UFC fight card', '🥊 UFC fight card on the wall', 'ufc']};
   const boardKey = () => { const v = ($('sbLg') || {}).value || ''; return v.startsWith('board:') ? v.slice(6) : ''; };
-  const boardPanel = k => [...document.querySelectorAll('#pg-score > .panel')].find(x => { const h = x.querySelector('.ph span'); return h && h.textContent.trim().toLowerCase() === BOARDS[k][2]; });
+  const BOARD_ID = {golf: 'gfPanel', nascar: 'nsPanel', tennis: 'tnPanel', ufc: 'ufPanel'};
+  const boardPanel = k => document.getElementById(BOARD_ID[k]);
   function syncBoards() {
     const bk = boardKey(), live = P.live && !P.live.hidden, fm = (GB.feedsState || {}).mode;
-    Object.keys(BOARDS).forEach(k => { const pn = boardPanel(k); if (pn) pn.hidden = !((live && bk === k) || fm === k); });
+    // Oct 17 (Graham): the big golf / racing / tennis / UFC boxes stay out of the way; their games are lines in Live now. A box only opens
+    //   when picked in Live Fan or from its Live now line (⚙ Tour & favorites).
+    Object.keys(BOARDS).forEach(k => { const pn = boardPanel(k); if (pn) pn.hidden = !((live && bk === k) || GB.boardShown === k); });
     const tf = $('sbTeam') && $('sbTeam').closest('label'); if (tf) tf.hidden = !!bk;
     const f = $('sbFollow'); if (f) f.textContent = bk ? ((fm === bk) ? 'Take it off the wall' : 'Put it on the wall') : 'Follow this team';
     const st = $('sbLiveSt'); if (st && bk) st.textContent = fm === bk ? 'On the wall now. Settings are just below.' : 'Tap Put it on the wall. Settings are just below.';
@@ -580,19 +583,26 @@
   `);
   let LN = null, lnT = null, lnPop = null;
   const lnStatus = g => g.state === 'in' ? (g.detail || 'LIVE') : g.state === 'post' ? 'FINAL' : g.start ? new Date(g.start * 1000).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) : (g.detail || '');
-  const lnLive = g => g.kind === 'f1' ? !!(SB && SB.on && SB.mode === 'f1') : SB && SB.on && SB.mode === 'live' && SB.league === g.league && [g.home.id, g.away.id].includes(String(SB.team_id || ''));
+  const lnLive = g => g.kind === 'board' ? (GB.feedsState || {}).mode === g.bk : g.kind === 'f1' ? !!(SB && SB.on && SB.mode === 'f1') : SB && SB.on && SB.mode === 'live' && SB.league === g.league && [g.home.id, g.away.id].includes(String(SB.team_id || ''));
   function lnClose() { if (lnPop) { lnPop.remove(); lnPop = null; } }
   async function lnGo(g) {
     lnClose();
     if (lnLive(g)) { if (await score({action: 'off'})) { GB.toast('🎵 Back to the music show'); refresh(300); } return; }
+    if (g.kind === 'board') { const on = lnLive(g); if (await GB.feed(on ? {mode: 'off'} : {feed: g.bk, on: true})) { GB.toast(on ? '🎵 Back to the music show' : BOARDS[g.bk][1]); GB.sfx && GB.sfx(on ? 'off' : 'on'); GB.feedsRefresh(150); } return; }
     if (g.kind === 'f1') { if (await score({action: 'f1'})) { GB.toast('🏎️ F1 running order on the wall'); GB.sfx && GB.sfx('on'); refresh(300); } return; }
     if (await score({action: 'live', league: g.league, team_id: g.home.id, team_name: g.home.name})) { GB.toast('📺 ' + g.away.abbr + ' at ' + g.home.abbr + ' on the wall'); GB.sfx && GB.sfx('on'); refresh(300); }
   }
   function lnOpen(row, g) {
     lnClose();
-    const ex = g.ex || {}, rec = ex.rec || {}, pop = document.createElement('div'); pop.className = 'ln-pop'; pop.style.setProperty('--lc', g.kind === 'f1' ? '#ff2a2a' : glow(g.home.color));
+    const ex = g.ex || {}, rec = ex.rec || {}, pop = document.createElement('div'); pop.className = 'ln-pop'; pop.style.setProperty('--lc', g.kind === 'board' ? BD[g.bk][2] : g.kind === 'f1' ? '#ff2a2a' : glow(g.home.color));
     const line = (k, v) => v ? `<div class="row2"><div class="k">${k}</div>${esc(v)}</div>` : '';
-    if (g.kind === 'f1') pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button><div class="k">🏎️ Formula 1</div>
+    if (g.kind === 'board') { const L = bdLeaders(g.bk, g.f);
+      pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button><div class="k">${BD[g.bk][0]} ${esc(BOARDS[g.bk][0].replace(/^\S+\s/, ''))}</div>
+      <div class="tm"><span>${esc(g.title)}</span></div>${line(g.state === 'in' ? 'Now' : g.state === 'post' ? 'Result' : 'Starts', g.state === 'pre' ? lnStatus(g) : (g.f.status || lnStatus(g)))}
+      ${L.length ? `<div class="row2"><div class="k">${g.bk === 'tennis' ? 'Matches' : g.bk === 'ufc' ? 'Fights' : 'Leaders'}</div>${L.map(esc).join('<br>')}</div>` : ''}
+      <button class="btn c wide" style="--c:var(--cyan);margin-top:8px">${lnLive(g) ? 'Take it off the wall' : '📺 GO LIVE on the wall'}</button>
+      <button class="btn wide ln-more" style="margin-top:6px">⚙ Tour, card &amp; favorites</button>`; }
+    else     if (g.kind === 'f1') pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button><div class="k">🏎️ Formula 1</div>
       <div class="tm"><span>${esc(g.title)}</span></div>${line(g.state === 'in' ? 'Now' : g.state === 'post' ? 'Result' : 'Starts', g.state === 'in' ? 'On track now (live timing can run a little behind TV)' : lnStatus(g))}${line('Where', ex.venue)}
       <button class="btn c wide" style="--c:var(--cyan);margin-top:8px">${lnLive(g) ? 'Take it off the wall' : '📺 GO LIVE: running order on the wall'}</button>`;
     else pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button>
@@ -606,22 +616,41 @@
     let x = Math.min(innerWidth - pw - 8, Math.max(8, r.left + 20)), y = r.bottom + 6; if (y + ph > innerHeight - 8) y = Math.max(8, r.top - ph - 6);
     pop.style.left = x + 'px'; pop.style.top = y + 'px';
     pop.querySelector('.x').onclick = lnClose; pop.querySelector('.btn.c').onclick = () => lnGo(g);
+    const more = pop.querySelector('.ln-more'); if (more) more.onclick = () => { lnClose(); GB.boardShown = g.bk; syncBoards(); const pn = boardPanel(g.bk); if (pn) setTimeout(() => pn.scrollIntoView({behavior: 'smooth', block: 'start'}), 80); };
   }
   document.addEventListener('pointerdown', e => { if (lnPop && !lnPop.contains(e.target) && !(e.target.closest && e.target.closest('.ln-row'))) lnClose(); }, true);
   GB.on('page', () => lnClose());
+  // ⛳🏁🎾🥊 golf, racing, tennis and UFC come from the live feeds (GB.feedsState): one line each while they're on, starting soon, or just finished
+  const BD = {golf: ['⛳', 'GOLF', '#2bd96b'], nascar: ['🏁', 'RACING', '#ffb31a'], tennis: ['🎾', 'TENNIS', '#c8ff1a'], ufc: ['🥊', 'UFC', '#ff2a2a']};
+  function boardGames() {
+    const fs = (GB.feedsState || {}).feeds || {}, now = Date.now() / 1000, out = [];
+    Object.keys(BD).forEach(k => { const f = fs[k]; if (!f) return;
+      let st = '';
+      if (f.live || (f.state === 'in' && f.view !== 'next')) st = 'in';
+      else if (f.view === 'next' && f.next && f.next.start && f.next.start - now < 3 * 3600 && f.next.start > now - 600) st = 'pre';
+      else if (f.state === 'post' && f.view !== 'next' && f.event) st = 'post';
+      if (!st) return;
+      out.push({kind: 'board', bk: k, key: 'board:' + k, league: BD[k][1].toLowerCase(), state: st, title: st === 'pre' ? f.next.name : f.event,
+        detail: st === 'in' ? (f.status || 'LIVE') : st === 'post' ? 'Final' : '', start: st === 'pre' ? f.next.start : 0, f});
+    });
+    return out;
+  }
+  const bdLeaders = (k, f) => (f.rows || []).slice(0, 5).map(r => k === 'golf' ? `${r.pos}  ${r.name}  ${r.score || ''}` : k === 'nascar' ? `${r.pos}  #${r.num || '–'} ${r.name}` :
+    k === 'tennis' ? `${r.a.name} ${r.a.sets || ''} vs ${r.b.name} ${r.b.sets || ''}` : `${r.red.name} vs ${r.blue.name}${r.res ? ' · ' + r.res : ''}`);
+  GB.on('feeds', () => { if (GB.page === 'score') lnRender(); });
   function lnRender() {
     const box = $('sbNowList'); if (!box || !LN) return;
-    const gs = LN.games || [], live = gs.filter(g => g.state === 'in').length;
+    const bgs = boardGames(), gs = (LN.games || []).concat(bgs).sort((a, b) => ({in: 0, pre: 1, post: 2}[a.state] - {in: 0, pre: 1, post: 2}[b.state])), live = gs.filter(g => g.state === 'in').length;
     $('sbNowR').textContent = live ? live + ' LIVE' : gs.length ? 'NOTHING LIVE' : LN.loading ? 'LOADING…' : 'NOTHING ON';
-    const key = JSON.stringify(gs.map(g => [g.key, g.state, g.home && g.home.score, g.away && g.away.score, g.detail])) + (SB && SB.on ? SB.team_id : '');
+    const key = JSON.stringify(gs.map(g => [g.key, g.state, g.home && g.home.score, g.away && g.away.score, g.detail, g.title])) + ((GB.feedsState || {}).mode || '') + (SB && SB.on ? SB.team_id : '');
     if (box._k === key) return; box._k = key;
     if (!gs.length) { box.innerHTML = `<div class="ln-empty">${LN.loading ? 'Looking for games…' : 'No games on right now. Games show up here a few hours before they start.'}</div>`; return; }
     box.innerHTML = '';
     gs.forEach(g => {
-      const r = document.createElement('div'); r.className = 'ln-row' + (lnLive(g) ? ' on' : ''); r.style.setProperty('--lc', g.kind === 'f1' ? '#ff2a2a' : glow(g.home.color)); r.tabIndex = 0;
+      const r = document.createElement('div'); r.className = 'ln-row' + (lnLive(g) ? ' on' : ''); r.style.setProperty('--lc', g.kind === 'board' ? BD[g.bk][2] : g.kind === 'f1' ? '#ff2a2a' : glow(g.home.color)); r.tabIndex = 0;
       const pre = g.state === 'pre';
-      r.innerHTML = `<span class="lg"><b>${g.kind === 'f1' ? '🏎️' : ICON[g.sport] || '🏆'}</b>${esc(g.league.toUpperCase())}</span>
-        ${g.kind === 'f1' ? `<span class="mu">${esc(g.title)}</span>` : `<span class="mu"><span style="color:${glow(g.away.color)}">${esc(g.away.abbr)}</span>${pre ? '<i>at</i>' : `<i>${g.away.score}–${g.home.score}</i>`}<span style="color:${glow(g.home.color)}">${esc(g.home.abbr)}</span></span>`}
+      r.innerHTML = `<span class="lg"><b>${g.kind === 'board' ? BD[g.bk][0] : g.kind === 'f1' ? '🏎️' : ICON[g.sport] || '🏆'}</b>${esc(g.league.toUpperCase())}</span>
+        ${g.kind === 'f1' || g.kind === 'board' ? `<span class="mu">${esc(g.title)}</span>` : `<span class="mu"><span style="color:${glow(g.away.color)}">${esc(g.away.abbr)}</span>${pre ? '<i>at</i>' : `<i>${g.away.score}–${g.home.score}</i>`}<span style="color:${glow(g.home.color)}">${esc(g.home.abbr)}</span></span>`}
         <span class="st${g.state === 'in' ? ' live' : ''}">${esc(lnStatus(g))}</span><button class="btn">${lnLive(g) ? 'ON WALL' : 'GO LIVE'}</button>`;
       r.querySelector('.btn').onclick = e => { e.stopPropagation(); lnGo(g); };
       r.onclick = () => lnOpen(r, g);
@@ -637,7 +666,7 @@
     el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
     el.innerHTML = `<div class="ph"><span>📋 Live now</span><span class="r" id="sbNowR">LOADING…</span></div>
       <div class="ln-list" id="sbNowList"><div class="ln-empty">Looking for games…</div></div>
-      <p class="note">Every game on right now in the big leagues (plus your teams'), and any F1 session. Tap a game for details, <b>GO LIVE</b> puts its scoreboard on the wall.</p>`;
+      <p class="note">Every game on right now in the big leagues (plus your teams'), F1, golf, racing, tennis and UFC. Tap a game for details, <b>GO LIVE</b> puts its scoreboard on the wall.</p>`;
   });
   GB.on('page', id => { if (id === 'score') lnLoad(); });
   GB.on('ready', () => { if (GB.page === 'score') lnLoad(); });

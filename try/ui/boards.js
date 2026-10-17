@@ -43,7 +43,8 @@
     const P = cfg.id;
     GB.panel('score', cfg.order, el => {          // ⛳🏁 lives on the SPORTS page
       el.classList.add('box'); el.style.setProperty('--c', cfg.color); el.id = P + 'Panel';   // #golf, #racing, #tennis, #ufc land here
-      el.innerHTML = `<div class="ph"><span>${cfg.title}</span><span class="r" id="${P}R">OFF</span></div>
+      el.hidden = true;                             // Oct 17 (Graham): hidden until opened from its Live now line (⚙ Tour & favorites) or Live Fan
+      el.innerHTML = `<div class="ph"><span>${cfg.title}</span><span class="r"><span id="${P}R">OFF</span> <button class="btn sm ghost bd-x" id="${P}X" aria-label="Close" style="min-height:30px;padding:0 10px;margin-left:6px">✕</button></span></div>
         <div class="bd-ev" id="${P}Ev">Loading…</div>
         <div class="bd-st" id="${P}St"></div>
         <div class="seg"><button class="btn c lg" id="${P}Show" style="--c:${cfg.color}">Show on the wall</button></div>
@@ -55,6 +56,7 @@
         <p class="note">${cfg.note}</p>
         <div class="bd-foot"><span id="${P}Up">Updated: not yet</span><button class="btn ghost sm" id="${P}Test">Preview a celebration</button></div>
         <div class="bd-err" id="${P}Err" hidden></div>`;
+      $(P + 'X').onclick = () => { GB.boardShown = ''; el.hidden = true; };
       $(P + 'Show').onclick = async () => {
         const on = GB.feedsState && GB.feedsState.mode === cfg.key;
         if (await GB.feed(on ? {mode: 'off'} : {feed: cfg.key, on: true})) { GB.toast(on ? '🎵 Back to the music show' : cfg.onToast); GB.feedsRefresh(); }
