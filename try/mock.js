@@ -1822,6 +1822,7 @@
       switch (path) {
         case '/api/status': return {json: status()};
         case '/api/schedule': return {json: SCH.info()};
+        case '/api/layouts': return {json: {items: {}}};
         case '/api/catalog': return {json: Object.assign({}, CAT, {holiday_cal: holCal()})};
         case '/api/frames': return {json: {groups: [{id: 'g1', name: 'Main', w: W, h: H, gw: W, gh: H, shape: null, rgb: paint(),
           devices: DEVS.map(d => ({id: d.id, name: d.name, x0: d.x0, x1: d.x0 + 19, y0: 0, y1: H - 1}))}]}};
@@ -1869,6 +1870,7 @@
       switch (path) {
         case '/api/control': return control(b);
         case '/api/schedule': return {json: SCH.post(b)};
+        case '/api/layouts': return {json: {ok: true}};
         case '/api/autoloops': case '/api/scenes': case '/api/cues': case '/api/tempo': case '/api/zones': case '/api/palettes': case '/api/prodj':
           return pro(() => pdPost(path.slice(5), b));
         case '/api/songinfo': { const t = M.queue[M.idx]; if (!t) return {status: 409, json: {error: 'no song is playing'}};

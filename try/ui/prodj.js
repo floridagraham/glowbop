@@ -5,7 +5,7 @@
      (borrowed from their own pages while you're on DJ, handed back when you leave).
    - The three keys under the Live wall (Mirror · Full view · Lights) become 6 assignable Pro keys. Hold one (or right-click)
      to pick what it does. Mirror, Full view and Lights move into the ⋯ key.
-   - ✏️ ARRANGE (Pro DJ + the Pro pages, tablets and computers): drag any box, pull its corner to resize. Boxes snap to a fine,
+   - ✏️ ARRANGE (every page, everyone, tablets and computers; Oct 16): every page starts on a tidy ⚡ template. Drag any box, pull its corner to resize. Boxes snap to a fine,
      invisible grid and push each other out of the way. Each page remembers its own layout per device shape; Reset puts it back. */
 (function () {
   'use strict';
@@ -13,6 +13,20 @@
   const PRO_PAGES = ['shows', 'autoloops', 'cues', 'board', 'ops', 'home'];
   const BORROW = [['muCard', 'music'], ['fdPanel', 'board'], ['lpPanel', 'board'], ['alPanel', 'autoloops'], ['cuPanel', 'cues']];
   const COLS = 48, ROW = 8;                       // the invisible grid: 48 columns, 8 px rows
+  // ⚡ Tidy templates for every page. wide = computers and tablets on their side (3 columns), tall = tablets upright (2 columns).
+  //   Each column lists boxes from the top; '#id' means "the box holding that element". Boxes not listed fill the shortest column.
+  //   full: boxes that need the whole width, in a band underneath.
+  const W3 = ['v:wall', 'v:keys', 'v:mode', 'v:reads'];
+  const TPL = {
+    dj:     {wide: [[0, 17, ['v:wall', '#djBuild', 'v:mode']], [17, 15, ['djPadsPanel', '#djCool']], [32, 16, ['#djColor', '#djTap', '#djLooks']]],
+             tall: [[0, 24, ['v:wall', '#djBuild', '#djCool']], [24, 24, ['djPadsPanel', '#djColor', '#djTap']]]},
+    prodj:  {wide: [[0, 17, ['v:wall', 'v:keys', 'muCard', 'v:mode', 'v:reads']], [17, 15, ['#djBuild', '#djCool', '#djColor']], [32, 16, ['djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]],
+             tall: [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', '#djCool', '#djColor']], [24, 24, ['#djBuild', 'djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]]},
+    prohome:{wide: [[0, 17, ['v:wall', 'v:mode', 'v:reads']], [17, 15, ['phScenes']], [32, 16, ['phSched']]], tall: [[0, 24, ['v:wall', 'phScenes']], [24, 24, ['phSched']]]},
+  };
+  GB.layTPL = TPL;                                 // pages add their own templates (GB.layTPL.music = {...})
+  // 🧑‍🎨 Graham's own arrangements (Oct 16) ship as the starting layout on those pages
+  const DEFAULTS = {"prohome:wide":{"v:wall":{"x":0,"y":10,"w":17,"h":63},"v:mode":{"x":0,"y":0,"w":17,"h":10},"v:reads":{"x":0,"y":123,"w":48,"h":25},"phScenes":{"x":17,"y":0,"w":15,"h":47},"phSched":{"x":32,"y":0,"w":16,"h":47},"v:keys":{"x":0,"y":211,"w":24,"h":6},"grpPanel":{"x":17,"y":47,"w":31,"h":52},"znSubs":{"x":0,"y":99,"w":48,"h":24},"mdHolPanel":{"x":0,"y":148,"w":24,"h":63}},"prohome:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":60},"phScenes":{"x":0,"y":60,"w":24,"h":47},"phSched":{"x":24,"y":0,"w":24,"h":50},"v:keys":{"x":0,"y":107,"w":24,"h":6},"v:mode":{"x":24,"y":50,"w":24,"h":12},"grpPanel":{"x":0,"y":113,"w":24,"h":62},"znSubs":{"x":24,"y":62,"w":24,"h":20},"mdHolPanel":{"x":24,"y":82,"w":24,"h":54}}};
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches && S.get('gb_intro_motion') !== 'full';
   const isOn = () => GB.pro === true && S.get('gb_prodj') === '1';
 
@@ -332,8 +346,10 @@
   // ================================================================ ✏️ arrange: an invisible fine grid
   let arranging = false;
   const bucket = () => (innerWidth >= 1000 && innerWidth >= innerHeight) ? 'wide' : 'tall';
-  const pageKey = () => GB.page === 'dj' ? (isOn() ? 'prodj' : 'dj') : GB.page === 'home' ? (GB.pro === true ? 'prohome' : null) : (PRO_PAGES.includes(GB.page) && GB.pro === true ? GB.page : null);
-  const canArrange = () => innerWidth >= 700 && !!pageKey() && GB.pro === true;   // ✏️ Arrange is a Pro tool (Oct 16)
+  // ✏️ Every page can be arranged, by everyone (Oct 16, Graham). Pro pages only once they're unlocked.
+  const pageKey = () => { const p = GB.page; if (!p) return null; if (p === 'dj') return isOn() ? 'prodj' : 'dj';
+    if (p === 'home') return GB.pro === true ? 'prohome' : null; if (PRO_PAGES.includes(p) && GB.pro !== true) return null; return p; };
+  const canArrange = () => innerWidth >= 700 && !!pageKey();
   const store = k => 'gb_lay3:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
   function items() {
     const pg = $('pg-' + GB.page); if (!pg) return [];
@@ -355,8 +371,23 @@
     Object.values(L).forEach(p => { if (p.x + p.w > COLS) p.w = COLS - p.x; });
     return L;
   }
+  // 💾 layouts are kept on the computer too (/api/layouts), so every screen shares them and a cleared browser loses nothing
+  const outQ = {}; let outT = 0;
+  const put = (key, v) => { S.set(key, v); outQ[key] = v; clearTimeout(outT); outT = setTimeout(() => { const set = Object.assign({}, outQ); Object.keys(outQ).forEach(x => delete outQ[x]);
+    fetch('/api/layouts', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({set})}).catch(() => {}); }, 600); };
+  async function syncLayouts() {
+    let srv = {}; try { srv = ((await (await fetch('/api/layouts', {cache: 'no-store'})).json()) || {}).items || {}; } catch (e) { return; }
+    const mine = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('gb_lay3:')) mine[k] = localStorage.getItem(k); } } catch (e) {}
+    const hand = (src, k) => !!src[k] && src[k + ':auto'] !== '1';     // arranged by hand (not an automatic template)
+    let changed = false;
+    Object.keys(mine).filter(k => !k.endsWith(':auto')).forEach(k => {   // this screen's hand-made layouts go up (they beat an automatic one)
+      if (mine[k] && (!srv[k] || (hand(mine, k) && !hand(srv, k)) || (hand(mine, k) && srv[k] !== mine[k]))) { put(k, mine[k]); put(k + ':auto', mine[k + ':auto'] || ''); } });
+    Object.keys(srv).filter(k => !k.endsWith(':auto')).forEach(k => {   // layouts made on another screen come down
+      if (!mine[k] || (hand(srv, k) && !hand(mine, k))) { S.set(k, srv[k]); S.set(k + ':auto', srv[k + ':auto'] || ''); changed = true; } });
+    if (changed && !arranging) layout();
+  }
   const load = k => { try { return JSON.parse(S.get(store(k)) || 'null'); } catch (e) { return null; } };
-  const save = (k, L) => S.set(store(k), JSON.stringify(L));
+  const save = (k, L) => put(store(k), JSON.stringify(L));
   function clearLay() {
     const m = $('main'); m.classList.remove('lay');
     document.querySelectorAll('.lay-it').forEach(el => { el.classList.remove('lay-it'); el.style.gridColumn = el.style.gridRow = ''; });
@@ -367,7 +398,9 @@
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
     if (k && L && !arranging && S.get(store(k) + ':auto') === '1' && items().some(el => !L[el.dataset.lk])) return compact(true);   // an untouched template + new boxes: rebuild it
-    if ((k === 'prodj' || k === 'prohome' || k === 'dj') && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); return compact(true); }   // Pro DJ starts on the Compact template
+    if (k && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); const D = DEFAULTS[k + ':' + bucket()];   // every page starts on its tidy template
+      if (D && items().every(el => D[el.dataset.lk])) { save(k, JSON.parse(JSON.stringify(D))); put(store(k) + ':auto', '2'); return layout(); }   // Graham's own arrangement ships as the default
+      return compact(true); }
     $('layFab') && $('layFab').classList.toggle('show', !!k);
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
     const list = items(); const LL = L || measure(list);
@@ -415,12 +448,12 @@
       };
       const end = () => { handle.removeEventListener('pointermove', mv); handle.classList.remove('drag'); el.style.zIndex = '';
         settle(cur.L, id); Object.keys(cur.L).forEach(k => { const n = document.querySelector('#main [data-lk="' + CSS.escape(k) + '"].lay-it'); if (n) place(n, cur.L[k]); });
-        save(cur.key, cur.L); S.set(store(cur.key) + ':auto', ''); };
+        save(cur.key, cur.L); put(store(cur.key) + ':auto', ''); };
       handle.addEventListener('pointermove', mv); handle.addEventListener('pointerup', end, {once: true}); handle.addEventListener('pointercancel', end, {once: true});
     });
   }
   function arrange(on) {
-    if (on && !canArrange()) { GB.toast('Arrange works on tablets and computers, on the Pro DJ page and the Pro pages'); return; }
+    if (on && !canArrange()) { GB.toast(innerWidth < 700 ? 'Arrange works on tablets and computers' : 'Unlock Pro to arrange this page'); return; }
     arranging = on; document.documentElement.classList.toggle('gb-arr', on);
     if (on) { layout(); if (cur && !load(cur.key)) save(cur.key, cur.L); handles(); GB.sfx && GB.sfx('tap'); }
     else { document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove()); layout(); GB.toast && GB.toast('✅ Layout saved'); }
@@ -429,19 +462,18 @@
   function compact(silent) {
     const k = pageKey(); if (!k) return;
     if (!silent && !arranging) arrange(true);
-    $('main').classList.add('lay');
+    clearLay(); $('main').classList.add('lay');
     const list = items(), id = sel => { const n = document.querySelector('#main ' + sel); const it = n && n.closest('[data-lk]'); return it ? it.dataset.lk : null; };
-    const wide = bucket() === 'wide' && k === 'prodj';
-    const cols = k === 'prohome' ? (bucket() === 'wide' ? [[0, 17, ['v:wall', 'v:mode', 'v:reads']], [17, 15, ['phScenes']], [32, 16, ['phSched']]] : [[0, 24, ['v:wall', 'phScenes']], [24, 24, ['phSched']]])
-      : k === 'dj' ? (bucket() === 'wide' ? [[0, 17, ['v:wall', id('#djBuild'), 'v:mode']], [17, 15, ['djPadsPanel', id('#djCool')]], [32, 16, [id('#djColor'), id('#djTap'), id('#djLooks')]]]
-                                          : [[0, 24, ['v:wall', id('#djBuild'), id('#djCool')]], [24, 24, ['djPadsPanel', id('#djColor'), id('#djTap')]]])
-      : k !== 'prodj' ? [[0, 24, []], [24, 24, []]]
-      : wide ? [[0, 17, ['v:wall', 'v:keys', 'muCard', 'v:mode', 'v:reads']], [17, 15, [id('#djBuild'), id('#djCool'), id('#djColor')]], [32, 16, ['djPadsPanel', id('#djTap'), 'pdPanel', id('#djLooks')]]]
-      : [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', id('#djCool'), id('#djColor')]], [24, 24, [id('#djBuild'), 'djPadsPanel', id('#djTap'), 'pdPanel', id('#djLooks')]]];
+    const W = bucket() === 'wide', T = TPL[k] || {}, top3 = ['v:wall', 'v:keys', 'v:mode', 'v:reads'];
+    const pick = a => a.map(x => typeof x === 'string' && x[0] === '#' ? id(x) : x);
+    const cols = (W ? (T.wide || [[0, 17, top3], [17, 15, []], [32, 16, []]]) : (T.tall || [[0, 24, top3], [24, 24, []]])).map(([x, w, ids]) => [x, w, pick(ids)]);
+    const full = pick(T.full || []);                 // boxes that need the whole width (wide keyboards, big grids): a band underneath
     const L = {}, byId = {}; list.forEach(el => byId[el.dataset.lk] = el);
-    const widthOf = {}; cols.forEach(([x, w, ids]) => ids.forEach(i => { if (i) widthOf[i] = [x, w]; }));
+    const widthOf = {}; cols.forEach(([x, w, ids]) => ids.forEach(i => { if (i) widthOf[i] = [x, w]; })); full.forEach(i => { if (i) widthOf[i] = [0, COLS]; });
+    const free = list.map(el => el.dataset.lk).filter(i => !widthOf[i]);   // not placed by the template: they fill whichever column is shortest
+    const midW = cols[cols.length - 1][1]; free.forEach(i => widthOf[i] = [cols[cols.length - 1][0], midW]);
     // measure every box at its column width (its content height, nothing stretched)
-    list.forEach(el => { const xw = widthOf[el.dataset.lk] || [0, 24]; el.style.gridColumn = (xw[0] + 1) + ' / span ' + xw[1]; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
+    list.forEach(el => { const xw = widthOf[el.dataset.lk] || [0, 24]; el.classList.add('lay-it'); el.style.gridColumn = (xw[0] + 1) + ' / span ' + xw[1]; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
     const kb = $('proKeysBox'); if (kb) kb.classList.toggle('narrow', kb.clientWidth < 520);
     void document.body.offsetHeight;                // let the narrow key layout settle before measuring
     const H = {}; list.forEach(el => H[el.dataset.lk] = Math.max(6, Math.ceil((el.offsetHeight + 26) / ROW)));
@@ -449,15 +481,21 @@
     const wEl = byId['v:wall'], wb = $('wallBox');
     if (wEl && wb && GB.wallIdeal) { const fixed = wEl.offsetHeight - wb.offsetHeight; H['v:wall'] = Math.max(10, Math.ceil((fixed + GB.wallIdeal(Math.max(120, wb.clientWidth - 20)) + 26 + 26) / ROW)); }
     list.forEach(el => { el.style.alignSelf = ''; el.style.overflow = ''; });
-    let top = 0;
-    cols.forEach(([x, w, ids]) => { let y = 0; ids.forEach(i => { if (!i || !byId[i]) return; L[i] = {x, y, w, h: H[i]}; y += H[i]; }); top = Math.max(top, y); });
-    // everything else: two columns under the top band, always into the shorter one
-    const rest = list.map(el => el.dataset.lk).filter(i => !L[i]), lane = [top, top];
-    rest.forEach(i => { const c = lane[0] <= lane[1] ? 0 : 1; L[i] = {x: c * 24, y: lane[c], w: 24, h: H[i]}; lane[c] += H[i]; });
-    save(k, L); S.set(store(k) + ':auto', silent ? '1' : ''); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
+    const lane = cols.map(([x, w, ids]) => { let y = 0; ids.forEach(i => { if (!i || !byId[i]) return; L[i] = {x, y, w, h: H[i]}; y += H[i]; }); return y; });
+    // everything else drops into the shortest column, in page order, so the columns end close together
+    const moved = [];
+    free.forEach(i => { let c = 0; lane.forEach((y, j) => { if (y < lane[c] - 2) c = j; }); const [x, w] = cols[c]; L[i] = {x, y: lane[c], w, h: H[i]}; lane[c] += H[i]; if (w !== midW || x !== cols[cols.length - 1][0]) moved.push(i); });
+    if (moved.length) { moved.forEach(i => { const p = L[i], el = byId[i]; el.style.gridColumn = (p.x + 1) + ' / span ' + p.w; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
+      void document.body.offsetHeight; const lane2 = cols.map(() => 0);   // re-measure at their real width and restack each column
+      moved.forEach(i => H[i] = Math.max(6, Math.ceil((byId[i].offsetHeight + 26) / ROW)));
+      moved.forEach(i => { byId[i].style.alignSelf = ''; byId[i].style.overflow = ''; });
+      cols.forEach(([x], c) => { Object.keys(L).filter(i => L[i].x === x).sort((a, b) => L[a].y - L[b].y).forEach(i => { L[i].y = lane2[c]; L[i].h = H[i]; lane2[c] += H[i]; }); });
+      lane.splice(0, lane.length, ...lane2); }
+    let band = Math.max(0, ...lane); full.forEach(i => { if (!i || !byId[i]) return; L[i] = {x: 0, y: band, w: COLS, h: H[i]}; band += H[i]; });
+    save(k, L); put(store(k) + ':auto', silent ? '1' : ''); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
     if (!silent) GB.toast && GB.toast('⚡ Compact layout. Drag anything to fine-tune');
   }
-  function reset() { const k = pageKey(); if (!k) return; S.set(store(k), ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the standard layout'); }
+  function reset() { const k = pageKey(); if (!k) return; put(store(k), ''); put(store(k) + ':auto', ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the tidy template'); }
 
   function chrome() {
     const bar = document.createElement('div'); bar.id = 'layBar';
@@ -469,11 +507,11 @@
   }
 
   // ================================================================ wiring
-  GB.on('ready', () => { chrome(); buildKeys(); if (GB.pro === true) apply(isOn()); else paintSwitch(); setTimeout(headerKey, 500); });
+  GB.on('ready', () => { chrome(); buildKeys(); syncLayouts(); if (GB.pro === true) apply(isOn()); else paintSwitch(); setTimeout(headerKey, 500); });
   GB.on('pro', v => { if (!v && document.documentElement.classList.contains('prodj')) document.documentElement.classList.remove('prodj'); apply(v && isOn()); });
   document.addEventListener('click', e => { const d = e.target.closest && e.target.closest('#rail button[data-p=dj]'); if (d && isOn()) setOn(false, false); }, true);   // the regular DJ tab = regular DJ
   GB.on('page', id => { if (id !== 'dj' && isOn()) { S.set('gb_prodj', '0'); apply(false); } paintTabs();
-    if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
+    fits = []; if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
   GB.on('status', paintLit);
   // 🏟️ Home DJ with more than 4 light sets: a friendly banner (once per visit) + "Each separate" light groups are Pro
   GB.css(`#limBar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(90deg,#2a1640,#13202e); border:1px solid #ffd21a66; border-radius:16px; padding:10px 14px; margin-bottom:var(--gap); }
@@ -494,6 +532,18 @@
     if (b && GB.pro === false) { e.stopPropagation(); e.preventDefault(); GB.sfx && GB.sfx('err'); GB.toast('🔒 Each group running its own show is part of Pro. Home DJ plays all your lights together.'); }
   }, true);
   try { const wb = $('wallBox'); if (wb) { let rq = 0; new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => GB.redrawWall && GB.redrawWall()); }).observe(wb); } } catch (e) {}
+  // a tidy template grows with its boxes: when one fills up (a list loaded, a card opened), the template refits itself
+  let fitT = 0, fits = [];
+  const fit = () => { clearTimeout(fitT); fitT = setTimeout(() => { if (!cur || arranging || document.hidden || !['1', '2'].includes(S.get(store(cur.key) + ':auto'))) return;
+    const full = [...document.querySelectorAll('#main .lay-it')].filter(el => el.dataset.lk !== 'v:wall' && el.scrollHeight > el.clientHeight + 12); if (!full.length) return;
+    const now = Date.now(); fits = fits.filter(t => now - t < 20000); if (fits.length >= 4) return;   // never chase a box that can't settle
+    fits.push(now);
+    if (S.get(store(cur.key) + ':auto') === '2') {   // a shipped arrangement keeps its places; a box that filled up just grows
+      full.forEach(el => { const p = cur.L[el.dataset.lk]; if (p) p.h += Math.ceil((el.scrollHeight - el.clientHeight) / ROW) + 1; });
+      full.forEach(el => settle(cur.L, el.dataset.lk)); save(cur.key, cur.L); layout(); return; }
+    recompact(); }, 300); };
+  try { new MutationObserver(fit).observe($('pages'), {childList: true, subtree: true}); } catch (e) {}
+  setInterval(fit, 1500);
   GB.on('wallshape', () => setTimeout(() => GB.proDJ.recompact(), 200));   // the Live wall's real shape arrived: refit an untouched template
   let refit = false; GB.on('catalog', () => { if (!refit) { refit = true; setTimeout(() => GB.proDJ.recompact(), 500); } });   // looks loaded: refit an untouched template once
   let rt = 0, sig = '';                           // re-lay only when the screen shape really changes (phone turned, window resized past a size)
