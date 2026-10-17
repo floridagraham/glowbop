@@ -552,12 +552,98 @@
       br.waiting ? 'Waiting: ' + br.waiting : (br.next_in != null ? 'Next card in ' + fmtIn(br.next_in) : '') + (n ? ' · ' + n + ' game' + (n > 1 ? 's' : '') : ' · no games live or recent');
   }
 
+  // ------------------------------------------------------------------ 📋 Live now (Oct 17, Graham): every game on right now, one line each, GO LIVE at the end.
+  //   Tap a line (not the key) and its details pop out over the page; nothing underneath moves.
+  GB.css(`
+  .ln-list { display:flex; flex-direction:column; gap:6px; max-height:min(52vh, 420px); overflow-y:auto; overscroll-behavior:contain; padding-right:2px; }
+  .ln-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; align-items:center; gap:10px; min-height:48px; padding:4px 4px 4px 10px; border-radius:0 14px 0 14px;
+    background:var(--dark); cursor:pointer; border-left:5px solid var(--lc, var(--cyan)); }
+  .ln-row:hover { filter:brightness(1.15); }
+  .ln-row .lg { font:700 calc(11px * var(--fs, 1)) var(--cond); letter-spacing:1px; color:var(--dim); text-transform:uppercase; min-width:34px; text-align:center; line-height:1.1; }
+  .ln-row .lg b { display:block; font-size:calc(18px * var(--fs, 1)); line-height:1; }
+  .ln-row .mu { font:700 calc(16px * var(--fs, 1))/1.15 var(--cond); letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ln-row .mu i { font-style:normal; color:var(--amber); margin:0 4px; }
+  .ln-row .st { font:600 calc(12px * var(--fs, 1)) var(--mono); color:var(--dim); white-space:nowrap; text-align:right; }
+  .ln-row .st.live { color:#3ce08a; } .ln-row .st.live::before { content:'● '; }
+  .ln-row .btn { min-height:40px; padding:0 14px; font-size:calc(13px * var(--fs, 1)); white-space:nowrap; background:#33d6ff1f; color:#7ae6ff; box-shadow:inset 0 0 0 2px #33d6ff; }
+  .ln-row.on { box-shadow:inset 0 0 0 2px var(--cyan); } .ln-row.on .btn { background:var(--cyan); color:#000; }
+  @media (max-width: 480px) { .ln-row { grid-template-columns:auto minmax(0,1fr) auto; } .ln-row .st { grid-column:2; grid-row:2; text-align:left; margin-top:-4px; } .ln-row .btn { grid-column:3; grid-row:1 / span 2; } }
+  .ln-pop { position:fixed; z-index:9000; width:min(92vw, 380px); background:#0d0a18f7; border:2px solid var(--lc, var(--cyan)); border-radius:0 18px 0 18px; padding:14px 16px;
+    box-shadow:0 18px 50px #000c, 0 0 30px -8px var(--lc, var(--cyan)); font:calc(14px * var(--fs, 1))/1.45 var(--body); color:var(--text); animation:lnPop .16s ease-out; }
+  @keyframes lnPop { from { opacity:0; transform:scale(.94); } }
+  .ln-pop .tm { display:grid; grid-template-columns:1fr auto; gap:4px 12px; align-items:center; font:800 calc(20px * var(--fs, 1))/1.1 var(--cond); letter-spacing:1px; margin:6px 34px 10px 0; }
+  .ln-pop .tm small { font:500 calc(12px * var(--fs, 1)) var(--mono); color:var(--dim); margin-left:6px; letter-spacing:0; }
+  .ln-pop .tm .sc { font-family:var(--mono); text-align:right; }
+  .ln-pop .k { font:600 calc(11px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:var(--label); text-transform:uppercase; }
+  .ln-pop .row2 { margin:6px 0; } .ln-pop .x { position:absolute; top:6px; right:8px; }
+  .ln-empty { padding:14px 6px; color:var(--dim); font-size:calc(14px * var(--fs, 1)); }
+  `);
+  let LN = null, lnT = null, lnPop = null;
+  const lnStatus = g => g.state === 'in' ? (g.detail || 'LIVE') : g.state === 'post' ? 'FINAL' : g.start ? new Date(g.start * 1000).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) : (g.detail || '');
+  const lnLive = g => SB && SB.on && SB.mode === 'live' && SB.league === g.league && [g.home.id, g.away.id].includes(String(SB.team_id || ''));
+  function lnClose() { if (lnPop) { lnPop.remove(); lnPop = null; } }
+  async function lnGo(g) {
+    lnClose();
+    if (lnLive(g)) { if (await score({action: 'off'})) { GB.toast('🎵 Back to the music show'); refresh(300); } return; }
+    if (await score({action: 'live', league: g.league, team_id: g.home.id, team_name: g.home.name})) { GB.toast('📺 ' + g.away.abbr + ' at ' + g.home.abbr + ' on the wall'); GB.sfx && GB.sfx('on'); refresh(300); }
+  }
+  function lnOpen(row, g) {
+    lnClose();
+    const ex = g.ex || {}, rec = ex.rec || {}, pop = document.createElement('div'); pop.className = 'ln-pop'; pop.style.setProperty('--lc', glow(g.home.color));
+    const line = (k, v) => v ? `<div class="row2"><div class="k">${k}</div>${esc(v)}</div>` : '';
+    pop.innerHTML = `<button class="btn sm x" aria-label="Close">✕</button>
+      <div class="k">${esc(ICON[g.sport] || '🏆')} ${esc(g.lname || g.league)}${ex.note ? ' · ' + esc(ex.note) : ''}</div>
+      <div class="tm"><span style="color:${glow(g.away.color)}">${esc(g.away.name || g.away.abbr)}<small>${esc(rec.away || '')}</small></span><span class="sc">${g.state === 'pre' ? '' : g.away.score}</span>
+        <span style="color:${glow(g.home.color)}">${esc(g.home.name || g.home.abbr)}<small>${esc(rec.home || '')}</small></span><span class="sc">${g.state === 'pre' ? '' : g.home.score}</span></div>
+      ${line(g.state === 'in' ? 'Now' : g.state === 'post' ? 'Result' : 'Starts', lnStatus(g) + (g.state === 'in' && ex.down ? ' · ' + ex.down : ''))}${line('Last play', ex.last)}${line('Where', ex.venue)}${line('Watch on', ex.tv)}
+      <button class="btn c wide" style="--c:var(--cyan);margin-top:8px">${lnLive(g) ? 'Take it off the wall' : '📺 GO LIVE on the wall'}</button>`;
+    document.body.appendChild(pop); lnPop = pop;
+    const r = row.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let x = Math.min(innerWidth - pw - 8, Math.max(8, r.left + 20)), y = r.bottom + 6; if (y + ph > innerHeight - 8) y = Math.max(8, r.top - ph - 6);
+    pop.style.left = x + 'px'; pop.style.top = y + 'px';
+    pop.querySelector('.x').onclick = lnClose; pop.querySelector('.btn.c').onclick = () => lnGo(g);
+  }
+  document.addEventListener('pointerdown', e => { if (lnPop && !lnPop.contains(e.target) && !(e.target.closest && e.target.closest('.ln-row'))) lnClose(); }, true);
+  GB.on('page', () => lnClose());
+  function lnRender() {
+    const box = $('sbNowList'); if (!box || !LN) return;
+    const gs = LN.games || [], live = gs.filter(g => g.state === 'in').length;
+    $('sbNowR').textContent = live ? live + ' LIVE' : gs.length ? 'NOTHING LIVE' : LN.loading ? 'LOADING…' : 'NOTHING ON';
+    const key = JSON.stringify(gs.map(g => [g.key, g.state, g.home.score, g.away.score, g.detail])) + (SB && SB.on ? SB.team_id : '');
+    if (box._k === key) return; box._k = key;
+    if (!gs.length) { box.innerHTML = `<div class="ln-empty">${LN.loading ? 'Looking for games…' : 'No games on right now. Games show up here a few hours before they start.'}</div>`; return; }
+    box.innerHTML = '';
+    gs.forEach(g => {
+      const r = document.createElement('div'); r.className = 'ln-row' + (lnLive(g) ? ' on' : ''); r.style.setProperty('--lc', glow(g.home.color)); r.tabIndex = 0;
+      const pre = g.state === 'pre';
+      r.innerHTML = `<span class="lg"><b>${ICON[g.sport] || '🏆'}</b>${esc(g.league.toUpperCase())}</span>
+        <span class="mu"><span style="color:${glow(g.away.color)}">${esc(g.away.abbr)}</span>${pre ? '<i>at</i>' : `<i>${g.away.score}–${g.home.score}</i>`}<span style="color:${glow(g.home.color)}">${esc(g.home.abbr)}</span></span>
+        <span class="st${g.state === 'in' ? ' live' : ''}">${esc(lnStatus(g))}</span><button class="btn">${lnLive(g) ? 'ON WALL' : 'GO LIVE'}</button>`;
+      r.querySelector('.btn').onclick = e => { e.stopPropagation(); lnGo(g); };
+      r.onclick = () => lnOpen(r, g);
+      box.appendChild(r);
+    });
+  }
+  async function lnLoad() {
+    clearTimeout(lnT);
+    if (GB.page === 'score' && !document.hidden) { try { const j = await GB.get('/api/score/now' + q()); if (j && !j.error) { LN = j; lnRender(); } } catch (e) {} }
+    lnT = setTimeout(lnLoad, LN && LN.loading ? 3000 : 20000);
+  }
+  GB.panel('score', 5, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
+    el.innerHTML = `<div class="ph"><span>📋 Live now</span><span class="r" id="sbNowR">LOADING…</span></div>
+      <div class="ln-list" id="sbNowList"><div class="ln-empty">Looking for games…</div></div>
+      <p class="note">Every game on right now in the big leagues (plus your teams'). Tap a game for details, <b>GO LIVE</b> puts its scoreboard on the wall.</p>`;
+  });
+  GB.on('page', id => { if (id === 'score') lnLoad(); });
+  GB.on('ready', () => { if (GB.page === 'score') lnLoad(); });
+
   // ------------------------------------------------------------------ polling
   let loopT = null;
   async function refresh(delay) {
     clearTimeout(loopT);
     if (delay) { loopT = setTimeout(() => refresh(0), delay); return; }
-    try { const j = await GB.get('/api/score' + q()); if (j && !j.error) { SB = j; render(); } } catch (e) {}
+    try { const j = await GB.get('/api/score' + q()); if (j && !j.error) { SB = j; render(); lnRender(); } } catch (e) {}
     const fast = SB && (SB.on || (SB.overlay && SB.overlay.on)) && GB.page === 'score';
     loopT = setTimeout(() => refresh(0), document.hidden ? 3000 : fast ? 700 : 2500);
   }

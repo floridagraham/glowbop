@@ -452,7 +452,7 @@
       bar.style.width = p + '%'; pct.textContent = p + '%'; fl.textContent = V.pre + V.files[Math.min(V.files.length - 1, Math.floor(e * V.files.length))];
       while (gone < boxes.length * e) { const n = boxes[gone++]; n.classList.add('eg-gone'); if (gone % 2) beep(V.k === 'rainbow' ? 500 + Math.random() * 900 : 300 + Math.random() * 500, .06, V.k === 'dots' ? 'sine' : 'square', .04); }
       while (fallen < keys.length * e) { const n = keys[fallen++]; n.style.setProperty('--egr', (Math.random() * 60 - 30) + 'deg'); n.classList.add('eg-fall'); }
-      while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.ef = n.getAttribute('fill'); n.setAttribute('fill', '#221d33'); n.dataset.l = '0'; }
+      while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.off = '1'; n.setAttribute('fill', '#221d33'); }
       if (k < 1) requestAnimationFrame(tick); else done(); };
     let seen = false; try { seen = localStorage.getItem('gb_egg_seen') === '1'; localStorage.setItem('gb_egg_seen', '1'); } catch (x) {}
     // first time ever: 2 taps; after that a surprise, 3 to 5
@@ -460,7 +460,7 @@
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
       tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = 'A little joke from the GlowBop team. We truly love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
-      dots.forEach((n, i) => setTimeout(() => { if (n.dataset.ef) n.setAttribute('fill', n.dataset.ef); n.dataset.l = '1'; }, i * 30));
+      dots.forEach((n, i) => setTimeout(() => { delete n.dataset.off; n.setAttribute('fill', n.dataset.c); }, i * 30));
       keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
       setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 4600); };
     const tap = ev => { ev.preventDefault(); ev.stopPropagation(); taps++;
@@ -970,13 +970,15 @@
     const host = $('gbLogo'); if (!host) return;
     const P = '#ff3d9a', V = '#9b3dff', C = '#33d6ff', W = '#ffffff', D = '#221d33';
     const M = [[D,D,C,C,C,D,D],[D,C,V,V,V,C,D],[C,V,P,P,P,V,C],[C,V,P,W,P,V,C],[C,V,P,P,P,V,C],[D,C,V,V,V,C,D],[D,D,C,C,C,D,D]];
-    let c = ''; M.forEach((row, r) => row.forEach((col, k) => { c += `<circle cx="${9 + k * 13}" cy="${9 + r * 13}" r="4.6" fill="${col}" data-l="${col === D ? 0 : 1}"/>`; }));
+    let c = ''; M.forEach((row, r) => row.forEach((col, k) => { c += `<circle cx="${9 + k * 13}" cy="${9 + r * 13}" r="4.6" fill="${col}" data-c="${col}" data-l="${col === D ? 0 : 1}"/>`; }));
     host.innerHTML = `<svg viewBox="0 0 96 96" aria-hidden="true"><defs><filter id="gbGlow" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>${c}</svg>`;
     // glint by setting the SVG attributes directly (fill + a slightly bigger dot): reliable in Safari on iPhone / iPad
     const lit = [...host.querySelectorAll('circle[data-l="1"]')];
-    const glint = el => { if (el._on) return; el._on = 1; const f = el.getAttribute('fill');
+    // (Oct 17 fix) a glint always returns the dot to its own colour (data-c), and skips dots the prank has switched off (data-off),
+    //   so a glint that overlaps the prank can never leave a bulb dark
+    const glint = el => { if (el._on || el.dataset.off) return; el._on = 1;
       el.setAttribute('fill', '#ffffff'); el.setAttribute('r', '5.6');
-      setTimeout(() => { el.setAttribute('fill', f); el.setAttribute('r', '4.6'); el._on = 0; }, 300); };
+      setTimeout(() => { el.setAttribute('fill', el.dataset.off ? '#221d33' : el.dataset.c); el.setAttribute('r', '4.6'); el._on = 0; }, 300); };
     const tick = () => { if (!document.hidden) { const n = 1 + (Math.random() < 0.6 ? 1 : 0);
       for (let k = 0; k < n; k++) glint(lit[(Math.random() * lit.length) | 0]); }
       setTimeout(tick, 250 + Math.random() * 450); };

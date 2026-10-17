@@ -521,6 +521,17 @@
     }
   }
   const fmtClock = c => { c = Math.max(0, Math.floor(c || 0)); return c >= 6000 ? Math.floor(c / 3600) + ':' + String(Math.floor(c / 60) % 60).padStart(2, '0') : Math.floor(c / 60) + ':' + String(c % 60).padStart(2, '0'); };
+  // 📋 Live now (demo): a handful of pretend games that tick along, so the list has something in it
+  function demoNow() {
+    const T = (lg, i) => { const t = TEAMS[lg][i]; return {abbr: t[0], name: t[1].split(' ').slice(-1)[0], color: t[2], id: lg + i, score: 0}; };
+    const m = Math.floor(Date.now() / 60000), now = Date.now() / 1000;
+    const G = [['nba', 0, 1, 'in', 'basketball', 'NBA', 98 + (m % 7), 95 + (m % 5), 'Q4 2:31'], ['nfl', 2, 4, 'in', 'football', 'NFL', 24, 21 + (m % 2) * 3, 'Q3 8:12'],
+      ['mlb', 1, 2, 'in', 'baseball', 'MLB', 3, 2 + (m % 3 === 0 ? 1 : 0), 'Bot 7th'], ['nhl', 0, 1, 'pre', 'hockey', 'NHL', 0, 0, ''], ['epl', 0, 1, 'post', 'soccer', 'Premier League', 2, 1, 'FT'],
+      ['nba', 2, 3, 'pre', 'basketball', 'NBA', 0, 0, ''], ['mls', 0, 1, 'in', 'soccer', 'MLS', 1, 1, "67'"]];
+    return {t: now, games: G.map(([lg, a, h, st, sport, ln, as, hs, det], i) => { const A = T(lg, a), H = T(lg, h); A.score = as; H.score = hs;
+      return {key: lg + ':' + i, league: lg, lname: ln, sport, state: st, detail: st === 'post' ? 'Final' : det, period: 3, start: st === 'pre' ? now + 3600 * (i - 2) : now - 7200,
+        home: H, away: A, ex: {rec: {home: '5-2', away: '4-3'}, venue: 'Demo Arena', tv: 'Demo TV', last: st === 'in' ? 'A big play just happened (demo).' : '', note: ''}}; })};
+  }
   const TEAMS = {
     nfl: [['MIA', 'Miami Dolphins', '#008e97'], ['BUF', 'Buffalo Bills', '#00338d'], ['KC', 'Kansas City Chiefs', '#e31837'], ['DAL', 'Dallas Cowboys', '#003594'], ['PHI', 'Philadelphia Eagles', '#004c54'], ['SF', 'San Francisco 49ers', '#aa0000'], ['GB', 'Green Bay Packers', '#203731'], ['NE', 'New England Patriots', '#c60c30']],
     nba: [['MIA', 'Miami Heat', '#98002e'], ['BOS', 'Boston Celtics', '#007a33'], ['LAL', 'Los Angeles Lakers', '#552583'], ['GSW', 'Golden State Warriors', '#1d428a'], ['NYK', 'New York Knicks', '#f58426'], ['DEN', 'Denver Nuggets', '#0e2240']],
@@ -1878,6 +1889,7 @@
         case '/api/songinfo': return {json: {keys: {lastfm: true, getsongbpm: true}, current: songInfoNow()}};
         case '/api/text': return {json: {state: Object.assign({}, TX.s), presets: TX.presets.map(p => Object.assign({}, p, {logo: undefined}))}};
         case '/api/score': return {json: scoreInfo()};
+        case '/api/score/now': return {json: demoNow()};
         case '/api/score/teams': { const lg = q.get('league') || 'nfl', ts = TEAMS[lg];
           return {json: ts ? {teams: ts.map(x => ({id: x[0], name: x[1], abbr: x[0], color: x[2]}))} : {teams: [], error: 'In the demo, teams load for the NFL, NBA, MLB, NHL, MLS and Premier League'}}; }
         case '/api/fire': return {json: Object.assign({}, ENG.fire, FIRE)};
