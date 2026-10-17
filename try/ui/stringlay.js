@@ -56,6 +56,24 @@
     .sl-more > summary { min-height:38px; font-size:13px; }
     .sl-full { grid-template-columns:minmax(0, 1fr) minmax(240px, 300px); }
   }
+  /* 📱💻 Oct 17 (Graham: "the editor needs to be much larger on the iPad, more real estate for the lights"): on any wide screen the
+     stage fills the box and every tool sits in a slim column beside it; the extra sections stay underneath */
+  @media (min-width: 900px) {
+    #slPanel:not(.sl-full) { display:grid; grid-template-columns:minmax(0, 1fr) minmax(230px, 270px); column-gap:12px; align-content:start; }
+    #slPanel:not(.sl-full) > .ph, #slPanel:not(.sl-full) > .note, #slPanel:not(.sl-full) > .sl-more { grid-column:1 / -1; }
+    #slPanel:not(.sl-full) > .sl-top, #slPanel:not(.sl-full) > .sl-stage, #slPanel:not(.sl-full) > .sl-hint, #slPanel:not(.sl-full) > .sl-go { grid-column:1; }
+    #slPanel:not(.sl-full) > .sl-side { grid-column:2; grid-row:3 / span 4; align-self:start; display:flex; flex-direction:column; gap:8px; max-height:calc(100vh - 150px); overflow:auto; }
+    #slPanel:not(.sl-full) .sl-stage { height:max(380px, calc(100vh - 290px)); }
+    #slPanel:not(.sl-full) #slTools { display:flex; flex-direction:column; gap:8px; }
+    #slPanel:not(.sl-full) .sl-row { flex-direction:column; align-items:stretch; gap:4px; }
+    #slPanel:not(.sl-full) .sl-row > b { min-width:0; }
+    #slPanel:not(.sl-full) .sl-row .seg { display:flex; flex-wrap:wrap; }
+    #slPanel:not(.sl-full) .sl-row .seg .btn { flex:1 1 30%; min-width:0; padding:0 6px; }
+    #slPanel:not(.sl-full) .sl-tools { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    #slPanel:not(.sl-full) .sl-tools .btn { min-height:42px; font-size:13px; padding:0 6px; }
+    #slPanel:not(.sl-full) #slWhich { flex-direction:row; flex-wrap:wrap; }
+  }
+  @media (min-width: 900px) and (hover: hover) and (pointer: fine) { #slPanel:not(.sl-full) .sl-tools .btn { min-height:32px; font-size:12px; } }
   .sl-menu { position:absolute; z-index:5; min-width:180px; background:#0d0b18f2; border:1px solid var(--cyan); border-radius:0 10px 0 10px; padding:4px; box-shadow:0 8px 30px #000a; }
   .sl-menu button { display:flex; width:100%; align-items:center; gap:8px; background:none; border:0; color:var(--text); font:600 13px var(--cond); letter-spacing:.5px; text-align:left; padding:8px 10px; border-radius:6px; cursor:pointer; }
   .sl-menu button:hover { background:#33d6ff22; color:var(--cyan); }
@@ -389,7 +407,7 @@
     el.id = 'slPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
     el.innerHTML = `<div class="sl-hd"><b>🧵 Lay out your lights</b><span class="r" id="slR2" style="font:700 12px var(--cond);letter-spacing:1px;color:var(--dim)"></span><button class="btn c" id="slDone" style="--c:var(--green)">✓ Done</button></div>
       <div class="ph"><span>🧵 Lay out your lights</span><span class="r" id="slR"></span></div>
-      <p class="note">This is your wall, live. Drag curtains to where they hang, drag each string's <b>START</b> and <b>END</b>. Right-click (or press and hold) to add a bend, scroll or pinch to zoom, drag empty space to look around. The real bulb blinks while you drag. Tap <b>Save</b>.</p>
+      <p class="note">Your wall, live. Drag curtains and each string's <b>START</b> / <b>END</b>. Press and hold (or right-click) for bends, pinch or scroll to zoom. Tap <b>Save</b>.</p>
       <div class="sl-top" id="slTop"></div>
       <div class="sl-stage" id="slStage"><svg id="slSvg" aria-label="Your lights, laid out"></svg></div>
       <div class="sl-hint" id="slHint"></div>
@@ -494,10 +512,10 @@
     });
   }
   // 📐 the LIGHTS page: the editor is the big box (two-thirds wide on a laptop / iPad, full width on phones), everything else beside / below it
-  if (GB.layTPL) GB.layTPL.lights = {wide: [[0, 31, ['#slPanel']], [31, 17, []]], tall: [[0, 48, ['#slPanel']]]};
+  if (GB.layTPL) GB.layTPL.lights = {wide: [[0, 48, ['#slPanel']]], tall: [[0, 48, ['#slPanel']]]};   // the editor takes the whole width; the rest stack underneath
   function freshLayout() {                         // once: drop any automatic LIGHTS layout made before the editor led the page (hand-made ones stay)
     try {
-      if (localStorage.getItem('gb_sl_lay') === '2') return; localStorage.setItem('gb_sl_lay', '2');
+      if (localStorage.getItem('gb_sl_lay') === '3') return; localStorage.setItem('gb_sl_lay', '3');
       const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('gb_lay3:lights:') && !k.endsWith(':auto')) ks.push(k); }
       ks.forEach(k => { const a = localStorage.getItem(k + ':auto'); if (a === '1' || a === '2' || a === null) { localStorage.removeItem(k); localStorage.removeItem(k + ':auto'); GB.layPut && (GB.layPut(k, ''), GB.layPut(k + ':auto', '')); } });
     } catch (e) {}
