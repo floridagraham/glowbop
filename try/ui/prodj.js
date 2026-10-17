@@ -42,7 +42,7 @@
   html.prodj #pg-dj > .panel.box { box-shadow:inset 0 0 0 1px #4de8c822; }
   #rail #pdTab { background:#ff3d9a; }   /* GlowBop pink */
   #rail .rail-sep[data-g=pro], #rail button[data-p=pro] { display:none !important; }   /* the PRO DJ / PRO HOME tabs say it; no label row, no tour key */
-  #rail button.locked { background:#2a2833 !important; color:#77748a !important; box-shadow:none !important; }
+  #rail button.locked { filter:saturate(.4) brightness(.78); opacity:.8; box-shadow:none !important; }   /* Oct 16: locked Pro tabs keep a soft version of their colour */
   #rail button.nope { animation:pdNope .35s ease; } @keyframes pdNope { 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
   /* ---- Pro DJ is a tighter console: smaller paddings and keys so more fits on one screen */
   html.prodj #pg-dj > .panel.box { padding:8px 10px 10px; gap:8px; }
