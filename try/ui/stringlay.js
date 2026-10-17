@@ -88,7 +88,7 @@
   .sl-sub > .ph { display:none !important; }
   `);
 
-  let ST = null, sel = '', strand = 0, BULB = false, LAY = {}, dirty = {}, svg = null, view = null, zoom = 1, drag = null, lastPick = 0, MOVE = {};
+  let ST = null, sel = '', strand = 0, BULB = false, DRAW = null, BENDS = false, LAY = {}, dirty = {}, svg = null, view = null, zoom = 1, drag = null, lastPick = 0, MOVE = {};
   const strings = () => (ST ? ST.devices.filter(d => d.kind === 'string') : []);
   const curtains = () => (ST ? ST.devices.filter(d => d.kind === 'grid') : []);
   const cpts = d => { const m = MOVE[d.id] || [0, 0]; return d.pts.map(([x, y]) => [x + m[0], y + m[1]]); };     // a curtain where you dragged it
@@ -137,7 +137,15 @@
     for (let i = 0; i < N; i++) { const r = Math.floor(i / P); let c = i % P; if (r % 2) c = P - 1 - c; out.push([a[0] + c * pitch * ux + r * gap * nx, a[1] + c * pitch * uy + r * gap * ny]); }
     return out;
   }
+  function drawPreview(c) {                        // ✍️ while drawing: the bulbs you've laid, then the rest running on straight
+    const pl = DRAW.placed.slice(); if (!pl.length) return null;
+    const a = pl[pl.length - 2] || [pl[0][0] - 1, pl[0][1]], b = pl[pl.length - 1], dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1;
+    while (pl.length < c) { const q = pl[pl.length - 1]; pl.push([q[0] + dx / ln, q[1] + dy / ln]); }
+    return pl.slice(0, c);
+  }
   function layPoints(d, lay) {
+    if (DRAW && d.id === sel && DRAW.placed.length && !lay.wall) { const cs = partCounts(d, lay), res = [];
+      lay.parts.forEach((p, k) => { if (cs[k] > 0) res.push(k === DRAW.k ? drawPreview(cs[k]) : layOne(cs[k], p.pts, p.fold, lay.gap || 1, p.rev, p.smooth, p.pins)); }); return res; }
     if (lay.wall) { const all = wallPoints(d.n, lay), cs = partCounts(d, lay), res = []; let o = 0; cs.forEach(c => { res.push(all.slice(o, o + c)); o += c; }); return res; }
     const cs = partCounts(d, lay), res = [];
     lay.parts.forEach((p, k) => { if (cs[k] > 0) res.push(layOne(cs[k], p.pts, p.fold, lay.gap || 1, p.rev, p.smooth, p.pins)); });
@@ -202,6 +210,8 @@
         for (const st of new Set([1, fk])) for (let i = st; i < pts.length; i++) { const q = Math.hypot(pts[i][0] - pts[i - st][0], pts[i][1] - pts[i - st][1]); if (q > 1e-6) near = Math.min(near, q); }
         const r = Math.max(0.22, Math.min(R, (isFinite(near) ? near : 1) * 0.45));          // close-set bulbs: smaller dots so each one still shows
         const pins = lay.parts[k].pins || {}, big = BULB && act ? Math.max(r, 0.3) : r;
+        if (BENDS && on) { const mk = bendMarks(d, lay), off0 = partCounts(d, lay).slice(0, k).reduce((a, b) => a + b, 0);
+          mk.forEach(([i, c]) => { const j = i - off0; if (j >= 0 && j < pts.length) h += `<circle cx="${pts[j][0]}" cy="${pts[j][1]}" r="${Math.max(0.45, r * 2.2)}" fill="none" stroke="#${c}" stroke-width="0.12"/>`; }); }
         const off = partCounts(d, lay).slice(0, k).reduce((a, b) => a + b, 0);
         h += `<g class="lv" data-d="${esc(d.id)}" data-o="${off}" opacity="${on ? (act ? 1 : 0.85) : 0.7}">${pts.map(([x, y], i) => `<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${i === 0 && act && lay.kind !== 'curtain' ? Math.max(big * 1.8, 0.3) : big}" fill="${col}"${pins[i] ? ` stroke="#fff" stroke-width="0.08"` : ''}/>`).join('')}</g>`;
         if (on && !BULB && (lay.wall ? k === 0 : (act || lay.parts.length <= 4))) {      // many drops / strands: only the one you're laying shows its handles; a wall: one START + END for the whole wall
@@ -250,6 +260,7 @@
     $('slBendRow').style.display = fr > 1 || isWall ? 'none' : 'contents';
     $('slCurveRow').style.display = fr > 1 || isWall ? 'none' : '';
     $('slBulb').style.display = isWall ? 'none' : ''; $('slFlip').style.display = isWall ? 'none' : '';
+    $('slDraw').style.display = isWall || isCur ? 'none' : ''; $('slDraw').textContent = DRAW ? '✓ Done drawing' : '✍️ Draw it'; $('slBends').textContent = BENDS ? '💡 Hide the bends' : '💡 Show me the bends';
     $('slBulb').classList.toggle('on', BULB); $('slBulb').textContent = BULB ? '✋ Moving bulbs: tap to stop' : '✋ Move single bulbs';
     $('slUnpin').style.display = Object.keys(p.pins || {}).length ? '' : 'none';
     $('slCurveRow').querySelectorAll('[data-cv]').forEach(b => { b.classList.toggle('on', !!p.smooth === (b.dataset.cv === '1')); if (b.dataset.cv === '1') b.innerHTML = GB.pro === false ? '🔒 Smooth curves · PRO' : '💎 Smooth curves'; });
@@ -313,8 +324,45 @@
   }
   function blink(d, lay, k, i) { const now = Date.now(); if (now - lastPick < 220) return; lastPick = now;
     const idx = lay.wall ? (i ? Math.ceil(d.n / lay.wall) - 1 : 0) : bulbAt(d, lay, k, i); GB.post('/api/lights/pick', {id: d.id, i: idx, secs: 1.2}); }
+  // ✍️ Oct 17 (Graham: "draw with your finger, one bulb per travel; when you're done, straighten the rest out for them")
+  const RDP = (pts, eps) => {                      // keep only the real bends of a hand-drawn line
+    if (pts.length < 3) return pts.slice(); const [a, b] = [pts[0], pts[pts.length - 1]]; let idx = 0, dmax = 0;
+    for (let i = 1; i < pts.length - 1; i++) { const p = pts[i], vx = b[0] - a[0], vy = b[1] - a[1], L = Math.hypot(vx, vy) || 1;
+      const dd = Math.abs(vy * p[0] - vx * p[1] + b[0] * a[1] - b[1] * a[0]) / L; if (dd > dmax) { dmax = dd; idx = i; } }
+    if (dmax <= eps) return [a, b];
+    const l = RDP(pts.slice(0, idx + 1), eps), r = RDP(pts.slice(idx), eps); return l.slice(0, -1).concat(r);
+  };
+  function drawCount() { const d = dev(sel), lay = LAY[sel]; return d && lay ? partCounts(d, lay)[DRAW.k] : 0; }
+  function drawHint() { const c = drawCount(); $('slHint').textContent = DRAW ? `✍️ Strand ${DRAW.k + 1}: ${DRAW.placed.length} of ${c} bulbs placed. Draw where it runs, lift your finger to finish (the rest runs on straight).` : ''; }
+  function drawCommit() {                          // the drawing becomes a clean path with bend points you can still drag
+    const lay = LAY[sel], c = drawCount(); if (!lay || !DRAW || DRAW.placed.length < 2) return;
+    const full = drawPreview(c), path = RDP(full, 0.45), p = lay.parts[DRAW.k];
+    p.pts = path.map(q => [Math.round(q[0] * 100) / 100, Math.round(q[1] * 100) / 100]); p.fold = null; p.smooth = false; p.rev = false; delete p.pins;
+    dirty[sel] = true; commit();
+  }
+  function bendMarks(d, lay) {                     // 💡 start (green), end (pink), and every bend: left turns amber, right turns lavender
+    const per = layPoints(d, lay), out = []; let off = 0;
+    per.forEach(pts => { const n = pts.length; if (!n) return;
+      out.push([off, '2bd96b']); if (n > 1) out.push([off + n - 1, 'ff3d9a']);
+      for (let i = 1; i < n - 1; i++) { const a = pts[i - 1], b = pts[i], c = pts[i + 1], ux = b[0] - a[0], uy = b[1] - a[1], vx = c[0] - b[0], vy = c[1] - b[1];
+        const lu = Math.hypot(ux, uy), lv = Math.hypot(vx, vy); if (lu < 1e-6 || lv < 1e-6) continue;
+        const cos = (ux * vx + uy * vy) / (lu * lv); if (cos > 0.82) continue;               // straighter than ~35°: not a bend
+        out.push([off + i, (ux * vy - uy * vx) > 0 ? 'b98cff' : 'ffcc33']); }
+      off += n; });
+    return out.slice(0, 400);
+  }
+  async function showBends(on) {
+    const d = dev(sel), lay = LAY[sel]; if (!d || !lay) return;
+    if (!on) { BENDS = false; await GB.post('/api/lights/marks', {stop: true}); draw(); return; }
+    const mk = bendMarks(d, lay); const r = await GB.post('/api/lights/marks', {id: d.id, marks: mk, secs: 30});
+    if (r) { BENDS = true; GB.toast(`💡 ${mk.length} bulbs lit: green = start, pink = end, amber / purple = bend here (left / right). 30 seconds.`); draw(); setTimeout(() => { BENDS = false; draw(); }, 30000); }
+  }
   function onDown(e) {
     hideMenu(); if (e.button === 2) return;
+    if (DRAW && LAY[sel]) {                                            // ✍️ drawing: every bulb-width of travel lays the next bulb
+      e.preventDefault(); const at = toWorld(e); if (!DRAW.placed.length) DRAW.placed.push(at);
+      drag = {draw: true}; try { svg.setPointerCapture(e.pointerId); } catch (x) {} onMove(e); return;
+    }
     const c = e.target.closest && e.target.closest('.c');
     if (c && !(e.target.closest('.h'))) {                               // ▦ grab a curtain anywhere and move it
       e.preventDefault(); const id = c.dataset.id; if (sel !== id) { sel = id; paintTop(); }
@@ -339,6 +387,14 @@
   }
   function onMove(e) {
     if (!drag) return; e.preventDefault();
+    if (drag.draw) {
+      const [x, y] = toWorld(e), c = drawCount(); let added = false;
+      while (DRAW.placed.length < c) { const q = DRAW.placed[DRAW.placed.length - 1], dx = x - q[0], dy = y - q[1], L = Math.hypot(dx, dy); if (L < 1) break;
+        DRAW.placed.push([q[0] + dx / L, q[1] + dy / L]); added = true; }
+      if (added) { const now = Date.now(); if (now - lastPick > 160) { lastPick = now; const base = partCounts(dev(sel), LAY[sel]).slice(0, DRAW.k).reduce((a, b) => a + b, 0);
+        GB.post('/api/lights/pick', {id: sel, i: base + DRAW.placed.length - 1, secs: 1}); } dirty[sel] = true; drawHint(); draw(); }
+      return;
+    }
     if (drag.pan) { if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 4) drag.moved = true; if (!drag.moved) return; view.cx = drag.cx - (e.clientX - drag.sx) / drag.k; view.cy = drag.cy - (e.clientY - drag.sy) / drag.k; return draw(); }
     if (drag.bulb !== undefined) { const [x, y] = toWorld(e), p = LAY[sel].parts[strand]; p.pins = p.pins || {}; p.pins[drag.bulb] = [snap(x), snap(y)]; dirty[sel] = true;
       const now = Date.now(); if (now - lastPick > 300) { lastPick = now; GB.post('/api/lights/pick', {id: sel, i: drag.real, secs: 1.2}); } return draw(); }
@@ -353,6 +409,7 @@
     p[drag.i] = [snap(x), snap(y)]; dirty[sel] = true; draw(); blink(dev(sel), lay, drag.k, drag.i);
   }
   function onUp() {
+    if (drag && drag.draw) { drag = null; drawCommit(); drawHint(); draw(); return; }
     const tap = drag && drag.pan && !drag.moved ? drag.at : null;
     if (drag && !drag.pan) commit();
     if (drag) { drag = null; $('slHint').textContent = ''; svg.style.cursor = ''; }
@@ -362,6 +419,7 @@
     let best = null, lim = Math.max(0.8, (view ? Math.min(view.w, view.h) : 20) / 25) ** 2;
     strings().forEach(d => { const lay = LAY[d.id]; if (!lay) return; layPoints(d, lay).forEach((pts, k) => pts.forEach(([px, py]) => {
       const q = (px - x) ** 2 + (py - y) ** 2; if (q < lim && (!best || q < best.q)) best = {id: d.id, k, q}; })); });
+    if (DRAW) return;                              // (taps while drawing are handled by the drawing)
     if (best) { sel = best.id; strand = best.k; } else { sel = ''; BULB = false; }
     paintTop(); draw();
   }
@@ -501,7 +559,9 @@
           <button class="btn" id="slBulb">✋ Move single bulbs</button>
           <button class="btn" id="slUnpin">↺ Reset bulbs</button>
           <button class="btn" id="slFlip">⇄ Flip direction</button>
+          <button class="btn c" id="slDraw" style="--c:var(--pink)">✍️ Draw it</button>
           <button class="btn c" id="slWall" style="--c:var(--amber)">🧱 Make it a wall</button>
+          <button class="btn c" id="slBends" style="--c:var(--green)">💡 Show me the bends</button>
           <button class="btn" id="slReset">↺ Start over</button>
           <button class="btn" id="slStraight">▦ Straight curtain again</button>
           <button class="btn c" id="slSave" style="--c:var(--green)">💾 Save</button>
@@ -522,7 +582,7 @@
           const pt = svg.createSVGPoint(); pt.x = mx; pt.y = my; const w = pt.matrixTransform(m.inverse());
           pinch = {d0: d, w0: view.w, h0: view.h, k0: m.a, P: [w.x, w.y], cxs: r.left + r.width / 2, cys: r.top + r.height / 2}; e.preventDefault(); return;
         }
-        if (PT.size === 1) { const tgt = e.target, cx = e.clientX, cy = e.clientY;
+        if (PT.size === 1 && !DRAW) { const tgt = e.target, cx = e.clientX, cy = e.clientY;
           clearTimeout(hold); hold = setTimeout(() => { hold = null; if (PT.size !== 1 || (drag && drag.moved2)) return;
             drag = null; onMenu({preventDefault() {}, clientX: cx, clientY: cy, target: tgt}); if (navigator.vibrate) navigator.vibrate(15); }, 550); }
       }
@@ -570,6 +630,11 @@
     el.querySelector('#slFlip').onclick = () => { const lay = LAY[sel]; if (!lay) return; lay.parts[strand].rev = !lay.parts[strand].rev; GB.toast('⇄ START and END swapped'); change(); };
     el.querySelector('#slReset').onclick = () => { const d = dev(sel); if (!d) return; LAY[sel] = fresh(d, (LAY[sel] && LAY[sel].parts.length) || 1); strand = 0; view = null; change(); };
     el.querySelector('#slBeepGo').onclick = beep;
+    el.querySelector('#slDraw').onclick = () => { const lay = LAY[sel]; if (!lay) return;
+      if (DRAW) { DRAW = null; $('slDraw').textContent = '✍️ Draw it'; $('slHint').textContent = 'Drawing done. Drag any bend to fine-tune, then Save.'; return draw(); }
+      if (lay.wall) { GB.toast('Tap ✕ Not a wall first, then draw'); return; }
+      BULB = false; DRAW = {k: strand, placed: []}; $('slDraw').textContent = '✓ Done drawing'; drawHint(); draw(); };
+    el.querySelector('#slBends').onclick = () => showBends(!BENDS);
     el.querySelector('#slUndo').onclick = undo; el.querySelector('#slRedo').onclick = redo;
     window.addEventListener('keydown', e => {                       // ⌨️ Ctrl/⌘+Z undo, Ctrl/⌘+Shift+Z or Ctrl+Y redo (LIGHTS page only, not while typing)
       if (GB.page !== 'lights' || !(e.ctrlKey || e.metaKey) || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName))) return;
