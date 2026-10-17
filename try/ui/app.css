@@ -476,3 +476,15 @@ html body #view .reads-panel #rMore { order:10; flex:1 0 100%; font-size:calc(10
 #hd .modebar.in-hd .mfad, #hd .modebar.in-hd .mloop, #hd .modebar.in-hd .mov { position:static; min-height:30px; padding:0 8px; }
 @media (min-width: 700px) { #hd .modebar.in-hd .t b { font-size:calc(13px * var(--fs, 1)); } #hd .modebar.in-hd .t small { font-size:calc(14px * var(--fs, 1)); } }
 @media (max-width: 699px) { #hd .modebar.in-hd .t small { display:none; } #hd .modebar.in-hd #mBtn { padding:0 8px; font-size:calc(11px * var(--fs, 1)); min-height:30px; } }
+
+/* 🎚️ Oct 17 (Graham): the HOLD TO BUILD box takes less room. Style chips sit in a tight grid (2+ across when there's space),
+   shorter and smaller, so the box shrinks and the board has room for more controls. The big button still grows with its box. */
+html body .dj-col .dj-homepick:not([hidden]), html body .dj-col .dj-bstyles:not([hidden]) { display:grid !important; grid-template-columns:repeat(auto-fill, minmax(104px, 1fr)); gap:4px; margin-top:4px; }
+html body .dj-col .dj-homepick .chip, html body .dj-col .dj-bstyles .chip { min-height:28px; padding:0 8px; font-size:calc(12px * var(--fs, 1)); gap:4px; margin:0 !important; justify-content:flex-start; }
+html body .dj-col .dj-bstyles .chip .ic, html body .dj-col .dj-homepick .chip .ic { font-size:calc(12px * var(--fs, 1)); width:1em; height:1em; }
+html body .dj-col .dj-cmode { margin-top:4px; gap:3px; } html body .dj-col .dj-cmode .btn { min-height:26px; font-size:calc(10.5px * var(--fs, 1)); }
+html body .dj-cols { gap:8px; } html body .dj-col .dj-sub { margin-top:4px; }
+html body .dj-buildbox > #djBuild { min-height:64px; }
+
+/* 📉 Oct 17 (Graham): the Tempo / Section / Look / Effect strip only shows on MUSIC, DJ and PRO DJ */
+body:not([data-page=music]):not([data-page=dj]) #view .panel.reads-panel { display:none !important; }

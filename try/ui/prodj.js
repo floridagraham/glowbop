@@ -418,6 +418,7 @@
     const k = canArrange() ? pageKey() : null, L = k && load(k);
     // 🎵 Oct 17: the show status bar moved up into the header: drop its box from saved layouts and let everything float up
     if (L && L['v:mode']) { delete L['v:mode']; const ids = Object.keys(L); if (ids.length) settle(L, ids[0]); save(k, L); }
+    if (L && L['v:reads'] && !['music', 'dj', 'prodj'].includes(k)) { delete L['v:reads']; const ids = Object.keys(L); if (ids.length) settle(L, ids[0]); save(k, L); }   // 📉 the readout strip only lives on MUSIC, DJ and PRO DJ (Oct 17)
     // 📉 Oct 17: the readout strip got slim. Saved layouts (yours and the shipped ones) give it a short box once and everything below floats up.
     if (L && L['v:reads'] && L['v:reads'].h > 9 && S.get('gb_rmini:' + store(k)) !== '1') { L['v:reads'].h = 9; settle(L, 'v:reads'); save(k, L); S.set('gb_rmini:' + store(k), '1'); }
     if (k && L && !arranging && S.get(store(k) + ':auto') === '1' && items().some(el => !L[el.dataset.lk])) return compact(true);   // an untouched template + new boxes: rebuild it
@@ -434,7 +435,25 @@
     clearLay(); $('main').classList.add('lay');
     list.forEach(el => place(el, LL[el.dataset.lk]));
     cur = {key: k, L: LL};
+    if (!arranging && L && (k === 'dj' || k === 'prodj') && S.get('gb_bmini:' + store(k)) !== '1') setTimeout(() => slimBuild(k, LL), 400);
     if (arranging) handles();
+  }
+  // 🎚️ Oct 17 (Graham): on the DJ pages the slim readout strip sits right above HOLD TO BUILD (same width), and the build box shrinks
+  //   to fit its tighter chips; everything below floats up. Runs once per screen shape on saved layouts (and the shipped ones).
+  function natRows(el, p) {
+    const sv = [el.style.gridRow, el.style.alignSelf, el.style.overflow];
+    el.style.gridRow = (p.y + 1) + ' / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible';
+    const hgt = el.offsetHeight; [el.style.gridRow, el.style.alignSelf, el.style.overflow] = sv;
+    return Math.max(6, Math.ceil((hgt + 14) / ROW));
+  }
+  function slimBuild(k, L) {
+    if (arranging || !cur || cur.key !== k || pageKey() !== k) return;
+    const bEl = $('djBuild') && $('djBuild').closest('[data-lk]'), rEl = document.querySelector('#main [data-lk="v:reads"]');
+    if (!bEl || !L[bEl.dataset.lk]) return;
+    const bid = bEl.dataset.lk, b = L[bid];
+    if (rEl && L['v:reads']) { const rh = natRows(rEl, L['v:reads']); L['v:reads'] = {x: b.x, y: b.y, w: b.w, h: rh}; settle(L, 'v:reads'); }
+    const bh = natRows(bEl, L[bid]); if (bh < L[bid].h) { L[bid].h = bh; settle(L, bid); }
+    save(k, L); S.set('gb_bmini:' + store(k), '1'); layout();
   }
   const hits = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   function settle(L, moved) {                        // push everything that overlaps the moved box down, top to bottom
