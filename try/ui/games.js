@@ -30,7 +30,7 @@
       <p class="note">Tap the glowing game again (or <b>♫ Back to music</b> under the wall) to stop.</p>`;
     GAMES.forEach(([fx, em, name, desc, c]) => {
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.fx = fx; b.style.setProperty('--c', c);
-      b.innerHTML = `<span class="em">${em}</span>${name}<small>${desc}</small>`;
+      b.innerHTML = `<span class="em">${GB.funIcon(fx) || em}</span>${name}<small>${desc}</small>`;
       b.onclick = async () => {
         if (b.classList.contains('on')) {                              // second tap: game off, back to the music show
           b.classList.remove('on');

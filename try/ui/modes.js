@@ -183,7 +183,7 @@
     if (others.includes(hOpen) || others.includes(hLive)) hMore = true;
     const tile = (k, h) => {
       const b = document.createElement('button'); b.className = 'tile' + (k === hOpen ? ' open' : '') + (k === hLive ? ' on' : '');
-      b.innerHTML = `<span class="em">${esc(h.emoji)}</span><span>${esc(hName(k))}</span>` + (k === hLive ? '<span class="md-on">● ON</span>' : '');
+      b.innerHTML = `<span class="em">${GB.funIcon(k) || esc(h.emoji)}</span><span>${esc(hName(k))}</span>` + (k === hLive ? '<span class="md-on">● ON</span>' : '');
       b.setAttribute('aria-pressed', k === hOpen ? 'true' : 'false');
       b.onclick = () => { hOpen = hOpen === k ? null : k; renderHolidays(); };
       return b;
@@ -212,7 +212,7 @@
     const k = hOpen, h = H[k], st = hState(k), live = hLive === k;
     pn.hidden = false; pn.innerHTML = '';
     const hh = document.createElement('div'); hh.className = 'md-hh';
-    hh.innerHTML = `<span class="em">${esc(h.emoji)}</span><span>${esc(hName(k))}</span>`; pn.appendChild(hh);
+    hh.innerHTML = `<span class="em">${GB.funIcon(k) || esc(h.emoji)}</span><span>${esc(hName(k))}</span>`; pn.appendChild(hh);
     const inf = hInfo(k);
     if (inf.date) {
       const dd = document.createElement('p'); dd.className = 'md-hdate' + (inf.now ? ' now' : '');
