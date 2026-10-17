@@ -837,11 +837,17 @@
     const anyDev = blocks.some(b => (b.devices || []).length > 1);
     const box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
     const lab = (many ? 18 : 0) + (anyDev ? 16 : 0);
+    // 💡 Oct 17: strings with no map (Nanoleaf etc.) show under the wall as live rows of dots, two rows for two strands
+    const strips = blocks.flatMap(b => b.strips || []);
+    const stripGeo = s => { const fit = Math.max(8, Math.floor((cssW - 16) / 7));          // aim for dots at least ~7 px apart; wrap into more rows when narrow
+      let rows = s.n >= 100 ? 2 : 1; if (Math.ceil(s.n / rows) > fit) { rows = Math.ceil(s.n / fit); if (s.n >= 100 && rows % 2) rows++; }
+      const per = Math.ceil(s.n / rows), sp = Math.max(4, Math.min(14, (cssW - 16) / per)); return {rows, per, sp, h: 18 + rows * sp + 6}; };
+    const stripH = strips.reduce((a, s) => a + stripGeo(s).h, 0);
     const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
     const inLay = !FULL && box.closest('.lay-it');                      // ✏️ arranged console: the picture fits whatever box size you gave the Live wall
     const maxCssH = FULL ? innerHeight - 40 : inLay ? Math.max(50, box.clientHeight - 20) : compact ? Math.max(GB.page === 'music' ? 110 : 130, innerHeight * (GB.page === 'music' ? 0.15 : 0.24)) : Math.max(220, innerHeight * 0.82)   // Oct 16: your lights fill the box edge to edge by default (tall for one curtain);
-    const st = Math.min(cssW / totW, (maxCssH - lab) / maxH);
-    const cssH = Math.round(lab + maxH * st), drawW = totW * st, ox0 = (cssW - drawW) / 2;
+    const st = Math.min(cssW / totW, Math.max(20, maxCssH - lab - stripH) / maxH);
+    const cssH = Math.round(lab + maxH * st + stripH), drawW = totW * st, ox0 = (cssW - drawW) / 2;
     cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
     cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.fillStyle = '#05040a'; cx.fillRect(0, 0, cssW, cssH);
@@ -865,6 +871,18 @@
       if (sel) { cx.strokeStyle = '#ff3d9a'; cx.lineWidth = 2; cx.strokeRect(ox - 1, top - 1, b.w * st + 2, b.h * st + 2); }
       PVHIT.push({id: b.id, name: b.name, x0: ox, x1: ox + b.w * st});
       ox += (b.w + gap) * st;
+    });
+    let sy = Math.round(lab + maxH * st);
+    strips.forEach(s => {
+      const g = stripGeo(s), rgb = hexRGB(s.rgb), x0 = (cssW - g.per * g.sp) / 2, r = Math.max(1, g.sp * 0.38);
+      cx.font = "600 12px 'Saira Condensed', system-ui"; cx.textBaseline = 'top'; cx.fillStyle = '#ffcc33'; cx.fillText(s.name.toUpperCase() + ' · ' + s.n + ' BULBS', x0, sy + 3);
+      for (let i = 0; i < s.n; i++) {
+        const row = Math.floor(i / g.per), col = i % g.per;     // both strands leave the splitter at the same end
+        const px = x0 + col * g.sp + g.sp / 2, py = sy + 18 + row * g.sp + g.sp / 2, c = rgb[i];
+        if (!c || c === '000000') { cx.fillStyle = '#16121f'; cx.beginPath(); cx.arc(px, py, r * 0.6, 0, 6.283); cx.fill(); continue; }
+        cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, r, 0, 6.283); cx.fill();
+      }
+      sy += g.h;
     });
     const bulbs = blocks.reduce((a, b) => a + b.w * b.h, 0);
     const r = $('wallInfo'); if (r) r.textContent = (blocks.length > 1 ? blocks.length + ' GROUPS · ' : '') + bulbs + ' BULBS';
