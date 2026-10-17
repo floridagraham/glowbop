@@ -24,6 +24,7 @@
              tall: [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', '#djCool', '#djColor']], [24, 24, ['#djBuild', 'djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]]},
     prohome:{wide: [[0, 17, ['v:wall', 'v:mode', 'v:reads']], [17, 15, ['phScenes']], [32, 16, ['phSched']]], tall: [[0, 24, ['v:wall', 'phScenes']], [24, 24, ['phSched']]]},
   };
+  TPL.pro = {wide: [[0, 17, W3], [17, 31, ['#proTour']]], tall: [[0, 24, W3], [24, 24, ['#proTour']]], full: ['.pt-feats', '.pt-foot']};   // the Pro tour: feature cards across the whole width
   GB.layTPL = TPL;                                 // pages add their own templates (GB.layTPL.music = {...})
   // 🧑‍🎨 Graham's own arrangements (Oct 16) ship as the starting layout on those pages
   const DEFAULTS = {"prohome:wide":{"v:wall":{"x":0,"y":10,"w":17,"h":63},"v:mode":{"x":0,"y":0,"w":17,"h":10},"v:reads":{"x":0,"y":123,"w":48,"h":25},"phScenes":{"x":17,"y":0,"w":15,"h":47},"phSched":{"x":32,"y":0,"w":16,"h":47},"v:keys":{"x":0,"y":211,"w":24,"h":6},"grpPanel":{"x":17,"y":47,"w":31,"h":52},"znSubs":{"x":0,"y":99,"w":48,"h":24},"mdHolPanel":{"x":0,"y":148,"w":24,"h":63}},"prohome:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":60},"phScenes":{"x":0,"y":60,"w":24,"h":47},"phSched":{"x":24,"y":0,"w":24,"h":50},"v:keys":{"x":0,"y":107,"w":24,"h":6},"v:mode":{"x":24,"y":50,"w":24,"h":12},"grpPanel":{"x":0,"y":113,"w":24,"h":62},"znSubs":{"x":24,"y":62,"w":24,"h":20},"mdHolPanel":{"x":24,"y":82,"w":24,"h":54}}};
@@ -139,7 +140,7 @@
   function lockedTap(b, name) {
     GB.sfx && GB.sfx('err'); b.classList.remove('nope'); void b.offsetWidth; b.classList.add('nope');
     GB.toast && GB.toast('🔒 ' + name + ' is part of GlowBop Pro');
-    setTimeout(() => GB.go('pro'), 700);
+    GB.proDoor = /home/i.test(name) ? 'home' : 'dj'; setTimeout(() => GB.go('pro'), 700);
   }
   GB.proLockedTap = lockedTap;
   function paintSwitch() {
@@ -467,7 +468,7 @@
     clearLay(); $('main').classList.add('lay');
     const list = items(), id = sel => { const n = document.querySelector('#main ' + sel); const it = n && n.closest('[data-lk]'); return it ? it.dataset.lk : null; };
     const W = bucket() === 'wide', T = TPL[k] || {}, top3 = ['v:wall', 'v:keys', 'v:mode', 'v:reads'];
-    const pick = a => a.map(x => typeof x === 'string' && x[0] === '#' ? id(x) : x);
+    const pick = a => a.map(x => typeof x === 'string' && (x[0] === '#' || x[0] === '.') ? id(x) : x);
     const cols = (W ? (T.wide || [[0, 17, top3], [17, 15, []], [32, 16, []]]) : (T.tall || [[0, 24, top3], [24, 24, []]])).map(([x, w, ids]) => [x, w, pick(ids)]);
     const full = pick(T.full || []);                 // boxes that need the whole width (wide keyboards, big grids): a band underneath
     const L = {}, byId = {}; list.forEach(el => byId[el.dataset.lk] = el);
@@ -516,7 +517,7 @@
     fits = []; if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
   GB.on('status', paintLit);
   // 🏟️ Home DJ with more than 4 light sets: a friendly banner (once per visit) + "Each separate" light groups are Pro
-  GB.css(`#asHomeBar { position:fixed; left:50%; bottom:calc(10px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:955; display:flex; align-items:center; gap:10px;
+  GB.css(`#asHomeBar { position:fixed; left:calc(12px + env(safe-area-inset-left)); bottom:calc(46px + env(safe-area-inset-bottom)); z-index:955; display:flex; align-items:center; gap:10px;
     background:#05080dEE; border:2px solid #ffd21a; border-radius:999px; padding:5px 6px 5px 16px; box-shadow:0 8px 30px #000a; }
     #asHomeBar span { font:800 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:#ffd21a; white-space:nowrap; } #asHomeBar .btn { min-height:38px; padding:0 14px; }`);
   GB.css(`#limBar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(90deg,#2a1640,#13202e); border:1px solid #ffd21a66; border-radius:16px; padding:10px 14px; margin-bottom:var(--gap); }

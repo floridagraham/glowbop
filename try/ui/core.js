@@ -122,6 +122,11 @@
       pitch: 'Home DJ plays up to 4 light sets together. Pro runs as many as you hang (big pool cages, whole-house installs, giant matrix walls), with light groups so each area runs its own show.'},
   ];
   const PRO_LIST = PRO_FEATURES.map(f => f.name);
+  // Oct 16 (Graham): each Pro door feels like its own thing. Tapping PRO DJ shows the DJ tools first, PRO HOME the house tools first.
+  const PRO_ORDER = GB.PRO_ORDER = {
+    dj: ['Pro DJ mode', 'DJ power tools', 'Fader board', 'Pad Recorder', 'Autoloops', 'Cues', 'Override keys', 'Interlude', 'Tempo toolbox', 'Palettes', 'Song Shows', 'Scenes', 'Zones', 'Unlimited lights', 'Pro Home'],
+    home: ['Pro Home', 'Unlimited lights', 'Zones', 'Scenes', 'Palettes', 'Song Shows', 'Autoloops', 'Interlude', 'Cues', 'Override keys', 'Fader board', 'Tempo toolbox', 'Pad Recorder', 'DJ power tools', 'Pro DJ mode']};
+  const ordered = ctx => { const o = PRO_ORDER[ctx]; return o ? PRO_LIST.slice().sort((a, b) => o.indexOf(a) - o.indexOf(b)) : PRO_LIST; };
   const firstLine = t => (String(t).match(/^.*?[.!?](?=\s|$)/) || [t])[0];
   GB.proGate = (el, feature, opts) => {
     opts = opts || {};
@@ -129,7 +134,7 @@
     const card = document.createElement('div'); card.className = 'pro-card'; card.hidden = true;
     card.innerHTML = `<div class="pro-top"><span class="pro-badge">${GB.svg('lock')}Pro DJ</span><b>${GB.esc(feature)}</b></div>
       <p class="note">${opts.pitch || (pf && pf.pitch) || GB.esc(feature) + ' is part of GlowBop Pro DJ.'}</p>
-      <ul class="pro-list">${PRO_LIST.map(f => `<li class="${f === feature ? 'me' : ''}">${GB.esc(f)}</li>`).join('')}</ul>
+      <ul class="pro-list">${ordered((el.closest('.page') || {id: ''}).id === 'pg-home' ? 'home' : 'dj').filter(f => f !== feature).concat([feature]).sort((a, b) => (b === feature) - (a === feature)).map(f => `<li class="${f === feature ? 'me' : ''}">${GB.esc(f)}</li>`).join('')}</ul>
       <button class="btn c wide pro-buy" style="--c:var(--orchid)">${GB.svg('star')}<span>Upgrade to Pro DJ</span></button>
       <details class="pro-key"><summary>I have a Pro DJ key</summary>
         <div class="pro-keyrow"><input type="text" placeholder="GBPRO-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Pro DJ key"><button class="btn c" style="--c:var(--orchid)">Unlock</button></div>
@@ -453,11 +458,24 @@
       .pt-tp i { width:14px; height:7px; border-radius:3px; background:#1d1930; } .pt-tp i.on { background:#3fb6ff; box-shadow:0 0 8px #3fb6ff; }
       .pt-zn { height:100%; display:grid; grid-template-columns:repeat(4, 1fr); gap:3px; } .pt-zn i { border-radius:3px; background:#14111f; } .pt-zn i.on { background:#4de8c8; box-shadow:0 0 10px #4de8c8; }
       .pt-pl { height:100%; display:flex; border-radius:6px; overflow:hidden; } .pt-pl i { flex:1; }`);
-    el.innerHTML = PRO_FEATURES.map(f => `<div class="pt-f" style="--c:${f.c}">
+    el.innerHTML = PRO_FEATURES.map(f => `<div class="pt-f" data-f="${GB.esc(f.name)}" style="--c:${f.c}">
         <span class="pt-ic">${GB.svg(f.ic)}</span>
         <div class="pt-tx"><b>${GB.esc(f.name)}</b><small>in ${GB.esc(f.tab)}</small><p>${GB.esc(firstLine(f.pitch))}</p></div>
         <div class="pt-prev" aria-hidden="true">${PREVIEW[f.prev]()}</div></div>`).join('');
   });
+  const DOOR = {dj: {t: 'GlowBop Pro DJ', r: 'FOR EVENTS', h: 'Play your lights like an instrument', c: '#ff3d9a',
+      p: 'Everything you have now stays. Pro DJ turns the console into a lighting desk for parties, DJ sets and events: the PRO DJ page plus SHOWS, LOOPS+CUES, LIVE BOARD and OVERRIDE.'},
+    home: {t: 'GlowBop Pro Home', r: 'FOR THE HOUSE', h: 'Run the whole house', c: '#ffb23d',
+      p: 'Everything you have now stays. Pro Home runs every light set you hang: one-tap house scenes, sunset and bedtime schedules, zones and the holiday calendar, on the PRO HOME page.'}};
+  GB.proDoor = 'dj';                                // which Pro door you came through (PRO DJ or PRO HOME tab)
+  function paintDoor() {
+    const d = DOOR[GB.proDoor] || DOOR.dj, hero = $('proTour'), list = document.querySelector('#pg-pro .pt-feats'); if (!hero || !list) return;
+    hero.style.setProperty('--c', d.c); hero.querySelector('.ph > span').textContent = d.t; hero.querySelector('.ph .r').textContent = d.r;
+    hero.querySelector('.pt-h').textContent = d.h; hero.querySelector(':scope > p.note').textContent = d.p;
+    const o = PRO_ORDER[GB.proDoor] || PRO_LIST; [...list.children].sort((a, b) => o.indexOf(a.dataset.f) - o.indexOf(b.dataset.f)).forEach(n => list.appendChild(n));
+    if (GB.proDJ && GB.proDJ.recompact) GB.proDJ.recompact();
+  }
+  GB.on('page', id => { if (id === 'pro') setTimeout(paintDoor, 0); });
   GB.panel('pro', 30, el => {
     el.classList.add('pt-foot');
     el.innerHTML = `<button class="btn c wide pt-buy" style="--c:var(--gold)">${GB.svg('star')}<span>Upgrade to Pro</span></button>
