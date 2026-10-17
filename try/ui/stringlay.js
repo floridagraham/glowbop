@@ -231,7 +231,7 @@
     if (!d || !lay) { box.hidden = true; return; } box.hidden = false;
     if (strand >= lay.parts.length) strand = 0;
     const p = lay.parts[strand], cs = partCounts(d, lay), fr = p.fold ? p.fold.rows : 1;
-    const isCur = lay.kind === 'curtain'; $('slStraight').style.display = isCur ? '' : 'none'; $('slReset').style.display = isCur ? 'none' : '';
+    const isCur = lay.kind === 'curtain'; $('slStraight').style.display = isCur ? '' : 'none'; $('slReset').style.display = isCur ? 'none' : ''; $('slWall').style.display = isCur ? 'none' : '';
     $('slStrands').closest('.sl-row').style.display = isCur ? 'none' : ''; $('slFold').closest('.sl-row').style.display = isCur ? 'none' : '';
     $('slStrands').innerHTML = [1, 2, 3, 4].map(k => `<button class="btn${lay.parts.length === k ? ' on' : ''}" data-ns="${k}">${k}</button>`).join('');
     $('slWhich').innerHTML = lay.parts.length > 1 ? lay.parts.map((q, k) => `<button class="chip${k === strand ? ' on' : ''}" data-st="${k}" style="--c:${SCOL[k % SCOL.length]}">${isCur ? 'Drop' : 'Strand'} ${k + 1}${isCur ? '' : ' · ' + cs[k]}</button>`).join('') : '';
@@ -448,12 +448,14 @@
         <div class="sl-row" id="slWhichRow"><b>Laying</b><div class="sl-row" id="slWhich"></div></div>
         <div class="sl-row"><b>Shape</b><div class="seg" id="slFold"></div></div>
         <div class="sl-row" id="slModeRow"><b>Rows go</b><div class="seg" id="slMode"></div></div>
+        <div class="sl-row" id="slWallRow" style="display:none"><b>Wall rows</b><div class="seg" id="slWallPick"></div></div>
         <div class="sl-row" id="slCurveRow"><b>Bends</b><div class="seg"><button class="btn" data-cv="0">Sharp corners</button><button class="btn" data-cv="1">💎 Smooth curves</button></div></div>
         <div class="sl-tools">
           <span id="slBendRow" style="display:contents"><button class="btn" id="slBend">＋ Add a bend</button><button class="btn" id="slUnbend">− Remove bend</button></span>
           <button class="btn" id="slBulb">✋ Move single bulbs</button>
           <button class="btn" id="slUnpin">↺ Reset bulbs</button>
           <button class="btn" id="slFlip">⇄ Flip direction</button>
+          <button class="btn c" id="slWall" style="--c:var(--amber)">🧱 Make it a wall</button>
           <button class="btn" id="slReset">↺ Start over</button>
           <button class="btn" id="slStraight">▦ Straight curtain again</button>
           <button class="btn c" id="slSave" style="--c:var(--green)">💾 Save</button>
@@ -540,6 +542,23 @@
       GB.toast('〰️ ' + parts.length + ' drops: tap one, drag its ends or press and hold to bend it. Save when done.'); paintTop(); change(); };
     el.querySelector('#slStraight').onclick = async () => { const d = dev(sel); if (!d) return;
       const r = await GB.post('/api/lights/lay', {id: d.id, lay: null}); if (r && r.ok) { dirty[d.id] = false; delete LAY[d.id]; GB.toast('▦ Back to a straight curtain'); await load(true); } };
+    // 🧱 Oct 17 (Graham: "make a string a wall: bend it back and forth and staple it"): the whole string snakes into rows, strand by strand
+    el.querySelector('#slWall').onclick = () => {
+      const row = $('slWallRow'), d = dev(sel), lay = LAY[sel]; if (!d || !lay) return;
+      if (row.style.display !== 'none') { row.style.display = 'none'; return; }
+      const S = lay.parts.length, opts = [2, 4, 6, 8, 10, 12, 16].filter(r => r >= S && r % S === 0);
+      $('slWallPick').innerHTML = opts.map(r => `<button class="btn" data-wr="${r}">${r}</button>`).join('');
+      row.style.display = ''; $('slHint').textContent = 'How many rows tall should the wall be?';
+    };
+    el.querySelector('#slWallPick').addEventListener('click', e => {
+      const b = e.target.closest('[data-wr]'); if (!b) return; const lay = LAY[sel]; if (!lay) return;
+      const R = +b.dataset.wr, S = lay.parts.length, rp = Math.max(1, R / S), gap = lay.gap || 1;
+      const a = lay.parts[0].pts[0], z = lay.parts[0].pts[lay.parts[0].pts.length - 1];
+      const W = Math.max(10, Math.abs(z[0] - a[0]) || Math.hypot(z[0] - a[0], z[1] - a[1]));   // as wide as the first strand is now
+      lay.parts.forEach((p, k) => { const y = a[1] + k * rp * gap; p.pts = [[a[0], y], [a[0] + W, y]]; p.fold = rp > 1 ? {rows: rp, mode: 'snake'} : null; p.smooth = false; delete p.pins; });
+      $('slWallRow').style.display = 'none'; $('slHint').textContent = `🧱 ${R} rows, back and forth. Drag a START or END to make the wall wider or move it. Save when it matches.`;
+      change();
+    });
     el.querySelector('#slRot').onclick = () => turn('rot'); el.querySelector('#slMir').onclick = () => turn('flip');
     const full = on => { el.classList.toggle('sl-full', on); document.body.classList.toggle('sl-open', on); view = null; setTimeout(draw, 30);
       if (on) history.pushState && history.pushState({sl: 1}, ''); };
