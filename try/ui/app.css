@@ -500,5 +500,10 @@ body:not([data-page=music]):not([data-page=dj]) #view .panel.reads-panel { displ
 @media (max-width: 699px) { #hd .bars b.cube3 { --hh:24px; } } @media (max-height: 500px) and (orientation: landscape) { #hd .bars b.cube3 { --hh:18px; --hpad:10px; } }
 @media (prefers-reduced-motion: reduce) { #hd .bars b.cube3 .hdcube { transition:none; } }
 #hd .bars b.cube3.build, #hd .bars b.cube3.drop { background:transparent; }
-#hd .bars b.cube3.wild .hdcube { filter:blur(.7px) brightness(1.35) drop-shadow(0 0 10px #ff3d9a) drop-shadow(0 0 16px #33d6ff); }   /* 🌪️ the wild spin */
+/* 🔤 the word splits into one little box per letter (core.js letters()) */
+#hd .bars b.cube3 .hdsplit { position:absolute; inset:0; pointer-events:none; }
+#hd .bars b.cube3 .hdl { position:absolute; top:0; bottom:0; transform-style:preserve-3d; transform-origin:50% 50% calc(var(--hh, 30px) / -2); transform:rotateX(var(--rx, 0deg)); }
+#hd .bars b.cube3 .hdlf { position:absolute; inset:0; background:var(--fb); color:var(--ff); backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  transform-origin:50% 50% calc(var(--hh, 30px) / -2); transform:rotateX(calc(var(--n) * 90deg)); overflow:hidden; }
+#hd .bars b.cube3 .hdlf i { position:absolute; top:50%; transform:translateY(-50%); font-style:normal; line-height:1; white-space:pre; }
 #hd .bars b.cube3 .hdf.img { background-size:cover; background-position:center; background-repeat:no-repeat; }

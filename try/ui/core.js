@@ -323,7 +323,9 @@
       CUBE.map((c, i) => `<span class="hdf" data-i="${i}" style="--fb:${c.bg};--ff:${c.fg};--n:${i}">${GB.esc(txt)}</span>`).join('') + '</span>';
     // 🎲 Oct 17 (Graham): a different move every time. 1, 2, 3 or 4 sides forward or backward (8 ways), plus a few tricks:
     //   tease (starts to go, snaps back, goes the other way), ratchet (tick tick tick), whirl (a spin and a half with a big bounce),
-    //   knock (a little jiggle, then it turns), wild (winds up and whips around 5+ times). The side it lands on gets the next announcement picture every other move.
+    //   knock (a little jiggle, then it turns).
+    //   LETTERS (Oct 17): the word splits into one little box per letter and they turn on their own: wave left or right, from the middle out,
+    //   random order, zipper (every other letter goes the long way round), slot machine (reels stop one by one), domino (two turns, bouncy). The side it lands on gets the next announcement picture every other move.
     const cube = () => b.querySelector('.hdcube');
     const go = (n, ms, ease) => { const c = cube(); if (!c) return; c.style.transition = 'transform ' + ms + 'ms ' + (ease || 'cubic-bezier(.45,-0.35,.25,1.4)'); GB.hdCube.show(n); };
     const raw = (deg, ms, ease) => { const c = cube(); if (!c) return; c.style.transition = 'transform ' + ms + 'ms ' + ease; c.style.setProperty('--rx', deg + 'deg'); };
@@ -335,21 +337,52 @@
       {w: 1, run: n0 => { const d = Math.random() < .5 ? 1 : -1; go(n0 + 6 * d, 2000, 'cubic-bezier(.2,.9,.25,1.25)'); return n0 + 6 * d; }},
       {w: 1, run: n0 => { [8, -6, 4, -2, 0].forEach((a, i) => setTimeout(() => raw(-90 * n0 + a, 90, 'ease-in-out'), i * 95));
         const d = Math.random() < .5 ? 1 : -1; setTimeout(() => go(n0 + d, 900), 560); return n0 + d; }},
-      // 🌪️ WILD (Graham: "a real spinning one"): winds up, then whips around 5+ times with a glow and motion blur, and slams to a stop
-      {w: 1, run: n0 => { const d = Math.random() < .5 ? 1 : -1, q = 20 + ((Math.random() * 4) | 0), n = n0 + q * d;
-        raw(-90 * n0 + 24 * d, 300, 'cubic-bezier(.3,0,.3,1)');
-        setTimeout(() => { b.classList.add('wild'); go(n, 3400, 'cubic-bezier(.55,0,.12,1)'); }, 320);
-        setTimeout(() => b.classList.remove('wild'), 3300); return n; }},
+      ...[['lr', 1], ['rl', 1], ['mid', 1], ['rand', 1], ['zip', 1], ['slot', 1], ['dom', 1]].map(([kind, w]) => ({w, split: true, run: n0 => letters(n0, kind)})),
     ];
+    // 🔤 split into letters: measure where each letter sits on the face, build one mini box per letter at exactly that spot
+    //   (same four colours), turn them one by one, then hand back to the big box on the side they all landed on.
+    function letters(n0, kind) {
+      const c = cube(), f = b.querySelector('.hdf[data-i="' + (((n0 % 4) + 4) % 4) + '"]'), tn = f && f.firstChild;
+      if (!c || !tn || tn.nodeType !== 3) { go(n0 + 1, 900); return n0 + 1; }
+      const br = b.getBoundingClientRect(), txt = tn.textContent, xs = [];
+      for (let i = 0; i < txt.length; i++) { const r = document.createRange(); r.setStart(tn, i); r.setEnd(tn, i + 1); const q = r.getBoundingClientRect(); xs.push([q.left - br.left, q.width]); }
+      const N = txt.length, d = Math.random() < .5 ? 1 : -1, cs = getComputedStyle(f);
+      const cut = [0]; for (let i = 1; i < N; i++) cut.push((xs[i - 1][0] + xs[i - 1][1] + xs[i][0]) / 2); cut.push(br.width);
+      cut[N] = br.width; cut[0] = 0;
+      // each letter: how many quarter turns, how long, when it starts
+      const plan = [...Array(N)].map((_, i) => ({q: d, ms: 700, at: i * 85, ease: 'cubic-bezier(.45,-0.35,.25,1.4)'}));
+      const order = kind === 'rl' ? [...Array(N).keys()].reverse() : kind === 'mid' ? [...Array(N).keys()].sort((a, z) => Math.abs(a - (N - 1) / 2) - Math.abs(z - (N - 1) / 2))
+        : kind === 'rand' ? [...Array(N).keys()].sort(() => Math.random() - .5) : [...Array(N).keys()];
+      order.forEach((li, k) => { plan[li].at = k * (kind === 'mid' ? 70 : 85); });
+      if (kind === 'mid') { const m = (N - 1) / 2; plan.forEach((p, i) => p.at = Math.round(Math.abs(i - m)) * 120); }
+      if (kind === 'zip') plan.forEach((p, i) => { p.q = i % 2 ? -3 * d : d; p.ms = i % 2 ? 1300 : 800; p.at = 0; });
+      if (kind === 'slot') plan.forEach((p, i) => { p.q = 5 * d; p.ms = 900 + i * 230; p.at = 0; p.ease = 'cubic-bezier(.3,.6,.3,1.08)'; });
+      if (kind === 'dom') plan.forEach((p, i) => { p.q = 2 * d; p.ms = 1000; p.at = i * 140; p.ease = 'cubic-bezier(.5,-0.5,.2,1.6)'; });
+      const n = n0 + plan[0].q;
+      const lay = document.createElement('span'); lay.className = 'hdsplit';
+      lay.innerHTML = plan.map((p, i) => `<span class="hdl" style="left:${cut[i]}px;width:${cut[i + 1] - cut[i]}px;--rx:${-90 * n0}deg">` +
+        CUBE.map((cc, k) => `<span class="hdlf" style="--fb:${cc.bg};--ff:${cc.fg};--n:${k}"><i style="left:${xs[i][0] - cut[i]}px">${GB.esc(txt[i])}</i></span>`).join('') + '</span>').join('');
+      lay.style.font = cs.font; lay.style.letterSpacing = cs.letterSpacing;
+      b.appendChild(lay); c.style.visibility = 'hidden';
+      const cells = [...lay.children];
+      requestAnimationFrame(() => requestAnimationFrame(() => cells.forEach((el, i) => { const p = plan[i];
+        setTimeout(() => { el.style.transition = 'transform ' + p.ms + 'ms ' + p.ease; el.style.setProperty('--rx', (-90 * (n0 + p.q)) + 'deg'); }, p.at); })));
+      const end = Math.max(...plan.map(p => p.at + p.ms)) + 120;
+      c.style.transition = 'none'; GB.hdCube.show(n); void c.offsetWidth;
+      setTimeout(() => { c.style.visibility = ''; lay.remove(); }, end);
+      return n;
+    }
     const pickMove = () => { const tot = MOVES.reduce((a, m) => a + m.w, 0); let r = Math.random() * tot; return MOVES.find(m => (r -= m.w) < 0) || MOVES[0]; };
     let turns = 0;
     const turn = () => {
       if (!document.hidden && !b.classList.contains('build') && !b.classList.contains('drop') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        const m = pickMove(), n0 = cubeN; turns++;
+        let m = pickMove(); const n0 = cubeN, cur = b.querySelector('.hdf[data-i="' + (((n0 % 4) + 4) % 4) + '"]');
+        while (m.split && cur && cur.classList.contains('img')) m = pickMove();
+        turns++;
         const fin = m.run(n0), n = typeof fin === 'number' ? fin : cubeN, fi = ((n % 4) + 4) % 4, f0 = ((n0 % 4) + 4) % 4;
         // 📢 announcements: every other move the side it lands on shows the next picture from glowbop.com/cube/ (if there are any).
         //   If it lands back on the side you're looking at (a full turn), wait until that side has rolled out of view before swapping.
-        const dress = () => { if (ANN.length && turns % 2 === 0) { const a = ANN[annI++ % ANN.length]; GB.hdCube.face(fi, {img: a.img, onclick: a.link ? () => window.open(a.link, '_blank', 'noopener') : null, title: a.title}); }
+        const dress = () => { if (!m.split && ANN.length && turns % 2 === 0) { const a = ANN[annI++ % ANN.length]; GB.hdCube.face(fi, {img: a.img, onclick: a.link ? () => window.open(a.link, '_blank', 'noopener') : null, title: a.title}); }
           else GB.hdCube.face(fi, {reset: true}); };
         if (fi === f0) setTimeout(dress, 700); else dress();
       }
@@ -369,7 +402,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCube); else buildCube();
   // 🥚 EASTER EGG (Oct 17, Graham): tap the corner logo and GlowBop pretends to wreck everything. Every tap plays it, and a
   //   different "disaster" is picked each time (never the same twice in a row). The boxes vanish, the rail keys fall off,
-  //   then it HOLDS the dead screen: every tap makes it worse, and only after 3 frantic taps the first time (3 to 7 after that) (or 40 s) does it say
+  //   then it HOLDS the dead screen: every tap makes it worse, and only after 2 frantic taps the first time (3 to 5 after that) (or 40 s) does it say
   //   "Just kidding 😎" and fly everything back. Only the screen plays along; the lights keep going and nothing is touched.
   const EGGS = [
     {k: 'erase', a: '#ff2a4d', b: '#ff8a3d', t: '⚠️ ERASING ALL SHOWS…', pre: 'Deleting: ', files: ['Looks', 'Song Shows', 'Saved scenes', 'Your layouts', 'Light map', 'Holiday shows', 'Logos', 'Settings', 'Everything'],
@@ -422,8 +455,8 @@
       while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.ef = n.getAttribute('fill'); n.setAttribute('fill', '#221d33'); n.dataset.l = '0'; }
       if (k < 1) requestAnimationFrame(tick); else done(); };
     let seen = false; try { seen = localStorage.getItem('gb_egg_seen') === '1'; localStorage.setItem('gb_egg_seen', '1'); } catch (x) {}
-    // first time ever: 3 taps; after that a surprise, 3 to 7
-    const NEED = seen ? 3 + ((Math.random() * 5) | 0) : 3; let taps = 0, held = null, revealed = false;
+    // first time ever: 2 taps; after that a surprise, 3 to 5
+    const NEED = seen ? 3 + ((Math.random() * 3) | 0) : 2; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
       tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = 'A little joke from the GlowBop team. We truly love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));

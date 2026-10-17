@@ -306,10 +306,10 @@
 
   // ------------------------------------------------------------------ 🎨 colour key (Oct 16): pick up to 4 colours, tap to latch the whole show into them
   GB.css(`
-  .djc-dots { display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 12px; }
-  .djc-dot { width:calc(44px * var(--fs, 1)); height:calc(44px * var(--fs, 1)); border-radius:50%; border:3px solid #ffffff22; background:var(--d); position:relative; padding:0; cursor:pointer; box-shadow:0 0 0 0 var(--d); transition:transform .15s, box-shadow .2s, border-color .2s; }
+  .djc-dots { display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 10px; }
+  .djc-dot { width:calc(32px * var(--fs, 1)); height:calc(32px * var(--fs, 1));   /* Oct 17 (Graham): smaller dots */ border-radius:50%; border:3px solid #ffffff22; background:var(--d); position:relative; padding:0; cursor:pointer; box-shadow:0 0 0 0 var(--d); transition:transform .15s, box-shadow .2s, border-color .2s; }
   .djc-dot.on { border-color:#fff; box-shadow:0 0 16px var(--d); transform:scale(1.08); }
-  .djc-dot.on::after { content:attr(data-n); position:absolute; right:-6px; top:-6px; width:20px; height:20px; border-radius:50%; background:#fff; color:#000; font:800 12px/20px var(--mono); text-align:center; }
+  .djc-dot.on::after { content:attr(data-n); position:absolute; right:-6px; top:-6px; width:16px; height:16px; border-radius:50%; background:#fff; color:#000; font:800 10px/16px var(--mono); text-align:center; }
   .djc-dot.more { background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red); }
   .djc-dot.more input { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; }
   #djColor { min-height:76px; font-size:calc(22px * var(--fs, 1)); letter-spacing:3px; transition:background .4s, color .4s, box-shadow .4s; }

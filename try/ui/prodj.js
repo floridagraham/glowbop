@@ -54,7 +54,7 @@
   html.prodj #pg-dj .dj-pads { grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); gap:6px; }
   html.prodj #pg-dj .dj-pads .tile { min-height:60px; font-size:calc(13px * var(--fs, 1)); }
   html.prodj #pg-dj .dj-pads .tile .em { font-size:calc(22px * var(--fs, 1)); }
-  html.prodj #pg-dj .djc-dot { width:calc(34px * var(--fs, 1)); height:calc(34px * var(--fs, 1)); }
+  html.prodj #pg-dj .djc-dot { width:calc(28px * var(--fs, 1)); height:calc(28px * var(--fs, 1)); }
   html.prodj #pg-dj .djc-dots { gap:8px; margin:2px 0 6px; }
   html.prodj #pdGo, html.prodj #pdArr { min-height:44px; }
   /* ---- the switch */
