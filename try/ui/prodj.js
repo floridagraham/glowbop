@@ -213,6 +213,7 @@
   GB.proDJ = {recompact, isOn, setOn: (on, anim) => setOn(on, anim), flicker: f => flicker(f), relayout: () => layout(), syncBorrow: () => syncBorrow()};   // shared with prohome.js
   function setOn(on, animate) {
     if (on && GB.pro !== true) return;
+    animate = false;                                // Oct 17 (Graham): PRO DJ / PRO HOME switch like every other page (no power-up flicker, sound or toast), so DJs can hop back and forth
     S.set('gb_prodj', on ? '1' : '0');
     if (animate) flicker(() => apply(on, true)); else apply(on);
     paintTabs();

@@ -194,6 +194,7 @@
     if (on) load();
   }
   function setOn(on, animate) {
+    animate = false;                                // Oct 17 (Graham): PRO DJ / PRO HOME switch like every other page (no power-up flicker, sound or toast), so DJs can hop back and forth
     if (on && GB.pro !== true) return;
     S.set('gb_prohome', on ? '1' : '0');
     if (animate) { chime(on); GB.toast(on ? '🏠 Pro Home on' : 'Back to the regular console'); }
