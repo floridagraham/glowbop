@@ -367,12 +367,25 @@
       while (gone < boxes.length * e) { const n = boxes[gone++]; n.classList.add('eg-gone'); if (gone % 2) beep(300 + Math.random() * 500, .06, 'square', .04); }
       while (fallen < keys.length * e) { const n = keys[fallen++]; n.style.setProperty('--egr', (Math.random() * 60 - 30) + 'deg'); n.classList.add('eg-fall'); }
       if (k < 1) requestAnimationFrame(tick); else done(); };
-    const done = () => { tt.textContent = '❌ ALL SHOWS DELETED'; fl.textContent = 'GlowBop has been reset to nothing.'; pct.textContent = ''; ov.classList.add('eg-dead');
+    // 😱 hold the joke: the screen stays "dead" and every tap makes it worse, until they've tapped a bunch (or 40 s go by)
+    const OOPS = ['❌ Restore failed: no backup found.', 'Looking for your shows… 0 found.', 'Error 404: lights not found.', 'Rebooting… failed.',
+      'Undo is not available.', 'Contacting GlowBop support… no answer.', 'Your lights have forgotten you.', 'Please stop tapping. It makes it worse.',
+      'Scanning for anything at all… nothing.', 'Reinstalling the universe… 1%', 'Okay. Okay okay okay…'];
+    const NEED = 12; let taps = 0, held = null, revealed = false;
+    const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
+      tt.textContent = 'JUST KIDDING 😎'; fl.textContent = 'Nothing was deleted. Your lights are still free.'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
+      keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
+      setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); eggAt = Date.now(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 3600); };
+    const tap = ev => { ev.preventDefault(); ev.stopPropagation(); taps++;
+      const card = ov.querySelector('.eg-card'); card.classList.remove('eg-shake'); void card.offsetWidth; card.classList.add('eg-shake');
+      beep(120 + Math.random() * 60, .18, 'sawtooth', .1, 60);
+      if (taps >= NEED) return setTimeout(reveal, 700);
+      fl.textContent = OOPS[(taps - 1) % OOPS.length]; pct.textContent = taps > 3 ? '⚠️ ' + taps + ' errors' : ''; };
+    const done = () => { tt.textContent = '❌ ALL SHOWS DELETED'; fl.textContent = 'GlowBop has been reset to nothing.'; pct.textContent = ''; ov.classList.add('eg-dead', 'eg-hold');
       beep(160, .8, 'sawtooth', .14, 50);
-      setTimeout(() => { tt.textContent = 'JUST KIDDING 😎'; fl.textContent = 'Nothing was deleted. Your lights are still free.'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
-        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
-        keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60)); }, 1700);
-      setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 4600); };
+      setTimeout(() => { if (!revealed) ov.addEventListener('pointerdown', tap); }, 400);
+      held = setTimeout(reveal, 40000); };
     beep(660, .12, 'square', .06); requestAnimationFrame(tick);
   }
   setTimeout(() => GB.css(`#gbEgg { position:fixed; inset:0; z-index:20000; display:flex; align-items:center; justify-content:center; pointer-events:none; background:rgba(0,0,0,.25); transition:background .4s; }
@@ -385,6 +398,8 @@
     #gbEgg.eg-joke .eg-card { border-color:#33d6ff; box-shadow:0 0 50px -6px #ff3d9a, 0 0 30px -10px #33d6ff; } #gbEgg.eg-joke .eg-t { color:#fff; text-shadow:0 0 18px #ff3d9a, 0 0 30px #33d6ff; }
     #gbEgg.eg-joke .eg-bar { display:none; } #gbEgg.eg-joke { background:rgba(0,0,0,0); }
     #gbEgg.eg-out { opacity:0; transition:opacity .5s; }
+    #gbEgg.eg-hold { pointer-events:auto; cursor:not-allowed; touch-action:none; }
+    #gbEgg .eg-card.eg-shake { animation:egShake .35s; } @keyframes egShake { 0%,100% { transform:none; } 20% { transform:translate(-9px,2px) rotate(-1deg); } 40% { transform:translate(8px,-2px) rotate(1deg); } 60% { transform:translate(-6px,1px); } 80% { transform:translate(4px,0); } }
     .eg-gone { opacity:0 !important; transform:scale(.85) !important; filter:blur(3px) brightness(2) !important; transition:opacity .25s, transform .25s, filter .25s !important; }
     #rail button.eg-fall { transform:translateY(110vh) rotate(var(--egr, 15deg)) !important; transition:transform .9s cubic-bezier(.55,0,.9,.4) !important; }
     #rail button:not(.eg-fall) { transition:transform .6s cubic-bezier(.2,1.4,.4,1), filter .15s; }
