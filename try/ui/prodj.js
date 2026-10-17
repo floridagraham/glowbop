@@ -525,7 +525,8 @@
   GB.css(`#asHomeBar { position:fixed; left:calc(12px + env(safe-area-inset-left)); bottom:calc(46px + env(safe-area-inset-bottom)); z-index:955; display:flex; align-items:center; gap:10px;
     background:#05080dEE; border:2px solid #ffd21a; border-radius:999px; padding:5px 6px 5px 16px; box-shadow:0 8px 30px #000a; }
     #asHomeBar span { font:800 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:#ffd21a; white-space:nowrap; } #asHomeBar .btn { min-height:38px; padding:0 14px; }`);
-  GB.css(`#limBar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(90deg,#2a1640,#13202e); border:1px solid #ffd21a66; border-radius:16px; padding:10px 14px; margin-bottom:var(--gap); }
+  GB.css(`#limBar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(90deg,#2a1640,#13202e); border:1px solid #ffd21a66; border-radius:16px; padding:10px 14px; position:fixed; z-index:940; top:calc(92px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); width:min(720px, calc(100vw - 24px)); box-shadow:0 14px 44px #000c; }
+    @media (max-width:699px) { #limBar { top:auto; bottom:calc(112px + env(safe-area-inset-bottom)); } }
     #limBar b { font:800 calc(16px * var(--fs, 1)) var(--cond); letter-spacing:1px; color:#ffd21a; } #limBar span { flex:1 1 220px; min-width:0; color:var(--text); }
     #limBar .btn { min-height:40px; }`);
   let limShown = false;
@@ -533,8 +534,8 @@
     const L = s.light_limit, pages = $('pages'); if (!pages) return;
     let bar = $('limBar');
     if (!L || GB.pro === true || limShown === 'x') { if (bar) bar.remove(); return; }
-    if (!bar) { bar = document.createElement('div'); bar.id = 'limBar'; pages.prepend(bar); limShown = true; }
-    bar.innerHTML = `<b>🏟️ Your setup has grown!</b><span>GlowBop found ${L.total} light sets. Home DJ plays ${L.max} together (${(L.off || []).map(GB.esc).join(', ')} are resting). Pro runs them all.</span>
+    if (!bar) { bar = document.createElement('div'); bar.id = 'limBar'; document.body.appendChild(bar); limShown = true; }   // a floating card under the header, so Arrange layouts can't squeeze it
+    bar.innerHTML = `<b>🏟️ Your setup has grown!</b><span>GlowBop found ${L.total} light sets. Home DJ plays ${L.max} together, so ${(L.off || []).map(GB.esc).join(', ')} ${(L.off || []).length === 1 ? 'is' : 'are'} resting for now. Pro runs them all.</span>
       <button class="btn c" style="--c:#ffd21a">See Pro</button><button class="btn ghost" aria-label="Hide">✕</button>`;
     bar.querySelector('.btn.c').onclick = () => GB.go('pro'); bar.querySelector('.ghost').onclick = () => { limShown = 'x'; bar.remove(); };
   });
