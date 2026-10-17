@@ -440,9 +440,13 @@
       o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + d); g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
       o.connect(g); g.connect(C.destination); o.start(t); o.stop(t + d + .02); } catch (x) {} };
     const ov = document.createElement('div'); ov.id = 'gbEgg'; ov.className = 'eg-' + V.k; ov.style.setProperty('--ea', V.a); ov.style.setProperty('--eb', V.b);
-    ov.innerHTML = '<div class="eg-card"><div class="eg-t"></div><div class="eg-f"></div><div class="eg-bar"><i></i></div><div class="eg-p">0%</div></div>';
+    // Oct 17 (Graham): styled like every other GlowBop box (thick colour bar, header row, segmented meter, pill keys), not a neon popup
+    ov.innerHTML = '<div class="panel box eg-card"><div class="ph"><span class="eg-lbl">⚠ System</span><span class="r eg-p">0%</span></div><div class="eg-t"></div><div class="eg-f"></div>' +
+      '<div class="eg-seg">' + '<i></i>'.repeat(24) + '</div><div class="eg-love"></div><div class="eg-btns"><button class="btn c" data-eg="found">🥚 I found the Easter egg!</button><button class="btn" data-eg="close">Close</button></div></div>';
     document.body.appendChild(ov);
-    const bar = ov.querySelector('.eg-bar i'), pct = ov.querySelector('.eg-p'), fl = ov.querySelector('.eg-f'), tt = ov.querySelector('.eg-t');
+    const pct = ov.querySelector('.eg-p'), fl = ov.querySelector('.eg-f'), tt = ov.querySelector('.eg-t'), lbl = ov.querySelector('.eg-lbl'), love = ov.querySelector('.eg-love');
+    const cells = [...ov.querySelectorAll('.eg-seg i')]; cells.forEach((c, i) => c.style.setProperty('--h', Math.round(i * 360 / cells.length)));
+    const bar = {style: {}}; Object.defineProperty(bar.style, 'width', {set: v => { const n = Math.round(parseFloat(v) / 100 * cells.length); cells.forEach((c, i) => c.classList.toggle('on', i < n)); }});
     tt.textContent = V.t; fl.textContent = V.pre + V.files[0];
     const boxes = [...document.querySelectorAll('#main .panel, #main .modebar')].filter(n => { const r = n.getBoundingClientRect(); return r.width && r.bottom > 0 && r.top < innerHeight; });
     const keys = [...document.querySelectorAll('#rail button:not([hidden])')];
@@ -457,11 +461,18 @@
     // Oct 17 (Graham): always 2 taps
     const NEED = 2; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
-      tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'You found our hidden Easter egg! 🥚 Nothing was deleted.'; pct.textContent = 'Thanks for playing. We love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
+      tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'You found our hidden Easter egg! Nothing was deleted.'; love.textContent = 'Thanks for playing. We love our members 💜'; lbl.textContent = '🥚 Easter egg'; pct.textContent = 'FOUND'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
       dots.forEach((n, i) => setTimeout(() => { delete n.dataset.off; n.setAttribute('fill', n.dataset.c); }, i * 30));
       keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
-      setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 4600); };
+      // Oct 17 (Graham): the GOTCHA card stays until you tap (anywhere), so there's time to read it
+      let gone = false; const bye = () => { if (gone) return; gone = true; ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 300); };
+      const card = ov.querySelector('.eg-card');
+      card.querySelector('[data-eg="close"]').onclick = () => bye();
+      card.querySelector('[data-eg="found"]').onclick = () => { GB.stat && GB.stat('easter_egg_found', {style: V.k}); GB.toast && GB.toast('🥚 Thanks! The GlowBop team just got your high five'); bye(); };
+      // tap outside the box closes it too (taps on the box itself are for its keys)
+      const outside = ev => { if (!card.contains(ev.target)) bye(); };
+      setTimeout(() => { if (ov.isConnected) { ov.classList.add('eg-hold', 'eg-tapout'); ov.addEventListener('pointerdown', outside); } }, 900); };
     // 👆 every tap / click on the dead screen sends out a glowing pulse from the finger or mouse, so it's clear the screen still hears you
     const ripple = (x, y) => { for (let i = 0; i < 2; i++) { const r = document.createElement('i'); r.className = 'eg-rip'; r.style.left = x + 'px'; r.style.top = y + 'px';
       r.style.animationDelay = (i * 120) + 'ms'; ov.appendChild(r); setTimeout(() => r.remove(), 900 + i * 120); } };
@@ -475,43 +486,44 @@
       setTimeout(() => { if (!revealed) ov.addEventListener('pointerdown', tap); }, 400);
       held = setTimeout(reveal, 40000); };
     beep(660, .12, 'square', .06); requestAnimationFrame(tick);
-    // 🛟 safety net: whatever happens, after a minute the prank tidies itself away and the screen works again
+    // 🛟 safety net: whatever happens, after three minutes the prank tidies itself away and the screen works again
     setTimeout(() => { if (!ov.isConnected) return; ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); });
-      boxes.forEach(n => n.classList.remove('eg-gone')); dots.forEach(n => { delete n.dataset.off; n.setAttribute('fill', n.dataset.c); }); }, 60000);
+      boxes.forEach(n => n.classList.remove('eg-gone')); dots.forEach(n => { delete n.dataset.off; n.setAttribute('fill', n.dataset.c); }); }, 180000);
   }
   setTimeout(() => GB.css(`#gbEgg { --ea:#ff2a4d; --eb:#ff8a3d; position:fixed; inset:0; z-index:20000; display:flex; align-items:center; justify-content:center; pointer-events:none; background:rgba(0,0,0,.25); transition:background .4s; }
-    #gbEgg .eg-card { background:#0b0712f0; border:2px solid var(--ea); border-radius:16px; padding:18px 22px; width:min(92vw, 520px); box-shadow:0 0 50px -6px var(--ea); font-family:var(--cond); color:#fff; text-align:center; }
-    #gbEgg .eg-t { font:800 clamp(20px, 4vw, 34px)/1.1 var(--cond); letter-spacing:3px; color:var(--ea); text-shadow:0 0 16px var(--ea); }
-    #gbEgg .eg-f { font:600 calc(14px * var(--fs, 1)) var(--mono); color:#d9d2ff; margin:10px 0 8px; min-height:1.3em; }
-    #gbEgg .eg-bar { height:14px; border-radius:7px; background:#1a0d22; overflow:hidden; } #gbEgg .eg-bar i { display:block; height:100%; width:0; background:linear-gradient(90deg, var(--ea), var(--eb)); box-shadow:0 0 12px var(--ea); }
-    #gbEgg .eg-p { font:700 calc(15px * var(--fs, 1)) var(--mono); margin-top:6px; color:var(--eb); min-height:1.2em; }
-    #gbEgg.eg-dead { background:rgba(0,0,0,.92); } #gbEgg.eg-dead .eg-bar { opacity:.3; }
+    /* the card is a normal GlowBop box: panel colour, thick colour bar on the left, LCARS corners, header row */
+    #gbEgg .eg-card { --c:var(--ea); width:min(92vw, 560px); gap:12px; padding:14px 18px 16px; box-shadow:0 20px 60px #000c; text-align:left; }
+    #gbEgg .eg-card .ph { color:var(--c); } #gbEgg .eg-card .ph .r { color:var(--c); font-weight:700; }
+    #gbEgg .eg-t { font:800 clamp(24px, 5vw, 40px)/1.05 var(--cond); letter-spacing:3px; text-transform:uppercase; color:var(--text); }
+    #gbEgg .eg-f { font:500 calc(16px * var(--fs, 1))/1.35 var(--body); color:var(--text); opacity:.85; min-height:1.35em; }
+    /* segmented meter, like the LEVELS sliders */
+    #gbEgg .eg-seg { display:grid; grid-template-columns:repeat(24, 1fr); gap:3px; height:18px; }
+    #gbEgg .eg-seg i { background:var(--dark2, #26213a); border-radius:3px; transition:background .1s; } #gbEgg .eg-seg i.on { background:var(--c); }
+    #gbEgg .eg-love, #gbEgg .eg-btns { display:none; }
+    #gbEgg.eg-dead { background:rgba(0,0,0,.92); } #gbEgg.eg-dead .eg-seg { opacity:.35; }
     #gbEgg.eg-hold { pointer-events:auto; cursor:not-allowed; touch-action:none; }
-    #gbEgg .eg-rip { position:absolute; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; border:3px solid var(--eb); box-shadow:0 0 14px var(--ea), inset 0 0 10px var(--ea);
-      pointer-events:none; animation:egRip .8s cubic-bezier(.2,.7,.3,1) both; } @keyframes egRip { from { transform:scale(.4); opacity:1; } to { transform:scale(6); opacity:0; } }
-    #gbEgg .eg-card.eg-shake { animation:egShake .35s; } @keyframes egShake { 0%,100% { transform:none; } 20% { transform:translate(-9px,2px) rotate(-1deg); } 40% { transform:translate(8px,-2px) rotate(1deg); } 60% { transform:translate(-6px,1px); } 80% { transform:translate(4px,0); } }
-    /* 🌈 rainbow: the border, title and bar cycle through every color, then drain to beige when it "melts" */
-    #gbEgg.eg-rainbow .eg-card { border-image:linear-gradient(90deg, #ff2a4d, #ffcc33, #2bd96b, #33d6ff, #9b3dff, #ff3d9a) 1; border-radius:0; animation:egHue 1.2s linear infinite; }
-    #gbEgg.eg-rainbow .eg-bar i { background:linear-gradient(90deg, #ff2a4d, #ff8a3d, #ffcc33, #2bd96b, #33d6ff, #9b3dff, #ff3d9a); }
-    #gbEgg.eg-rainbow.eg-dead .eg-card { animation:none; filter:sepia(1) saturate(1.8) hue-rotate(-12deg) brightness(1.05); }
-    @keyframes egHue { to { filter:hue-rotate(360deg); } }
-    /* ● dots: a dot-matrix card, like the lights themselves (and the corner logo's dots go dark one by one) */
-    #gbEgg.eg-dots .eg-card { border-style:dotted; border-width:4px; background:radial-gradient(circle, #33d6ff22 1.6px, transparent 2px) 0 0/12px 12px, #0b0712f2; }
-    #gbEgg.eg-dots .eg-t { font-family:var(--mono); letter-spacing:5px; }
-    #gbEgg.eg-dots .eg-bar { background:radial-gradient(circle, #33d6ff33 3px, transparent 3.5px) 0 50%/14px 14px; } #gbEgg.eg-dots .eg-bar i { background:radial-gradient(circle, #ff3d9a 4px, transparent 4.5px) 0 50%/14px 14px; box-shadow:none; }
-    #gbEgg.eg-dots.eg-dead .eg-card { background:radial-gradient(circle, #ffffff10 1.6px, transparent 2px) 0 0/12px 12px, #050308f6; }
-    /* 🎄 holiday: gold and green, a candy-cane bar */
-    #gbEgg.eg-holiday .eg-bar i { background:repeating-linear-gradient(45deg, #ff2a4d 0 10px, #ffffff 10px 20px); box-shadow:0 0 12px #ffcc33; }
-    #gbEgg.eg-joke .eg-card { border-color:#33d6ff; border-image:none; border-radius:16px; border-style:solid; border-width:2px; filter:none; animation:none; box-shadow:0 0 50px -6px #ff3d9a, 0 0 30px -10px #33d6ff; } #gbEgg.eg-joke .eg-t { color:#fff; font-family:var(--cond); text-shadow:0 0 18px #ff3d9a, 0 0 30px #33d6ff; }
-    #gbEgg.eg-joke .eg-t { font-size:clamp(44px, 10vw, 84px); letter-spacing:5px; animation:egPop .5s cubic-bezier(.2,1.6,.4,1); } @keyframes egPop { from { transform:scale(.3); opacity:0; } }
-    #gbEgg.eg-joke .eg-p { color:#ff9ad0; font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1px; margin-top:10px; }
-    #gbEgg.eg-joke .eg-bar { display:none; } #gbEgg.eg-joke { background:rgba(0,0,0,0); }
-    #gbEgg.eg-out { opacity:0; transition:opacity .5s; }
+    #gbEgg .eg-rip { position:absolute; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; border:3px solid var(--ea); pointer-events:none; animation:egRip .8s cubic-bezier(.2,.7,.3,1) both; }
+    @keyframes egRip { from { transform:scale(.4); opacity:1; } to { transform:scale(6); opacity:0; } }
+    #gbEgg .eg-card.eg-shake { animation:egShake .35s; } @keyframes egShake { 0%,100% { transform:none; } 20% { transform:translate(-9px,2px); } 40% { transform:translate(8px,-2px); } 60% { transform:translate(-6px,1px); } 80% { transform:translate(4px,0); } }
+    /* each disaster keeps its own colours, inside the same box */
+    #gbEgg.eg-rainbow .eg-seg i.on { background:hsl(var(--h) 95% 58%); }
+    #gbEgg.eg-rainbow.eg-dead .eg-card { --c:#c9a878; } #gbEgg.eg-rainbow.eg-dead .eg-seg i.on { background:#c9a878; }
+    #gbEgg.eg-dots .eg-seg i { border-radius:50%; aspect-ratio:1; height:auto; align-self:center; } #gbEgg.eg-dots .eg-seg { height:auto; }
+    #gbEgg.eg-holiday .eg-seg i.on:nth-child(odd) { background:#ff2a4d; } #gbEgg.eg-holiday .eg-seg i.on:nth-child(even) { background:#fff; }
+    /* GOTCHA: the same box in our pink, big title, two keys */
+    #gbEgg.eg-joke .eg-card { --c:var(--pink); width:min(94vw, 640px); } #gbEgg.eg-joke .eg-seg { display:none; }
+    #gbEgg.eg-joke .eg-t { font-size:clamp(46px, 10vw, 84px); letter-spacing:5px; animation:egPop .5s cubic-bezier(.2,1.6,.4,1); } @keyframes egPop { from { transform:scale(.3); opacity:0; } }
+    #gbEgg.eg-joke .eg-f { font:600 calc(21px * var(--fs, 1))/1.35 var(--body); opacity:1; }
+    #gbEgg.eg-joke .eg-love { display:block; font:700 calc(20px * var(--fs, 1))/1.35 var(--cond); letter-spacing:1px; color:var(--lav); }
+    #gbEgg.eg-tapout .eg-btns { display:grid; grid-template-columns:minmax(0, 1.6fr) minmax(0, 1fr); gap:8px; margin-top:4px; }
+    #gbEgg .eg-btns .btn { min-height:54px; --c:var(--pink); white-space:normal; } #gbEgg .eg-btns .btn:not(.c) { --c:var(--cyan); }
+    #gbEgg.eg-tapout { background:rgba(0,0,0,.45); cursor:default; } #gbEgg.eg-joke { background:rgba(0,0,0,0); }
+    #gbEgg.eg-out { opacity:0; transition:opacity .3s; }
     .eg-gone { opacity:0 !important; transform:scale(.85) !important; filter:blur(3px) brightness(2) !important; transition:opacity .25s, transform .25s, filter .25s !important; }
     #rail button.eg-fall { transform:translateY(110vh) rotate(var(--egr, 15deg)) !important; transition:transform .9s cubic-bezier(.55,0,.9,.4) !important; }
     #rail button:not(.eg-fall) { transition:transform .6s cubic-bezier(.2,1.4,.4,1), filter .15s; }
     #gbLogo, #hd .elbow { cursor:pointer; }
-    @media (prefers-reduced-motion: reduce) { #rail button.eg-fall { transform:none !important; opacity:.15; } #gbEgg.eg-rainbow .eg-card { animation:none; } }`), 0);
+    @media (prefers-reduced-motion: reduce) { #rail button.eg-fall { transform:none !important; opacity:.15; } }`), 0);
   GB.css = text => { const st = document.createElement('style'); st.textContent = text; document.head.appendChild(st); };
   GB.lbl = (el, ic, text) => { el.innerHTML = (ic ? GB.svg(ic) : '') + '<span>' + GB.esc(text) + '</span>'; };
 
