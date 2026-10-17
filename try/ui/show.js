@@ -28,8 +28,8 @@
   .sh-segrow .seg > .btn { --c:inherit; }
   /* 🎨 Color mood (Oct 17): six bright keys, each painted in its own colours */
   .sh-mood { display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px; }
-  .sh-mood .btn { min-height:46px; padding:2px 4px; border-radius:12px; background:var(--g); color:#fff; font-size:calc(15px * var(--fs, 1)); letter-spacing:1px;
-    text-shadow:0 1px 3px #000, 0 0 2px #000; flex-direction:column; gap:2px; line-height:1; white-space:nowrap; }
+  .sh-mood .btn { min-height:46px; padding:2px 4px; border-radius:12px; background:var(--g); color:#000; font-size:calc(15px * var(--fs, 1)); letter-spacing:1px;
+    text-shadow:0 0 6px rgba(255,255,255,.75), 0 0 2px rgba(255,255,255,.6);   /* Oct 17 (Graham): black words, a soft light halo keeps them readable on the darker colours */ flex-direction:column; gap:2px; line-height:1; white-space:nowrap; }
   .sh-mood .btn small { font:600 calc(10.5px * var(--fs, 1)) var(--cond); letter-spacing:.5px; opacity:.85; text-transform:none; }
   .sh-mood .btn.on { box-shadow:0 0 0 3px #fff inset, 0 0 18px color-mix(in srgb, var(--k) 80%, transparent); transform:scale(1.03); }
   .sh-mood .btn.on::after { content:'✓'; position:absolute; top:3px; right:7px; font-size:12px; }
