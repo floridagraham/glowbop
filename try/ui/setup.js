@@ -512,7 +512,10 @@
       <details class="pro-key" id="suLicKeyBox" hidden><summary id="suLicKeySum">Enter a license key</summary>
         <div class="pro-keyrow"><input type="text" id="suLicKey" placeholder="GBPRO-XXXX or GLOWBOP-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="License key"><button class="btn c" id="suLicGo" style="--c:var(--gold)">Use key</button></div>
         <p class="note pro-msg" id="suLicMsg">A Pro DJ key unlocks Song Shows, the Fader board, Override keys and Interlude. It replaces the key on this computer.</p></details>
-      <div id="suLicRow" hidden><button class="btn wide" id="suLicRemove">${lbl('unlock', 'Move my license to another computer')}</button></div>`;
+      <div id="suLicRow" hidden><button class="btn wide" id="suLicRemove">${lbl('unlock', 'Move my license to another computer')}</button></div>
+      <div id="suAsHomeRow" hidden><button class="btn wide" id="suAsHome"></button></div>`;
+    const ah = $('suAsHome'), ahPaint = () => { $('suAsHomeRow').hidden = GB.realPro !== true; ah.textContent = GB.asHome() ? '⚡ Back to Pro' : '👀 Preview as a Home user (every screen)'; };
+    ah.onclick = () => { GB.previewHome(!GB.asHome()); ahPaint(); }; GB.on('pro', ahPaint); ahPaint();
     const go = $('suLicGo'), inp = $('suLicKey'), msg = $('suLicMsg');
     go.onclick = async () => {                                     // 🔑 same POST /api/license as the Pro DJ upgrade card
       const k = inp.value.trim(); if (!k) { msg.textContent = 'Paste your key first.'; return; }

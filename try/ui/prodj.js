@@ -349,7 +349,7 @@
   // ✏️ Every page can be arranged, by everyone (Oct 16, Graham). Pro pages only once they're unlocked.
   const pageKey = () => { const p = GB.page; if (!p) return null; if (p === 'dj') return isOn() ? 'prodj' : 'dj';
     if (p === 'home') return GB.pro === true ? 'prohome' : null; if (PRO_PAGES.includes(p) && GB.pro !== true) return null; return p; };
-  const canArrange = () => innerWidth >= 700 && !!pageKey();
+  const canArrange = () => innerWidth >= 700 && !!pageKey() && !window.__demoWall;   // the website demo stays a plain console (no Arrange)
   const store = k => 'gb_lay3:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
   function items() {
     const pg = $('pg-' + GB.page); if (!pg) return [];
@@ -382,10 +382,12 @@
     let changed = false;
     Object.keys(mine).filter(k => !k.endsWith(':auto')).forEach(k => {   // this screen's hand-made layouts go up (they beat an automatic one)
       if (mine[k] && (!srv[k] || (hand(mine, k) && !hand(srv, k)) || (hand(mine, k) && srv[k] !== mine[k]))) { put(k, mine[k]); put(k + ':auto', mine[k + ':auto'] || ''); } });
-    Object.keys(srv).filter(k => !k.endsWith(':auto')).forEach(k => {   // layouts made on another screen come down
+    Object.keys(srv).filter(k => k.startsWith('gb_lay3:') && !k.endsWith(':auto')).forEach(k => {   // layouts made on another screen come down
       if (!mine[k] || (hand(srv, k) && !hand(mine, k))) { S.set(k, srv[k]); S.set(k + ':auto', srv[k + ':auto'] || ''); changed = true; } });
+    const ah = srv.gb_as_home === '1'; if (ah !== GB.asHome()) GB.previewHome(ah, true);   // 👀 the Home preview switch is shared by every screen
     if (changed && !arranging) layout();
   }
+  GB.layPut = put;
   const load = k => { try { return JSON.parse(S.get(store(k)) || 'null'); } catch (e) { return null; } };
   const save = (k, L) => put(store(k), JSON.stringify(L));
   function clearLay() {
@@ -514,6 +516,9 @@
     fits = []; if (arranging) { arranging = false; document.documentElement.classList.remove('gb-arr'); } syncBorrow(); paintSwitch(); setTimeout(layout, 0); });   // layout after other pages borrow their boxes (Pro Home)
   GB.on('status', paintLit);
   // 🏟️ Home DJ with more than 4 light sets: a friendly banner (once per visit) + "Each separate" light groups are Pro
+  GB.css(`#asHomeBar { position:fixed; left:50%; bottom:calc(10px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:955; display:flex; align-items:center; gap:10px;
+    background:#05080dEE; border:2px solid #ffd21a; border-radius:999px; padding:5px 6px 5px 16px; box-shadow:0 8px 30px #000a; }
+    #asHomeBar span { font:800 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:#ffd21a; white-space:nowrap; } #asHomeBar .btn { min-height:38px; padding:0 14px; }`);
   GB.css(`#limBar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(90deg,#2a1640,#13202e); border:1px solid #ffd21a66; border-radius:16px; padding:10px 14px; margin-bottom:var(--gap); }
     #limBar b { font:800 calc(16px * var(--fs, 1)) var(--cond); letter-spacing:1px; color:#ffd21a; } #limBar span { flex:1 1 220px; min-width:0; color:var(--text); }
     #limBar .btn { min-height:40px; }`);

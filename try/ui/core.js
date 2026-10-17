@@ -74,7 +74,19 @@
   // GB.proGate(panelEl, feature, opts) stays as a safety net on the Pro panels: an upgrade card if one is ever reached on Home.
   // opts: {pitch, chip:false, preview:true}. GB.on('pro', fn) follows changes.
   GB.pro = null; GB.buyPro = 'https://glowbop.com/pricing.html#pro';
-  GB.setPro = (v, lic) => { if (lic && lic.buy_pro) GB.buyPro = lic.buy_pro; v = v !== false; if (GB.pro === v) return; GB.pro = v; document.body.classList.toggle('not-pro', !v); document.body.classList.add('pro-known'); paintRailPro(); GB.emit('pro', v); };
+  GB.setPro = (v, lic) => { if (lic && lic.buy_pro) GB.buyPro = lic.buy_pro; v = v !== false; GB.realPro = v; if (v && GB.asHome()) v = false; if (GB.pro === v) return; GB.pro = v; document.body.classList.toggle('not-pro', !v); document.body.classList.add('pro-known'); paintRailPro(); GB.emit('pro', v); };
+  // 👀 Preview as a Home user (Oct 16, Graham): a Pro computer can show the console exactly as a Home customer sees it
+  //   (grey Pro tabs, locked keys). Only the screens change (all of them, via /api/layouts); the license and the light engine stay Pro. SETUP › License turns it on and off.
+  GB.asHome = () => store.get('gb_as_home') === '1';
+  GB.previewHome = (on, quiet) => { store.set('gb_as_home', on ? '1' : ''); if (!quiet && GB.layPut) GB.layPut('gb_as_home', on ? '1' : '');   /* every screen on this computer follows */ const real = GB.realPro !== false; GB.pro = null; GB.setPro(real); GB.realPro = real; paintAsHome();
+    if (!quiet) GB.toast(on ? '👀 Previewing GlowBop as a Home user' : '⚡ Back to Pro'); };
+  function paintAsHome() {
+    let b = $('asHomeBar'); const on = GB.asHome() && GB.realPro === true;
+    if (!on) { if (b) b.remove(); return; }
+    if (!b) { b = document.createElement('div'); b.id = 'asHomeBar'; b.innerHTML = '<span>👀 HOME PREVIEW</span><button class="btn c" style="--c:#ffd21a">⚡ Back to Pro</button>';
+      b.querySelector('button').onclick = () => GB.previewHome(false); document.body.appendChild(b); }
+  }
+  GB.on('pro', () => setTimeout(paintAsHome, 0));
   GB.loadPro = async () => { try { const r = await GB.get('/api/license'); GB.setPro(r.pro !== false, r); } catch (e) {} };
   // the Pro tools, the tab each lives on, and the pitch the upgrade card and the PRO tour both use
   const PRO_FEATURES = GB.PRO_FEATURES = [
