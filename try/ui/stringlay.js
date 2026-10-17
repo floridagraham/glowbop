@@ -196,7 +196,7 @@
         const r = Math.max(0.22, Math.min(R, (isFinite(near) ? near : 1) * 0.45));          // close-set bulbs: smaller dots so each one still shows
         const pins = lay.parts[k].pins || {}, big = BULB && act ? Math.max(r, 0.3) : r;
         const off = partCounts(d, lay).slice(0, k).reduce((a, b) => a + b, 0);
-        h += `<g class="lv" data-d="${esc(d.id)}" data-o="${off}" opacity="${on ? (act ? 1 : 0.85) : 0.7}">${pts.map(([x, y], i) => `<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${i === 0 ? Math.max(big * 1.8, 0.3) : big}" fill="${col}"${pins[i] ? ` stroke="#fff" stroke-width="0.08"` : ''}/>`).join('')}</g>`;
+        h += `<g class="lv" data-d="${esc(d.id)}" data-o="${off}" opacity="${on ? (act ? 1 : 0.85) : 0.7}">${pts.map(([x, y], i) => `<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${i === 0 && act && lay.kind !== 'curtain' ? Math.max(big * 1.8, 0.3) : big}" fill="${col}"${pins[i] ? ` stroke="#fff" stroke-width="0.08"` : ''}/>`).join('')}</g>`;
         if (on && !BULB && (act || lay.parts.length <= 4)) {      // many drops / strands: only the one you're laying shows its handles
           const pp = lay.parts[k].pts;
           h += `<polyline points="${(lay.parts[k].smooth && !(lay.parts[k].fold && lay.parts[k].fold.rows > 1) ? smoothPath(pp) : pp).map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="${HR * 0.1}" stroke-dasharray="${HR * 0.35} ${HR * 0.2}" opacity="${act ? 0.85 : 0.35}"/>`;
