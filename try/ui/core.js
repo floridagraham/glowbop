@@ -422,13 +422,14 @@
       while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.ef = n.getAttribute('fill'); n.setAttribute('fill', '#221d33'); n.dataset.l = '0'; }
       if (k < 1) requestAnimationFrame(tick); else done(); };
     let seen = false; try { seen = localStorage.getItem('gb_egg_seen') === '1'; localStorage.setItem('gb_egg_seen', '1'); } catch (x) {}
-    const NEED = seen ? 3 + ((Math.random() * 5) | 0) : 3;   // first time ever: 3 taps; after that a surprise, 3 to 7 let taps = 0, held = null, revealed = false;
+    // first time ever: 3 taps; after that a surprise, 3 to 7
+    const NEED = seen ? 3 + ((Math.random() * 5) | 0) : 3; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
-      tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = ''; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
+      tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = 'A little joke from the GlowBop team. We truly love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
       dots.forEach((n, i) => setTimeout(() => { if (n.dataset.ef) n.setAttribute('fill', n.dataset.ef); n.dataset.l = '1'; }, i * 30));
       keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
-      setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 3600); };
+      setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 4600); };
     const tap = ev => { ev.preventDefault(); ev.stopPropagation(); taps++;
       const card = ov.querySelector('.eg-card'); card.classList.remove('eg-shake'); void card.offsetWidth; card.classList.add('eg-shake');
       beep(120 + Math.random() * 60, .18, 'sawtooth', .1, 60);
@@ -463,6 +464,7 @@
     #gbEgg.eg-holiday .eg-bar i { background:repeating-linear-gradient(45deg, #ff2a4d 0 10px, #ffffff 10px 20px); box-shadow:0 0 12px #ffcc33; }
     #gbEgg.eg-joke .eg-card { border-color:#33d6ff; border-image:none; border-radius:16px; border-style:solid; border-width:2px; filter:none; animation:none; box-shadow:0 0 50px -6px #ff3d9a, 0 0 30px -10px #33d6ff; } #gbEgg.eg-joke .eg-t { color:#fff; font-family:var(--cond); text-shadow:0 0 18px #ff3d9a, 0 0 30px #33d6ff; }
     #gbEgg.eg-joke .eg-t { font-size:clamp(44px, 10vw, 84px); letter-spacing:5px; animation:egPop .5s cubic-bezier(.2,1.6,.4,1); } @keyframes egPop { from { transform:scale(.3); opacity:0; } }
+    #gbEgg.eg-joke .eg-p { color:#ff9ad0; font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1px; margin-top:10px; }
     #gbEgg.eg-joke .eg-bar { display:none; } #gbEgg.eg-joke { background:rgba(0,0,0,0); }
     #gbEgg.eg-out { opacity:0; transition:opacity .5s; }
     .eg-gone { opacity:0 !important; transform:scale(.85) !important; filter:blur(3px) brightness(2) !important; transition:opacity .25s, transform .25s, filter .25s !important; }
