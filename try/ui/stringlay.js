@@ -199,7 +199,7 @@
     const box = $('slTop'); if (!box) return;
     const ss = strings(), cc = curtains();
     if (!ss.length && !cc.length) { box.innerHTML = '<p class="note">Add your lights above, then lay them out here.</p>'; return; }
-    if (!ST.devices.some(d => d.id === sel)) sel = (ss[0] || cc[0]).id;
+    if (sel && !ST.devices.some(d => d.id === sel)) sel = '';
     box.innerHTML = ss.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${SCOL[i % SCOL.length]}">🧵 ${esc(d.name)} · ${d.n}</button>`).join('')
       + cc.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${CCOL[i % CCOL.length]}">▦ ${esc(d.name)}</button>`).join('');
     box.querySelectorAll('[data-sl]').forEach(b => b.onclick = () => { sel = b.dataset.sl; strand = 0; paintTop(); draw(); });
@@ -208,6 +208,7 @@
     document.querySelectorAll('#slSnap [data-sn]').forEach(b => b.classList.toggle('on', (b.dataset.sn === '1') === SNAP));
     const d = dev(sel), lay = d && LAY[sel], box = $('slTools'), cb = $('slCurt'); if (!box) return;
     const isC = !!(d && d.kind === 'grid'); cb.hidden = !isC;
+    if (!d) { box.hidden = true; $('slR').textContent = $('slR2').textContent = ''; $('slHint').textContent = $('slHint').textContent || 'Click a curtain or a string to edit it'; return; }
     if (isC) { box.hidden = true; $('slR').textContent = $('slR2').textContent = Object.keys(MOVE).length ? 'NOT SAVED' : 'CURTAIN'; return; }
     if (!d || !lay) { box.hidden = true; return; } box.hidden = false;
     if (strand >= lay.parts.length) strand = 0;
@@ -257,7 +258,7 @@
     }
     const g = e.target.closest && e.target.closest('.h');
     if (!g) { const m = svg.getScreenCTM(); if (!m || !view) return; e.preventDefault();      // 🖐️ drag empty space to slide the view around
-      drag = {pan: true, sx: e.clientX, sy: e.clientY, cx: view.cx, cy: view.cy, k: m.a}; try { svg.setPointerCapture(e.pointerId); } catch (x) {} svg.style.cursor = 'grabbing'; return; }
+      drag = {pan: true, sx: e.clientX, sy: e.clientY, cx: view.cx, cy: view.cy, k: m.a, moved: false, at: toWorld(e)}; try { svg.setPointerCapture(e.pointerId); } catch (x) {} svg.style.cursor = 'grabbing'; return; }
     e.preventDefault(); const k = +g.dataset.s, i = +g.dataset.p; strand = k;
     drag = {k, i, id: e.pointerId}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
     const d = dev(sel); blink(d, LAY[sel], k, i);
@@ -265,14 +266,25 @@
   }
   function onMove(e) {
     if (!drag) return; e.preventDefault();
-    if (drag.pan) { view.cx = drag.cx - (e.clientX - drag.sx) / drag.k; view.cy = drag.cy - (e.clientY - drag.sy) / drag.k; return draw(); }
+    if (drag.pan) { if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 4) drag.moved = true; if (!drag.moved) return; view.cx = drag.cx - (e.clientX - drag.sx) / drag.k; view.cy = drag.cy - (e.clientY - drag.sy) / drag.k; return draw(); }
     if (drag.bulb !== undefined) { const [x, y] = toWorld(e), p = LAY[sel].parts[strand]; p.pins = p.pins || {}; p.pins[drag.bulb] = [snap(x), snap(y)]; dirty[sel] = true;
       const now = Date.now(); if (now - lastPick > 300) { lastPick = now; GB.post('/api/lights/pick', {id: sel, i: drag.real, secs: 1.2}); } return draw(); }
     if (drag.curt) { const [x, y] = toWorld(e); MOVE[drag.curt] = [snap(drag.from[0] + x - drag.at[0]), snap(drag.from[1] + y - drag.at[1])]; dirty[drag.curt] = true; return draw(); }
     const [x, y] = toWorld(e), lay = LAY[sel], p = lay.parts[drag.k].pts;
     p[drag.i] = [snap(x), snap(y)]; dirty[sel] = true; draw(); blink(dev(sel), lay, drag.k, drag.i);
   }
-  function onUp() { if (drag) { drag = null; $('slHint').textContent = ''; svg.style.cursor = ''; } }
+  function onUp() {
+    const tap = drag && drag.pan && !drag.moved ? drag.at : null;
+    if (drag) { drag = null; $('slHint').textContent = ''; svg.style.cursor = ''; }
+    if (tap) tapAt(tap);                                                 // a plain click (no drag): pick what's under it, or clear the highlight
+  }
+  function tapAt([x, y]) {                         // 👆 click a string to pick it (and its strand); click empty space to unselect everything
+    let best = null, lim = Math.max(0.8, (view ? Math.min(view.w, view.h) : 20) / 25) ** 2;
+    strings().forEach(d => { const lay = LAY[d.id]; if (!lay) return; layPoints(d, lay).forEach((pts, k) => pts.forEach(([px, py]) => {
+      const q = (px - x) ** 2 + (py - y) ** 2; if (q < lim && (!best || q < best.q)) best = {id: d.id, k, q}; })); });
+    if (best) { sel = best.id; strand = best.k; } else { sel = ''; BULB = false; }
+    paintTop(); draw();
+  }
 
   // ---------------- 🔍 zoom (wheel, buttons, right-click) and the right-click menu
   function zoomAt(f, at) {
