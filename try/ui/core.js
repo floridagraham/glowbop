@@ -502,7 +502,9 @@
       // 🎲 the spotlight hops around at random: every card gets its turn before any repeats, never the same one twice in a row
       if (!bag.length) { bag = cards.map((_, i) => i); for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
         if (bag.length > 1 && bag[bag.length - 1] === spotI) bag.unshift(bag.pop()); }
-      spotI = bag.pop(); const n = cards[spotI] || cards[0]; n.classList.add('spot');
+      if (spotI < 0) { spotI = Math.floor(Math.random() * Math.min(innerWidth < 700 ? 3 : 6, cards.length)); bag = bag.filter(i => i !== spotI); }   // 👀 the first light-up is always on screen: one of the first 3 cards on an iPhone, the first 6 on an iPad / computer
+      else spotI = bag.pop();
+      const n = cards[spotI] || cards[0]; n.classList.add('spot');
       if (Date.now() - idleAt > 7000) { const r = n.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 20) try { n.scrollIntoView({behavior: 'smooth', block: 'center'}); } catch (e) {} }
     };
     step(); spotT = setInterval(step, 2600);
