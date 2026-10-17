@@ -220,7 +220,10 @@
     else if (k === 'star') { P.dur = 1.3; P.spin = (R() < .5 ? -1 : 1) * (.5 + R() * .3); P.rot0 = R(); }
     else if (k === 'drop_supernova') { P.dark = .12; P.dur = 1.5; P.parts = Array.from({length: Math.round(40 + W * H / 8)}, () => [R() * 6.2832, .6 + R() * .8, R()]); }
     else if (k === 'drop_starburst') { P.dur = 1.3; P.spin = (R() < .5 ? -1 : 1) * .9; P.rot0 = R(); }
-    else if (k === 'drop_heartpop') { P.dur = 1.6; P.parts = Array.from({length: Math.round(10 + W * H / 40)}, () => [R() * 6.2832, .5 + R() * .8, R()]); }
+    else if (k === 'drop_heartpop') { P.dur = 2.4; P.pop = .46;   // 💖 v2 (Oct 17, padfx.py): dark, a heart slams in, beats, POPS into heart rings + a cloud of hearts
+      P.hcols = [[1, .05, .45], [.85, 0, .08], [1, .45, .75], [.85, .1, 1], [1, .05, .45], [1, 1, 1]].concat(P.cols);
+      P.hp = Array.from({length: Math.round(18 + W * H / 14)}, () => ({th: R() * 6.2832, sp: .45 + R() * .8, up: .2 + R() * .7, sz: .9 + R() * .8, rot: R() * 1.2 - .6, spin: R() * 8 - 4,
+        life: 1.1 + R() * .8, ci: (R() * P.hcols.length) | 0, tw: R()})); }
     else if (k === 'drop_shatter') { P.dur = 1.4; const n = Math.round(8 + W * H / 30), seeds = Array.from({length: n}, () => [R() * W, R() * H]);
       P.cell = new Int16Array(W * H); P.edge = new Float32Array(W * H);
       for (let j = 0; j < W * H; j++) { let b1 = 1e9, b2 = 1e9, bi = 0; seeds.forEach(([sx, sy], i) => { const d = (NG.xx[j] - sx) ** 2 + (NG.yy[j] - sy) ** 2; if (d < b1) { b2 = b1; b1 = d; bi = i; } else if (d < b2) b2 = d; });
@@ -265,17 +268,33 @@
         for (let j = 0; j < N; j++) { const m = starM(j, size, rot, .42, .12), edge = clamp(m * (1 - starM(j, size * .78, rot)), 0, 1), col = palc(P, el * 1.2 + g.d[j] / g.R, el), tw = twk(P, el, m, j, .1);
           set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (1 - .5 * fade) + fade * ((m * .45 + edge * 1.1) * col[c] + tw))); }
         return out; }
-      case 'drop_heartpop': { const pop = .35;
-        if (el < pop) { const k = ss(0, pop, el);
-          for (let j = 0; j < N; j++) { const [m, Y] = heartM(j, g.sq * (.4 + .5 * k), .04 * Math.sin(el * 30)), sh = clamp(.5 + .45 * Y, 0, 1);
-            set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (1 - .7 * m) + m * (RED[c] * (1 - sh) + PINK[c] * sh) * (.8 + .6 * k))); }
+      case 'drop_heartpop': {
+        const HOT = [1, .05, .45], DEEP = [.85, 0, .08], pop = P.pop;
+        const hAt = (x, y, cx, cy, size, rot, sharp) => { const c = Math.cos(rot), s_ = Math.sin(rot), X0 = (x - cx) / size, Y0 = -(y - cy) / size, X = X0 * c - Y0 * s_, Y = X0 * s_ + Y0 * c + .15,
+          v = (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3; return [clamp(.5 - v * sharp, 0, 1), Y]; };
+        if (el < .1) { const sz = g.sq * .18 * (1 + .4 * Math.sin(el * 90));
+          for (let j = 0; j < N; j++) { const [m] = hAt(g.xx[j], g.yy[j], g.cx, g.cy, sz, 0, 4); set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * .08 + m * HOT[c] * 1.2)); } return out; }
+        if (el < pop) { const k = (el - .1) / (pop - .1), grow = 1 - Math.exp(-7 * k) * Math.cos(11 * k), beat = 1 + .08 * Math.exp(-(((k - .8) / .08) ** 2));
+          const size = Math.max(.6, g.sq * .82 * grow * beat), slam = 1 + .5 * Math.exp(-(((el - .17) / .04) ** 2)), rot = .05 * Math.sin(el * 25), gx = g.cx - size * .42, gy = g.cy - size * .42;
+          for (let j = 0; j < N; j++) { const [m, Y] = hAt(g.xx[j], g.yy[j], g.cx, g.cy + .05 * g.sq, size, rot, 4), yy = clamp(.5 + .5 * Y, 0, 1);
+            const gloss = Math.exp(-(((g.xx[j] - gx) / (size * .28)) ** 2 + ((g.yy[j] - gy) / (size * .2)) ** 2)) * m, rim = clamp(m * 4, 0, 1) * (1 - clamp(m * 4 - 2.6, 0, 1));
+            set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * .12 * (1 - m) + m * (DEEP[c] * (1 - yy) + HOT[c] * yy) * 1.05 * slam + gloss * .45 + rim * [1, .6, .85][c] * .5)); }
           return out; }
-        const e = el - pop, v = (u - pop / P.dur) / (1 - pop / P.dur), flash = Math.max(0, 1 - e / .15), lay = new Float32Array(img.length);
-        for (const [th, sp, ph] of P.parts) { const rr = g.R * sp * e * 1.6, xi = g.cx + Math.cos(th) * rr, yi = g.cy + Math.sin(th) * rr + 9 * e * e * g.s; if (xi < 0 || xi >= W || yi < 0 || yi >= H) continue;
-          const col = ph < .5 ? PINK : RED, rad = Math.ceil(2 * g.s);
-          for (let y = Math.max(0, Math.floor(yi - rad)); y <= Math.min(H - 1, Math.ceil(yi + rad)); y++) for (let x = Math.max(0, Math.floor(xi - rad)); x <= Math.min(W - 1, Math.ceil(xi + rad)); x++) {
-            const hm = clamp(1.5 - Math.hypot(x - xi, y - yi) / (.9 * g.s), 0, 1), i = (y * W + x) * 3; for (let c = 0; c < 3; c++) lay[i + c] = Math.max(lay[i + c], hm * col[c]); } }
-        for (let j = 0; j < N; j++) { const gl = Math.exp(-g.d[j] / (g.sq * .5)) * flash; set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (.4 + .6 * v) + gl * PINK[c] + lay[j * 3 + c] * (1 - v) * 1.2)); }
+        const e = el - pop, u2 = e / (P.dur - pop), flash = Math.exp(-e / .035), back = .12 + .88 * ss(.25, .85, u2), tint = (1 - ss(0, .7, u2)) * .45;
+        const acc = new Float32Array(img.length);
+        for (let j = 0; j < N; j++) for (let c = 0; c < 3; c++) acc[j * 3 + c] = img[j * 3 + c] * back + [1, .45, .75][c] * flash + [.45, 0, .18][c] * tint;
+        [[0, [1, .55, .8]], [.11, HOT], [.22, [.8, .1, 1]]].forEach(([dl, col]) => { const t = e - dl; if (t <= 0 || t > .9) return; const size = g.sq * (.4 + 3.2 * t ** .8), fade = (1 - t / .9) ** 1.3;
+          for (let j = 0; j < N; j++) { const ring = clamp(hAt(g.xx[j], g.yy[j], g.cx, g.cy, size, 0, 3)[0] - hAt(g.xx[j], g.yy[j], g.cx, g.cy, size * .72, 0, 3)[0], 0, 1) * fade;
+            if (ring > 0) for (let c = 0; c < 3; c++) acc[j * 3 + c] = acc[j * 3 + c] * (1 - .5 * ring) + ring * col[c] * 1.15; } });
+        const lay = new Float32Array(img.length);
+        P.hp.forEach((h, i) => { const lf = e / h.life; if (lf >= 1) return; const dist = h.sp * g.R * 1.5 * (1 - Math.exp(-3.2 * e)) / 3.2 * 2.2;
+          const x = g.cx + Math.cos(h.th) * dist, y = g.cy + Math.sin(h.th) * dist - h.up * 5 * g.s * e + 7 * g.s * e * e; if (!(x > -2 && x < W + 1 && y > -2 && y < H + 1)) return;
+          const sz = h.sz * g.s * (1 + .15 * Math.sin(e * 14 + i)), rr = Math.ceil(sz * 1.6) + 2, col = P.hcols[h.ci % P.hcols.length], tw = .75 + .5 * (Math.sin(e * 22 + h.tw * 6.28) > .6 ? 1 : 0), k = (1 - lf * lf) * tw;
+          for (let yy = Math.max(0, Math.floor(y) - rr); yy < Math.min(H, Math.floor(y) + rr + 2); yy++) for (let xx = Math.max(0, Math.floor(x) - rr); xx < Math.min(W, Math.floor(x) + rr + 2); xx++) {
+            const m = hAt(xx, yy, x, y, sz, h.rot + h.spin * e, 2.5)[0]; if (!m) continue; const jj = (yy * W + xx) * 3; for (let c = 0; c < 3; c++) lay[jj + c] = Math.max(lay[jj + c], m * col[c] * k); } });
+        const glK = 1 - ss(.05, .6, u2);
+        for (let j = 0; j < N; j++) { const lm = Math.min(1, Math.max(lay[j * 3], lay[j * 3 + 1], lay[j * 3 + 2])), ph = (P.spark[j] + e * 2.6) % 1, gl = ph < .045 ? (1 - ph / .045) * glK * .8 : 0;
+          for (let c = 0; c < 3; c++) out[j * 3 + c] = acc[j * 3 + c] * (1 - .6 * lm) + lay[j * 3 + c] * 1.15 + gl * [1, .8, .95][c]; }
         return out; }
       case 'drop_shatter': { if (el < .08) { for (let i = 0; i < out.length; i++) out[i] = Math.max(img[i], .9); return out; }
         const keep = ss(.2, 1, u), fadeP = 1 - ss(.35, 1, u), crackK = 1 - ss(.08, .5, u);
