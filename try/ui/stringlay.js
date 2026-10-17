@@ -414,11 +414,22 @@
     });
   }
   setInterval(paintLive, 125);
+  // 🔄 Oct 17 (Graham: "I see it on the iPad, not on the laptop"): every screen picks up layout changes saved on another one
+  let SIG = '';
+  const sigOf = st => JSON.stringify((st.devices || []).map(d => [d.id, d.kind, d.lay || null, d.pts ? d.pts.length + ':' + (d.pts[0] || []).join(',') : '']));
+  setInterval(async () => {
+    if (!svg || GB.page !== 'lights' || document.hidden || drag || Object.values(dirty).some(Boolean) || Object.keys(MOVE).length) return;
+    let st; try { st = await GB.get('/api/lights/stage'); } catch (e) { return; }
+    if (!st || !Array.isArray(st.devices)) return;
+    const sg = sigOf(st); if (!SIG) { SIG = sg; return; }
+    if (sg !== SIG) { SIG = sg; load(true); }
+  }, 3000);
 
   // ---------------- load / save
   async function load(keepView) {
     try { ST = await GB.get('/api/lights/stage'); } catch (e) { return; }
     if (!ST || !Array.isArray(ST.devices)) ST = {devices: []};          // the website demo has no stage
+    SIG = sigOf(ST);
     await loadPts();
     strings().forEach(d => { if (!dirty[d.id]) LAY[d.id] = fromSaved(d) || fresh(d, d.n >= 200 ? 2 : 1); });
     Object.keys(MOVE).forEach(id => { if (!dirty[id]) delete MOVE[id]; });
