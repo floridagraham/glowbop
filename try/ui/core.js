@@ -778,7 +778,16 @@
   let OCC = {k: '', bits: null};
   GB.occRGB = b => occRGB(b);                                         // 🧵 shared with the Lights editor
   function occRGB(b) {
-    if (OCC.k !== b.occ) { const bits = new Uint8Array(b.w * b.h); for (let i = 0; i < bits.length; i++) bits[i] = (parseInt(b.occ.substr((i >> 3) * 2, 2), 16) >> (7 - (i & 7))) & 1; OCC = {k: b.occ, bits}; }
+    if (OCC.k !== b.occ) { const bits = new Uint8Array(b.w * b.h); for (let i = 0; i < bits.length; i++) bits[i] = (parseInt(b.occ.substr((i >> 3) * 2, 2), 16) >> (7 - (i & 7))) & 1;
+      // 🔵 Oct 17 (Graham: "blank lines on the live wall"): mixed layouts run at double detail, so curtain bulbs sit every other spot.
+      //   Each dot gets sized to how far its nearest neighbour is (1 or 2 spots), so a curtain draws solid again.
+      const W = b.w, H = b.h, sc = new Float32Array(W * H), has = (x, y) => x >= 0 && y >= 0 && x < W && y < H && bits[y * W + x];
+      const [kx, ky] = b.sc || [1, 1];                                   // spots per bulb-spacing on each axis (2 = that axis runs at double detail)
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (!bits[y * W + x]) continue; let nd = 1;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { if ((dx || dy) && has(x + dx, y + dy)) nd = Math.min(nd, Math.hypot(dx / kx, dy / ky)); }
+        sc[y * W + x] = Math.max(0.3, nd); }
+      OCC = {k: b.occ, bits, sc}; }
+    GB.occScale = OCC.sc;
     const cols = hexRGB(b.rgb), out = new Array(b.w * b.h); let j = 0;
     for (let i = 0; i < out.length; i++) out[i] = OCC.bits[i] ? cols[j++] : null;
     return out;
@@ -829,7 +838,7 @@
   // the Live wall's natural height at a given picture width: the lights fill it edge to edge (used by the ✏️ Arrange templates)
   GB.wallIdeal = cssW => { const b = PV; if (!b.length) return cssW * 0.6;
     if (b.length === 1 && b[0].shape) return Math.min(innerHeight * 0.82, cssW * 0.75);
-    const totW = b.reduce((a, x) => a + x.w, 0) + 2 * (b.length - 1), maxH = Math.max(...b.map(x => x.h));
+    const totW = b.reduce((a, x) => a + x.w / ((x.sc && x.sc[0]) || 1), 0) + 2 * (b.length - 1), maxH = Math.max(...b.map(x => x.h / ((x.sc && x.sc[1]) || 1)));
     const lab = (b.length > 1 ? 18 : 0) + (b.some(x => (x.devices || []).length > 1) ? 16 : 0);
     return Math.min(innerHeight * 0.82, lab + maxH * cssW / totW); };
   let pvSig = '';
@@ -842,7 +851,8 @@
       return draw3D(blocks[0], cssW, FULL ? innerHeight - 40 : ($('wallBox').closest('.lay-it') ? Math.max(50, $('wallBox').clientHeight - 20) : 0) || (compact ? Math.max(GB.page === 'music' ? 120 : 150, innerHeight * (GB.page === 'music' ? 0.16 : 0.26)) : Math.max(240, Math.min(620, innerHeight * (wide ? 0.46 : 0.5)))), dpr);
     }
     const many = blocks.length > 1, dpr = Math.min(2, window.devicePixelRatio || 1);
-    const gap = 2, totW = blocks.reduce((a, b) => a + b.w, 0) + gap * (blocks.length - 1), maxH = Math.max(...blocks.map(b => b.h));
+    const KX = b => (b.sc && b.sc[0]) || 1, KY = b => (b.sc && b.sc[1]) || 1;            // 🔵 a doubled axis draws at half spacing, so shapes stay true
+    const gap = 2, totW = blocks.reduce((a, b) => a + b.w / KX(b), 0) + gap * (blocks.length - 1), maxH = Math.max(...blocks.map(b => b.h / KY(b)));
     const anyDev = blocks.some(b => (b.devices || []).length > 1);
     const box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
     const lab = (many ? 18 : 0) + (anyDev ? 16 : 0);
@@ -865,12 +875,13 @@
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.fillStyle = '#05040a'; cx.fillRect(0, 0, cssW, cssH);
     let ox = ox0; PVHIT = [];
     blocks.forEach(b => {
-      const rgb = b.occ ? occRGB(b) : hexRGB(b.rgb), r = st * (b.occ ? 0.46 : 0.42), top = lab, sel = many && GB.gsel === b.id;
+      const rgb = b.occ ? occRGB(b) : hexRGB(b.rgb), r = st * (b.occ ? 0.46 : 0.42), top = lab, sel = many && GB.gsel === b.id, sX = st / KX(b), sY = st / KY(b), bw = b.w / KX(b), bh = b.h / KY(b);
       for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
-        const c = rgb[y * b.w + x], px = ox + x * st + st / 2, py = top + y * st + st / 2;
+        const c = rgb[y * b.w + x], px = ox + x * sX + sX / 2, py = top + y * sY + sY / 2;
         if (c === null) continue;                                          // 🧵 no bulb here (laid-out strings): leave it empty
-        if (!c || c === '000000') { cx.fillStyle = '#16121f'; cx.beginPath(); cx.arc(px, py, r * 0.55, 0, 6.283); cx.fill(); continue; }
-        cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, r, 0, 6.283); cx.fill();
+        const rr = b.occ && GB.occScale ? r * (GB.occScale[y * b.w + x] || 1) : r;
+        if (!c || c === '000000') { cx.fillStyle = '#16121f'; cx.beginPath(); cx.arc(px, py, rr * 0.55, 0, 6.283); cx.fill(); continue; }
+        cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, rr, 0, 6.283); cx.fill();
       }
       cx.font = "600 12px 'Saira Condensed', system-ui"; cx.textBaseline = 'top';
       if (many) { cx.fillStyle = sel ? '#ff3d9a' : '#bbb';                    // selected group: a drawn play marker (a ▶ glyph turns into an emoji on iOS)
@@ -878,12 +889,12 @@
         cx.fillText(b.name.toUpperCase(), ox + (sel ? 13 : 2), 2); }
       if ((b.devices || []).length > 1) b.devices.forEach((d, k) => {
         const col = DEVCOL[k % DEVCOL.length]; cx.strokeStyle = col + '88'; cx.lineWidth = 1;
-        cx.strokeRect(ox + d.x0 * st + 0.5, top + d.y0 * st + 0.5, (d.x1 - d.x0 + 1) * st - 1, (d.y1 - d.y0 + 1) * st - 1);
-        cx.fillStyle = col; cx.font = "11px 'Saira Condensed', system-ui"; cx.fillText(d.name.slice(0, Math.max(4, Math.floor((d.x1 - d.x0 + 1) * st / 7))), ox + d.x0 * st + 2, d.y0 > 0 ? top + d.y0 * st - 13 : (many ? 18 : 0) + 1);   // 🧵 a light lower down: its name just above its own box
+        cx.strokeRect(ox + d.x0 * sX + 0.5, top + d.y0 * sY + 0.5, (d.x1 - d.x0 + 1) * sX - 1, (d.y1 - d.y0 + 1) * sY - 1);
+        cx.fillStyle = col; cx.font = "11px 'Saira Condensed', system-ui"; cx.fillText(d.name.slice(0, Math.max(4, Math.floor((d.x1 - d.x0 + 1) * sX / 7))), ox + d.x0 * sX + 2, d.y0 > 0 ? top + d.y0 * sY - 13 : (many ? 18 : 0) + 1);   // 🧵 a light lower down: its name just above its own box
       });
-      if (sel) { cx.strokeStyle = '#ff3d9a'; cx.lineWidth = 2; cx.strokeRect(ox - 1, top - 1, b.w * st + 2, b.h * st + 2); }
-      PVHIT.push({id: b.id, name: b.name, x0: ox, x1: ox + b.w * st});
-      ox += (b.w + gap) * st;
+      if (sel) { cx.strokeStyle = '#ff3d9a'; cx.lineWidth = 2; cx.strokeRect(ox - 1, top - 1, bw * st + 2, bh * st + 2); }
+      PVHIT.push({id: b.id, name: b.name, x0: ox, x1: ox + bw * st});
+      ox += (bw + gap) * st;
     });
     let sy = Math.round(lab + maxH * st);
     strips.forEach(s => {
