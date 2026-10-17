@@ -344,6 +344,43 @@
     stop() { clearTimeout(cubeT); }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCube); else buildCube();
+  // 🥚 EASTER EGG (Oct 17, Graham): tap the GLOWBOP box (when it isn't showing a picture with a link) and the console "self-destructs":
+  //   a red alarm and 3-2-1, a glitchy crash, a blackout... then "JUST KIDDING". Only the screen; the lights keep playing. Not advertised.
+  let eggAt = 0;
+  document.addEventListener('click', e => { const f = e.target.closest && e.target.closest('#hd .bars b.cube3'); if (!f) return;
+    const face = e.target.closest('.hdf'); if (face && face.onclick) return; if (Date.now() - eggAt < 20000) return; eggAt = Date.now(); egg(); });
+  function egg() {
+    const quiet = GB.store.get('gb_sfx', '1') !== '1'; let C = null;
+    const beep = (f, d, type, vol, slideTo) => { if (quiet) return; try { C = C || new (window.AudioContext || window.webkitAudioContext)(); const t = C.currentTime, o = C.createOscillator(), g = C.createGain();
+      o.type = type || 'square'; o.frequency.setValueAtTime(f, t); if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + d); g.gain.setValueAtTime(vol || .08, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+      o.connect(g); g.connect(C.destination); o.start(t); o.stop(t + d + .02); } catch (x) {} };
+    const ov = document.createElement('div'); ov.id = 'gbEgg'; ov.innerHTML = '<div class="eg-t">⚠️ SELF-DESTRUCT SEQUENCE ACTIVATED</div><div class="eg-n"></div><div class="eg-s">DO NOT PANIC</div>';
+    document.body.appendChild(ov); const n = ov.querySelector('.eg-n'), con = $('con');
+    const step = (txt, at, fn) => setTimeout(() => { if (txt != null) n.textContent = txt; fn && fn(); }, at);
+    step('3', 0, () => { beep(880, .35, 'square', .07, 660); con && con.classList.add('eg-shake'); });
+    step('2', 800, () => beep(880, .35, 'square', .08, 660));
+    step('1', 1600, () => { beep(880, .35, 'square', .09, 660); ov.classList.add('eg-hot'); });
+    step('', 2400, () => { ov.classList.add('eg-boom'); con && con.classList.add('eg-glitch'); beep(120, .9, 'sawtooth', .16, 30); beep(1800, .5, 'triangle', .05, 90); });
+    step(null, 3300, () => { ov.classList.add('eg-black'); con && con.classList.remove('eg-glitch', 'eg-shake'); ov.querySelector('.eg-t').textContent = 'REBOOTING…'; ov.querySelector('.eg-s').textContent = ''; });
+    step(null, 4300, () => { ov.classList.remove('eg-hot', 'eg-boom'); ov.classList.add('eg-joke'); ov.querySelector('.eg-t').textContent = 'JUST KIDDING 😎';
+      ov.querySelector('.eg-s').textContent = 'Your lights are still free.'; [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90)); });
+    step(null, 6300, () => { ov.classList.add('eg-out'); setTimeout(() => ov.remove(), 600); });
+  }
+  setTimeout(() => GB.css(`#gbEgg { position:fixed; inset:0; z-index:20000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; pointer-events:none;
+      background:radial-gradient(circle, rgba(255,0,40,.18), rgba(80,0,10,.55)); box-shadow:inset 0 0 0 6px #ff1a3d; animation:egAlarm .4s steps(2) infinite; font-family:var(--cond); color:#fff; text-align:center; }
+    #gbEgg .eg-t { font:800 clamp(18px, 4vw, 40px)/1.1 var(--cond); letter-spacing:4px; text-shadow:0 0 18px #ff1a3d; padding:0 16px; }
+    #gbEgg .eg-n { font:800 clamp(90px, 22vw, 260px)/1 var(--mono); color:#ff2a4d; text-shadow:0 0 40px #ff1a3d, 0 0 6px #fff; min-height:1em; }
+    #gbEgg .eg-s { font:700 clamp(13px, 2.2vw, 20px) var(--cond); letter-spacing:6px; opacity:.85; }
+    #gbEgg.eg-hot { animation-duration:.18s; } #gbEgg.eg-boom { background:#fff; animation:none; box-shadow:none; }
+    #gbEgg.eg-black { background:#000; animation:none; box-shadow:none; } #gbEgg.eg-black .eg-t { color:#33d6ff; text-shadow:0 0 14px #33d6ff; animation:egBlink .5s steps(2) infinite; }
+    #gbEgg.eg-joke { background:radial-gradient(circle, rgba(155,61,255,.35), rgba(0,0,0,.85)); } #gbEgg.eg-joke .eg-t { color:#fff; text-shadow:0 0 22px #ff3d9a, 0 0 40px #33d6ff; letter-spacing:5px; animation:none; }
+    #gbEgg.eg-out { opacity:0; transition:opacity .5s; }
+    @keyframes egAlarm { 50% { box-shadow:inset 0 0 0 6px transparent; background:radial-gradient(circle, rgba(255,0,40,.05), rgba(40,0,5,.4)); } }
+    @keyframes egBlink { 50% { opacity:.2; } }
+    #con.eg-shake { animation:egShake .12s linear infinite; } @keyframes egShake { 25% { transform:translate(2px, -1px); } 50% { transform:translate(-2px, 1px); } 75% { transform:translate(1px, 2px); } }
+    #con.eg-glitch { animation:egGlitch .09s steps(2) infinite; } @keyframes egGlitch { 0% { filter:hue-rotate(90deg) saturate(3); transform:skewX(4deg) translateX(-6px); } 100% { filter:invert(1); transform:skewX(-6deg) translateX(8px); } }
+    @media (prefers-reduced-motion: reduce) { #con.eg-shake, #con.eg-glitch, #gbEgg { animation:none !important; } }
+    #hd .bars b.cube3 { cursor:pointer; }`), 0);
   GB.css = text => { const st = document.createElement('style'); st.textContent = text; document.head.appendChild(st); };
   GB.lbl = (el, ic, text) => { el.innerHTML = (ic ? GB.svg(ic) : '') + '<span>' + GB.esc(text) + '</span>'; };
 
