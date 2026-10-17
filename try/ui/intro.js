@@ -113,12 +113,12 @@
     const tagline = () => {                                           // 🔓 (Oct 16, Graham) the console's first words: same promise as glowbop.com
       if (document.getElementById('gbTagline')) return;
       try { if (localStorage.getItem('gb_tagline_seen') === '1') return; localStorage.setItem('gb_tagline_seen', '1'); } catch (e) { return; }   // 🔓 only the very first time GlowBop opens (Graham, Oct 16)
-      const t = document.createElement('div'); t.id = 'gbTagline'; t.setAttribute('aria-hidden', 'true'); t.innerHTML = innerWidth < innerHeight ? 'SET YOUR<br>LIGHTS<br><b>FREE.</b>' : 'SET YOUR LIGHTS<br><b>FREE.</b>';
-      const c = document.createElement('style'); c.textContent = `#gbTagline{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:9998;pointer-events:none;font:800 min(11vw,17vh)/.92 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.08em;color:#fff;text-align:center;width:96vw;text-shadow:0 0 30px rgba(255,61,154,.7),0 4px 24px #000;animation:gbTagIn 3s ease forwards}
+      const t = document.createElement('div'); t.id = 'gbTagline'; t.setAttribute('aria-hidden', 'true'); t.innerHTML = innerWidth < innerHeight ? 'YOU\'VE SET<br>YOUR LIGHTS<br><b>FREE.</b>' : 'YOU\'VE SET YOUR LIGHTS<br><b>FREE.</b>';
+      const c = document.createElement('style'); c.textContent = `#gbTagline{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:9998;pointer-events:none;font:800 min(7vw,14vh)/.92 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.08em;color:#fff;text-align:center;width:96vw;text-shadow:0 0 30px rgba(255,61,154,.7),0 4px 24px #000;animation:gbTagIn 3s ease forwards}
         #gbTagline::before{content:'';position:fixed;left:50%;top:50%;width:160vmax;height:160vmax;transform:translate(-50%,-50%);z-index:-1;background:radial-gradient(circle,rgba(5,4,10,.9) 0,rgba(5,4,10,.75) 24%,rgba(5,4,10,0) 48%)}
         #gbTagline b{font-size:1.45em;display:inline-block;text-shadow:none;filter:drop-shadow(0 0 18px rgba(255,61,154,.75)) drop-shadow(0 2px 2px #000);background:linear-gradient(90deg,#ff3d9a,#9b3dff 55%,#33d6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
         @keyframes gbTagIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.85);letter-spacing:.02em}18%{opacity:1;transform:translate(-50%,-50%) scale(1);letter-spacing:.12em}72%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1.04)}}
-        @media (orientation:portrait){#gbTagline{font-size:min(19vw,11vh)}}
+        @media (orientation:portrait){#gbTagline{font-size:min(15vw,9vh)}}
         @media (prefers-reduced-motion:reduce){#gbTagline{animation:gbTagFade 2.4s ease forwards}@keyframes gbTagFade{0%,100%{opacity:0}20%,75%{opacity:1}}}`;
       document.head.appendChild(c); document.body.appendChild(t); setTimeout(() => { t.remove(); c.remove(); }, 3100);
     };
