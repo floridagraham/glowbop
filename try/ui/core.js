@@ -295,6 +295,26 @@
   const moveMode = () => { const mb = $('modeBar'), line = document.querySelector('#hd .line'), who = line && line.querySelector('.who');
     if (!mb || !line || mb.closest('#hd')) return; (who ? who.after(mb) : line.prepend(mb)); mb.classList.add('in-hd'); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', moveMode); else moveMode();
+  // 🧊 Oct 17 (Graham): the GLOWBOP label in the top bar is a 4-sided box that turns over every so often, one brand colour per side.
+  //   Later a side can carry an announcement: GB.hdCube.face(i, {text, bg, fg, onclick}) then GB.hdCube.show(i).
+  const CUBE = [{bg: 'var(--pink)', fg: '#000'}, {bg: 'var(--violet)', fg: '#fff'}, {bg: 'var(--cyan)', fg: '#000'}, {bg: 'var(--gold)', fg: '#000'}];
+  let cubeN = 0, cubeT = 0;
+  function buildCube() {
+    const b = document.querySelector('#hd .bars b'); if (!b || b.querySelector('.hdcube')) return;
+    const txt = b.textContent.trim() || 'GLOWBOP';
+    b.classList.add('cube3'); b.innerHTML = '<span class="hdsz">' + GB.esc(txt) + '</span><span class="hdcube">' +
+      CUBE.map((c, i) => `<span class="hdf" data-i="${i}" style="--fb:${c.bg};--ff:${c.fg};--n:${i}">${GB.esc(txt)}</span>`).join('') + '</span>';
+    const turn = () => { if (!document.hidden && !b.classList.contains('build') && !b.classList.contains('drop')) GB.hdCube.show(cubeN + (Math.random() < .2 ? 2 : 1)); cubeT = setTimeout(turn, 6000 + Math.random() * 6000); };
+    clearTimeout(cubeT); cubeT = setTimeout(turn, 5000);
+  }
+  GB.hdCube = {
+    show(n) { const c = document.querySelector('#hd .hdcube'); if (!c) return; cubeN = n; c.style.setProperty('--rx', (-90 * n) + 'deg'); },
+    face(i, o) { const f = document.querySelector('#hd .hdf[data-i="' + (i % 4) + '"]'); if (!f || !o) return;
+      if (o.text != null) f.textContent = o.text; if (o.bg) f.style.setProperty('--fb', o.bg); if (o.fg) f.style.setProperty('--ff', o.fg);
+      f.onclick = o.onclick || null; f.style.cursor = o.onclick ? 'pointer' : ''; },
+    stop() { clearTimeout(cubeT); }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCube); else buildCube();
   GB.css = text => { const st = document.createElement('style'); st.textContent = text; document.head.appendChild(st); };
   GB.lbl = (el, ic, text) => { el.innerHTML = (ic ? GB.svg(ic) : '') + '<span>' + GB.esc(text) + '</span>'; };
 
@@ -703,8 +723,7 @@
       { const nb = document.querySelector('#hd .bars b'), on = !!s.bpm && s.section && s.section !== 'silence' && (s.energy == null || s.energy > 0.05);   // ⚡ a show is running: energy pulse on the beat
         if (nb) { if (on) { const per = (60 / Math.max(60, Math.min(200, s.bpm))).toFixed(3) + 's'; if (nb.style.getPropertyValue('--beat') !== per) nb.style.setProperty('--beat', per);
             nb.style.setProperty('--e', Math.max(.25, Math.min(1, +s.energy || .5)).toFixed(2)); }
-          nb.classList.toggle('beat', on && !nb.classList.contains('build') && !nb.classList.contains('drop'));
-          nb.classList.toggle('core', s.power !== false);                                   // 🔋 lights powered on: the label glows like a power core
+          nb.classList.remove('beat', 'core');                                              // (Oct 17: the glow became the turning GLOWBOP cube)
           const fl = on ? Math.max(0.9, Math.min(2.4, 4 * 60 / Math.max(60, Math.min(200, s.bpm)))).toFixed(2) + 's' : '3.6s';   // energy rolls once per bar with music
           if (nb.style.getPropertyValue('--flow') !== fl) nb.style.setProperty('--flow', fl); } }
       const hol = s.holiday && cat && cat.holidays && cat.holidays[s.holiday];

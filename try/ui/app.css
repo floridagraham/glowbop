@@ -488,3 +488,15 @@ html body .dj-buildbox > #djBuild { min-height:64px; }
 
 /* 📉 Oct 17 (Graham): the Tempo / Section / Look / Effect strip only shows on MUSIC, DJ and PRO DJ */
 body:not([data-page=music]):not([data-page=dj]) #view .panel.reads-panel { display:none !important; }
+
+/* 🧊 Oct 17 (Graham): the GLOWBOP label is a 4-sided box that turns over every 6-12 s (pink, violet, cyan, gold). core.js builds it. */
+#hd .bars b.cube3 { background:transparent; position:relative; perspective:420px; overflow:visible; }
+#hd .bars b.cube3 .hdsz { visibility:hidden; }
+#hd .bars b.cube3 .hdcube { position:absolute; inset:0; transform-style:preserve-3d; transform-origin:50% 50% calc(var(--hh, 30px) / -2);
+  transform:rotateX(var(--rx, 0deg)); transition:transform 1s cubic-bezier(.45,-0.35,.25,1.4); }
+#hd .bars b.cube3 .hdf { position:absolute; inset:0; display:flex; align-items:center; justify-content:flex-end; padding:0 var(--hpad, 12px); background:var(--fb); color:var(--ff);
+  backface-visibility:hidden; -webkit-backface-visibility:hidden; transform-origin:50% 50% calc(var(--hh, 30px) / -2); transform:rotateX(calc(var(--n) * 90deg)); }
+#hd .bars b.cube3 { --hh:30px; --hpad:12px; } @media (min-width: 700px) { #hd .bars b.cube3 { --hh:34px; --hpad:16px; } }
+@media (max-width: 699px) { #hd .bars b.cube3 { --hh:24px; } } @media (max-height: 500px) and (orientation: landscape) { #hd .bars b.cube3 { --hh:18px; --hpad:10px; } }
+@media (prefers-reduced-motion: reduce) { #hd .bars b.cube3 .hdcube { transition:none; } }
+#hd .bars b.cube3.build, #hd .bars b.cube3.drop { background:transparent; }
