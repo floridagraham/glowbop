@@ -321,8 +321,8 @@
     };
     const sty = $('mdFSty');
     FIRE_STYLES.forEach(([k, em, name]) => {
-      const b = document.createElement('button'); b.className = 'tile'; b.dataset.fs = k;
-      b.innerHTML = `<span class="em">${em}</span><span>${esc(name)}</span>`;
+      const b = document.createElement('button'); b.className = 'tile'; b.dataset.fs = k; b.style.setProperty('--c', ({fireplace: 'var(--orange)', campfire: '#ff9a1a', bonfire: 'var(--gold)', candles: 'var(--lav)', torches: '#ffb31a', pixel: '#ff2a4d', spirit: 'var(--cyan)', lava: '#ff3d1a', dragon: 'var(--green)'})[k] || 'var(--orange)');
+      b.innerHTML = `<span class="em">${GB.funIcon('fire_' + k) || em}</span><span>${esc(name)}</span>`;
       b.onclick = async () => { if (await GB.fire({style: k, on: true})) { GB.toast(FIRE_MSG[k] || name); fireSet({style: k, on: true}); } };
       sty.appendChild(b);
     });

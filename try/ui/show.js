@@ -288,7 +288,7 @@
     Object.entries(PRESETS).forEach(([n, sc], i) => {
       const sp = n.indexOf(' '), em = n.slice(0, sp), label = n.slice(sp + 1);
       const b = document.createElement('button'); b.className = 'tile'; b.dataset.v = sc.name; b.style.setProperty('--c', TILEC[i % TILEC.length]);
-      b.innerHTML = `<span class="em" aria-hidden="true">${em}</span><span>${GB.esc(label)}</span>`;
+      b.innerHTML = `<span class="em" aria-hidden="true">${GB.funIcon('scn_' + label.toLowerCase().replace(/[^a-z]/g, '')) || em}</span><span>${GB.esc(label)}</span>`;
       b.onclick = async () => { if (await GB.post('/api/scene', sc)) GB.toast('▶ ' + n); };
       p.appendChild(b);
     });

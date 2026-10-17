@@ -128,12 +128,69 @@
       <path d="M24 24v14M16 40h16" stroke="#7ae6ff" stroke-width="2.4" stroke-linecap="round"/><path d="M36 8a8 8 0 0 1 0 10M40 5a13 13 0 0 1 0 16M12 8a8 8 0 0 0 0 10M8 5a13 13 0 0 0 0 16" stroke="#ffcc33" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
     sfx_crystal: `<path d="M12 6h24l9 12-21 26L3 18z" fill="#7ae6ff"/><path d="M12 6l6 12h12l6-12zM3 18h15l6 26zM45 18H30l-6 26z" fill="#33b8ff"/><path d="M18 18h12l-6 26z" fill="#c8f4ff"/><path d="M18 18l6-12 6 12z" fill="#e6fbff"/>
       ${star(40, 6, 3.4, 1.1, '#fff')}${star(6, 34, 2.4, .9, '#ff9ad0')}`,
+
+    // ---------------------------------------------------------------- 🔥 fireplace styles (SCENES → Fireplace)
+    fire_fireplace: `<path d="M4 44V12h40v32h-8V24a12 10 0 0 0-24 0v20z" fill="#b8432a"/><path d="M4 18h40M4 24h8M36 24h8M4 30h8M36 30h8M4 36h8M36 36h8M16 12v6M28 12v6M10 12v-0" stroke="#7a2416" stroke-width="1.4"/>
+      <rect x="2" y="8" width="44" height="5" rx="1.5" fill="#d9a066"/><path d="M24 22c4 5 9 8 9 14a9 9 0 0 1-18 0c0-4 2-6 3-8 .5 3 2 4 3 4-1-4 0-7 3-10z" fill="#ff7a1a"/>
+      <path d="M24 30c2 3 4 4 4 7a4 4 0 0 1-8 0c0-2 1-3 2-4 .3 1.5 1 2 1.5 2 0-2 0-3 .5-5z" fill="#ffe14d"/><rect x="14" y="41" width="20" height="3" rx="1.5" fill="#6b3a1e"/>`,
+    fire_campfire: `<path d="M6 42l36-8M6 34l36 8" stroke="#8a4a1e" stroke-width="4" stroke-linecap="round"/><path d="M24 6c5 7 12 11 12 21a12 12 0 0 1-24 0c0-6 3-9 5-11 0 4 2 6 4 6-2-6 0-11 3-16z" fill="#ff5a1a"/>
+      <path d="M24 17c3 5 7 7 7 12a7 7 0 0 1-14 0c0-3 2-5 3-7 .4 2.4 1.6 3.4 2.4 3.4-.6-3.4.2-6 1.6-8.4z" fill="#ffb31a"/><path d="M24 27c1.6 2.4 3 3.4 3 5.4a3 3 0 0 1-6 0c0-1.6.8-2.6 1.6-3.4.2 1.2.7 1.6 1 1.6 0-1.6 0-2.4.4-3.6z" fill="#fff1a0"/>
+      ${star(9, 9, 2.2, .8, '#fff')}${star(40, 6, 1.8, .7, '#fff')}`,
+    fire_bonfire: `${burst(24, 18, 14, 9, 17, ['#ffcc33', '#ff8a1a', '#ff3d1a', '#fff'], 2)}<path d="M24 20c3 5 7 8 7 13a7 7 0 0 1-14 0c0-3 1.6-5 2.6-6.4.4 2 1.4 3 2.2 3-.6-3.4.2-6.6 2.2-9.6z" fill="#ff7a1a"/>
+      <path d="M12 44l24-6M12 38l24 6" stroke="#8a4a1e" stroke-width="3.4" stroke-linecap="round"/>`,
+    fire_candles: `${[[11, 28, '#ffb3d9'], [24, 20, '#fff1d6'], [37, 30, '#cfa6ff']].map(([x, y, c]) => `<rect x="${x - 4}" y="${y}" width="8" height="${44 - y}" rx="2" fill="${c}"/><path d="M${x - 4} ${y + 3}h8" stroke="#ffffff88" stroke-width="1"/><path d="M${x} ${y}v-3" stroke="#3a2a1a" stroke-width="1.4"/>
+      <path d="M${x} ${y - 13}c3 3.5 3 7 0 9-3-2-3-5.5 0-9z" fill="#ffb31a"/><path d="M${x} ${y - 9}c1.4 1.8 1.4 3.4 0 4.2-1.4-.8-1.4-2.4 0-4.2z" fill="#fff6c0"/><circle cx="${x}" cy="${y - 7}" r="7" fill="#ffcc3322"/>`).join('')}`,
+    fire_torches: `${[12, 36].map(x => `<path d="M${x - 5} 22h10l-3 10h-4z" fill="#c9a24a"/><rect x="${x - 2}" y="31" width="4" height="13" rx="1.4" fill="#8a4a1e"/><path d="M${x - 7} 22h14" stroke="#7a5a1e" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M${x} 3c4 5 6 9 6 13a6 6 0 0 1-12 0c0-3 1.6-5 2.6-6 .3 2 1 3 1.8 3-.4-3 0-6 1.6-10z" fill="#ff6a1a"/><path d="M${x} 10c2 3 3 4.6 3 6.6a3 3 0 0 1-6 0c0-1.6.8-2.6 1.4-3.2.2 1 .6 1.4 1 1.4-.2-1.6.2-3.2.6-4.8z" fill="#ffe14d"/>`).join('')}
+      <path d="M2 44h44" stroke="#5a4a6a" stroke-width="2"/>`,
+    fire_pixel: px(['....r....', '...rr....', '...rrr.r.', '..rrorrr.', '.rroooorr', '.rooyyoor', 'rooyyyyor', 'roowwyyor', '.roywwyor', '..rrooorr.'], {r: '#ff2a2a', o: '#ff8a1a', y: '#ffd60a', w: '#fff6c0'}, 4.6, 3, 1),
+    fire_spirit: `<path d="M24 2c7 9 16 14 16 27a16 16 0 0 1-32 0c0-8 4-12 7-15 0 5 2 8 5 8-2-8 0-14 4-20z" fill="#33d6ff"/><path d="M24 14c4 6 10 9 10 16a10 10 0 0 1-20 0c0-4 2-7 4-9 .5 3 2 5 3 5-1-5 .5-8 3-12z" fill="#b8f4ff"/>
+      <ellipse cx="20" cy="31" rx="2.2" ry="3" fill="#123a5a"/><ellipse cx="28" cy="31" rx="2.2" ry="3" fill="#123a5a"/><ellipse cx="24" cy="38" rx="2.4" ry="1.8" fill="#123a5a"/>`,
+    fire_lava: `<path d="M2 44l13-20h18l13 20z" fill="#5a2a3a"/><path d="M15 24h18l-3 5-4-3-3 4-3-3-3 3z" fill="#ff3d1a"/><path d="M22 28c-1 6-4 10-8 16M26 28c1 6 3 10 7 16" stroke="#ff7a1a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <circle cx="24" cy="14" r="5" fill="#ff7a1a"/><circle cx="16" cy="8" r="3" fill="#ffb31a"/><circle cx="31" cy="6" r="3.4" fill="#ff3d1a"/><circle cx="24" cy="4" r="2" fill="#ffe14d"/>`,
+    fire_dragon: `<path d="M4 28c0-8 6-14 14-14 4 0 7 1 9 3l-3 2c-2-1-4-2-6-2-5 0-9 4-9 9 0 2 1 4 2 5H6c-1-1-2-2-2-3z" fill="#2bd96b"/><path d="M8 14l-2-7 6 5M14 12l1-7 3 7" fill="#2bd96b" stroke="#2bd96b" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M11 30c0-6 4-10 10-10l9 2-2 3 2 3-8 1c-3 0-5 2-6 5z" fill="#26c45f"/><circle cx="17" cy="23" r="1.8" fill="#ffe14d"/><path d="M14 33l-2 6 5-3 2 5 3-6" fill="#1a9c48"/>
+      <path d="M30 25c6-3 10-2 16-4-3 4-3 6-1 9-5-1-9 1-15-1z" fill="#ff7a1a"/><path d="M31 26c4-1 7-1 10-2-1 2-1 3 0 4-3 0-6 0-10-.4z" fill="#ffe14d"/>`,
+
+    // ---------------------------------------------------------------- 🎬 quick scenes (SCENES → Quick scenes), keyed by the scene name squashed to letters
+    scn_lavanight: `<path d="M17 4h14l-2 4H19z" fill="#c9a24a"/><path d="M19 8h10l7 26H12z" fill="#3a0f4a"/><path d="M12 34h24l-3 6H15z" fill="#c9a24a"/><path d="M15 40h18l2 5H13z" fill="#8a6a2a"/>
+      <path d="M22 12c3 0 4 2 4 4s-2 4-4 4-3-2-3-4 1-4 3-4z" fill="#ff7a1a"/><path d="M18 24c4-1 8 0 9 3s-2 5-6 5-6-2-5-4 0-3 2-4z" fill="#ff3d1a"/><circle cx="29" cy="21" r="2.4" fill="#ffb31a"/>
+      ${star(40, 8, 2.4, .9, '#fff')}<path d="M6 10a5 5 0 1 0 5 7 4 4 0 0 1-5-7z" fill="#ffe8b0"/>`,
+    scn_daycycle: `<defs><clipPath id="fiDay"><rect width="48" height="30"/></clipPath></defs><circle cx="24" cy="30" r="13" fill="#ffcc33" clip-path="url(#fiDay)"/>${burst(24, 30, 9, 16, 21, ['#ff8a1a', '#ffcc33'], 2.4).replace(/<circle[^>]*>/g, '')}
+      <path d="M2 31h44" stroke="#33d6ff" stroke-width="2.4" stroke-linecap="round"/><path d="M8 37h32M14 42h20" stroke="#33d6ff88" stroke-width="2" stroke-linecap="round"/>`,
+    scn_warpspeed: `${[[4, 12, 20, '#33d6ff'], [10, 20, 18, '#fff'], [2, 26, 24, '#b98cff'], [12, 33, 14, '#33d6ff'], [6, 39, 22, '#ff3d9a'], [16, 7, 12, '#fff']].map(([x, y, l, c]) => `<path d="M${x} ${y}h${l}" stroke="${c}" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>`).join('')}
+      <g transform="rotate(90 34 24)"><path d="M34 12c4 3 5 8 4.6 14h-9.2c-.4-6 .6-11 4.6-14z" fill="#e6ecff"/><circle cx="34" cy="19" r="2.2" fill="#33d6ff"/><path d="M29.4 22l-3.4 5v2.4l3.4-1.8zM38.6 22l3.4 5v2.4l-3.4-1.8z" fill="#ff3d9a"/><path d="M31 27h6l-3 7z" fill="#ffb31a"/></g>`,
+    scn_chillaurora: `<path d="M2 30C10 14 18 26 26 12s16-2 20-8v14c-6 4-12-4-20 8S10 24 2 38z" fill="#2bd96b55"/><path d="M2 30C10 14 18 26 26 12s16-2 20-8" stroke="#2bff9a" stroke-width="2.6" fill="none"/>
+      <path d="M2 36c8-10 16-2 24-12s14-4 20-8" stroke="#b98cff" stroke-width="2.2" fill="none"/>${star(8, 8, 2, .8, '#fff')}${star(20, 5, 1.6, .6, '#fff')}${star(38, 26, 1.6, .6, '#fff')}<path d="M2 44l10-6 8 4 10-7 8 5 8-4v8H2z" fill="#1c2a4a"/>`,
+    scn_blobparty: `<path d="M14 8c7-2 13 4 12 10s-6 8-11 7-9-4-9-9 3-7 8-8z" fill="#ff3d9a"/><path d="M32 18c6-1 11 3 10 9-1 5-5 7-10 6s-8-4-7-8 2-6 7-7z" fill="#33d6ff"/><path d="M16 30c5-1 9 2 9 6s-3 7-8 7-8-3-7-7 2-5 6-6z" fill="#ffcc33"/>
+      <circle cx="38" cy="8" r="3.4" fill="#b98cff"/><circle cx="36" cy="42" r="2.6" fill="#2bd96b"/><circle cx="12" cy="13" r="2" fill="#fff8"/><circle cx="29" cy="22" r="1.8" fill="#fff8"/>`,
+    scn_solosprite: `<path d="M3 34C10 22 18 40 26 28s14-14 19-10" stroke="url(#fiRb)" stroke-width="3" fill="none" stroke-linecap="round"/><defs><linearGradient id="fiRb"><stop offset="0" stop-color="#ff2a4d"/><stop offset=".33" stop-color="#ffcc33"/><stop offset=".66" stop-color="#2bd96b"/><stop offset="1" stop-color="#33d6ff"/></linearGradient></defs>
+      <circle cx="40" cy="15" r="5" fill="#fff"/><path d="M35 12c-4-6-9-6-11-3 3 1 6 3 9 6zM45 12c4-6 9-6 11-3" fill="#cfa6ff"/><path d="M36 13c-5-3-9-2-10 1 3 0 6 0 9 2z" fill="#b98cff"/>${star(14, 10, 3, 1.1, '#ffcc33')}${star(26, 40, 2.2, .8, '#ff9ad0')}`,
+    scn_matrix: `${[[6, '1010', 0], [16, '0110', 1], [26, '1101', 0], [36, '0011', 1]].map(([x, bits, o]) => [...bits].map((b, i) => `<rect x="${x}" y="${4 + i * 10 + o * 5}" width="6" height="${b === '1' ? 8 : 4}" rx="1.4" fill="${i === 3 - o ? '#c8ffd6' : '#2bff7a'}" opacity="${.45 + i * .18}"/>`).join('')).join('')}`,
+    scn_campfire: '',
+    scn_lsdtrip: `<path d="M8 22a16 13 0 0 1 32 0z" fill="#ff2a4d"/><circle cx="16" cy="15" r="3" fill="#fff"/><circle cx="27" cy="11" r="2.4" fill="#fff"/><circle cx="33" cy="18" r="2.2" fill="#fff"/>
+      <path d="M18 22h12l-1 18a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3z" fill="#ffe8c8"/><path d="M8 22h32" stroke="#b81a3a" stroke-width="1.4"/>
+      <path d="M2 34c4-4 6 4 10 0M36 8c4-4 6 4 10 0M36 40c4-4 6 4 10 0" stroke="#b98cff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M2 42c4-4 6 4 10 0" stroke="#2bd96b" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+    scn_stormsea: `<path d="M8 14a8 8 0 0 1 14-5 7 7 0 0 1 13 3 6 6 0 0 1 1 12H10a6 6 0 0 1-2-10z" fill="#8a90b8"/><path d="M22 24l-4 8h5l-3 8 9-11h-5l3-5z" fill="#ffe14d"/>
+      <path d="M2 38c4-4 8-4 11 0s8 4 11 0 8-4 11 0 8 4 11 0" stroke="#33d6ff" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M2 44c4-4 8-4 11 0s8 4 11 0 8-4 11 0 8 4 11 0" stroke="#1a66ff" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+    scn_deepspace: `<circle cx="22" cy="24" r="10" fill="#9b3dff"/><ellipse cx="22" cy="24" rx="19" ry="5" fill="none" stroke="#ffcc33" stroke-width="2.4" transform="rotate(-18 22 24)"/><path d="M14 18a10 10 0 0 1 12-3" stroke="#d9b8ff" stroke-width="2" fill="none" stroke-linecap="round"/>
+      ${star(40, 8, 2.6, 1, '#fff')}${star(6, 40, 2.2, .8, '#fff')}${star(42, 38, 1.6, .6, '#33d6ff')}<circle cx="8" cy="8" r="1.2" fill="#fff"/><circle cx="34" cy="44" r="1" fill="#fff"/>`,
+    scn_hypnotic: `<path d="M24 24m0-2a2 2 0 1 1-2 2 4 4 0 0 1 4-4 6 6 0 0 1 6 6 8 8 0 0 1-8 8 10 10 0 0 1-10-10 12 12 0 0 1 12-12 14 14 0 0 1 14 14 16 16 0 0 1-16 16 18 18 0 0 1-18-18" fill="none" stroke="url(#fiHy)" stroke-width="3" stroke-linecap="round"/>
+      <defs><linearGradient id="fiHy" x1="0" x2="1"><stop offset="0" stop-color="#33d6ff"/><stop offset=".5" stop-color="#9b3dff"/><stop offset="1" stop-color="#ff3d9a"/></linearGradient></defs>`,
+    scn_party: `<path d="M6 44l9-26 17 17z" fill="#ffcc33"/><path d="M9.5 34l3.2 3.2M12.2 26.4l9.4 9.4" stroke="#ff3d9a" stroke-width="2.6"/><path d="M8 40l2 2" stroke="#33d6ff" stroke-width="2.6"/>
+      <path d="M22 16c2-6 6-8 10-6M28 22c5-3 10-2 12 2M20 10c-2-4 0-7 3-8" stroke="#33d6ff" stroke-width="2" fill="none" stroke-linecap="round"/>
+      ${[[34, 6, '#ff3d9a'], [42, 14, '#2bd96b'], [40, 30, '#ffcc33'], [14, 8, '#b98cff'], [30, 40, '#33d6ff']].map(([x, y, c], i) => `<rect x="${x}" y="${y}" width="4" height="2.6" rx=".8" fill="${c}" transform="rotate(${i * 37} ${x} ${y})"/>`).join('')}${star(44, 4, 2, .8, '#fff')}`,
   };
   // each holiday's own colour, for tinting its key (so the keys aren't plain grey)
   GB.funTint = k => ({christmas: '#14c94a', halloween: '#ff7a00', july4: '#3d6bff', valentine: '#ff1a59', newyear: '#ffcc40', thanksgiving: '#ff8a1a', stpatricks: '#22c64a',
     birthday: '#ff3d9a', gameday: '#c8632a', lunarnewyear: '#ff1a1a', diwali: '#ff8a1a', eid: '#00b3a6', hanukkah: '#3d78ff', holi: '#ff1a99', dayofthedead: '#ff7a00',
     canadaday: '#ff1a1a', australiaday: '#00cc40', bastille: '#3d6bff', kingsday: '#ff8a1a', bonfire: '#ff3d1a', carnival: '#8c1ad9', mothersday: '#ff4d8c', easter: '#ff9ad0'})[k] || '';
+  I.scn_campfire = I.fire_campfire;
   GB.funIcon = k => I[k] ? `<svg class="fi" viewBox="0 0 48 48" aria-hidden="true">${I[k]}</svg>` : '';
-  GB.css(`.tile .em .fi, .md-hh .em .fi { width:1.45em; height:1.45em; display:block; overflow:visible; filter:drop-shadow(0 0 4px rgba(255,255,255,.25)) drop-shadow(0 0 10px color-mix(in srgb, var(--c, #ff3d9a) 45%, transparent)); }
+  GB.css(`/* Oct 17 (Graham): the SCENES keys (fireplace styles, flame colours, quick scenes) glow in their own colour instead of plain grey */
+    .sh-tiles .tile:not(.on), .md-stiles .tile:not(.on), .md-ftiles .tile:not(.on) { background:linear-gradient(150deg, color-mix(in srgb, var(--c, #ff3d9a) 34%, #120d1e) 0%, color-mix(in srgb, var(--c, #ff3d9a) 12%, #0d0a16) 70%);
+      box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--c, #ff3d9a) 50%, transparent); color:#fff; text-shadow:0 1px 3px #000a; }
+    .sh-tiles .tile:not(.on):hover, .md-stiles .tile:not(.on):hover, .md-ftiles .tile:not(.on):hover { filter:brightness(1.15); }
+    .tile .em .fi, .md-hh .em .fi { width:1.45em; height:1.45em; display:block; overflow:visible; filter:drop-shadow(0 0 4px rgba(255,255,255,.25)) drop-shadow(0 0 10px color-mix(in srgb, var(--c, #ff3d9a) 45%, transparent)); }
     .tile.on .em .fi { filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px var(--c, #ff3d9a)); }`);
 })();
