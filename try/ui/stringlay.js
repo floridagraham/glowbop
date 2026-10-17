@@ -245,7 +245,16 @@
     $('slSave').classList.toggle('pulse', !!dirty[sel]);
     $('slR').textContent = $('slR2').textContent = d.lay ? (dirty[sel] ? 'NOT SAVED' : 'LAID OUT') : (dirty[sel] ? 'NOT SAVED' : 'A PLAIN LINE');
   }
-  function change() { dirty[sel] = true; view = view || null; draw(); }
+  function change() { dirty[sel] = true; view = view || null; commit(); draw(); }
+  // ↶↷ undo / redo (Oct 17, Graham): every drag, bend, fold, flip and move is one step
+  let HIST = [], FUT = [], LAST = null;
+  const stateNow = () => JSON.stringify({LAY, MOVE});
+  function commit() { const cur = stateNow(); if (LAST !== null && cur !== LAST) { HIST.push(LAST); if (HIST.length > 80) HIST.shift(); FUT = []; } LAST = cur; paintUR(); }
+  function restore(st) { const o = JSON.parse(st); LAY = o.LAY || {}; MOVE = o.MOVE || {}; LAST = st;
+    Object.keys(LAY).forEach(id => dirty[id] = true); Object.keys(MOVE).forEach(id => dirty[id] = true); draw(); paintUR(); }
+  function undo() { if (!HIST.length) return GB.toast('Nothing to undo'); FUT.push(LAST); restore(HIST.pop()); GB.toast('↶ Undone'); }
+  function redo() { if (!FUT.length) return GB.toast('Nothing to redo'); HIST.push(LAST); restore(FUT.pop()); GB.toast('↷ Redone'); }
+  function paintUR() { const u = $('slUndo'), r = $('slRedo'); if (u) u.disabled = !HIST.length; if (r) r.disabled = !FUT.length; }
 
   // ---------------- dragging handles
   function toWorld(e) { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const m = svg.getScreenCTM(); if (!m) return [0, 0]; const q = pt.matrixTransform(m.inverse()); return [q.x, q.y]; }
@@ -293,6 +302,7 @@
   }
   function onUp() {
     const tap = drag && drag.pan && !drag.moved ? drag.at : null;
+    if (drag && !drag.pan) commit();
     if (drag) { drag = null; $('slHint').textContent = ''; svg.style.cursor = ''; }
     if (tap) tapAt(tap);                                                 // a plain click (no drag): pick what's under it, or clear the highlight
   }
@@ -378,6 +388,7 @@
     strings().forEach(d => { if (!dirty[d.id]) LAY[d.id] = fromSaved(d) || fresh(d, d.n >= 200 ? 2 : 1); });
     Object.keys(MOVE).forEach(id => { if (!dirty[id]) delete MOVE[id]; });
     if (!keepView) view = null;
+    LAST = stateNow(); paintUR();
     paintTop(); draw();
   }
   async function placeCurtain(d, extra) {          // ▦ save where a curtain hangs (its top-left), plus a turn / mirror
@@ -412,7 +423,7 @@
       <div class="sl-stage" id="slStage"><svg id="slSvg" aria-label="Your lights, laid out"></svg></div>
       <div class="sl-hint" id="slHint"></div>
       <button class="btn c wide sl-go" id="slBig" style="--c:var(--cyan)">✏️ Customize full screen</button>
-      <div class="sl-side"><div id="slCurt" hidden>
+      <div class="sl-side"><div class="sl-row" id="slUR"><b>Steps</b><div class="seg"><button class="btn" id="slUndo" disabled>↶ Undo</button><button class="btn" id="slRedo" disabled>↷ Redo</button></div></div><div id="slCurt" hidden>
         <p class="note">Drag the curtain to where it hangs. Turn or mirror it if its lights run another way.</p>
         <div class="sl-tools"><button class="btn" id="slRot">↻ Turn 90°</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
       </div><div id="slTools">
@@ -492,6 +503,10 @@
     el.querySelector('#slUnpin').onclick = () => { const lay = LAY[sel]; if (!lay) return; delete lay.parts[strand].pins; GB.toast('↺ Every bulb back on its line'); change(); };
     el.querySelector('#slFlip').onclick = () => { const lay = LAY[sel]; if (!lay) return; lay.parts[strand].rev = !lay.parts[strand].rev; GB.toast('⇄ START and END swapped'); change(); };
     el.querySelector('#slReset').onclick = () => { const d = dev(sel); if (!d) return; LAY[sel] = fresh(d, (LAY[sel] && LAY[sel].parts.length) || 1); strand = 0; view = null; change(); };
+    el.querySelector('#slUndo').onclick = undo; el.querySelector('#slRedo').onclick = redo;
+    window.addEventListener('keydown', e => {                       // ⌨️ Ctrl/⌘+Z undo, Ctrl/⌘+Shift+Z or Ctrl+Y redo (LIGHTS page only, not while typing)
+      if (GB.page !== 'lights' || !(e.ctrlKey || e.metaKey) || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName))) return;
+      const k = e.key.toLowerCase(); if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); } else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); } });
     el.querySelector('#slSave').onclick = save; el.querySelector('#slSaveC').onclick = save;
     el.querySelector('#slRot').onclick = () => turn('rot'); el.querySelector('#slMir').onclick = () => turn('flip');
     const full = on => { el.classList.toggle('sl-full', on); document.body.classList.toggle('sl-open', on); view = null; setTimeout(draw, 30);
