@@ -369,3 +369,66 @@ html.door-dj .pt-buy { background:linear-gradient(160deg, #ffd0ea, #ff3d9a 45%, 
 
 /* Oct 16 night: the deep tabs in the warm & cool rail get white words */
 /* (Graham: black words on every tab; the deep ones were lifted a shade so black reads well) */
+
+/* ================================================================ 📱 iPhone compact (Oct 16 night, Graham: "all of it, as tight as it can go")
+   Upright phones (under 700 wide) and sideways phones (under 500 tall). Less padding, smaller gaps, shorter keys.
+   The big action keys (HOLD TO BUILD, TAP, COOL DOWN, COLOR LOCK) stay the biggest thing on the page. */
+@media (max-width: 699px), (max-height: 500px) and (orientation: landscape) {
+  :root { --gap:7px; }
+  html body #main { padding:5px 5px 14px; }
+  html body .panel { gap:7px; }
+  html body .panel.box { padding:8px 9px 9px; border-left-width:7px; border-radius:0 14px 0 14px; }
+  html body .ph { font-size:calc(12px * var(--fs, 1)); letter-spacing:1.5px; }
+  html body .note { font-size:calc(12.5px * var(--fs, 1)); line-height:1.35; }
+  html body .btn { min-height:40px; padding:0 12px; }
+  html body .btn.sm { min-height:34px; padding:0 10px; }
+  html body .btn.lg { min-height:46px; }
+  html body .pads { gap:5px; } html body .pads .btn { min-height:44px; padding:0 12px; }
+  html body .seg { gap:3px; }
+  html body .chips { gap:5px; } html body .chip { min-height:36px; padding:0 11px; }
+  html body .tiles { gap:5px; } html body .tile { min-height:62px; padding:6px 5px; }
+  html body .tile .em { font-size:calc(24px * var(--fs, 1)); }
+  html body .reads { gap:4px 10px; }
+  html body .read .v { font-size:calc(32px * var(--fs, 1)); }
+  html body .levels { gap:8px; }
+  html body #djBuild { min-height:78px; }
+  html body #djTap { min-height:64px; }
+  html body #djCool, html body #djColor { min-height:58px; }
+  html body .dj-pads .tile { min-height:48px !important; }
+  html body .dj-skip .btn { min-height:48px; }
+  html body #layFab { min-height:36px; padding:0 12px; font-size:calc(13px * var(--fs, 1)); bottom:calc(44px + env(safe-area-inset-bottom)); }
+  #ft { height:36px; } #ft .bars { gap:3px; min-width:0; } #ft .bars > * { height:16px; font-size:calc(10px * var(--fs, 1)); letter-spacing:1px; padding:0 6px; min-width:0; white-space:nowrap; overflow:hidden; flex-shrink:1; }
+  #ft .bars > i { display:none; }
+  html body #main.lay .lay-it { margin:3px; }
+}
+/* upright phone: a slimmer header */
+@media (max-width: 699px) {
+  #hd { height:76px; }
+  #hd .elbow { border-top-left-radius:38px; }
+  #hd .elbow img { width:44px; height:44px; }
+  #hd .bars { height:24px; } #hd .bars b { font-size:calc(18px * var(--fs, 1)); letter-spacing:2.5px; }
+  #rail { --rk:clamp(44px, calc((100dvh - 200px) / 14.5), 54px); gap:3px; }
+  #rail button { font-size:calc(12.5px * min(var(--fs, 1), 1.08)); padding:0 5px 6px 0; letter-spacing:.5px; }
+}
+/* sideways phone: short header, narrow rail, so the page gets the screen */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root { --railw:86px; }
+  #hd { height:56px; }
+  #hd .elbow { border-top-left-radius:28px; padding:0 4px 4px 0; }
+  #hd .elbow img { width:36px; height:36px; }
+  #hd .bars { height:18px; } #hd .bars b { font-size:calc(15px * var(--fs, 1)); letter-spacing:2.5px; padding:0 10px; }
+  #hd .line { gap:6px; } #hd .line .who .k { font-size:calc(10.5px * var(--fs, 1)); } #hd .line .who .v { font-size:calc(11.5px * var(--fs, 1)); }
+  #hd .line .btn { min-height:32px; padding:0 10px; font-size:calc(13px * var(--fs, 1)); }
+  #rail { --rk:44px; gap:3px; padding-top:3px; }
+  #rail button { font-size:calc(13px * min(var(--fs, 1), 1.08)); padding:0 7px 6px 0; }
+  #rail button[data-p=music] { flex-basis:calc(var(--rk) * 1.2); }
+  #rail .rail-sep { flex-basis:14px; font-size:9px; letter-spacing:1.5px; padding-right:7px; }
+  #rail .rail-sep[data-g=pro] { flex-basis:16px; font-size:10px; }
+  #main { padding:5px 8px 14px; }
+}
+
+/* ⬇️ Oct 17 (Graham): the rail stops above the bottom bar, so the bar's rounded corner never sits over SETUP / ARRANGE */
+#rail { padding-bottom:46px; }
+@media (max-width: 699px), (max-height: 500px) and (orientation: landscape) { #rail { padding-bottom:36px; } }
+#rail #railArr { opacity:1; }
+@media (max-width: 699px) { #rail #railArr > .ic, #rail #railArr > svg { display:none; } }

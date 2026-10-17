@@ -26,6 +26,14 @@
   .sh-segrow > span { font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:2px; color:var(--c, var(--label)); text-transform:uppercase; display:flex; align-items:center; gap:6px; }
   .sh-segrow > span svg { width:16px; height:16px; fill:currentColor; flex:0 0 auto; }
   .sh-segrow .seg > .btn { --c:inherit; }
+  /* 🎨 Color mood (Oct 17): six bright keys, each painted in its own colours */
+  .sh-mood { display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px; }
+  .sh-mood .btn { min-height:46px; padding:2px 4px; border-radius:12px; background:var(--g); color:#fff; font-size:calc(15px * var(--fs, 1)); letter-spacing:1px;
+    text-shadow:0 1px 3px #000, 0 0 2px #000; flex-direction:column; gap:2px; line-height:1; white-space:nowrap; }
+  .sh-mood .btn small { font:600 calc(10.5px * var(--fs, 1)) var(--cond); letter-spacing:.5px; opacity:.85; text-transform:none; }
+  .sh-mood .btn.on { box-shadow:0 0 0 3px #fff inset, 0 0 18px color-mix(in srgb, var(--k) 80%, transparent); transform:scale(1.03); }
+  .sh-mood .btn.on::after { content:'✓'; position:absolute; top:3px; right:7px; font-size:12px; }
+  .sh-mood .btn { position:relative; }
   .lv > span svg { width:16px; height:16px; fill:currentColor; flex:0 0 auto; }
   .sh-effs { height:320px; border:1px solid var(--line); border-radius:12px; padding:0 6px; background:#06050c; }
   .sh-effs .item { width:100%; appearance:none; border:0; border-bottom:1px solid var(--line); background:transparent; color:var(--text); text-align:left; font:inherit; cursor:pointer; }
@@ -74,7 +82,18 @@
         <button class="btn" id="shShuffle" style="--c:var(--lav)"></button>
         <button class="btn" id="shChars" style="--c:var(--orange)"></button>
         <button class="btn c" id="shSurprise" style="--c:var(--peri)"></button>
-      </div>`;
+      </div>
+      <div class="sh-segrow" style="--c:var(--pink)"><span>🎨 Color mood</span><div class="sh-mood" id="shMood"></div></div>`;
+    const MOODS = [['auto', 'Auto', 'each look', 'linear-gradient(135deg,#33d6ff,#ff3d9a 50%,#ffcc66)', '#33d6ff'],
+      ['warm', 'Warm', 'reds & golds', 'linear-gradient(135deg,#ff2e0a,#ff8000 45%,#ffc72e)', '#ff8000'],
+      ['cool', 'Cool', 'blues & teals', 'linear-gradient(135deg,#008cff,#00f2e6 50%,#6b33ff)', '#00c8ff'],
+      ['party', 'Party', 'neon', 'linear-gradient(135deg,#ff0099,#9900ff 35%,#00e6ff 70%,#59ff00)', '#ff0099'],
+      ['rainbow', 'Rainbow', 'every color', 'linear-gradient(90deg,#ff0000,#ff8c00,#ffff00,#00ff1a,#0099ff,#8000ff)', '#ffff00'],
+      ['holiday', holidayNow()[0], holidayNow()[1], holidayNow()[2], '#ff6b00']];
+    $('shMood').innerHTML = MOODS.map(([k, n, sub, g, kc]) => `<button class="btn" data-mood="${k}" style="--g:${g};--k:${kc}">${n}<small>${sub}</small></button>`).join('');
+    $('shMood').querySelectorAll('[data-mood]').forEach(x => x.onclick = async () => {
+      if (await GB.control({mood: x.dataset.mood})) { markSeg('[data-mood]', 'mood', x.dataset.mood);
+        GB.toast(x.dataset.mood === 'auto' ? '🎨 Colors: each look picks its own' : '🎨 ' + x.firstChild.textContent + ' colors on every effect'); } });
     const pads = $('shPads'), pb = pinButton(); pb.id = 'shPin'; pads.appendChild(pb);
     GB.lbl($('shPower'), 'power', 'Power on');
     GB.lbl($('shSkip'), 'next', 'Next effect');
@@ -131,6 +150,17 @@
         GB.toast({chill: '🌙 Chill: effects stay ~16 bars, long blends', normal: '🎵 Normal: ~8 bars per effect', hype: '🔥 Hype: changes every ~4 bars'}[x.dataset.pace]);
         markSeg('[data-pace]', 'pace', x.dataset.pace); } });
   });
+  // 🎨 the Holiday mood key follows the calendar (the engine uses the same dates)
+  function holidayNow() {
+    const d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate();
+    const T = [[101, 102, '🎆 New Year', 'linear-gradient(135deg,#ffcc40,#d9e0ff 50%,#3359ff)'], [201, 215, '💘 Valentine', 'linear-gradient(135deg,#ff1a59,#ff73a6 55%,#ffd9e6)'],
+      [310, 318, '☘️ St. Paddy', 'linear-gradient(135deg,#00d940,#73ff4d 55%,#ffcc33)'], [319, 425, '🐣 Spring', 'linear-gradient(135deg,#ffb3d9,#99e6ff 50%,#ffff8c)'],
+      [620, 706, '🇺🇸 July 4th', 'linear-gradient(135deg,#ff0d1a,#ffffff 50%,#0d40ff)'], [1001, 1101, '🎃 Halloween', 'linear-gradient(135deg,#ff6b00,#8c00e6 55%,#66ff1a)'],
+      [1102, 1130, '🦃 Thanksgiving', 'linear-gradient(135deg,#ff800d,#991a0d 55%,#ffbf33)'], [1201, 1226, '🎄 Christmas', 'linear-gradient(135deg,#ff000d,#00cc33 55%,#ffffff)'],
+      [1227, 1231, '🎆 New Year', 'linear-gradient(135deg,#ffcc40,#d9e0ff 50%,#3359ff)']];
+    const h = T.find(([a, b]) => md >= a && md <= b);
+    return h ? [h[2].replace(/^\S+\s/, ''), h[2].split(' ')[0] + ' holiday', h[3]] : ['Holiday', '🎉 party mix', 'linear-gradient(135deg,#ff0099,#ffcc33 50%,#00e6ff)'];
+  }
   function markSeg(sel, key, v) {
     document.querySelectorAll(sel).forEach(x => { const on = x.dataset[key] === v; x.classList.toggle('on', on); });
   }
@@ -355,6 +385,7 @@
       markSeg('[data-sp]', 'sp', s.sparkles || 'auto');
       markSeg('[data-pace]', 'pace', s.pace || 'normal');
     }
+    if ($('shMood')) markSeg('[data-mood]', 'mood', s.mood || 'auto');
     // looks, effects, scenes
     if ($('shLookNow')) $('shLookNow').textContent = s.look ? ((s.pinned ? '📌 ' : '') + s.look) : '';
     syncSel();

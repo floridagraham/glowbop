@@ -1595,6 +1595,24 @@
   const HEX = []; for (let i = 0; i < 256; i++) HEX.push(i.toString(16).padStart(2, '0'));
   // a mode with its own picture and pace owns the wall: faders' looks, Song Show cues and loop spans stay out of the way (like the engine)
   const takeover = () => !S.power || FD.s.mode !== 'off' || !!SB.s.on || !!(FIRE && FIRE.on) || !!S.holiday || !!S.scene;
+  // 🎨 COLOR MOOD, same colours as the app engine (looks.py MOOD_COLS / SEASON_COLS). The demo plays recordings, so it repaints
+  // each pixel: its brightness stays, its hue picks a spot along the mood's colours.
+  const MOOD_COLS = {warm: [[1, .18, .04], [1, .5, 0], [1, .78, .18], [1, .12, .35], [1, .62, .35]], cool: [[0, .55, 1], [0, .95, .9], [.42, .2, 1], [.15, 1, .6], [.7, .85, 1]],
+    party: [[1, 0, .6], [0, .9, 1], [.6, 0, 1], [.35, 1, 0], [1, 1, 0]], rainbow: [[1, 0, 0], [1, .55, 0], [1, 1, 0], [0, 1, .1], [0, .6, 1], [.5, 0, 1], [1, 0, .7]]};
+  const SEASON = [[101, 102, [[1, .8, .25], [.85, .88, 1], [1, 1, 1], [.2, .35, 1]]], [201, 215, [[1, .1, .35], [1, .45, .65], [1, .85, .9], [.85, 0, .2]]],
+    [310, 318, [[0, .85, .25], [.45, 1, .3], [1, .8, .2], [1, 1, 1]]], [319, 425, [[1, .7, .85], [.6, .9, 1], [1, 1, .55], [.7, 1, .7], [.8, .65, 1]]],
+    [620, 706, [[1, .05, .1], [1, 1, 1], [.05, .25, 1]]], [1001, 1101, [[1, .42, 0], [.55, 0, .9], [.4, 1, .1], [1, .75, .1]]],
+    [1102, 1130, [[1, .5, .05], [.6, .1, .05], [1, .75, .2], [.75, .3, .05]]], [1201, 1226, [[1, 0, .05], [0, .8, .2], [1, 1, 1], [1, .75, .15]]],
+    [1227, 1231, [[1, .8, .25], [.85, .88, 1], [1, 1, 1], [.2, .35, 1]]]];
+  function moodCols() { if (!S.mood || S.mood === 'auto') return null; if (MOOD_COLS[S.mood]) return MOOD_COLS[S.mood];
+    const d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate(), h = SEASON.find(([a, b]) => md >= a && md <= b); return h ? h[2] : MOOD_COLS.party; }
+  function moodPost(buf) {
+    const C = moodCols(); if (!C) return; const n = C.length;
+    for (let i = 0; i < buf.length; i += 3) { const r = buf[i], g = buf[i + 1], b = buf[i + 2], mx = Math.max(r, g, b); if (mx < 6) continue;
+      const mn = Math.min(r, g, b), dd = mx - mn; let h = 0;
+      if (dd > 0) { h = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h = ((h / 6) % 1 + 1) % 1; }
+      const x = h * n, k = Math.floor(x) % n, f = x - Math.floor(x), A = C[k], B = C[(k + 1) % n], wht = dd < 30 ? 1 - dd / 30 : 0;   // near-white stays white
+      for (let c = 0; c < 3; c++) { const v = (A[c] * (1 - f) + B[c] * f) * mx; buf[i + c] = v * (1 - wht) + mx * wht; } } }
   function paint() {
     const t = now(), dt = Math.min(.25, t - lastT); lastT = t; clock();
     const busy = takeover();
@@ -1628,6 +1646,7 @@
     for (let i = 0; i < N; i++) { if (want && R() < want) spk[i] = 1; if (spk[i] > .02) { const v = spk[i] * 255; buf[i * 3] = Math.max(buf[i * 3], v); buf[i * 3 + 1] = Math.max(buf[i * 3 + 1], v); buf[i * 3 + 2] = Math.max(buf[i * 3 + 2], v); spk[i] *= Math.pow(.004, vdt); } else spk[i] = 0; }
     if (S.power) djApply(buf, t, vdt);
     if (ck > 0) coolPost(buf, ck); else coolPrev = null;
+    moodPost(buf);                                                  // 🎨 Color mood (Show control): every effect in the mood's colours
     colorPost(buf, dt);                                             // 🎨 the whole wall in the picked colours
                                      // 🌙 softer, dimmer, light trails
     if (!busy) { cueText(buf, SH.act, t); cueText(buf, LP.act, t); if (SH.act.blackout || LP.act.blackout) buf.fill(0); }
@@ -1709,7 +1728,7 @@
       brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, pro: PRO, scoreboard: !!SB.s.on, fireplace: fp,
       feeds: {mode: fd.mode, title: fd.mode !== 'off' ? fd.feeds[fd.mode].title : '', watching: w, alert: FD.alert ? FD.alert.event : '', flash: '', full_moon: false}, dj: djInfo(),
       shuffle: S.shuffle, characters: S.characters, held_look: S.held, pinned: S.pinned, calm: si.name === 'break' ? .6 : .2, grand: si.name === 'drop' ? .8 : .3,
-      level: Math.round(lvl * 100) / 100, sparkles: S.sparkles, pace: S.pace, scene: sc, text: TX.s.show,
+      level: Math.round(lvl * 100) / 100, sparkles: S.sparkles, pace: S.pace, mood: S.mood || 'auto', scene: sc, text: TX.s.show,
       groups: [{id: 'g1', name: 'Main', w: W, h: H, lights: 2, look: S.look, effect: src.label || S.effect, power: S.power, text: TX.s.show}],
       analysis: {key: 'A minor', mood: si.name === 'drop' ? 'euphoric' : 'groovy', known: 1, drops: 3, downbeat: true}, listening: 'Demo speakers', delay: S.delay, delay_auto: false,
       time: new Date().toTimeString().slice(0, 8)};
@@ -1756,6 +1775,7 @@
     if ('blend' in b) S.blend = +b.blend || 1;
     if ('sparkles' in b) S.sparkles = b.sparkles;
     if ('pace' in b) S.pace = b.pace;
+    if (MOOD_COLS[b.mood] || b.mood === 'auto' || b.mood === 'holiday') S.mood = b.mood;   // 🎨 Show control > Color mood
     if ('shuffle' in b) S.shuffle = !!b.shuffle;
     if ('characters' in b) S.characters = !!b.characters;
     if ('transition' in b) S.transition = b.transition;

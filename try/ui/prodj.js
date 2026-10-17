@@ -91,6 +91,7 @@
   #main.lay .lay-it[data-lk="v:wall"] .wallbox { flex:1 1 auto; min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:6px; }
   #main.lay .lay-it[data-lk="v:wall"] .seg { flex:none; }
   html.gb-arr #main.lay .lay-it { outline:2px dashed #4de8c899; outline-offset:-2px; }
+  html.gb-arr #main.lay .lay-it > *:not(.lay-hand):not(.lay-grip) { opacity:.55; transition:opacity .2s; }   /* arranging: the page dims a little (colours stay), the move handles stay bright (Graham, Oct 16 night) */
   .lay-hand { position:absolute; inset:0; z-index:30; cursor:grab; background:#4de8c80d; touch-action:none; display:flex; align-items:flex-start; justify-content:center; }
   .lay-hand span { margin-top:6px; background:#000c; color:#4de8c8; border:1px solid #4de8c8; border-radius:999px; padding:3px 12px; font:700 12px var(--cond); letter-spacing:2px; text-transform:uppercase; pointer-events:none; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .lay-hand.drag { cursor:grabbing; background:#4de8c826; }
@@ -103,9 +104,10 @@
   #layBar small { color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
   #layBar .btn { min-height:40px; padding:0 14px; }
   @media (max-width:820px) { #layBar small { display:none; } }
+  @media (max-width:520px) { #layBar { gap:5px; padding:5px; } #layBar b { display:none; } #layBar .btn { min-height:36px; padding:0 11px; font-size:calc(13px * var(--fs, 1)); } }   /* iPhone: all four keys fit */
   #layFab { position:fixed; right:calc(14px + env(safe-area-inset-right)); bottom:calc(58px + env(safe-area-inset-bottom)); z-index:300; display:none; min-height:44px; padding:0 16px;
     border-radius:999px; background:#05080dDD; border:2px solid #4de8c8; color:#4de8c8; font:800 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:2px; box-shadow:0 6px 24px #000a; cursor:pointer; }
-  #layFab.show { display:inline-flex; align-items:center; gap:6px; }
+  #layFab.show { display:none; }   /* retired: ARRANGE is a key in the bottom bar now */
   html.gb-arr #layFab { display:none; }
   `);
 
@@ -351,11 +353,17 @@
 
   // ================================================================ ✏️ arrange: an invisible fine grid
   let arranging = false;
-  const bucket = () => (innerWidth >= 1000 && innerWidth >= innerHeight) ? 'wide' : 'tall';
+  // 📐 one saved layout per screen shape (Oct 16 night, Graham): laptop, iPad sideways, iPad upright, iPhone sideways, iPhone upright
+  const bucket = () => { const w = innerWidth, h = innerHeight;
+    if (w < 700) return 'phone';                                   // iPhone upright
+    if (h <= 500 && w > h) return 'side';                          // iPhone sideways
+    if (w >= 1000 && w >= h) return matchMedia('(hover: none) and (pointer: coarse)').matches ? 'pad' : 'wide';   // iPad sideways : laptop / GlowBop window
+    return 'tall'; };                                              // iPad upright
+  const BASE = {pad: 'wide', side: 'tall'};                         // a new screen shape starts as a copy of its nearest cousin (iPad sideways = your laptop layout)
   // ✏️ Every page can be arranged, by everyone (Oct 16, Graham). Pro pages only once they're unlocked.
   const pageKey = () => { const p = GB.page; if (!p) return null; if (p === 'dj') return isOn() ? 'prodj' : 'dj';
     if (p === 'home') return GB.pro === true ? 'prohome' : null; if (PRO_PAGES.includes(p) && GB.pro !== true) return null; return p; };
-  const canArrange = () => innerWidth >= 700 && !!pageKey() && !window.__demoWall;   // the website demo stays a plain console (no Arrange)
+  const canArrange = () => !!pageKey() && !window.__demoWall;   // every screen, iPhone too (Oct 16 night)   // the website demo stays a plain console (no Arrange)
   const store = k => 'gb_lay3:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
   function items() {
     const pg = $('pg-' + GB.page); if (!pg) return [];
@@ -394,7 +402,9 @@
     if (changed && !arranging) layout();
   }
   GB.layPut = put;
-  const load = k => { try { return JSON.parse(S.get(store(k)) || 'null'); } catch (e) { return null; } };
+  const load = k => { let v = S.get(store(k)); const b = BASE[bucket()];
+    if (!v && b) { const bk = 'gb_lay3:' + k + ':' + b, bv = S.get(bk); if (bv) { v = bv; put(store(k), bv); put(store(k) + ':auto', S.get(bk + ':auto') || ''); } }   // first visit on this shape: copy the cousin
+    try { return JSON.parse(v || 'null'); } catch (e) { return null; } };
   const save = (k, L) => put(store(k), JSON.stringify(L));
   function clearLay() {
     const m = $('main'); m.classList.remove('lay');
@@ -406,10 +416,10 @@
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
     if (k && L && !arranging && S.get(store(k) + ':auto') === '1' && items().some(el => !L[el.dataset.lk])) return compact(true);   // an untouched template + new boxes: rebuild it
-    if (k && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); const D = DEFAULTS[k + ':' + bucket()];   // every page starts on its tidy template
+    if (k && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); const D = DEFAULTS[k + ':' + bucket()] || DEFAULTS[k + ':' + BASE[bucket()]];   // every page starts on its tidy template
       if (D && items().every(el => D[el.dataset.lk])) { save(k, JSON.parse(JSON.stringify(D))); put(store(k) + ':auto', '2'); return layout(); }   // Graham's own arrangement ships as the default
       return compact(true); }
-    $('layFab') && $('layFab').classList.toggle('show', !!k);
+    $('layFab') && $('layFab').classList.toggle('show', !!k); $('railArr') && ($('railArr').hidden = !k);
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
     const list = items(); const LL = L || measure(list);
     // the Pro keys box (new) starts right under the wall; any other new box goes underneath everything
@@ -461,10 +471,11 @@
     });
   }
   function arrange(on) {
-    if (on && !canArrange()) { GB.toast(innerWidth < 700 ? 'Arrange works on tablets and computers' : 'Unlock Pro to arrange this page'); return; }
+    if (on && !canArrange()) { GB.toast('Unlock Pro to arrange this page'); return; }
     arranging = on; document.documentElement.classList.toggle('gb-arr', on);
     if (on) { layout(); if (cur && !load(cur.key)) save(cur.key, cur.L); handles(); GB.sfx && GB.sfx('tap'); }
-    else { document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove()); layout(); GB.toast && GB.toast('✅ Layout saved'); }
+    else { document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove()); layout(); GB.toast && GB.toast('✅ Layout saved');
+      if (cur && GB.stat) GB.stat('layout_saved', {layout_page: cur.key, layout_shape: bucket(), boxes: cur.L, box_count: Object.keys(cur.L).length}); }   // 📊 how people arrange their screens
   }
   // ⚡ COMPACT: a ready-made tight layout. Columns of boxes, each sized to its own content, packed with no gaps.
   function compact(silent) {
@@ -472,9 +483,10 @@
     if (!silent && !arranging) arrange(true);
     clearLay(); $('main').classList.add('lay');
     const list = items(), id = sel => { const n = document.querySelector('#main ' + sel); const it = n && n.closest('[data-lk]'); return it ? it.dataset.lk : null; };
-    const W = bucket() === 'wide', T = TPL[k] || {}, top3 = ['v:wall', 'v:keys', 'v:mode', 'v:reads'];
+    const B = bucket(), W = B === 'wide' || B === 'pad', T = TPL[k] || {}, top3 = ['v:wall', 'v:keys', 'v:mode', 'v:reads'];
     const pick = a => a.map(x => typeof x === 'string' && (x[0] === '#' || x[0] === '.') ? id(x) : x);
-    const cols = (W ? (T.wide || [[0, 17, top3], [17, 15, []], [32, 16, []]]) : (T.tall || [[0, 24, top3], [24, 24, []]])).map(([x, w, ids]) => [x, w, pick(ids)]);
+    let cols = (W ? (T.wide || [[0, 17, top3], [17, 15, []], [32, 16, []]]) : (T.tall || [[0, 24, top3], [24, 24, []]])).map(([x, w, ids]) => [x, w, pick(ids)]);
+    if (B === 'phone') cols = [[0, COLS, [].concat(...cols.map(c => c[2]))]];   // iPhone upright: one column, the same order
     const full = pick(T.full || []);                 // boxes that need the whole width (wide keyboards, big grids): a band underneath
     const L = {}, byId = {}; list.forEach(el => byId[el.dataset.lk] = el);
     const widthOf = {}; cols.forEach(([x, w, ids]) => ids.forEach(i => { if (i) widthOf[i] = [x, w]; })); full.forEach(i => { if (i) widthOf[i] = [0, COLS]; });
@@ -484,7 +496,8 @@
     list.forEach(el => { const xw = widthOf[el.dataset.lk] || [0, 24]; el.classList.add('lay-it'); el.style.gridColumn = (xw[0] + 1) + ' / span ' + xw[1]; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
     const kb = $('proKeysBox'); if (kb) kb.classList.toggle('narrow', kb.clientWidth < 520);
     void document.body.offsetHeight;                // let the narrow key layout settle before measuring
-    const H = {}; list.forEach(el => H[el.dataset.lk] = Math.max(6, Math.ceil((el.offsetHeight + 26) / ROW)));
+    const pad = bucket() === 'phone' || bucket() === 'side' ? 10 : 26;   // phones: boxes hug their content
+    const H = {}; list.forEach(el => H[el.dataset.lk] = Math.max(6, Math.ceil((el.offsetHeight + pad) / ROW)));
     // the Live wall starts at the size where your lights fill it edge to edge (then shrink it however you like)
     const wEl = byId['v:wall'], wb = $('wallBox');
     if (wEl && wb && GB.wallIdeal) { const fixed = wEl.offsetHeight - wb.offsetHeight; H['v:wall'] = Math.max(10, Math.ceil((fixed + GB.wallIdeal(Math.max(120, wb.clientWidth - 20)) + 26 + 26) / ROW)); }
@@ -495,7 +508,7 @@
     free.forEach(i => { let c = 0; lane.forEach((y, j) => { if (y < lane[c] - 2) c = j; }); const [x, w] = cols[c]; L[i] = {x, y: lane[c], w, h: H[i]}; lane[c] += H[i]; if (w !== midW || x !== cols[cols.length - 1][0]) moved.push(i); });
     if (moved.length) { moved.forEach(i => { const p = L[i], el = byId[i]; el.style.gridColumn = (p.x + 1) + ' / span ' + p.w; el.style.gridRow = 'auto / span 1'; el.style.alignSelf = 'start'; el.style.overflow = 'visible'; });
       void document.body.offsetHeight; const lane2 = cols.map(() => 0);   // re-measure at their real width and restack each column
-      moved.forEach(i => H[i] = Math.max(6, Math.ceil((byId[i].offsetHeight + 26) / ROW)));
+      moved.forEach(i => H[i] = Math.max(6, Math.ceil((byId[i].offsetHeight + pad) / ROW)));
       moved.forEach(i => { byId[i].style.alignSelf = ''; byId[i].style.overflow = ''; });
       cols.forEach(([x], c) => { Object.keys(L).filter(i => L[i].x === x).sort((a, b) => L[a].y - L[b].y).forEach(i => { L[i].y = lane2[c]; L[i].h = H[i]; lane2[c] += H[i]; }); });
       lane.splice(0, lane.length, ...lane2); }
@@ -503,7 +516,7 @@
     save(k, L); put(store(k) + ':auto', silent ? '1' : ''); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
     if (!silent) GB.toast && GB.toast('⚡ Compact layout. Drag anything to fine-tune');
   }
-  function reset() { const k = pageKey(); if (!k) return; put(store(k), ''); put(store(k) + ':auto', ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the tidy template'); }
+  function reset() { const k = pageKey(); if (!k) return; GB.stat && GB.stat('layout_reset', {layout_page: k, layout_shape: bucket()}); put(store(k), ''); put(store(k) + ':auto', ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the tidy template'); }
 
   function chrome() {
     const bar = document.createElement('div'); bar.id = 'layBar';
@@ -512,6 +525,12 @@
     bar.querySelector('#layDone').onclick = () => arrange(false); bar.querySelector('#layReset').onclick = reset; bar.querySelector('#layCompact').onclick = compact;
     const fab = document.createElement('button'); fab.id = 'layFab'; fab.type = 'button'; fab.innerHTML = '✏️ ARRANGE'; fab.onclick = () => arrange(true);
     document.body.appendChild(fab);
+    // ✏️ Oct 16 night (Graham): you arrange a page once, so ARRANGE waits in the bottom bar instead of floating over everything
+    // ✏️ Oct 17 (Graham): ARRANGE is a key on the left rail, right under SETUP, where people will actually find it
+    const fk = document.createElement('button'); fk.id = 'railArr'; fk.type = 'button'; fk.hidden = true; fk.style.setProperty('--c', '#4de8c8');
+    fk.innerHTML = '<span class="rl">ARRANGE</span>' + GB.svg('edit'); fk.setAttribute('aria-label', 'Arrange this page');
+    fk.onclick = () => { arrange(true); scrollTo({top: 0, behavior: 'smooth'}); };
+    const rail = $('rail'), tail = rail && rail.querySelector('.tail'); if (rail) rail.insertBefore(fk, tail || null);
   }
 
   // ================================================================ wiring
