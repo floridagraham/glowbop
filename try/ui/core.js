@@ -454,14 +454,18 @@
       while (fallen < keys.length * e) { const n = keys[fallen++]; n.style.setProperty('--egr', (Math.random() * 60 - 30) + 'deg'); n.classList.add('eg-fall'); }
       while (dark < dots.length * e) { const n = dots[dark++]; n.dataset.off = '1'; n.setAttribute('fill', '#221d33'); }
       if (k < 1) requestAnimationFrame(tick); else done(); };
-    const NEED = 2;                                                     // Oct 17 (Graham): always 2 taps let taps = 0, held = null, revealed = false;
+    // Oct 17 (Graham): always 2 taps
+    const NEED = 2; let taps = 0, held = null, revealed = false;
     const reveal = () => { if (revealed) return; revealed = true; clearTimeout(held); ov.removeEventListener('pointerdown', tap); ov.classList.remove('eg-hold');
       tt.textContent = 'GOTCHA! 😎'; fl.textContent = 'Just kidding! ' + V.joke; pct.textContent = 'A little joke from the GlowBop team. We truly love our members 💜'; ov.classList.remove('eg-dead'); ov.classList.add('eg-joke');
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => beep(f, .25, 'triangle', .07), i * 90));
       dots.forEach((n, i) => setTimeout(() => { delete n.dataset.off; n.setAttribute('fill', n.dataset.c); }, i * 30));
       keys.forEach((n, i) => setTimeout(() => n.classList.remove('eg-fall'), i * 40)); boxes.forEach((n, i) => setTimeout(() => n.classList.remove('eg-gone'), 200 + i * 60));
       setTimeout(() => { ov.classList.add('eg-out'); setTimeout(() => { ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); }); boxes.forEach(n => n.classList.remove('eg-gone')); }, 600); }, 4600); };
-    const tap = ev => { ev.preventDefault(); ev.stopPropagation(); taps++;
+    // 👆 every tap / click on the dead screen sends out a glowing pulse from the finger or mouse, so it's clear the screen still hears you
+    const ripple = (x, y) => { for (let i = 0; i < 2; i++) { const r = document.createElement('i'); r.className = 'eg-rip'; r.style.left = x + 'px'; r.style.top = y + 'px';
+      r.style.animationDelay = (i * 120) + 'ms'; ov.appendChild(r); setTimeout(() => r.remove(), 900 + i * 120); } };
+    const tap = ev => { ev.preventDefault(); ev.stopPropagation(); taps++; ripple(ev.clientX, ev.clientY);
       const card = ov.querySelector('.eg-card'); card.classList.remove('eg-shake'); void card.offsetWidth; card.classList.add('eg-shake');
       beep(120 + Math.random() * 60, .18, 'sawtooth', .1, 60);
       if (taps >= NEED) return setTimeout(reveal, 700);
@@ -471,6 +475,9 @@
       setTimeout(() => { if (!revealed) ov.addEventListener('pointerdown', tap); }, 400);
       held = setTimeout(reveal, 40000); };
     beep(660, .12, 'square', .06); requestAnimationFrame(tick);
+    // 🛟 safety net: whatever happens, after a minute the prank tidies itself away and the screen works again
+    setTimeout(() => { if (!ov.isConnected) return; ov.remove(); keys.forEach(n => { n.classList.remove('eg-fall'); n.style.removeProperty('--egr'); });
+      boxes.forEach(n => n.classList.remove('eg-gone')); dots.forEach(n => { delete n.dataset.off; n.setAttribute('fill', n.dataset.c); }); }, 60000);
   }
   setTimeout(() => GB.css(`#gbEgg { --ea:#ff2a4d; --eb:#ff8a3d; position:fixed; inset:0; z-index:20000; display:flex; align-items:center; justify-content:center; pointer-events:none; background:rgba(0,0,0,.25); transition:background .4s; }
     #gbEgg .eg-card { background:#0b0712f0; border:2px solid var(--ea); border-radius:16px; padding:18px 22px; width:min(92vw, 520px); box-shadow:0 0 50px -6px var(--ea); font-family:var(--cond); color:#fff; text-align:center; }
@@ -480,6 +487,8 @@
     #gbEgg .eg-p { font:700 calc(15px * var(--fs, 1)) var(--mono); margin-top:6px; color:var(--eb); min-height:1.2em; }
     #gbEgg.eg-dead { background:rgba(0,0,0,.92); } #gbEgg.eg-dead .eg-bar { opacity:.3; }
     #gbEgg.eg-hold { pointer-events:auto; cursor:not-allowed; touch-action:none; }
+    #gbEgg .eg-rip { position:absolute; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; border:3px solid var(--eb); box-shadow:0 0 14px var(--ea), inset 0 0 10px var(--ea);
+      pointer-events:none; animation:egRip .8s cubic-bezier(.2,.7,.3,1) both; } @keyframes egRip { from { transform:scale(.4); opacity:1; } to { transform:scale(6); opacity:0; } }
     #gbEgg .eg-card.eg-shake { animation:egShake .35s; } @keyframes egShake { 0%,100% { transform:none; } 20% { transform:translate(-9px,2px) rotate(-1deg); } 40% { transform:translate(8px,-2px) rotate(1deg); } 60% { transform:translate(-6px,1px); } 80% { transform:translate(4px,0); } }
     /* 🌈 rainbow: the border, title and bar cycle through every color, then drain to beige when it "melts" */
     #gbEgg.eg-rainbow .eg-card { border-image:linear-gradient(90deg, #ff2a4d, #ffcc33, #2bd96b, #33d6ff, #9b3dff, #ff3d9a) 1; border-radius:0; animation:egHue 1.2s linear infinite; }
