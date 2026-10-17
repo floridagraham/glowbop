@@ -110,7 +110,17 @@
     };
     let fin = false;
     const nextF = cb => setTimeout(() => cb(performance.now()), 16);   // timer-driven frames: keep going even when Safari throttles animation frames
+    const tagline = () => {                                           // 🔓 (Oct 16, Graham) the console's first words: same promise as glowbop.com
+      if (document.getElementById('gbTagline')) return;
+      const t = document.createElement('div'); t.id = 'gbTagline'; t.setAttribute('aria-hidden', 'true'); t.innerHTML = 'SET YOUR LIGHTS <b>FREE.</b>';
+      const c = document.createElement('style'); c.textContent = `#gbTagline{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:9998;pointer-events:none;font:800 clamp(30px,7vw,72px)/1 'Saira Condensed','Arial Narrow',sans-serif;letter-spacing:.12em;color:#fff;white-space:nowrap;text-shadow:0 0 30px rgba(255,61,154,.7),0 4px 24px #000;animation:gbTagIn 2.6s ease forwards}
+        #gbTagline b{background:linear-gradient(90deg,#ff3d9a,#9b3dff 55%,#33d6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+        @keyframes gbTagIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.85);letter-spacing:.02em}18%{opacity:1;transform:translate(-50%,-50%) scale(1);letter-spacing:.12em}72%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1.04)}}
+        @media (prefers-reduced-motion:reduce){#gbTagline{animation:gbTagFade 2.4s ease forwards}@keyframes gbTagFade{0%,100%{opacity:0}20%,75%{opacity:1}}}`;
+      document.head.appendChild(c); document.body.appendChild(t); setTimeout(() => { t.remove(); c.remove(); }, 2700);
+    };
     const ignite = () => {                                            // ⚡ the corner logo lights up, pixels pour out of it and the colour floods in behind them
+      setTimeout(tagline, 350);
       H.classList.add('gbi-charge'); H.classList.remove('gbi-dim');
       const lg = document.getElementById('gbLogo');
       if (lg) { lg.classList.remove('gbi-ignite'); void lg.offsetWidth; lg.classList.add('gbi-ignite'); }

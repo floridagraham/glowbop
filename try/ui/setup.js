@@ -150,7 +150,7 @@
     $('suAddGo').onclick = async () => {
       const ip = $('suIp').value.trim(); if (!ip) return GB.toast('Type the light\'s IP address');
       GB.toast('Checking ' + ip + '…');
-      if (await GB.post('/api/lights/add', {type: $('suBrand').value, ip})) { lsDirty = true; GB.toast('💡 Added'); $('suIp').value = ''; loadLights(); }
+      if (await GB.post('/api/lights/add', {type: $('suBrand').value, ip})) { lsDirty = true; GB.toast('💡 Added'); $('suIp').value = ''; loadLights(); GB.freed && GB.freed(''); }
     };
     $('suIp').addEventListener('keydown', e => { if (e.key === 'Enter') $('suAddGo').click(); });
     $('suSyncGo').onclick = e => { e.preventDefault(); GB.go('music', 'shDelay'); };
@@ -446,12 +446,12 @@
     $('suScan').disabled = true;
     const r = await GB.post('/api/lights/scan', {}); $('suScan').disabled = false;
     if (!r) { box.innerHTML = ''; return; }
-    box.innerHTML = r.found.length ? '<div class="sub">Found nearby</div>' : '<p class="note">No lights found. For Govee, turn on LAN Control in the Govee app first. You can also Add by brand with the IP.</p>';
+    box.innerHTML = r.found.length ? '<div class="sub">🔓 Found your lights · tap one to set it free</div>' : '<p class="note">No lights found. For Govee, turn on LAN Control in the Govee app first. You can also Add by brand with the IP.</p>';
     r.found.forEach(f => {
       const row = document.createElement('div'); row.className = 'item';
       row.innerHTML = `<span class="su-dot" style="background:#555;color:transparent"></span><div class="su-tx"><b>${esc(f.name)}</b>${tier(f.type)}<small>${esc(BRAND[f.type] || f.type)} · ${esc(f.ip)}${f.n ? ' · ' + f.n + ' lights' : ''}${f.model ? ' · ' + esc(f.model) : ''}</small></div>`;
       const b = btn('c sm', f.added ? 'Added' : lbl('add', 'Add')); b.style.setProperty('--c', 'var(--cyan)'); b.style.flex = '0 0 auto'; b.disabled = !!f.added;
-      b.onclick = async () => { if (await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name, style: f.style, model: f.model})) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; GB.toast('💡 Added ' + f.name); loadLights(); } };
+      b.onclick = async () => { if (await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name, style: f.style, model: f.model})) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; GB.toast('💡 Added ' + f.name); loadLights(); GB.freed && GB.freed(f.name); } };
       row.appendChild(b); box.appendChild(row);
     });
   }
@@ -676,4 +676,42 @@
       if (await GB.post('/api/quit', {})) { GB.toast('👋 GlowBop stopped'); setTimeout(() => { try { window.close(); } catch (e) {} }, 1200); }
     };
   });
+})();
+
+/* 🔓 "You've set your lights free!" (Oct 16, Graham): the first time GlowBop finds someone's lights, a celebration card shows them
+   everything they control now. Once per computer/browser (gb_freed); later scans just get a short toast. */
+(function () {
+  GB.css(`#gbFreed{position:fixed;inset:0;z-index:990;display:flex;align-items:center;justify-content:center;padding:18px;background:#05040acc;backdrop-filter:blur(6px);animation:gbFrIn .35s ease}
+    @keyframes gbFrIn{from{opacity:0}}
+    #gbFreed .card{width:min(560px,100%);max-height:88vh;overflow:auto;background:linear-gradient(160deg,#1b0f2a,#0b0f1d);border:2px solid #ff3d9a;border-radius:0 28px 0 28px;padding:22px 22px 20px;box-shadow:0 0 60px -10px #ff3d9a,0 30px 80px #000c;text-align:left}
+    #gbFreed .k{font:800 calc(13px * var(--fs, 1)) var(--cond);letter-spacing:3px;color:#ffd21a}
+    #gbFreed h2{margin:6px 0 4px;font:800 calc(40px * var(--fs, 1))/1 var(--cond);letter-spacing:1px;text-transform:uppercase;color:#fff}
+    #gbFreed h2 b{background:linear-gradient(90deg,#ff3d9a,#9b3dff 55%,#33d6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+    #gbFreed p.lead{margin:0 0 14px;color:var(--text,#eee);font-size:calc(16px * var(--fs, 1))}
+    #gbFreed ul{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:8px}
+    #gbFreed li{display:flex;gap:10px;align-items:flex-start;background:#ffffff0d;border-radius:12px;padding:9px 12px;font-size:calc(15px * var(--fs, 1));color:var(--text,#eee)}
+    #gbFreed li i{font-style:normal;font-size:calc(20px * var(--fs, 1));line-height:1.1}
+    #gbFreed li b{color:#fff}
+    #gbFreed .row{display:flex;gap:10px;flex-wrap:wrap}
+    #gbFreed .btn{flex:1 1 160px;min-height:52px;font-size:calc(17px * var(--fs, 1));letter-spacing:2px}`);
+  GB.freed = n => {
+    let first = false; try { first = localStorage.getItem('gb_freed') !== '1'; localStorage.setItem('gb_freed', '1'); } catch (e) {}
+    GB.sfx && GB.sfx('ok');
+    if (!first) { return; }
+    if (GB.proSound) GB.proSound(true);
+    const el = document.createElement('div'); el.id = 'gbFreed'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+    el.innerHTML = `<div class="card"><span class="k">🎉 ${n ? GB.esc(String(n)).toUpperCase() + ' IS CONNECTED' : 'YOUR LIGHTS ARE CONNECTED'}</span>
+      <h2>You've set your lights <b>free!</b></h2>
+      <p class="lead">No more stuck with the app in the box. <b>You</b> are in control now:</p>
+      <ul><li><i>🎵</i><span><b>You</b> play any song, and your lights hear every beat, build-up and drop.</span></li>
+        <li><i>🎛️</i><span><b>You're</b> the DJ: hold to build, let go to drop, hit the pads.</span></li>
+        <li><i>📱</i><span><b>You</b> run the whole show from your phone or iPad, anywhere in the house.</span></li>
+        <li><i>🎃</i><span><b>You</b> pick the vibe: holidays, games, your team's score, fire, your own words.</span></li></ul>
+      <div class="row"><button class="btn c" id="gbFrGo" style="--c:#ff3d9a">🎵 Start the show</button><button class="btn" id="gbFrStay">Keep setting up</button></div></div>`;
+    document.body.appendChild(el);
+    const close = () => el.remove();
+    el.querySelector('#gbFrGo').onclick = () => { close(); GB.go('music'); };
+    el.querySelector('#gbFrStay').onclick = close;
+    el.addEventListener('click', e => { if (e.target === el) close(); });
+  };
 })();

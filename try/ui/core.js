@@ -465,9 +465,9 @@
         <div class="pt-tx"><b>${GB.esc(f.name)}</b><small>in ${GB.esc(f.tab)}</small><p>${GB.esc(firstLine(f.pitch))}</p></div>
         <div class="pt-prev" aria-hidden="true">${PREVIEW[f.prev]()}</div></div>`).join('');
   });
-  const DOOR = {dj: {t: 'GlowBop Pro DJ', r: 'FOR EVENTS', h: 'Play your lights like an instrument', c: '#ff3d9a',
+  const DOOR = {dj: {t: 'GlowBop Pro DJ', r: 'MORE CONTROL · FOR EVENTS', h: 'Play your lights like an instrument', c: '#ff3d9a',
       p: 'Everything you have now stays. Pro DJ turns the console into a lighting desk for parties, DJ sets and events: the PRO DJ page plus SHOWS, LOOPS+CUES, LIVE BOARD and OVERRIDE.'},
-    home: {t: 'GlowBop Pro Home', r: 'FOR THE HOUSE', h: 'Run the whole house', c: '#ffb23d',
+    home: {t: 'GlowBop Pro Home', r: 'MORE CONTROL · FOR THE HOUSE', h: 'Run the whole house', c: '#ffb23d',
       p: 'Everything you have now stays. Pro Home runs every light set you hang: one-tap house scenes, sunset and bedtime schedules, zones and the holiday calendar, on the PRO HOME page.'}};
   GB.proDoor = 'dj';                                // which Pro door you came through (PRO DJ or PRO HOME tab)
   function paintDoor() {
