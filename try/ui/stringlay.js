@@ -18,7 +18,7 @@
   .sl-stage { position:relative; height:min(64vh, 640px); min-height:280px; border-radius:0 14px 0 14px; background:#06050c; border:1px solid var(--line); overflow:hidden; touch-action:none; }
   .sl-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; user-select:none; -webkit-user-select:none; }
   .sl-stage .h { cursor:grab; }
-  .sl-zoom .btn { min-width:52px; }
+  .sl-zoom .btn { min-width:52px; min-height:36px !important; }
   .sl-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
   .sl-row > b { font:700 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; color:var(--dim); min-width:74px; }
   .sl-row .btn, .sl-row .chip { min-height:44px; }
@@ -197,7 +197,7 @@
         const pins = lay.parts[k].pins || {}, big = BULB && act ? Math.max(r, 0.3) : r;
         const off = partCounts(d, lay).slice(0, k).reduce((a, b) => a + b, 0);
         h += `<g class="lv" data-d="${esc(d.id)}" data-o="${off}" opacity="${on ? (act ? 1 : 0.85) : 0.7}">${pts.map(([x, y], i) => `<circle cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r="${i === 0 ? Math.max(big * 1.8, 0.3) : big}" fill="${col}"${pins[i] ? ` stroke="#fff" stroke-width="0.08"` : ''}/>`).join('')}</g>`;
-        if (on && !BULB) {
+        if (on && !BULB && (act || lay.parts.length <= 4)) {      // many drops / strands: only the one you're laying shows its handles
           const pp = lay.parts[k].pts;
           h += `<polyline points="${(lay.parts[k].smooth && !(lay.parts[k].fold && lay.parts[k].fold.rows > 1) ? smoothPath(pp) : pp).map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="${HR * 0.1}" stroke-dasharray="${HR * 0.35} ${HR * 0.2}" opacity="${act ? 0.85 : 0.35}"/>`;
           pp.forEach((p, i) => {
@@ -218,7 +218,7 @@
     const ss = strings(), cc = curtains();
     if (!ss.length && !cc.length) { box.innerHTML = '<p class="note">Add your lights above, then lay them out here.</p>'; return; }
     if (sel && !ST.devices.some(d => d.id === sel)) sel = '';
-    box.innerHTML = ss.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${SCOL[i % SCOL.length]}">🧵 ${esc(d.name)} · ${d.n}</button>`).join('')
+    box.innerHTML = ss.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${SCOL[i % SCOL.length]}">${d.curtain ? '〰️' : '🧵'} ${esc(d.name)} · ${d.n}</button>`).join('')
       + cc.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${CCOL[i % CCOL.length]}">▦ ${esc(d.name)}</button>`).join('');
     box.querySelectorAll('[data-sl]').forEach(b => b.onclick = () => { sel = b.dataset.sl; strand = 0; paintTop(); draw(); });
   }
@@ -227,12 +227,14 @@
     const d = dev(sel), lay = d && LAY[sel], box = $('slTools'), cb = $('slCurt'); if (!box) return;
     const isC = !!(d && d.kind === 'grid'); cb.hidden = !isC;
     if (!d) { box.hidden = true; $('slR').textContent = $('slR2').textContent = ''; $('slHint').textContent = $('slHint').textContent || 'Click a curtain or a string to edit it'; return; }
-    if (isC) { box.hidden = true; $('slR').textContent = $('slR2').textContent = Object.keys(MOVE).length ? 'NOT SAVED' : 'CURTAIN'; return; }
+    if (isC) { $('slDrops').textContent = GB.pro === false ? '🔒 Bend its drops · PRO' : '〰️ Bend its drops'; box.hidden = true; $('slR').textContent = $('slR2').textContent = Object.keys(MOVE).length ? 'NOT SAVED' : 'CURTAIN'; return; }
     if (!d || !lay) { box.hidden = true; return; } box.hidden = false;
     if (strand >= lay.parts.length) strand = 0;
     const p = lay.parts[strand], cs = partCounts(d, lay), fr = p.fold ? p.fold.rows : 1;
+    const isCur = lay.kind === 'curtain'; $('slStraight').style.display = isCur ? '' : 'none'; $('slReset').style.display = isCur ? 'none' : '';
+    $('slStrands').closest('.sl-row').style.display = isCur ? 'none' : ''; $('slFold').closest('.sl-row').style.display = isCur ? 'none' : '';
     $('slStrands').innerHTML = [1, 2, 3, 4].map(k => `<button class="btn${lay.parts.length === k ? ' on' : ''}" data-ns="${k}">${k}</button>`).join('');
-    $('slWhich').innerHTML = lay.parts.length > 1 ? lay.parts.map((q, k) => `<button class="chip${k === strand ? ' on' : ''}" data-st="${k}" style="--c:${SCOL[k % SCOL.length]}">Strand ${k + 1} · ${cs[k]}</button>`).join('') : '';
+    $('slWhich').innerHTML = lay.parts.length > 1 ? lay.parts.map((q, k) => `<button class="chip${k === strand ? ' on' : ''}" data-st="${k}" style="--c:${SCOL[k % SCOL.length]}">${isCur ? 'Drop' : 'Strand'} ${k + 1}${isCur ? '' : ' · ' + cs[k]}</button>`).join('') : '';
     $('slWhichRow').style.display = lay.parts.length < 2 ? 'none' : '';
     $('slFold').innerHTML = [[1, 'Line'], [2, '2 rows'], [3, '3 rows'], [4, '4 rows'], [6, '6 rows'], [8, '8 rows']].map(([k, t]) => `<button class="btn${fr === k ? ' on' : ''}" data-fr="${k}">${t}</button>`).join('');
     $('slModeRow').style.display = fr < 2 ? 'none' : '';
@@ -435,7 +437,7 @@
       <button class="btn c wide sl-go" id="slBig" style="--c:var(--cyan)">✏️ Customize full screen</button>
       <div class="sl-side"><div id="slBeep" hidden><button class="btn c wide" id="slBeepGo" style="--c:var(--amber)">🔔 My lights are beeping</button><p class="note" id="slBeepNote" style="margin:4px 0 0"></p></div><div class="sl-row" id="slUR"><b>Steps</b><div class="seg"><button class="btn" id="slUndo" disabled>↶ Undo</button><button class="btn" id="slRedo" disabled>↷ Redo</button></div></div><div id="slCurt" hidden>
         <p class="note">Drag the curtain to where it hangs. Turn or mirror it if its lights run another way.</p>
-        <div class="sl-tools"><button class="btn" id="slRot">↻ Turn 90°</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
+        <div class="sl-tools"><button class="btn" id="slRot">↻ Turn 90°</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn" id="slDrops">〰️ Bend its drops</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
       </div><div id="slTools">
         <div class="sl-row"><b>Strands</b><div class="seg" id="slStrands"></div></div>
         <div class="sl-row" id="slWhichRow"><b>Laying</b><div class="sl-row" id="slWhich"></div></div>
@@ -448,6 +450,7 @@
           <button class="btn" id="slUnpin">↺ Reset bulbs</button>
           <button class="btn" id="slFlip">⇄ Flip direction</button>
           <button class="btn" id="slReset">↺ Start over</button>
+          <button class="btn" id="slStraight">▦ Straight curtain again</button>
           <button class="btn c" id="slSave" style="--c:var(--green)">💾 Save</button>
         </div>
       </div>
@@ -519,6 +522,19 @@
       if (GB.page !== 'lights' || !(e.ctrlKey || e.metaKey) || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName))) return;
       const k = e.key.toLowerCase(); if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); } else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); } });
     el.querySelector('#slSave').onclick = save; el.querySelector('#slSaveC').onclick = save;
+    el.querySelector('#slDrops').onclick = () => {                 // 〰️ a curtain is a row of drops: each one becomes a strand you can bend (💎 Pro)
+      if (GB.pro === false) { GB.toast('🔒 Bending curtain drops is a GlowBop Pro feature'); GB.sfx && GB.sfx('err'); return; }
+      const d = dev(sel); if (!d || d.kind !== 'grid') return;
+      const pts = cpts(d), parts = []; let run = [pts[0]];
+      for (let i = 1; i <= pts.length; i++) {
+        const p = pts[i], q = pts[i - 1];
+        if (p && Math.abs(p[0] - q[0]) < 0.01 && Math.hypot(p[0] - q[0], p[1] - q[1]) < 1.6) { run.push(p); continue; }
+        parts.push({pts: [run[0].slice(), run[run.length - 1].slice()], n: run.length, rev: false, fold: null}); run = p ? [p] : [];
+      }
+      d.kind = 'string'; d.curtain = true; delete MOVE[d.id]; LAY[d.id] = {parts, gap: 1, kind: 'curtain'}; strand = 0;
+      GB.toast('〰️ ' + parts.length + ' drops: tap one, drag its ends or press and hold to bend it. Save when done.'); paintTop(); change(); };
+    el.querySelector('#slStraight').onclick = async () => { const d = dev(sel); if (!d) return;
+      const r = await GB.post('/api/lights/lay', {id: d.id, lay: null}); if (r && r.ok) { dirty[d.id] = false; delete LAY[d.id]; GB.toast('▦ Back to a straight curtain'); await load(true); } };
     el.querySelector('#slRot').onclick = () => turn('rot'); el.querySelector('#slMir').onclick = () => turn('flip');
     const full = on => { el.classList.toggle('sl-full', on); document.body.classList.toggle('sl-open', on); view = null; setTimeout(draw, 30);
       if (on) history.pushState && history.pushState({sl: 1}, ''); };
