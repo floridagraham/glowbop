@@ -1,0 +1,33 @@
+/* Features page: sticky category tabs + "More" disclosures inside each feature */
+.ftabs{position:sticky;top:var(--hdh,0px);z-index:40;background:#000;padding:10px 0 12px;box-shadow:0 14px 24px -14px #000,inset 0 -3px 0 #1a1230}
+.ftabs::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--violet) 50%,var(--cyan));opacity:.55}
+.ftabs .wrap{max-width:1300px}
+.ftabs-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.ftabs a{--c:var(--lav);display:inline-flex;align-items:center;gap:6px;padding:8px 11px 7px 9px;border-radius:0 12px 0 12px;background:#14101f;border-left:5px solid var(--c);
+  color:#fff;font:700 15px/1 var(--cond,'Saira Condensed'),sans-serif;letter-spacing:1.2px;text-transform:uppercase;white-space:nowrap;transition:filter .15s,background .15s}
+.ftabs a:hover{text-decoration:none;filter:brightness(1.25)}
+.ftabs a .fe{font-size:17px;letter-spacing:0}
+.ftabs a i{font:700 12px/1 'DM Sans',sans-serif;font-style:normal;letter-spacing:0;color:#000;background:var(--c);border-radius:999px;padding:3px 7px;min-width:12px;text-align:center}
+.ftabs a.on{background:var(--c);color:#000;box-shadow:0 0 22px -4px var(--c)}
+.ftabs a.on i{background:#000;color:var(--c)}
+.ftabs a[data-tab=proart].on{color:#fff}
+.ftabs a[data-tab=proart].on i{color:#cc99ff}
+@media(max-width:1180px){
+  .ftabs .wrap{padding-left:0;padding-right:0}
+  .ftabs-row{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 16px;scroll-padding:0 16px}
+  .ftabs-row::-webkit-scrollbar{display:none}
+  .ftabs a{flex:0 0 auto}
+}
+.ft-hide{display:none!important}
+.feat.ffirst::before{display:none}
+.ft-on .feat.ffirst{padding-top:26px}
+.feat,section[data-cat],#go-pro{scroll-margin-top:calc(var(--hdh,90px) + 70px)}
+
+/* the More disclosure inside each feature (keeps the headline, the picture and the first paragraph up top) */
+.feat details.fmore{background:#0d0a18;border:1px solid color-mix(in srgb,var(--c,var(--lav)) 35%,transparent);border-left:5px solid var(--c,var(--lav));border-radius:0 14px 0 14px;padding:0 16px;margin:4px 0 18px}
+.feat details.fmore summary{font:700 16px/1.2 var(--cond,'Saira Condensed'),sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:var(--c,var(--lav));padding:12px 0}
+.feat details.fmore summary::after{color:var(--c,var(--lav))}
+.feat details.fmore[open] summary{border-bottom:1px solid color-mix(in srgb,var(--c,var(--lav)) 30%,transparent)}
+.feat details.fmore .ticks{margin:6px 0 12px}
+.feat details.fmore .ticks li{color:#d9c7ff}
+.feat details.fmore .ticks b{color:#fff}
