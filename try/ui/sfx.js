@@ -532,4 +532,20 @@
     });
     paint();
   });
+  // 📱 Oct 18 (Graham: "I can't hear any of the controller sounds on the website"): iPhone / iPad Safari starts Web Audio locked
+  //   and the ring / silent switch mutes it. The first touch unlocks it (a silent blip inside the touch) and asks for "playback"
+  //   audio, so the key sounds play like music does, even on silent.
+  (() => {
+    const evs = ['touchend', 'pointerup', 'click', 'keydown'];
+    const unlock = () => {
+      try {
+        if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback';
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state !== 'running') ctx.resume();
+        const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1, 1, 22050); s.connect(ctx.destination); s.start(0);
+      } catch (e) {}
+      if (ctx && ctx.state === 'running') evs.forEach(ev => removeEventListener(ev, unlock, true));
+    };
+    evs.forEach(ev => addEventListener(ev, unlock, true));
+  })();
 })();

@@ -78,7 +78,7 @@
   };
   const bump = k => { S.act[k] = wall(); };
   // ✨ (Oct 16) the home page's demo is the flashy part: no calm looks, songs or slow effects there (they stay in the full demo)
-  const EMBED_SHOWY = /[?&]embed=1\b/.test(location.search);
+  const EMBED_SHOWY = false;   // Oct 18 (Graham): the home page plays the full GlowBop player, every look and song
   const SHOWY = true;
   try { if (localStorage.getItem('gb_build_mode') == null) localStorage.setItem('gb_build_mode', 'all'); } catch (e) {}   // 🎲 demo builds are Full random (the first one is always the star)                                   // (Oct 16) the full demo opens with the same excitement; chill songs keep their calm shows
   const CHILL_TITLES = ['Starlight Freeway', 'Silk Horizon', 'Blue Note Lanterns', 'Porch Light Saturday'];
