@@ -107,7 +107,7 @@ thead th{font:700 14px Sora;background:var(--card2);position:sticky;top:0}
 tbody tr:last-child td{border-bottom:0}
 th.us,td.us{background:rgba(255,61,154,.07)}
 thead th.us{color:var(--pink)}
-.y{color:var(--lime);font-weight:700}.n{color:#7d7993}.m{color:var(--amber)}
+.y{color:var(--lime);font-weight:700}.n{color:#b9a6ff}.m{color:var(--amber)}
 td small{display:block;color:var(--dim);font-size:13px}
 
 /* badges */
