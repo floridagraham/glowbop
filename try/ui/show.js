@@ -101,7 +101,7 @@
     GB.lbl($('shSurprise'), 'sparkle', 'Surprise me');
     $('shPower').onclick = () => GB.control({power: S().power === false});
     $('shSkip').onclick = async () => { if (await GB.control({skip: true})) GB.toast('⏭ Next'); };
-    $('shEye').onclick = async () => { const on = S().cameos === false; if (await GB.control({cameos: on})) GB.toast(on ? '👁️ Eyeball on' : '🙈 Eyeball off'); };
+    $('shEye').onclick = async () => { const on = S().cameos === false; if (await GB.control({cameos: on})) GB.toast(on ? '👁️ Eyeball on' : '🙈 Eyeball off'); };   // 🌍 Oct 17
     $('shChars').onclick = async () => { if (await GB.control({characters: !S().characters})) GB.toast(S().characters ? '🙅 Characters off' : '🕺 Characters on'); };
     $('shShuffle').onclick = async () => { if (await GB.control({shuffle: !S().shuffle})) GB.toast(S().shuffle ? '🎲 Shuffle off' : '🎲 Shuffle on'); };
     $('shSurprise').onclick = async () => { if (await GB.control({surprise: true})) GB.toast('✨ Surprise!'); };

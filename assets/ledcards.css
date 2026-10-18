@@ -1,0 +1,35 @@
+/* LED sales cards: big animated light walls with big words on them (same look as the Pro upgrade pages in the app) */
+.lc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:28px}
+@media(max-width:960px){.lc-grid{grid-template-columns:1fr}}
+.lc-card{--c:var(--pink);display:flex;flex-direction:column;overflow:hidden;color:#fff;border-radius:0 22px 0 22px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 18%,#0b0816),#0b0816 70%);border:1px solid color-mix(in srgb,var(--c) 50%,transparent);border-left:6px solid var(--c);
+  box-shadow:0 20px 60px -34px var(--c);transition:transform .2s,box-shadow .2s}
+.lc-card:hover{transform:translateY(-4px);box-shadow:0 0 0 2px var(--c),0 24px 70px -26px var(--c)}
+.lc-pic{position:relative}
+.lc-wall{display:block;width:100%;height:clamp(200px,19vw,290px);background:#030208}
+.lc-on{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:8px;padding:12px 16px;pointer-events:none;
+  background:linear-gradient(90deg,#000c 0%,#0007 55%,transparent 100%)}
+.lc-kk{font:900 clamp(13px,1.2vw,17px)/1 'Saira Condensed',sans-serif;letter-spacing:3px;text-transform:uppercase;color:#000;background:var(--k,#ffcc66);padding:6px 11px 5px;border-radius:0 8px 0 8px;box-shadow:0 0 18px -2px var(--k,#ffcc66)}
+.lc-big{font:800 clamp(32px,3.1vw,50px)/.95 'Saira Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;color:#fff;max-width:78%;
+  text-shadow:0 0 2px #000,0 2px 0 #000,0 0 22px var(--c),0 0 44px color-mix(in srgb,var(--c) 60%,transparent)}
+.lc-tx{padding:14px 16px 18px;display:flex;flex-direction:column;gap:9px;flex:1}
+.lc-tx small{font:700 13px 'Saira Condensed',sans-serif;letter-spacing:2px;text-transform:uppercase;color:var(--c)}
+.lc-tx p{margin:0;color:#e9e2ff;font-size:15.5px;line-height:1.45}
+.lc-tx .btn{margin-top:auto;align-self:flex-start}
+.lc-beta{display:inline-block;font:800 11px/1 'Saira Condensed',sans-serif;letter-spacing:2px;background:var(--pink);color:#fff;border-radius:6px;padding:4px 7px 3px;margin-left:8px;vertical-align:middle}
+.lc-free{display:inline-block;font:800 12px/1 'Saira Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase;background:linear-gradient(90deg,#ff7a3d,#ffcc66);color:#000;border-radius:0 8px 0 8px;padding:6px 10px 5px}
+/* the new feature blocks: bright lavender text (no grey) */
+.newf .lead{color:#e9e2ff}
+.newf .ticks li{color:#d9c7ff}
+.newf .ticks b{color:#fff}
+/* the big logo-to-globe banner */
+.lc-hero{position:relative;border-radius:0 26px 0 26px;overflow:hidden;border:2px solid #9b3dff66;box-shadow:0 30px 90px -40px rgba(155,61,255,.8)}
+.lc-hero .lc-wall{height:clamp(260px,34vw,440px)}
+.lc-hero .lc-on{padding:18px clamp(16px,4vw,48px);background:linear-gradient(90deg,#000d 0%,#0009 45%,transparent 75%)}
+.lc-hero .lc-big{font-size:clamp(38px,5.4vw,82px);max-width:60%}
+.lc-hero .lc-sub{font:600 clamp(15px,1.5vw,20px)/1.35 'DM Sans',sans-serif;color:#ffd9f0;max-width:44ch;text-shadow:0 1px 0 #000}
+@media(max-width:700px){
+  .lc-hero .lc-wall{height:400px}
+  .lc-hero .lc-on{justify-content:flex-start;background:linear-gradient(180deg,#000d 0%,#0008 45%,transparent 70%)}
+  .lc-hero .lc-big,.lc-big{max-width:100%}
+}

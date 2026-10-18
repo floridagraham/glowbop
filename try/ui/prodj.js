@@ -144,7 +144,7 @@
   function lockedTap(b, name) {
     proSound('tease'); b.classList.remove('tease'); void b.offsetWidth; b.classList.add('tease');
     GB.toast && GB.toast('✨ ' + name + ' comes with GlowBop Pro. Take a peek!');
-    GB.proDoor = /home/i.test(name) ? 'home' : 'dj'; setTimeout(() => GB.go('pro'), 700);
+    GB.proDoor = /home/i.test(name) ? 'home' : /art/i.test(name) ? 'art' : 'dj'; setTimeout(() => GB.go('pro'), 700);
   }
   GB.proLockedTap = lockedTap;
   function paintSwitch() {
@@ -210,7 +210,9 @@
   GB.proSound = proSound;                         // GB.proSound(true) to hear it
   // a template made before a page's boxes finished loading gets redone once they have (only if you haven't moved anything)
   const recompact = () => { const k = canArrange() ? pageKey() : null; if (k && !arranging && S.get(store(k) + ':auto') === '1') compact(true); };
-  GB.proDJ = {recompact, isOn, setOn: (on, anim) => setOn(on, anim), flicker: f => flicker(f), relayout: () => layout(), syncBorrow: () => syncBorrow()};   // shared with prohome.js
+  // ✨ Oct 17: the Pro upgrade page's cards grew pictures after the template was made: re-measure it (unless you arranged it yourself)
+  const refitPage = () => { const k = pageKey(); if (!k || arranging) return; if (!S.get(store(k)) || S.get(store(k) + ':auto') === '1') compact(true); };
+  GB.proDJ = {refit: refitPage, recompact, isOn, setOn: (on, anim) => setOn(on, anim), flicker: f => flicker(f), relayout: () => layout(), syncBorrow: () => syncBorrow()};   // shared with prohome.js
   function setOn(on, animate) {
     if (on && GB.pro !== true) return;
     animate = false;                                // Oct 17 (Graham): PRO DJ / PRO HOME switch like every other page (no power-up flicker, sound or toast), so DJs can hop back and forth

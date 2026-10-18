@@ -508,3 +508,16 @@ body:not([data-page=music]):not([data-page=dj]) #view .panel.reads-panel { displ
   transform-origin:50% 50% calc(var(--hh, 30px) / -2); transform:rotateX(calc(var(--n) * 90deg)); overflow:hidden; }
 #hd .bars b.cube3 .hdlf i { position:absolute; top:50%; transform:translateY(-50%); font-style:normal; line-height:1; white-space:pre; }
 #hd .bars b.cube3 .hdf.img { background-size:cover; background-position:center; background-repeat:no-repeat; }
+
+/* 🔔 beep check (Oct 17) */
+.sl-ask{margin:8px 0 2px;padding:10px 12px;border-radius:0 12px 0 12px;font-size:.88em;line-height:1.45;color:#fff;
+  background:linear-gradient(135deg,rgba(255,178,61,.22),rgba(255,61,154,.18));border:1px solid rgba(255,178,61,.7)}
+.sl-ask[hidden]{display:none}
+.sl-ask b{display:block;margin-bottom:4px;color:#ffcc66}
+
+/* 🧵 Make a curtain (Oct 17) */
+.sl-cm{margin:8px 0;padding:10px 12px;border-radius:0 14px 0 14px;background:linear-gradient(135deg,rgba(255,61,154,.16),rgba(155,61,255,.16));border:1px solid rgba(255,61,154,.6)}
+.sl-cm[hidden]{display:none}
+.sl-cm .sl-cmh{display:block;font:700 calc(15px * var(--fs, 1)) var(--cond);letter-spacing:1px;color:#ff8cc4;margin-bottom:6px;text-transform:uppercase}
+.sl-cmask{margin:6px 0}
+.sl-cmask b{display:inline;color:#ffcc66;margin-right:4px}

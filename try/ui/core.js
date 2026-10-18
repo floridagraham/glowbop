@@ -118,14 +118,17 @@
       pitch: 'Run the whole house: one-tap house scenes (Dinner, Party, Movie night, Bedtime), schedules that turn the lights on at sunset and off at bedtime every day, zones and the holiday calendar.'},
     {name: 'DJ power tools', ic: 'bolt', c: 'var(--cyan)', page: 'dj', tab: 'DJ', prev: 'override',
       pitch: 'All 13 hit pads, pick your build and drop styles, Color lock, Cue the next look, and USB DJ controllers.'},
+    {name: 'Pro Art', ic: 'sparkle', c: '#ff6ad5', page: 'art', tab: 'PRO ART', prev: 'zones',
+      pitch: 'Hang your lights in any shape (a heart, letters, your logo, a sign) and map them from a file: a drawing, a photo of the lights on, a spreadsheet, an xLights model or a GlowBop sign file. Plus live mapping while the show plays.'},
     {name: 'Unlimited lights', ic: 'bulb', c: 'var(--gold)', page: 'lights', tab: 'LIGHTS', prev: 'zones',
       pitch: 'Home DJ plays up to 4 light sets together. Pro runs as many as you hang (big pool cages, whole-house installs, giant matrix walls), with light groups so each area runs its own show.'},
   ];
   const PRO_LIST = PRO_FEATURES.map(f => f.name);
   // Oct 16 (Graham): each Pro door feels like its own thing. Tapping PRO DJ shows the DJ tools first, PRO HOME the house tools first.
   const PRO_ORDER = GB.PRO_ORDER = {
-    dj: ['Pro DJ mode', 'DJ power tools', 'Fader board', 'Pad Recorder', 'Autoloops', 'Cues', 'Override keys', 'Interlude', 'Tempo toolbox', 'Palettes', 'Song Shows', 'Scenes', 'Zones', 'Unlimited lights', 'Pro Home'],
-    home: ['Pro Home', 'Unlimited lights', 'Zones', 'Scenes', 'Palettes', 'Song Shows', 'Autoloops', 'Interlude', 'Cues', 'Override keys', 'Fader board', 'Tempo toolbox', 'Pad Recorder', 'DJ power tools', 'Pro DJ mode']};
+    dj: ['Pro DJ mode', 'DJ power tools', 'Fader board', 'Pad Recorder', 'Autoloops', 'Cues', 'Override keys', 'Interlude', 'Tempo toolbox', 'Palettes', 'Song Shows', 'Scenes', 'Zones', 'Unlimited lights', 'Pro Art', 'Pro Home'],
+    art: ['Pro Art', 'Unlimited lights', 'Zones', 'Palettes', 'Scenes', 'Song Shows', 'Autoloops', 'Pro Home', 'Pro DJ mode', 'DJ power tools', 'Pad Recorder', 'Fader board', 'Override keys', 'Cues', 'Tempo toolbox', 'Interlude'],
+    home: ['Pro Home', 'Unlimited lights', 'Zones', 'Scenes', 'Palettes', 'Song Shows', 'Autoloops', 'Interlude', 'Cues', 'Override keys', 'Fader board', 'Tempo toolbox', 'Pad Recorder', 'DJ power tools', 'Pro DJ mode', 'Pro Art']};
   const ordered = ctx => { const o = PRO_ORDER[ctx]; return o ? PRO_LIST.slice().sort((a, b) => o.indexOf(a) - o.indexOf(b)) : PRO_LIST; };
   const firstLine = t => (String(t).match(/^.*?[.!?](?=\s|$)/) || [t])[0];
   GB.proGate = (el, feature, opts) => {
@@ -171,6 +174,8 @@
     document.querySelectorAll('#rail button[data-p]').forEach(b => {
       const pg = PAGES.find(p => p.id === b.dataset.p); if (!pg) return;
       if (pg.pro) b.hidden = GB.pro !== true; else if (pg.home) b.hidden = GB.pro !== false;
+      else if (pg.door === 'art') {                // free for everyone until launch day (FREE tag), then a locked Pro door for Home users
+        b.hidden = GB.pro == null; b.classList.toggle('locked', GB.pro === false && Date.now() >= GB.ART_PRO_FROM); b.classList.toggle('freetag', GB.pro === false && Date.now() < GB.ART_PRO_FROM); }
     });
     const sep = document.querySelector('#rail .rail-sep[data-g=pro]'); if (sep) sep.hidden = GB.pro === null;
     const cur = PAGES.find(p => p.id === GB.page);
@@ -571,11 +576,13 @@
   // then HOLIDAY, SPORTS, LIVE, LOOKS, SCENES, GAMES, then LIGHTS and SETUP.
   // 🎨 Oct 16 night (Graham picked A, 'warm & cool'): Pro tabs fade like a sunset (gold > orange > pink > purple),
   //   Visuals like the ocean (blue > cyan > teal > green), LIGHTS sky blue and SETUP soft violet (no grey: Graham). MUSIC cyan, DJ pink, TEXT white-lavender stay.
+  GB.ART_PRO_FROM = Date.UTC(2026, 9, 31, 4);        // 🎃 Halloween, midnight Eastern (artboard.js + api.py ART_PRO_FROM match)
   const PAGES = GB.PAGES = [
     {id: 'music', label: 'MUSIC', c: 'var(--cyan)', big: 2, g: 'perform'},   // Oct 16: GlowBop cyan (Graham)
     {id: 'dj', label: 'DJ', c: 'var(--pink)', g: 'perform'},       // Oct 16: GlowBop pink (Graham)
     {id: 'text', label: 'TEXT', c: '#e9e6ff', g: 'perform'},   // Oct 16: white-lavender, so it doesn't look like PRO HOME
     {id: 'home', label: 'PRO HOME', c: '#ffc23d', pro: true, g: 'pro'},           // 🏠 Pro Home control center (prohome.js): its rail key shows only in Pro Home mode
+    {id: 'art', label: 'PRO ART', c: '#ff6ad5', g: 'pro', door: 'art'},   // 🎨 Oct 17 (Graham: "it should be out there, we want to attract people"): on the rail for everyone             // 🎨 Art board (artboard.js, Oct 17): map lights from a file, pictures, .glowbop files
     {id: 'shows', label: 'SHOWS', c: '#ff8a3d', pro: true, g: 'pro'},
     {id: 'autoloops', label: 'LOOPS+CUES', c: '#e83dcf', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
     {id: 'cues', label: 'CUES', c: '#7dffb2', pro: true, g: 'pro', rail: 'autoloops'},   // 🎬 cue lists + GO (cues.js): shares the LOOPS & CUES key (a switch on top), so the phone rail still fits
@@ -593,7 +600,7 @@
   ];
   const GROUPS = GB.RAIL_GROUPS = {perform: 'PERFORM', visuals: 'VISUALS', pro: 'PRO', system: 'SYSTEM'};
   // old or friendly links (#help, #sports, #fire ...) land on the right page; values are [page, anchor]
-  const PAGE_ALIAS = {help: ['setup', 'helpPanel'], light: ['lights'], devices: ['lights'], map: ['lights'], groups: ['lights', 'grpPanel'],
+  const PAGE_ALIAS = {artboard: ['art'], help: ['setup', 'helpPanel'], light: ['lights'], devices: ['lights'], map: ['lights'], groups: ['lights', 'grpPanel'],
     sports: ['score'], live: ['feeds'], override: ['ops'], license: ['setup', 'suLicKeyBox'],
     fire: ['scenes', 'firePanel'], fireplace: ['scenes', 'firePanel'], mirror: ['scenes', 'mirrorPanel'],
     golf: ['score'], nascar: ['score'], racing: ['score'], tennis: ['score'], ufc: ['score'],   // boards open from SPORTS > Live Fan
@@ -640,7 +647,8 @@
       const b = document.createElement('button'); b.dataset.p = p.id; b.dataset.g = p.g; b.style.setProperty('--c', p.c);
       b.innerHTML = '<span class="rl">' + GB.esc(p.label) + '</span>' + (p.ic ? GB.svg(p.ic) : ''); b.setAttribute('aria-label', p.home ? 'Pro DJ: see what it adds' : p.label);
       if (p.pro || p.home) b.hidden = true;                          // shown once the license is known (paintRailPro)
-      b.onclick = () => GB.go(p.id); rail.appendChild(b);          // (MUSIC's bigger key: app.css, #rail button[data-p=music])
+      if (p.door) b.hidden = true;
+      b.onclick = () => (p.door && b.classList.contains('locked') && GB.proLockedTap) ? GB.proLockedTap(b, 'Pro Art') : GB.go(p.id); rail.appendChild(b);          // (MUSIC's bigger key: app.css, #rail button[data-p=music])
       host.appendChild(pg); mount(p, pg);
     });
     const tail = document.createElement('div'); tail.className = 'tail'; rail.appendChild(tail);
@@ -715,15 +723,17 @@
   const DOOR = {dj: {t: 'GlowBop Pro DJ', r: 'MORE CONTROL · FOR EVENTS', h: 'Play your lights like an instrument', c: '#ff3d9a',
       p: 'Everything you have now stays. Pro DJ turns the console into a lighting desk for parties, DJ sets and events: the PRO DJ page plus SHOWS, LOOPS+CUES, LIVE BOARD and OVERRIDE.'},
     home: {t: 'GlowBop Pro Home', r: 'MORE CONTROL · FOR THE HOUSE', h: 'Run the whole house', c: '#ffb23d',
-      p: 'Everything you have now stays. Pro Home runs every light set you hang: one-tap house scenes, sunset and bedtime schedules, zones and the holiday calendar, on the PRO HOME page.'}};
+      p: 'Everything you have now stays. Pro Home runs every light set you hang: one-tap house scenes, sunset and bedtime schedules, zones and the holiday calendar, on the PRO HOME page.'},
+    art: {t: 'GlowBop Pro Art', r: 'MORE CONTROL · ANY SHAPE', h: 'Your lights, any shape', c: '#ff6ad5',
+      p: 'Everything you have now stays. Pro Art turns your lights into hearts, letters, your logo or a sign: map them from a drawing, a photo or a file, and fix them live while the show plays.'}};
   GB.proDoor = 'dj';                                // which Pro door you came through (PRO DJ or PRO HOME tab)
   function paintDoor() {
     const d = DOOR[GB.proDoor] || DOOR.dj, hero = $('proTour'), list = document.querySelector('#pg-pro .pt-feats'); if (!hero || !list) return;
     hero.style.setProperty('--c', d.c); hero.querySelector('.ph > span').textContent = d.t; hero.querySelector('.ph .r').textContent = d.r;
     hero.querySelector('.pt-h').textContent = d.h; hero.querySelector(':scope > p.note').textContent = d.p;
-    document.documentElement.classList.toggle('door-dj', GB.proDoor !== 'home'); document.documentElement.classList.toggle('door-home', GB.proDoor === 'home');
+    const dc = document.documentElement.classList; dc.toggle('door-dj', GB.proDoor !== 'home' && GB.proDoor !== 'art'); dc.toggle('door-home', GB.proDoor === 'home'); dc.toggle('door-art', GB.proDoor === 'art');
     let art = hero.querySelector('.pt-art'); if (!art) { art = document.createElement('div'); art.className = 'pt-art'; art.setAttribute('aria-hidden', 'true'); hero.appendChild(art); }
-    art.innerHTML = GB.proDoor === 'home' ? DOOR_ART.home : DOOR_ART.dj;
+    art.innerHTML = GB.proDoor === 'home' ? DOOR_ART.home : GB.proDoor === 'art' && DOOR_ART.art ? DOOR_ART.art : DOOR_ART.dj;
     // 🎲 Oct 17 (Graham): a new random order every visit. The door's own headline card (Pro DJ mode / Pro Home) still leads.
     const o = PRO_ORDER[GB.proDoor] || PRO_LIST, lead = o[0], cards = [...list.children];
     for (let i = cards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cards[i], cards[j]] = [cards[j], cards[i]]; }
@@ -755,7 +765,7 @@
     .pt-feats.touring .pt-f.spot .pt-ic { animation:ptPop .6s ease; } @keyframes ptPop { 40% { transform:scale(1.25); } }
     .pt-feats.touring:hover .pt-f, .pt-feats.touring .pt-f:focus-within { opacity:1; filter:none; }
     @media (prefers-reduced-motion: reduce) { .pt-feats.touring .pt-f.spot { transform:none; } .pt-feats.touring .pt-f.spot .pt-ic { animation:none; } }`);
-  GB.on('page', id => { if (id === 'pro') setTimeout(() => { paintDoor(); spotOn(); }, 0); else { spotOff(); document.documentElement.classList.remove('door-dj', 'door-home'); } });
+  GB.on('page', id => { if (id === 'pro') setTimeout(() => { paintDoor(); spotOn(); }, 0); else { spotOff(); document.documentElement.classList.remove('door-dj', 'door-home', 'door-art'); } });
   // the hero art for each door: an equalizer for PRO DJ, a glowing house at sunset for PRO HOME
   const DOOR_ART = {
     dj: '<svg viewBox="0 0 160 70">' + [18, 42, 30, 58, 36, 64, 26, 48, 54, 22, 40, 60].map((h, i) => `<rect x="${4 + i * 13}" y="${68 - h}" width="9" height="${h}" rx="3" fill="${['#ff3d9a', '#9b3dff', '#33d6ff'][i % 3]}"><animate attributeName="height" values="${h};${Math.max(8, h * .4)};${h}" dur="${.6 + (i % 4) * .17}s" repeatCount="indefinite"/><animate attributeName="y" values="${68 - h};${68 - Math.max(8, h * .4)};${68 - h}" dur="${.6 + (i % 4) * .17}s" repeatCount="indefinite"/></rect>`).join('') + '</svg>',
@@ -920,6 +930,8 @@
     else { try { document.fullscreenElement && document.exitFullscreen(); } catch (e) {} }
     if (PV.length) drawSetup(PV);
   };
+  DOOR_ART.art = '<svg viewBox="0 0 160 70"><circle cx="80.0" cy="23.0" r="3.2" fill="#ff3d9a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.00s" repeatCount="indefinite"/></circle><circle cx="80.4" cy="20.8" r="3.2" fill="#9b3dff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.06s" repeatCount="indefinite"/></circle><circle cx="82.9" cy="15.6" r="3.2" fill="#33d6ff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.12s" repeatCount="indefinite"/></circle><circle cx="88.5" cy="10.2" r="3.2" fill="#3ce08a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.18s" repeatCount="indefinite"/></circle><circle cx="96.8" cy="7.8" r="3.2" fill="#ffd21a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.24s" repeatCount="indefinite"/></circle><circle cx="105.7" cy="10.0" r="3.2" fill="#ff7a3d"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.30s" repeatCount="indefinite"/></circle><circle cx="112.6" cy="16.4" r="3.2" fill="#ff3d9a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.36s" repeatCount="indefinite"/></circle><circle cx="115.2" cy="25.2" r="3.2" fill="#9b3dff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.42s" repeatCount="indefinite"/></circle><circle cx="112.6" cy="34.6" r="3.2" fill="#33d6ff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.48s" repeatCount="indefinite"/></circle><circle cx="105.7" cy="43.4" r="3.2" fill="#3ce08a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.54s" repeatCount="indefinite"/></circle><circle cx="96.8" cy="51.4" r="3.2" fill="#ffd21a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.60s" repeatCount="indefinite"/></circle><circle cx="88.5" cy="58.7" r="3.2" fill="#ff7a3d"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.66s" repeatCount="indefinite"/></circle><circle cx="82.9" cy="65.2" r="3.2" fill="#ff3d9a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.72s" repeatCount="indefinite"/></circle><circle cx="80.4" cy="69.7" r="3.2" fill="#9b3dff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.78s" repeatCount="indefinite"/></circle><circle cx="80.0" cy="71.4" r="3.2" fill="#33d6ff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.84s" repeatCount="indefinite"/></circle><circle cx="79.6" cy="69.7" r="3.2" fill="#3ce08a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.90s" repeatCount="indefinite"/></circle><circle cx="77.1" cy="65.2" r="3.2" fill="#ffd21a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="0.96s" repeatCount="indefinite"/></circle><circle cx="71.5" cy="58.7" r="3.2" fill="#ff7a3d"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.02s" repeatCount="indefinite"/></circle><circle cx="63.2" cy="51.4" r="3.2" fill="#ff3d9a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.08s" repeatCount="indefinite"/></circle><circle cx="54.3" cy="43.4" r="3.2" fill="#9b3dff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.14s" repeatCount="indefinite"/></circle><circle cx="47.4" cy="34.6" r="3.2" fill="#33d6ff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.20s" repeatCount="indefinite"/></circle><circle cx="44.8" cy="25.2" r="3.2" fill="#3ce08a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.26s" repeatCount="indefinite"/></circle><circle cx="47.4" cy="16.4" r="3.2" fill="#ffd21a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.32s" repeatCount="indefinite"/></circle><circle cx="54.3" cy="10.0" r="3.2" fill="#ff7a3d"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.38s" repeatCount="indefinite"/></circle><circle cx="63.2" cy="7.8" r="3.2" fill="#ff3d9a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.44s" repeatCount="indefinite"/></circle><circle cx="71.5" cy="10.2" r="3.2" fill="#9b3dff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.50s" repeatCount="indefinite"/></circle><circle cx="77.1" cy="15.6" r="3.2" fill="#33d6ff"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.56s" repeatCount="indefinite"/></circle><circle cx="79.6" cy="20.8" r="3.2" fill="#3ce08a"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" begin="1.62s" repeatCount="indefinite"/></circle></svg>';   // 🎨 Pro Art door: a heart of twinkling bulbs
+
   // 📡 Oct 17: phones/iPads lagged polling over Wi-Fi (a new request + 120 ms wait per picture). Now the laptop pushes every
   //   picture down one open stream; polling stays as the fallback (demo, older browsers, stream dropped).
   let ES = null, esOk = 0, esFails = 0;

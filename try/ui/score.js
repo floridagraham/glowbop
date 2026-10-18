@@ -559,7 +559,7 @@
   //   Tap a line (not the key) and its details pop out over the page; nothing underneath moves.
   GB.css(`
   .ln-list { display:flex; flex-direction:column; gap:6px; max-height:min(52vh, 420px); overflow-y:auto; overscroll-behavior:contain; padding-right:2px; }
-  .ln-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; align-items:center; gap:10px; min-height:48px; padding:4px 4px 4px 10px; border-radius:0 14px 0 14px;
+  .ln-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto auto; align-items:center; gap:10px; min-height:48px; padding:4px 4px 4px 10px; border-radius:0 14px 0 14px;
     background:var(--dark); cursor:pointer; border-left:5px solid var(--lc, var(--cyan)); }
   .ln-row:hover { filter:brightness(1.15); }
   .ln-row .lg { font:700 calc(11px * var(--fs, 1)) var(--cond); letter-spacing:1px; color:var(--dim); text-transform:uppercase; min-width:34px; text-align:center; line-height:1.1; }
@@ -570,7 +570,10 @@
   .ln-row .st.live { color:#3ce08a; } .ln-row .st.live::before { content:'● '; }
   .ln-row .btn { min-height:40px; padding:0 14px; font-size:calc(13px * var(--fs, 1)); white-space:nowrap; background:#33d6ff1f; color:#7ae6ff; box-shadow:inset 0 0 0 2px #33d6ff; }
   .ln-row.on { box-shadow:inset 0 0 0 2px var(--cyan); } .ln-row.on .btn { background:var(--cyan); color:#000; }
-  @media (max-width: 480px) { .ln-row { grid-template-columns:auto minmax(0,1fr) auto; } .ln-row .st { grid-column:2; grid-row:2; text-align:left; margin-top:-4px; } .ln-row .btn { grid-column:3; grid-row:1 / span 2; } }
+  @media (max-width: 480px) { .ln-row { grid-template-columns:auto minmax(0,1fr) auto auto; } .ln-row .st { grid-column:2; grid-row:2; text-align:left; margin-top:-4px; } .ln-row .pin { grid-column:3; grid-row:1 / span 2; } .ln-row .btn:not(.pin) { grid-column:4; grid-row:1 / span 2; } }
+  .ln-row .btn.pin { padding:0 10px; min-width:44px; background:#ff3d9a1f; color:#ff8cc4; box-shadow:inset 0 0 0 2px #ff3d9a; font-size:calc(16px * var(--fs, 1)); }
+  .ln-row .btn.pin.in { background:var(--pink); color:#fff; }
+  .ln-row.on .btn.pin { background:#ff3d9a1f; color:#ff8cc4; } .ln-row.on .btn.pin.in { background:var(--pink); color:#fff; }
   .ln-pop { position:fixed; z-index:9000; width:min(92vw, 380px); background:#0d0a18f7; border:2px solid var(--lc, var(--cyan)); border-radius:0 18px 0 18px; padding:14px 16px;
     box-shadow:0 18px 50px #000c, 0 0 30px -8px var(--lc, var(--cyan)); font:calc(14px * var(--fs, 1))/1.45 var(--body); color:var(--text); animation:lnPop .16s ease-out; }
   @keyframes lnPop { from { opacity:0; transform:scale(.94); } }
@@ -611,6 +614,8 @@
         <span style="color:${glow(g.home.color)}">${esc(g.home.name || g.home.abbr)}<small>${esc(rec.home || '')}</small></span><span class="sc">${g.state === 'pre' ? '' : g.home.score}</span></div>
       ${line(g.state === 'in' ? 'Now' : g.state === 'post' ? 'Result' : 'Starts', lnStatus(g) + (g.state === 'in' && ex.down ? ' · ' + ex.down : ''))}${line('Last play', ex.last)}${line('Where', ex.venue)}${line('Watch on', ex.tv)}
       <button class="btn c wide" style="--c:var(--cyan);margin-top:8px">${lnLive(g) ? 'Take it off the wall' : '📺 GO LIVE on the wall'}</button>`;
+    const pb = document.createElement('button'); pb.className = 'btn wide'; pb.style.cssText = 'margin-top:6px;background:#ff3d9a1f;color:#ff8cc4;box-shadow:inset 0 0 0 2px #ff3d9a';
+    pb.textContent = tnHas(g) ? '📌 On tonight\'s list (tap to remove)' : '📌 Add to tonight\'s list'; pb.onclick = () => { lnClose(); tnToggle(g); }; pop.appendChild(pb);
     document.body.appendChild(pop); lnPop = pop;
     const r = row.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
     let x = Math.min(innerWidth - pw - 8, Math.max(8, r.left + 20)), y = r.bottom + 6; if (y + ph > innerHeight - 8) y = Math.max(8, r.top - ph - 6);
@@ -642,7 +647,7 @@
     const box = $('sbNowList'); if (!box || !LN) return;
     const bgs = boardGames(), gs = (LN.games || []).concat(bgs).sort((a, b) => ({in: 0, pre: 1, post: 2}[a.state] - {in: 0, pre: 1, post: 2}[b.state])), live = gs.filter(g => g.state === 'in').length;
     $('sbNowR').textContent = live ? live + ' LIVE' : gs.length ? 'NOTHING LIVE' : LN.loading ? 'LOADING…' : 'NOTHING ON';
-    const key = JSON.stringify(gs.map(g => [g.key, g.state, g.home && g.home.score, g.away && g.away.score, g.detail, g.title])) + ((GB.feedsState || {}).mode || '') + (SB && SB.on ? SB.team_id : '');
+    const key = JSON.stringify(gs.map(g => [g.key, g.state, g.home && g.home.score, g.away && g.away.score, g.detail, g.title])) + ((GB.feedsState || {}).mode || '') + (SB && SB.on ? SB.team_id : '') + (TN ? TN.items.map(x => x.key).join() : '');
     if (box._k === key) return; box._k = key;
     if (!gs.length) { box.innerHTML = `<div class="ln-empty">${LN.loading ? 'Looking for games…' : 'No games on right now. Games show up here a few hours before they start.'}</div>`; return; }
     box.innerHTML = '';
@@ -651,8 +656,9 @@
       const pre = g.state === 'pre';
       r.innerHTML = `<span class="lg"><b>${g.kind === 'board' ? BD[g.bk][0] : g.kind === 'f1' ? '🏎️' : ICON[g.sport] || '🏆'}</b>${esc(g.league.toUpperCase())}</span>
         ${g.kind === 'f1' || g.kind === 'board' ? `<span class="mu">${esc(g.title)}</span>` : `<span class="mu"><span style="color:${glow(g.away.color)}">${esc(g.away.abbr)}</span>${pre ? '<i>at</i>' : `<i>${g.away.score}–${g.home.score}</i>`}<span style="color:${glow(g.home.color)}">${esc(g.home.abbr)}</span></span>`}
-        <span class="st${g.state === 'in' ? ' live' : ''}">${esc(lnStatus(g))}</span><button class="btn">${lnLive(g) ? 'ON WALL' : 'GO LIVE'}</button>`;
-      r.querySelector('.btn').onclick = e => { e.stopPropagation(); lnGo(g); };
+        <span class="st${g.state === 'in' ? ' live' : ''}">${esc(lnStatus(g))}</span><button class="btn pin${tnHas(g) ? ' in' : ''}" title="Add to tonight's list" aria-label="Add to tonight's list">📌</button><button class="btn go">${lnLive(g) ? 'ON WALL' : 'GO LIVE'}</button>`;
+      r.querySelector('.btn.go').onclick = e => { e.stopPropagation(); lnGo(g); };
+      r.querySelector('.btn.pin').onclick = e => { e.stopPropagation(); tnToggle(g); };
       r.onclick = () => lnOpen(r, g);
       box.appendChild(r);
     });
@@ -670,6 +676,102 @@
   });
   GB.on('page', id => { if (id === 'score') lnLoad(); });
   GB.on('ready', () => { if (GB.page === 'score') lnLoad(); });
+
+  // ------------------------------------------------------------------ 📌 Tonight's list + 🎉 show behind (Oct 17, Graham: "add it to the list of rotations";
+  //   "display the score but have the light show dim in the background instead of just replacing it")
+  GB.css(`
+  .tn-list { display:flex; flex-direction:column; gap:6px; margin:8px 0; }
+  .tn-it { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto auto; gap:6px; align-items:center; min-height:44px; padding:4px 4px 4px 10px; border-radius:0 12px 0 12px;
+    background:var(--dark); border-left:5px solid var(--lc, var(--pink)); }
+  .tn-it.cur { box-shadow:inset 0 0 0 2px var(--pink); background:#2a0f22; }
+  .tn-it .ic { font-size:calc(18px * var(--fs, 1)); }
+  .tn-it .nm { font:700 calc(15px * var(--fs, 1))/1.15 var(--cond); letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tn-it .btn { min-height:36px; min-width:36px; padding:0 8px; }
+  .tn-empty { padding:10px 6px; color:var(--lav); font-size:calc(14px * var(--fs, 1)); }
+  .tn-seg { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:6px 0; }
+  .tn-seg .btn { min-height:48px; }
+  .tn-seg .btn.on { background:var(--pink); color:#fff; box-shadow:none; }
+  .tn-row { display:flex; gap:8px; align-items:center; margin:6px 0; }
+  .tn-row .grow { flex:1; }
+  .tn-sw { appearance:none; border:0; width:100%; display:flex; align-items:center; gap:12px; text-align:left; background:#1d1336; color:var(--text); border-radius:0 14px 0 14px; padding:10px 12px; min-height:56px; border-left:6px solid var(--violet); }
+  .tn-sw .t { flex:1; } .tn-sw .t b { display:block; font:700 calc(16px * var(--fs, 1))/1.15 var(--cond); letter-spacing:1px; text-transform:uppercase; }
+  .tn-sw .t small { display:block; color:var(--lav); font-size:calc(12px * var(--fs, 1)); line-height:1.35; margin-top:2px; }
+  .tn-sw .sw { flex:0 0 auto; width:46px; height:26px; border-radius:13px; background:#3a2466; position:relative; }
+  .tn-sw .sw::after { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#cc99ff; transition:left .15s; }
+  .tn-sw.on { border-left-color:var(--pink); background:#2a0f22; } .tn-sw.on .sw { background:var(--pink); } .tn-sw.on .sw::after { left:23px; background:#fff; }
+  `);
+  let TN = null, tnT = null;
+  const tnPost = b => GB.post('/api/tonight', GB.withGroup(b));
+  const tnItem = g => g.kind === 'board' ? {kind: 'board', bk: g.bk, title: g.title} : g.kind === 'f1' ? {kind: 'f1', title: g.title}
+    : {kind: 'game', league: g.league, team_id: String(g.home.id), team_name: g.home.name, other_id: String(g.away.id), title: g.away.abbr + ' at ' + g.home.abbr};
+  const tnKey = g => g.kind === 'board' ? 'board:' + g.bk : g.kind === 'f1' ? 'f1' : 'team:' + g.league + ':' + g.home.id;
+  const tnHas = g => !!(TN && TN.items.some(x => x.key === tnKey(g) || (g.kind !== 'board' && g.kind !== 'f1' && x.kind === 'game' && x.league === g.league && [String(g.home.id), String(g.away.id)].includes(x.team_id))));
+  async function tnToggle(g) {
+    const has = tnHas(g), it = tnItem(g);
+    const k = has ? (TN.items.find(x => x.key === tnKey(g) || (x.kind === 'game' && x.league === g.league && [String(g.home.id), String(g.away.id)].includes(x.team_id))) || {}).key : null;
+    if (await tnPost(has ? {remove: k} : {add: it})) { GB.toast(has ? '✖ Off tonight\'s list' : '📌 ' + it.title + ' added to tonight\'s list'); GB.sfx && GB.sfx(has ? 'off' : 'ok'); tnLoad(250); }
+  }
+  const tnIcon = x => x.kind === 'board' ? (BD[x.bk] || ['🏁'])[0] : x.kind === 'f1' ? '🏎️' : '🏆';
+  const tnCol = x => x.kind === 'board' ? (BD[x.bk] || [0, 0, '#ffb31a'])[2] : x.kind === 'f1' ? '#ff2a2a' : '#33d6ff';
+  function tnRender() {
+    const el = $('tnBox'); if (!el || !TN) return;
+    const t = TN, n = t.items.length;
+    $('tnR').textContent = !n ? 'EMPTY' : t.on ? (t.mode === 'wall' ? `ROTATING · NEXT ${t.next_in ?? '–'}s` : 'CARDS OVER MUSIC') : n + ' PICK' + (n > 1 ? 'S' : '');
+    const add = $('tnAdd'); add.disabled = !t.wall || t.wall_in;
+    add.textContent = t.wall_in ? '📌 What\'s on the wall is on the list' : t.wall ? '📌 Add what\'s on the wall: ' + t.wall.title : '📌 Put a game or race on the wall to add it';
+    const key = JSON.stringify([t.items.map(x => x.key), t.cur]);
+    const box = $('tnList');
+    if (box._k !== key) { box._k = key;
+      box.innerHTML = n ? '' : '<div class="tn-empty">Nothing yet. Tap 📌 on any game or race in Live now (or add what\'s on the wall).</div>';
+      t.items.forEach((x, i) => {
+        const r = document.createElement('div'); r.className = 'tn-it' + (x.key === t.cur ? ' cur' : ''); r.style.setProperty('--lc', tnCol(x));
+        r.innerHTML = `<span class="ic">${tnIcon(x)}</span><span class="nm">${esc(x.title)}</span><button class="btn" aria-label="Move up" ${i ? '' : 'disabled'}>▲</button><button class="btn" aria-label="Move down" ${i < n - 1 ? '' : 'disabled'}>▼</button><button class="btn" aria-label="Remove">✖</button>`;
+        const b = r.querySelectorAll('.btn');
+        b[0].onclick = async () => { if (await tnPost({move: x.key, delta: -1})) tnLoad(200); };
+        b[1].onclick = async () => { if (await tnPost({move: x.key, delta: 1})) tnLoad(200); };
+        b[2].onclick = async () => { if (await tnPost({remove: x.key})) { GB.toast('✖ ' + x.title + ' removed'); tnLoad(200); } };
+        box.appendChild(r);
+      });
+    }
+    $('tnWall').classList.toggle('on', t.mode === 'wall'); $('tnTick').classList.toggle('on', t.mode === 'ticker');
+    $('tnSecsRow').hidden = t.mode !== 'wall'; $('tnSecs').textContent = t.secs + ' s';
+    const go = $('tnGo'); go.disabled = !n; go.textContent = t.on ? '⏸ Pause tonight\'s list' : t.mode === 'wall' ? '▶ Start the rotation' : '▶ Start cards over music';
+    $('tnBehind').classList.toggle('on', !!t.behind); $('tnBehind').setAttribute('aria-pressed', t.behind ? 'true' : 'false');
+    const dm = $('tnDim'); if (document.activeElement !== dm) dm.value = Math.round(t.dim * 100); $('tnDimV').textContent = Math.round(t.dim * 100) + '%';
+    $('tnDimRow').hidden = !t.behind;
+  }
+  async function tnLoad(delay) {
+    clearTimeout(tnT);
+    if (delay) { tnT = setTimeout(() => tnLoad(0), delay); return; }
+    if (GB.page === 'score' && !document.hidden) { try { const j = await GB.get('/api/tonight' + q()); if (j && !j.error) { const had = TN && TN.items.map(x => x.key).join(); TN = j; tnRender(); if (had !== TN.items.map(x => x.key).join()) lnRender(); } } catch (e) {} }
+    tnT = setTimeout(() => tnLoad(0), 2500);
+  }
+  GB.panel('score', 4, el => {
+    el.classList.add('box'); el.style.setProperty('--c', 'var(--pink)'); el.id = 'tnBox';
+    el.innerHTML = `<div class="ph"><span>📌 Tonight's list</span><span class="r" id="tnR">…</span></div>
+      <button class="btn wide" id="tnAdd" style="background:#ff3d9a1f;color:#ff8cc4;box-shadow:inset 0 0 0 2px #ff3d9a">📌 Add what's on the wall</button>
+      <div class="tn-list" id="tnList"></div>
+      <div class="tn-seg"><button class="btn" id="tnWall">🖼️ Full wall<br><small>each pick takes a turn</small></button><button class="btn" id="tnTick">🎵 Cards over music<br><small>the show keeps playing</small></button></div>
+      <div class="tn-row" id="tnSecsRow"><span class="grow" style="color:var(--lav)">Each pick stays on the wall</span><button class="btn" id="tnLess" aria-label="Shorter">−</button><b id="tnSecs" style="font-family:var(--mono);color:var(--cyan);min-width:54px;text-align:center">90 s</b><button class="btn" id="tnMore" aria-label="Longer">+</button></div>
+      <button class="btn c wide" id="tnGo" style="--c:var(--pink)">▶ Start the rotation</button>
+      <div style="height:12px"></div>
+      <button class="tn-sw" id="tnBehind" type="button" aria-pressed="false"><span class="t"><b>🎉 Show behind the scores</b><small>The light show keeps dancing behind any scoreboard or race board, dimmed so the numbers stay sharp. It pulses on a drop.</small></span><span class="sw"></span></button>
+      <label class="lv" id="tnDimRow" style="--c:var(--pink);margin-top:8px"><span>Show brightness behind</span><input type="range" id="tnDim" min="10" max="50" step="5" value="25"><b id="tnDimV">25%</b></label>
+      <p class="note">Finished games and races drop off 30 minutes after they end, and the list clears itself at 6 AM.</p>`;
+    $('tnAdd').onclick = async () => { if (await tnPost({add_current: true})) { GB.toast('📌 Added to tonight\'s list'); GB.sfx && GB.sfx('ok'); tnLoad(300); } };
+    $('tnWall').onclick = async () => { if (await tnPost({mode: 'wall'})) tnLoad(150); };
+    $('tnTick').onclick = async () => { if (await tnPost({mode: 'ticker'})) tnLoad(150); };
+    const STEPS = [30, 45, 60, 90, 120, 180, 300, 600];
+    const step = d => { const c = TN ? TN.secs : 90; let i = STEPS.findIndex(v => v >= c); if (i < 0) i = STEPS.length - 1; return STEPS[Math.max(0, Math.min(STEPS.length - 1, i + d))]; };
+    $('tnLess').onclick = async () => { if (await tnPost({secs: step(-1)})) tnLoad(150); };
+    $('tnMore').onclick = async () => { if (await tnPost({secs: step(1)})) tnLoad(150); };
+    $('tnGo').onclick = async () => { const on = !(TN && TN.on); if (await tnPost({on})) { GB.toast(on ? (TN.mode === 'wall' ? '📌 Rotating tonight\'s list' : '🎵 Cards over music: tonight\'s list') : '⏸ Tonight\'s list paused'); GB.sfx && GB.sfx(on ? 'on' : 'off'); tnLoad(300); } };
+    $('tnBehind').onclick = async () => { const on = !(TN && TN.behind); if (await tnPost({behind: on})) { GB.toast(on ? '🎉 Show behind the scores: on' : 'Scores only'); tnLoad(150); } };
+    let dT = null; $('tnDim').oninput = e => { $('tnDimV').textContent = e.target.value + '%'; clearTimeout(dT); dT = setTimeout(() => tnPost({dim: e.target.value / 100}), 150); };
+  });
+  GB.on('page', id => { if (id === 'score') tnLoad(0); });
+  GB.on('ready', () => { if (GB.page === 'score') tnLoad(0); });
+  GB.on('group', () => tnLoad(0));
 
   // ------------------------------------------------------------------ polling
   let loopT = null;

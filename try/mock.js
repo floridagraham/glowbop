@@ -1865,11 +1865,60 @@
         shape: {kind: 'grid', w: 20, h: H, pts: Array.from({length: 420}, (_, i) => { const c = Math.floor(i / H), r = c % 2 ? H - 1 - (i % H) : i % H; return [Math.round(c / 19 * 1e4) / 1e4, Math.round(r / (H - 1) * 1e4) / 1e4]; })}}))};
   }
 
+  // ======================================================================= 🧵 Lay out your lights (stringlay.js / artboard.js, Oct 17): the two demo curtains plus a
+  //   308-bulb string light, laid out in this tab only. GET /api/lights/stage, POST lay / main / place / pick / marks / beep.
+  const STG = {main: 'twinkly-192.168.0.164', place: {}, lay: {}, str: {id: 'nanoleaf-192.168.0.170', name: 'String lights', n: 308}};
+  function stageInfo() {
+    const out = DEVS.map(d => { const pl = STG.place[d.id] || [d.x0, 0], pts = [];
+      for (let i = 0; i < 420; i++) { const c = Math.floor(i / H), r = c % 2 ? H - 1 - (i % H) : i % H; pts.push([pl[0] + c, pl[1] + r]); }
+      return {id: d.id, name: d.name, n: 420, connected: true, kind: 'grid', curtain: false, pts, orient: {rot: 0, flip: false}}; });
+    out.push({id: STG.str.id, name: STG.str.name, n: STG.str.n, connected: true, kind: 'string', curtain: false, lay: STG.lay[STG.str.id] || null});
+    return {devices: out, limits: [], main: STG.main};
+  }
+  function stageCmd(path, b) {
+    if (path === '/api/lights/lay') { if (b.id !== STG.str.id && !DEVS.some(d => d.id === b.id)) return {error: 'no such light'};
+      if (b.lay) STG.lay[b.id] = b.lay; else delete STG.lay[b.id];
+      setTimeout(() => toast('🧵 Saved in the demo. On the app your lights take the new shape right away'), 400); return {ok: true, lay: STG.lay[b.id] || null}; }
+    if (path === '/api/lights/main') { STG.main = String(b.id || ''); return {ok: true, main: STG.main}; }
+    if (path === '/api/lights/place') { if (b.place) STG.place[b.id] = [Math.round(+b.place[0] * 2) / 2, Math.round(+b.place[1] * 2) / 2]; return {ok: true}; }
+    if (path === '/api/lights/pick') return {ok: true};
+    if (path === '/api/lights/marks') return {ok: true};
+    if (path === '/api/lights/beep') return b.reset ? {ok: true, before: 0.9, after: 1} : {ok: true, before: 1, after: 0.9, waiting: false, floor: false};
+    return null;
+  }
+  // ======================================================================= 📌 Tonight's list + 🎉 show behind the scores (tonight.py)
+  const TNS = {items: [], mode: 'wall', on: false, secs: 90, behind: false, dim: 0.25, msg: ''};
+  function tnClean(it) { if (!it || typeof it !== 'object') return null; const t = String(it.title || '').slice(0, 60);
+    if (it.kind === 'f1') return {kind: 'f1', key: 'f1', title: t || 'Formula 1'};
+    if (it.kind === 'board' && ['golf', 'nascar', 'tennis', 'ufc'].includes(it.bk)) return {kind: 'board', bk: it.bk, key: 'board:' + it.bk, title: t || it.bk.toUpperCase()};
+    if (it.kind === 'game' && it.league && it.team_id) return {kind: 'game', league: String(it.league), team_id: String(it.team_id), team_name: String(it.team_name || ''), other_id: String(it.other_id || ''), key: 'team:' + it.league + ':' + it.team_id, title: t || String(it.league).toUpperCase()};
+    return null; }
+  function tonightInfo() { const cur = TNS.on && TNS.mode === 'wall' && TNS.items.length ? TNS.items[Math.floor(wall() / TNS.secs) % TNS.items.length].key : null;
+    return {items: TNS.items, mode: TNS.mode, on: TNS.on, secs: TNS.secs, behind: TNS.behind, dim: TNS.dim, cur, next_in: cur ? Math.max(0, Math.round(TNS.secs - wall() % TNS.secs)) : null,
+      wall: null, wall_in: false, msg: TNS.msg}; }
+  function tonightCmd(b) {
+    if (b.add_current) { TNS.msg = 'Put a game or race on the wall first, then add it'; return; }
+    if (b.add) { const it = tnClean(b.add); if (it && !TNS.items.some(x => x.key === it.key)) TNS.items = TNS.items.concat([it]).slice(-12); if (it) TNS.msg = '📌 ' + it.title + ' added'; }
+    if (b.remove) TNS.items = TNS.items.filter(x => x.key !== b.remove);
+    if (b.move) { const ks = TNS.items.map(x => x.key), i = ks.indexOf(b.move); if (i >= 0) { const j = Math.max(0, Math.min(ks.length - 1, i + (+b.delta || -1))); TNS.items.splice(j, 0, TNS.items.splice(i, 1)[0]); } }
+    if (b.clear) TNS.items = [];
+    if (b.mode === 'wall' || b.mode === 'ticker') TNS.mode = b.mode;
+    if ('secs' in b) TNS.secs = Math.max(30, Math.min(600, Math.round(+b.secs || 90)));
+    if ('behind' in b) TNS.behind = !!b.behind;
+    if ('dim' in b) TNS.dim = Math.max(0.1, Math.min(0.5, +b.dim || 0.25));
+    if ('on' in b) TNS.on = !!b.on && TNS.items.length > 0;
+    if (!TNS.items.length) TNS.on = false;
+  }
+
   // ======================================================================= the router
   async function handle(method, path, q, b) {
     await ready;
     const ok = (o) => ({json: Object.assign({ok: true}, o || {})});
     const pro = fn => { try { return {json: fn()}; } catch (e) { if (e.bad) return {status: 400, json: {error: e.message}}; throw e; } };
+    if (method === 'GET' && path === '/api/lights/stage') return {json: stageInfo()};
+    if (method === 'GET' && path === '/api/tonight') return {json: tonightInfo()};
+    if (method === 'POST' && path === '/api/tonight') { tonightCmd(b || {}); return ok(); }
+    if (method === 'POST' && path.startsWith('/api/lights/')) { const r = stageCmd(path, b || {}); if (r) return {json: r}; }
     if (method === 'GET') {
       switch (path) {
         case '/api/status': return {json: status()};

@@ -1,0 +1,379 @@
+{
+ "glowbop": 1,
+ "type": "sign",
+ "name": "GlowBop Logo Sign (7x7 Curtain Burst, 30 in)",
+ "about": "A light-up sign: each spot is a hole in the board with a bunch of bulbs pushed through it. List the spots, then each strand's route through them in wiring order, starting at the plug. GlowBop lights the bunched bulbs, keeps lead, bridge and leftover bulbs dark, and maps every spot onto your wall.",
+ "how_to_edit": {
+  "units": "inches (any unit works, just stay consistent)",
+  "spacing": "distance between neighbouring spots: GlowBop maps one spacing to one bulb spot on your wall",
+  "cord": "where the plug / power cord enters the sign",
+  "spots": "every lit spot: its number, where it is, and its color",
+  "strands": "one entry per strand coming off the plug, in the light's bulb order. lead = dark bulbs from the plug to the first spot; route = spot numbers in wiring order; lit = bulbs bunched in each spot; bridge = dark bulbs between spots. Any route entry can be {\"spot\": n, \"lit\": 6, \"bridge\": 2} to change just that spot. Bulbs left at the end stay dark."
+ },
+ "units": "in",
+ "spacing": 4,
+ "size": [
+  30,
+  30
+ ],
+ "cord": {
+  "x": 15,
+  "y": 30
+ },
+ "bulbs": 308,
+ "spots": [
+  {
+   "spot": 1,
+   "label": "C7",
+   "x": 11,
+   "y": 27,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 2,
+   "label": "D7",
+   "x": 15,
+   "y": 27,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 3,
+   "label": "E7",
+   "x": 19,
+   "y": 27,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 4,
+   "label": "F6",
+   "x": 23,
+   "y": 23,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 5,
+   "label": "E6",
+   "x": 19,
+   "y": 23,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 6,
+   "label": "D6",
+   "x": 15,
+   "y": 23,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 7,
+   "label": "C6",
+   "x": 11,
+   "y": 23,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 8,
+   "label": "B6",
+   "x": 7,
+   "y": 23,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 9,
+   "label": "A5",
+   "x": 3,
+   "y": 19,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 10,
+   "label": "B5",
+   "x": 7,
+   "y": 19,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 11,
+   "label": "C5",
+   "x": 11,
+   "y": 19,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 12,
+   "label": "D5",
+   "x": 15,
+   "y": 19,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 13,
+   "label": "E5",
+   "x": 19,
+   "y": 19,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 14,
+   "label": "F5",
+   "x": 23,
+   "y": 19,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 15,
+   "label": "G5",
+   "x": 27,
+   "y": 19,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 16,
+   "label": "G4",
+   "x": 27,
+   "y": 15,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 17,
+   "label": "F4",
+   "x": 23,
+   "y": 15,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 18,
+   "label": "E4",
+   "x": 19,
+   "y": 15,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 19,
+   "label": "D4",
+   "x": 15,
+   "y": 15,
+   "color": "#ffffff",
+   "ring": "white"
+  },
+  {
+   "spot": 20,
+   "label": "C4",
+   "x": 11,
+   "y": 15,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 21,
+   "label": "B4",
+   "x": 7,
+   "y": 15,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 22,
+   "label": "A4",
+   "x": 3,
+   "y": 15,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 23,
+   "label": "A3",
+   "x": 3,
+   "y": 11,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 24,
+   "label": "B3",
+   "x": 7,
+   "y": 11,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 25,
+   "label": "C3",
+   "x": 11,
+   "y": 11,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 26,
+   "label": "D3",
+   "x": 15,
+   "y": 11,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 27,
+   "label": "E3",
+   "x": 19,
+   "y": 11,
+   "color": "#ff3d9a",
+   "ring": "pink"
+  },
+  {
+   "spot": 28,
+   "label": "F3",
+   "x": 23,
+   "y": 11,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 29,
+   "label": "G3",
+   "x": 27,
+   "y": 11,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 30,
+   "label": "F2",
+   "x": 23,
+   "y": 7,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 31,
+   "label": "E2",
+   "x": 19,
+   "y": 7,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 32,
+   "label": "D2",
+   "x": 15,
+   "y": 7,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 33,
+   "label": "C2",
+   "x": 11,
+   "y": 7,
+   "color": "#9b3dff",
+   "ring": "violet"
+  },
+  {
+   "spot": 34,
+   "label": "B2",
+   "x": 7,
+   "y": 7,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 35,
+   "label": "C1",
+   "x": 11,
+   "y": 3,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 36,
+   "label": "D1",
+   "x": 15,
+   "y": 3,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  },
+  {
+   "spot": 37,
+   "label": "E1",
+   "x": 19,
+   "y": 3,
+   "color": "#33d6ff",
+   "ring": "cyan"
+  }
+ ],
+ "strands": [
+  {
+   "name": "Strand 1",
+   "bulbs": 154,
+   "lead": 0,
+   "lit": 7,
+   "bridge": 1,
+   "route": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ]
+  },
+  {
+   "name": "Strand 2",
+   "bulbs": 154,
+   "lead": 6,
+   "lit": 7,
+   "bridge": 1,
+   "route": [
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37
+   ]
+  }
+ ]
+}

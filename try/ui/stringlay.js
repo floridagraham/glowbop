@@ -143,7 +143,22 @@
     while (pl.length < c) { const q = pl[pl.length - 1]; pl.push([q[0] + dx / ln, q[1] + dy / ln]); }
     return pl.slice(0, c);
   }
+  // 🎨 Art board (Oct 17): a light mapped from a file. Same maths as lights.py art_points: START / END move, turn and resize the whole map.
+  function artPoints(N, lay) {
+    let P = lay.pts || [[0, 0]]; if (P.length !== N) P = Array.from({length: N}, (_, i) => P[Math.round(i * (P.length - 1) / Math.max(1, N - 1))]);
+    let k = lay.ref > 0 && lay.ref < P.length ? lay.ref : 0;
+    if (!k) { let bd = -1; P.forEach((q, i) => { const dd = (q[0] - P[0][0]) ** 2 + (q[1] - P[0][1]) ** 2; if (dd > bd) { bd = dd; k = i; } }); }
+    const hp = (lay.parts && lay.parts[0] && lay.parts[0].pts) || [P[0], P[k]], h0 = hp[0], h1 = hp[hp.length - 1];
+    const vx = P[k][0] - P[0][0], vy = P[k][1] - P[0][1], lv = Math.hypot(vx, vy);
+    if (lv < 1e-6) return P.map(q => [q[0] - P[0][0] + h0[0], q[1] - P[0][1] + h0[1]]);
+    const ux = h1[0] - h0[0], uy = h1[1] - h0[1], sc = Math.hypot(ux, uy) / lv, an = Math.atan2(uy, ux) - Math.atan2(vy, vx), c = Math.cos(an) * sc, sn = Math.sin(an) * sc;
+    return P.map(q => { const x = q[0] - P[0][0], y = q[1] - P[0][1]; return [x * c - y * sn + h0[0], x * sn + y * c + h0[1]]; });
+  }
   function layPoints(d, lay) {
+    if (lay.kind === 'points') { const P = artPoints(d.n, lay);                 // 🪧 dark bulbs (sign wire runs) are drawn under the lit spot before them
+      if (lay.hide && lay.hide.length) { const H = new Set(lay.hide); let last = null; for (let i = 0; i < P.length; i++) { if (!H.has(i)) last = P[i]; else if (last) P[i] = last; }
+        const firstLit = P.findIndex((_, i) => !H.has(i)); if (firstLit > 0) for (let i = 0; i < firstLit; i++) P[i] = P[firstLit]; }
+      return [P]; }
     if (DRAW && d.id === sel && DRAW.placed.length && !lay.wall) { const cs = partCounts(d, lay), res = [];
       lay.parts.forEach((p, k) => { if (cs[k] > 0) res.push(k === DRAW.k ? drawPreview(cs[k]) : layOne(cs[k], p.pts, p.fold, lay.gap || 1, p.rev, p.smooth, p.pins)); }); return res; }
     if (lay.wall) { const all = wallPoints(d.n, lay), cs = partCounts(d, lay), res = []; let o = 0; cs.forEach(c => { res.push(all.slice(o, o + c)); o += c; }); return res; }
@@ -237,7 +252,7 @@
     if (sel && !ST.devices.some(d => d.id === sel)) sel = '';
     box.innerHTML = ss.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${SCOL[i % SCOL.length]}">${d.curtain ? '〰️' : '🧵'} ${esc(d.name)} · ${d.n}</button>`).join('')
       + cc.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${CCOL[i % CCOL.length]}">▦ ${esc(d.name)}</button>`).join('');
-    box.querySelectorAll('[data-sl]').forEach(b => b.onclick = () => { sel = b.dataset.sl; strand = 0; paintTop(); draw(); });
+    box.querySelectorAll('[data-sl]').forEach(b => b.onclick = () => { sel = b.dataset.sl; strand = 0; CH = 0; paintTop(); draw(); paintCurtainCard(); });
   }
   function paintTools() {
     document.querySelectorAll('#slSnap [data-sn]').forEach(b => b.classList.toggle('on', (b.dataset.sn === '1') === SNAP));
@@ -245,7 +260,10 @@
     const isC = !!(d && d.kind === 'grid'); cb.hidden = !isC;
     if (!d) { box.hidden = true; $('slR').textContent = $('slR2').textContent = ''; $('slHint').textContent = $('slHint').textContent || 'Click a curtain or a string to edit it'; return; }
     if (isC) { $('slDrops').textContent = GB.pro === false ? '🔒 Bend its drops · PRO' : '〰️ Bend its drops'; box.hidden = true; $('slR').textContent = $('slR2').textContent = Object.keys(MOVE).length ? 'NOT SAVED' : 'CURTAIN'; return; }
-    if (!d || !lay) { box.hidden = true; return; } box.hidden = false;
+    if (!d || !lay) { box.hidden = true; return; }
+    if (lay.kind === 'points') { box.hidden = true; $('slR').textContent = $('slR2').textContent = dirty[sel] ? 'NOT SAVED' : '🎨 FROM A FILE';
+      $('slHint').textContent = '🎨 Mapped from a file (Art board). Drag START to move it, END to turn or resize it, then Save. To change the shape, import again on the ART page.'; paintCurtainCard(); return; }
+    box.hidden = false;
     if (strand >= lay.parts.length) strand = 0;
     const p = lay.parts[strand], cs = partCounts(d, lay), fr = p.fold ? p.fold.rows : 1;
     const isCur = lay.kind === 'curtain', isWall = !!lay.wall;
@@ -258,6 +276,7 @@
     $('slModeRow').style.display = fr < 2 || isWall ? 'none' : '';
     $('slMode').innerHTML = [['snake', 'Back & forth'], ['alt', 'Every other bulb']].map(([m, t]) => `<button class="btn${p.fold && p.fold.mode === m ? ' on' : ''}" data-md="${m}">${t}</button>`).join('');
     $('slBendRow').style.display = fr > 1 || isWall ? 'none' : 'contents';
+    paintCurtainCard();
     $('slCurveRow').style.display = fr > 1 || isWall ? 'none' : '';
     $('slBulb').style.display = isWall ? 'none' : ''; $('slFlip').style.display = isWall ? 'none' : '';
     $('slDraw').style.display = isWall || isCur ? 'none' : ''; $('slDraw').textContent = DRAW ? '✓ Done drawing' : '✍️ Draw it'; $('slBends').textContent = BENDS ? '💡 Hide the bends' : '💡 Show me the bends';
@@ -275,16 +294,86 @@
   }
   function wallPicker(lay) {
     const d = dev(sel), R = lay.wall || 0, P = R ? Math.ceil(d.n / R) : 0;
-    $('slWallPick').innerHTML = `<button class="btn" data-wr="match">🟰 Match my curtains</button><button class="btn" data-wr="big">⬛ Biggest even wall</button>`
-      + `<button class="btn" data-wr="-1" aria-label="One row fewer">−</button><button class="btn" disabled style="opacity:1">${R ? R + ' rows × ' + P : 'rows'}</button><button class="btn" data-wr="+1" aria-label="One more row">+</button>`
+    $('slWallPick').innerHTML = `<button class="btn" data-wr="match">🟰 Match my curtains (drops)</button><button class="btn" data-wr="big">⬛ Biggest even wall</button>`
+      + `<button class="btn" data-wr="-1" aria-label="One row fewer">−</button><button class="btn" disabled style="opacity:1">${R ? R + ((lay.gap || 1) < 0 ? ' drops × ' : ' rows × ') + P : 'rows'}</button><button class="btn" data-wr="+1" aria-label="One more row">+</button>`
       + (lay.wall ? '<button class="btn" data-wr="off">✕ Not a wall</button>' : '');
   }
   function curtainBox() {                         // where your curtains are + how tall (in bulbs), for "Match my curtains"
-    let best = null, x1 = -Infinity;                // the tallest curtain sets the height; the wall goes right of all of them
-    (ST.devices || []).forEach(d => { if (d.id === sel) return; const pts = d.kind === 'grid' ? cpts(d) : (d.curtain && LAY[d.id] ? layPoints(d, LAY[d.id]).flat() : []);
+    let best = null, x1 = -Infinity;                // ⭐ your main panel sets the height (else the tallest curtain); the new curtain goes right of all of them
+    panels().forEach(d => { if (d.id === sel) return; const pts = panelPts(d);
       if (!pts.length) return; const ys = pts.map(p => p[1]), xs = pts.map(p => p[0]), h = Math.round(Math.max(...ys) - Math.min(...ys)) + 1;
-      x1 = Math.max(x1, ...xs); if (!best || h > best.h) best = {h, y0: Math.min(...ys)}; });
-    return best ? {x1, y0: best.y0, h: best.h} : null;
+      x1 = Math.max(x1, ...xs); const main = d.id === mainId();
+      if (!best || (main && !best.main) || (!best.main && h > best.h)) best = {h, y0: Math.min(...ys), main, name: d.name}; });
+    return best ? {x1, y0: best.y0, h: best.h, name: best.name} : null;
+  }
+  // ⭐ Oct 17 (Graham: "if someone makes a string their main panel, we need to be able to do that too"): a panel is a curtain OR a string
+  //   laid out as a wall / curtain. Any panel can be the main one; with no pick, the tallest panel is (strings-only homes: the first wall made).
+  const isPanel = d => d.kind === 'grid' || !!(LAY[d.id] && (LAY[d.id].wall || LAY[d.id].kind === 'curtain'));
+  const panels = () => (ST ? ST.devices.filter(isPanel) : []);
+  const panelPts = d => d.kind === 'grid' ? cpts(d) : (LAY[d.id] ? layPoints(d, LAY[d.id]).flat() : []);
+  const panelH = d => { const ys = panelPts(d).map(p => p[1]); return ys.length ? Math.round(Math.max(...ys) - Math.min(...ys)) + 1 : 0; };
+  const mainId = () => { const pp = panels(); if (ST && ST.main && pp.some(d => d.id === ST.main)) return ST.main;
+    let best = null; pp.forEach(d => { const h = panelH(d); if (!best || h > best.h) best = {id: d.id, h}; }); return best ? best.id : ''; };
+  // 🧵 Oct 17 (Graham: "this should be a template for people to make a curtain out of any string of lights with this number of bulbs";
+  //   "templates based on resolution: how tall is your main panel, or how tall do you want this?"): drops like a curtain, top-down, snaking,
+  //   one bulb per curtain spot, as tall as you pick. Extra spots at the end of the last drop stay dark.
+  const CURTAIN_TPL = [{n: 308, h: 21, name: '308-bulb string → 15 × 21 curtain'}];
+  let CH = 0;                                      // the height picked in the 🧵 Make a curtain card (0 = match the main panel)
+  function makeCurtain(h) {
+    const d = dev(sel), lay = LAY[sel]; if (!d || !lay) return;
+    const cb = curtainBox(), N = d.n, a = cb ? [cb.x1 + 1, cb.y0] : lay.parts[0].pts[0].slice();
+    const R = Math.ceil(N / h); lay.wall = R; lay.gap = -1; lay.parts[0].pts = [a, [a[0], a[1] + h - 1]];
+    lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay);
+    const last = N - (R - 1) * h;
+    $('slHint').textContent = `🧵 ${R} drops of ${h}${last < h ? ` (the last drop is ${last} bulbs)` : ''}. Hang it like this: start at the TOP next to your other lights, run the first drop down, the next one back up beside it, and keep snaking. Then Save.`;
+    change();
+  }
+  function paintCurtainCard() {
+    const box = $('slCm'); if (!box) return; const d = dev(sel);
+    if (!d || d.kind !== 'string' || (LAY[sel] && (LAY[sel].kind === 'curtain' || LAY[sel].kind === 'points'))) { box.hidden = true; return; } box.hidden = false;
+    const all = panels(), cc = all.filter(x => x.id !== sel), m = mainId(), cb = curtainBox(), mh = cb ? cb.h : 21, h = CH || mh, R = Math.ceil(d.n / h), last = d.n - (R - 1) * h;
+    const tpl = CURTAIN_TPL.find(t => t.n === d.n);
+    box.innerHTML = `<b class="sl-cmh">🧵 Make it a curtain</b>
+      ${all.length ? `<div class="sl-row"><b>Main panel</b><div class="seg">${all.map(c => `<button class="btn${c.id === m ? ' on' : ''}" data-mn="${esc(c.id)}">⭐ ${c.id === sel ? 'This one' : esc(c.name)}</button>`).join('')}</div></div>` : ''}
+      ${m === sel ? '<p class="note" style="margin:2px 0 6px">⭐ This is your main panel: your other lights match its height and spacing.</p>' : ''}
+      <div class="sl-row"><b>How tall?</b><div class="seg">${cc.length ? `<button class="btn${!CH ? ' on' : ''}" data-ch="0">🟰 Match main (${mh})</button>` : ''}${[11, 16, 21].filter(v => v !== mh || !cc.length).map(v => `<button class="btn${CH === v ? ' on' : ''}" data-ch="${v}">${v}</button>`).join('')}<button class="btn" data-ch="-">−</button><button class="btn" disabled style="opacity:1">${h} tall</button><button class="btn" data-ch="+">+</button></div></div>
+      ${tpl ? `<button class="btn wide" data-tp="${tpl.h}" style="margin:4px 0">⭐ Template: ${esc(tpl.name)}</button>` : ''}
+      <p class="note" style="margin:4px 0">${d.n} bulbs → <b>${R} drops of ${h}</b>${last < h ? `, the last drop ${last} bulbs` : ', every drop full'}. ${cc.length ? 'Same spacing as your main panel, one bulb per spot.' : 'Bulbs evenly spaced, one per spot. ⭐ This becomes your main panel: lights you add later match it.'}</p>
+      <button class="btn c wide" id="slCmGo" style="--c:var(--pink)">🧵 Make it a ${R} × ${h} curtain</button>`;
+    box.querySelectorAll('[data-mn]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/main', {id: b.dataset.mn})) { ST.main = b.dataset.mn; CH = 0; GB.toast('⭐ Main panel: ' + b.textContent.replace('⭐ ', '')); paintCurtainCard(); } });
+    box.querySelectorAll('[data-ch]').forEach(b => b.onclick = () => { const v = b.dataset.ch; CH = v === '-' ? Math.max(2, h - 1) : v === '+' ? Math.min(200, h + 1) : +v; if (CH === mh && cc.length) CH = 0; paintCurtainCard(); });
+    box.querySelectorAll('[data-tp]').forEach(b => b.onclick = () => { CH = +b.dataset.tp; makeCurtain(CH); paintCurtainCard(); });
+    $('slCmGo').onclick = () => makeCurtain(h);
+  }
+  // 🗺️ the Live map button (Pro pages only: PRO DJ, PRO HOME, PRO ART)
+  GB.css(`.sl-livebtn { position:fixed; right:18px; bottom:64px; z-index:230; border:0; border-radius:0 18px 0 18px; padding:12px 18px; cursor:pointer;
+    font:800 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:2px; text-transform:uppercase; color:#fff;
+    background:linear-gradient(135deg, var(--pink), var(--violet)); box-shadow:0 8px 26px #0009, 0 0 22px -6px var(--pink); }
+  .sl-livebtn[hidden] { display:none; } body.sl-open .sl-livebtn { display:none; }`);
+  const LIVE_PAGES = ['home', 'art'];
+  const liveHere = () => GB.pro === true && (LIVE_PAGES.includes(GB.page) || (GB.page === 'dj' && document.documentElement.classList.contains('prodj')));
+  function paintLiveBtn() {
+    let b = $('slLiveBtn');
+    if (!b) { b = document.createElement('button'); b.id = 'slLiveBtn'; b.className = 'sl-livebtn'; b.type = 'button'; b.textContent = '🗺️ Live map';
+      b.title = 'Map your lights while the show plays'; b.onclick = () => GB.slLive && GB.slLive(); document.body.appendChild(b); }
+    b.hidden = !liveHere();
+  }
+  GB.on('page', () => setTimeout(paintLiveBtn, 0)); GB.on('pro', () => setTimeout(paintLiveBtn, 0)); GB.on('ready', paintLiveBtn);
+  setInterval(paintLiveBtn, 1500);                 // PRO DJ is the DJ page in Pro mode: catch the switch
+  // 🎨 for the Art board: how tall the main panel is and where a newly mapped light should go (right of all the others)
+  GB.slPlaceFor = async id => { if (!ST) await load(true); const keep = sel; sel = id; const cb = curtainBox(); sel = keep; return cb || {x1: -1, y0: 0, h: 21}; };
+  GB.slReload = () => load(true);
+  // 👋 setup: a string light that isn't laid out as a wall yet gets asked once ("make it a curtain that matches your main panel?")
+  function paintAsk() {
+    const box = $('slAsk'); if (!box) return;
+    let skip = {}; try { skip = JSON.parse(localStorage.getItem('gb_cm_skip') || '{}'); } catch (e) {}
+    const d = strings().find(x => !isPanel(x) && !skip[x.id] && panels().length);
+    if (!d) { box.hidden = true; return; } box.hidden = false;
+    const cb = curtainBox(), h = cb ? cb.h : 21;
+    box.innerHTML = `<b>🧵 New string light: ${esc(d.name)} (${d.n} bulbs)</b> Make it a curtain that matches your main panel? That's <b>${Math.ceil(d.n / h)} drops of ${h}</b>, so text and shows line up across all your lights.
+      <div class="seg" style="margin-top:8px"><button class="btn c" data-ak="go" style="--c:var(--pink)">🧵 Make a curtain</button><button class="btn" data-ak="no">Not now</button></div>`;
+    box.querySelector('[data-ak="go"]').onclick = () => { sel = d.id; strand = 0; CH = 0; paintTop(); draw(); setTimeout(() => { const c = $('slCm'); if (c) c.scrollIntoView({behavior: 'smooth', block: 'center'}); }, 80); };
+    box.querySelector('[data-ak="no"]').onclick = () => { skip[d.id] = 1; try { localStorage.setItem('gb_cm_skip', JSON.stringify(skip)); } catch (e) {} paintAsk(); };
   }
   function change() { dirty[sel] = true; view = view || null; commit(); draw(); }
   // ↶↷ undo / redo (Oct 17, Graham): every drag, bend, fold, flip and move is one step
@@ -296,19 +385,24 @@
   function undo() { if (!HIST.length) return GB.toast('Nothing to undo'); FUT.push(LAST); restore(HIST.pop()); GB.toast('↶ Undone'); }
   function redo() { if (!FUT.length) return GB.toast('Nothing to redo'); HIST.push(LAST); restore(FUT.pop()); GB.toast('↷ Redone'); }
   // 🔔 Oct 17: tap when a light's power box beeps: GlowBop logs the moment (beeps.jsonl) and turns that light's power down a notch
+  // 🔔 Oct 17: "My lights are beeping", the same for every light (no brand named). Tonight's lesson: the "light" beeping all day was the
+  //   dishwasher, so it first asks you to check what else is beeping nearby, then turns the whole show down a notch if you still want.
   function paintBeep() {
-    const box = $('slBeep'), lim = (ST && ST.limits) || []; if (!box) return; box.hidden = !lim.length;
-    $('slBeepNote').innerHTML = lim.map(l => `${esc(l.name)}: power ${Math.round(l.power * 100)}% <a href="#" data-pw="${esc(l.id)}">Reset</a>`).join(' · ') + (lim.length ? '<br>Each tap saves what was happening and turns it down a notch (at most once every 2 minutes).' : '');
-    box.querySelectorAll('[data-pw]').forEach(a => a.onclick = async e => { e.preventDefault(); if (await GB.post('/api/lights/power', {id: a.dataset.pw, power: 0.12})) { GB.toast('↺ Power back to normal (12%)'); load(true); } });
+    const box = $('slBeep'); if (!box) return; box.hidden = false;
+    const bri = GB.status && GB.status.brightness != null ? GB.status.brightness / 100 : null;   // /api/status sends 0-100
+    $('slBeepNote').innerHTML = bri != null && bri < 0.995 ? `Show brightness ${Math.round(bri * 100)}% <a href="#" id="slBeepReset">Back to 100%</a>` : '';
+    const rs = $('slBeepReset'); if (rs) rs.onclick = async e => { e.preventDefault(); if (await GB.post('/api/lights/beep', {reset: true})) { GB.toast('↺ Brightness back to 100%'); setTimeout(paintBeep, 600); } };
   }
   async function beep() {
+    const box = $('slBeepAsk');
+    if (box && box.hidden) { box.hidden = false; return; }
+    if (box) box.hidden = true;
     const r = await GB.post('/api/lights/beep', {}); if (!r) return;
-    const L = r.lights || [], down = L.filter(l => l.after < l.before);
-    if (down.length) GB.toast('🔔 Got it. Turned it down: ' + down.map(l => `${l.name} ${Math.round(l.before * 100)}% → ${Math.round(l.after * 100)}%`).join(', ') + '. Give it a couple of minutes.');
-    else if (L.some(l => l.floor)) GB.toast('🔔 Noted. It is already as low as it goes (5%). If it still beeps, check the power box and plug.');
-    else if (L.some(l => l.waiting)) GB.toast('🔔 Noted. Already turned down just now, give it a minute. Tap again if it still beeps after that.');
+    if (r.after < r.before) GB.toast(`🔔 Got it, turned the show down ${Math.round(r.before * 100)}% → ${Math.round(r.after * 100)}%. Give it a couple of minutes.`);
+    else if (r.floor) GB.toast('🔔 Noted. The show is already down to 40%. If it still beeps, check the power box and the plug.');
+    else if (r.waiting) GB.toast('🔔 Noted. Already turned down just now, give it a minute.');
     else GB.toast('🔔 Noted');
-    GB.sfx && GB.sfx('ok'); load(true);
+    GB.sfx && GB.sfx('ok'); setTimeout(paintBeep, 600);
   }
   function paintUR() { const u = $('slUndo'), r = $('slRedo'); if (u) u.disabled = !HIST.length; if (r) r.disabled = !FUT.length; }
 
@@ -510,7 +604,7 @@
     Object.keys(MOVE).forEach(id => { if (!dirty[id]) delete MOVE[id]; });
     if (!keepView) view = null;
     LAST = stateNow(); paintUR(); paintBeep();
-    paintTop(); draw();
+    paintTop(); draw(); paintAsk(); paintCurtainCard();
   }
   async function placeCurtain(d, extra) {          // ▦ save where a curtain hangs (its top-left), plus a turn / mirror
     const b = bbox(cpts(d)); return GB.post('/api/lights/place', Object.assign({id: d.id, place: [b.x0, b.y0]}, extra || {}));
@@ -540,14 +634,15 @@
     el.innerHTML = `<div class="sl-hd"><b>🧵 Lay out your lights</b><span class="r" id="slR2" style="font:700 12px var(--cond);letter-spacing:1px;color:var(--dim)"></span><button class="btn c" id="slDone" style="--c:var(--green)">✓ Done</button></div>
       <div class="ph"><span>🧵 Lay out your lights</span><span class="r" id="slR"></span></div>
       <p class="note">Your wall, live. Drag curtains and each string's <b>START</b> / <b>END</b>. Press and hold (or right-click) for bends, pinch or scroll to zoom. Tap <b>Save</b>.</p>
+      <div class="sl-ask sl-cmask" id="slAsk" hidden></div>
       <div class="sl-top" id="slTop"></div>
       <div class="sl-stage" id="slStage"><svg id="slSvg" aria-label="Your lights, laid out"></svg></div>
       <div class="sl-hint" id="slHint"></div>
       <button class="btn c wide sl-go" id="slBig" style="--c:var(--cyan)">✏️ Customize full screen</button>
-      <div class="sl-side"><div id="slBeep" hidden><button class="btn c wide" id="slBeepGo" style="--c:var(--amber)">🔔 My lights are beeping</button><p class="note" id="slBeepNote" style="margin:4px 0 0"></p></div><div class="sl-row" id="slUR"><b>Steps</b><div class="seg"><button class="btn" id="slUndo" disabled>↶ Undo</button><button class="btn" id="slRedo" disabled>↷ Redo</button></div></div><div id="slCurt" hidden>
+      <div class="sl-side"><div id="slBeep" hidden><button class="btn c wide" id="slBeepGo" style="--c:var(--amber)">🔔 My lights are beeping</button><div id="slBeepAsk" class="sl-ask" hidden><b>👂 First, is it really the lights?</b> Check for anything else that beeps nearby: dishwasher, oven, fridge door, smoke alarm, a phone. (We once spent a whole night blaming the lights. It was the dishwasher.) <button class="btn c wide" id="slBeepYes" style="--c:var(--amber);margin-top:8px">It's the lights: turn the show down a notch</button></div><p class="note" id="slBeepNote" style="margin:4px 0 0"></p></div><div class="sl-row" id="slUR"><b>Steps</b><div class="seg"><button class="btn" id="slUndo" disabled>↶ Undo</button><button class="btn" id="slRedo" disabled>↷ Redo</button></div></div><div id="slCurt" hidden>
         <p class="note">Drag the curtain to where it hangs. Turn or mirror it if its lights run another way.</p>
         <div class="sl-tools"><button class="btn" id="slRot">↻ Turn 90°</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn" id="slDrops">〰️ Bend its drops</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
-      </div><div id="slTools">
+      </div><div id="slCm" class="sl-cm" hidden></div><div id="slTools">
         <div class="sl-row"><b>Strands</b><div class="seg" id="slStrands"></div></div>
         <div class="sl-row" id="slWhichRow"><b>Laying</b><div class="sl-row" id="slWhich"></div></div>
         <div class="sl-row"><b>Shape</b><div class="seg" id="slFold"></div></div>
@@ -629,7 +724,8 @@
     el.querySelector('#slUnpin').onclick = () => { const lay = LAY[sel]; if (!lay) return; delete lay.parts[strand].pins; GB.toast('↺ Every bulb back on its line'); change(); };
     el.querySelector('#slFlip').onclick = () => { const lay = LAY[sel]; if (!lay) return; lay.parts[strand].rev = !lay.parts[strand].rev; GB.toast('⇄ START and END swapped'); change(); };
     el.querySelector('#slReset').onclick = () => { const d = dev(sel); if (!d) return; LAY[sel] = fresh(d, (LAY[sel] && LAY[sel].parts.length) || 1); strand = 0; view = null; change(); };
-    el.querySelector('#slBeepGo').onclick = beep;
+    el.querySelector('#slBeepGo').onclick = () => { const k = $('slBeepAsk'); k.hidden = !k.hidden; };
+    el.querySelector('#slBeepYes').onclick = beep;
     el.querySelector('#slDraw').onclick = () => { const lay = LAY[sel]; if (!lay) return;
       if (DRAW) { DRAW = null; $('slDraw').textContent = '✍️ Draw it'; $('slHint').textContent = 'Drawing done. Drag any bend to fine-tune, then Save.'; return draw(); }
       if (lay.wall) { GB.toast('Tap ✕ Not a wall first, then draw'); return; }
@@ -664,11 +760,16 @@
       const v = b.dataset.wr, N = d.n;
       if (v === 'off') { LAY[sel] = fresh(d, lay.parts.length); strand = 0; $('slWallRow').style.display = 'none'; $('slHint').textContent = 'Back to plain strands'; return change(); }
       const a0 = lay.parts[0].pts[0], z0 = lay.parts[0].pts[lay.parts[0].pts.length - 1];
-      const place = (R, a, pitch) => { const P = Math.ceil(N / R); lay.wall = R; lay.parts[0].pts = [a, [a[0] + (P - 1) * pitch, a[1]]]; lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay); return P; };
+      const place = (R, a, pitch) => { const P = Math.ceil(N / R); lay.wall = R; lay.gap = 1; lay.parts[0].pts = [a, [a[0] + (P - 1) * pitch, a[1]]]; lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay); return P; };
       let R, P;
-      if (v === 'match') {                         // 🟰 same bulb spacing as the curtains, as tall as them, right beside them
-        const cb = curtainBox(); R = cb ? cb.h : 21; P = place(R, cb ? [cb.x1 + 2, cb.y0] : a0.slice(), 1);
-        $('slHint').textContent = `🟰 Matches your curtains: ${R} rows of ${P}, same bulb spacing, right beside them.`;
+      if (v === 'match') {                         // 🟰 Oct 17 (Graham: "if you have a main curtain, create a grid with your lights that's the same"):
+        //   DROPS like a curtain, top to bottom then back up, as tall as the main (tallest) curtain, one bulb per curtain spot, right beside it.
+        //   Extra spots at the end of the last drop stay dark.
+        const cb = curtainBox(), h = cb ? cb.h : 21, a = cb ? [cb.x1 + 1, cb.y0] : a0.slice();
+        R = Math.ceil(N / h); lay.wall = R; lay.gap = -1; lay.parts[0].pts = [a, [a[0], a[1] + h - 1]];
+        lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay); P = h;
+        const short = R * h - N;
+        $('slHint').textContent = `🟰 Matches your curtains: ${R} drops of ${h}, same bulb spacing, right beside them. Hang it top-down, snaking back and forth${short ? ` (the last drop is ${h - short} bulbs)` : ''}.`;
       } else if (v === 'big') {                    // ⬛ the biggest even wall: rows that divide the string evenly, as square as possible
         const sq = Math.sqrt(N); let best = 0; for (let r = 2; r <= sq; r++) if (N % r === 0) best = r;
         R = best >= sq / 2 ? best : Math.max(2, Math.round(sq)); P = place(R, lay.wall ? a0.slice() : a0.slice(), 1);
@@ -681,8 +782,15 @@
       wallPicker(lay); change();
     });
     el.querySelector('#slRot').onclick = () => turn('rot'); el.querySelector('#slMir').onclick = () => turn('flip');
+    const home = {p: null, n: null};
     const full = on => { el.classList.toggle('sl-full', on); document.body.classList.toggle('sl-open', on); view = null; setTimeout(draw, 30);
+      if (!on && home.p) { home.p.insertBefore(el, home.n); home.p = null; }        // 🗺️ live map drawer closed: the editor goes back to LIGHTS
       if (on) history.pushState && history.pushState({sl: 1}, ''); };
+    // 🗺️ Oct 17 (Graham): Pro gets LIVE MAPPING on PRO DJ, PRO HOME and PRO ART: the same editor opens over the page while the show
+    //   keeps playing on the wall. Home maps in LIGHTS only.
+    GB.slLive = async () => { if (el.classList.contains('sl-full')) return;
+      if (GB.page !== 'lights') { home.p = el.parentNode; home.n = el.nextSibling; document.body.appendChild(el); }
+      await load(true); full(true); $('slHint').textContent = '🗺️ Live map: drag your lights while the show plays. Tap ✓ Done to save and go back.'; };
     el.querySelector('#slBig').onclick = () => full(true);
     el.querySelector('#slDone').onclick = async () => { if (Object.values(dirty).some(Boolean)) await save(); full(false); };
     window.addEventListener('keydown', e => { if (e.key === 'Escape' && el.classList.contains('sl-full')) full(false); });
