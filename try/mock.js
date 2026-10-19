@@ -1750,6 +1750,17 @@
     lpTick(); pdTick(dt);
   }
 
+  // 📶 Oct 19: Light health (the app scores every light from its real check-ins; the demo shows steady, believable readings)
+  const HL = {};
+  function healthMock() {
+    const lights = DEVS.filter(d => DEV_ON[d.id] !== false).map((d, i) => {
+      const q = HL[d.id] || (HL[d.id] = Array.from({length: 20}, () => 30 + ((R() * 25) | 0)));
+      if (R() < .02) { q.shift(); q.push(30 + ((R() * 25) | 0)); }
+      const ms = q.slice().sort((a, b) => a - b)[10];
+      return {id: d.id, name: d.name, brand: 'Twinkly', kind: 'wifi', score: 100, state: 'good', ms, missed: 0, tries: q.length, notch: 0, net: true, hist: q.slice(), why: []};
+    });
+    return {score: 100, state: 'good', lights, t: Math.round(now()), bt_audio: ''};
+  }
   // ======================================================================= status (what /api/status returns)
   function status() {
     const si = sectionInfo(), src = lastSrc, t = now(), beat = Math.pow(1 - (beatPos % 1), 2);
@@ -1962,10 +1973,13 @@
     if (method === 'GET' && path === '/api/lights/stage') return {json: stageInfo()};
     if (method === 'GET' && path === '/api/tonight') return {json: tonightInfo()};
     if (method === 'POST' && path === '/api/tonight') { tonightCmd(b || {}); return ok(); }
+    if (path === '/api/lights/nettest') return {json: {error: '💻 In the demo, the Wi-Fi test needs the GlowBop laptop app'}};      // 📶 one pop-up, not two
+    if (path === '/api/lights/wifiscan') return {json: {ok: false, why: 'In the demo, the Wi-Fi neighbour scan needs the GlowBop laptop app. On your computer it lists every network nearby and picks the calmest channel.'}};
     if (method === 'POST' && path.startsWith('/api/lights/')) { const r = stageCmd(path, b || {}); if (r) return {json: r}; }
     if (method === 'GET') {
       switch (path) {
-        case '/api/status': return {json: status()};
+        case '/api/status': return {json: Object.assign(status(), {lights_health: healthMock()})};
+        case '/api/lights/health': return {json: Object.assign(healthMock(), {test: null, testing: null})};
         case '/api/schedule': return {json: SCH.info()};
         case '/api/layouts': return {json: {items: {}}};
         case '/api/catalog': return {json: Object.assign({}, CAT, {holiday_cal: holCal()})};

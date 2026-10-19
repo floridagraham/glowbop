@@ -922,6 +922,14 @@
     const v = GB.vibeOf && GB.vibeOf(b.id); let t = b.name.toUpperCase() + (v && v.look ? ' · ' + v.look.toUpperCase() + (v.pinned ? ' ●' : '') : '');
     return t.length > max ? t.slice(0, Math.max(3, max - 1)) + '…' : t;
   }
+  // 📶 Oct 19 (Graham: "a health bar next to the name of each panel"): 5 little segments after a light's name, green / amber / red
+  const HCOL = {good: '#3ce08a', slow: '#ffc23d', bad: '#ff4d6d', off: '#ff4d6d'};
+  function hbar(x, y, id, h) {
+    const v = GB.healthOf && GB.healthOf(id); if (!v) return 0; h = h || 8;
+    const n = v.state === 'off' ? 0 : Math.max(1, Math.ceil(v.score / 20)), c = HCOL[v.state] || HCOL.good;
+    for (let i = 0; i < 5; i++) { cx.fillStyle = i < n ? c : c + '33'; cx.fillRect(x + i * 4, y + 2 + (h - 2) * (1 - (i + 1) / 5) * 0.6, 3, (h - 2) * (0.4 + 0.6 * (i + 1) / 5)); }
+    return 20;
+  }
   function drawSetup(blocks) {
     PV = blocks; if (!blocks.length) return;
     const sig = blocks.map(b => b.w + 'x' + b.h).join(','); if (sig !== pvSig) { pvSig = sig; setTimeout(() => GB.emit('wallshape', sig), 50); }   // your lights' shape is known (or changed)
@@ -988,13 +996,14 @@
         cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, rr, 0, 6.283); cx.fill();
       }
       cx.font = "600 12px 'Saira Condensed', system-ui"; cx.textBaseline = 'top';
-      if (many) { cx.fillStyle = sel ? '#ff3d9a' : '#bbb';                    // selected group: a drawn play marker (a ▶ glyph turns into an emoji on iOS)
+      if (many) { cx.fillStyle = sel ? '#ff3d9a' : '#e6dcff';                    // selected group: a drawn play marker (a ▶ glyph turns into an emoji on iOS)
         if (sel) { cx.beginPath(); cx.moveTo(ox + 2, 3); cx.lineTo(ox + 9, 7.5); cx.lineTo(ox + 2, 12); cx.closePath(); cx.fill(); }
-        cx.fillText(vibeLabel(b, Math.max(8, Math.floor(bw * st / 5.6))), ox + (sel ? 13 : 2), 2); }
+        const lb = vibeLabel(b, Math.max(8, Math.floor(bw * st / 5.6))); cx.fillText(lb, ox + (sel ? 13 : 2), 2);
+        if ((b.devices || []).length === 1) hbar(ox + (sel ? 13 : 2) + cx.measureText(lb).width + 5, 2, b.devices[0].id, 10); }
       if ((b.devices || []).length > 1) b.devices.forEach((d, k) => {
         const col = DEVCOL[k % DEVCOL.length]; cx.strokeStyle = col + '88'; cx.lineWidth = 1;
         cx.strokeRect(ox + d.x0 * sX + 0.5, top + d.y0 * sY + 0.5, (d.x1 - d.x0 + 1) * sX - 1, (d.y1 - d.y0 + 1) * sY - 1);
-        cx.fillStyle = col; cx.font = "11px 'Saira Condensed', system-ui"; cx.fillText(d.name.slice(0, Math.max(4, Math.floor((d.x1 - d.x0 + 1) * sX / 7))), ox + d.x0 * sX + 2, d.y0 > 0 ? top + d.y0 * sY - 13 : (many ? 18 : 0) + 1);   // 🧵 a light lower down: its name just above its own box
+        cx.fillStyle = col; cx.font = "11px 'Saira Condensed', system-ui"; { const nm = d.name.slice(0, Math.max(4, Math.floor((d.x1 - d.x0 + 1) * sX / 7))), ny = d.y0 > 0 ? top + d.y0 * sY - 13 : (many ? 18 : 0) + 1; cx.fillText(nm, ox + d.x0 * sX + 2, ny); hbar(ox + d.x0 * sX + 2 + cx.measureText(nm).width + 4, ny, d.id, 9); }   // 🧵 a light lower down: its name just above its own box
       });
       if (sel) { cx.strokeStyle = '#ff3d9a'; cx.lineWidth = 2; cx.strokeRect(ox - 1, top - 1, bw * st + 2, bh * st + 2); }
       PVHIT.push({id: b.id, name: b.name, x0: ox, x1: ox + bw * st, y0: 0, y1: lab + bh * st});
@@ -1006,7 +1015,7 @@
       const sy0 = sy; if (side) sy = 4;
       thin.forEach(b => {
         const rgb = hexRGB(b.rgb), r = Math.max(1, sp * 0.42), sel = GB.gsel === b.id;
-        cx.font = "600 10px 'Saira Condensed', system-ui"; cx.textBaseline = 'top'; cx.fillStyle = sel ? '#ff3d9a' : '#999'; cx.fillText(vibeLabel(b, Math.max(6, Math.floor((side ? side.w - 16 : b.w * sp) / 4.8))), mx, sy + 3);
+        cx.font = "600 10px 'Saira Condensed', system-ui"; cx.textBaseline = 'top'; cx.fillStyle = sel ? '#ff3d9a' : '#cc99ff'; { const lb = vibeLabel(b, Math.max(6, Math.floor((side ? side.w - 16 : b.w * sp) / 4.8)) - 4); cx.fillText(lb, mx, sy + 3); if ((b.devices || []).length >= 1) hbar(mx + cx.measureText(lb).width + 4, sy + 2, b.devices[0].id, 9); }
         for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
           const c = rgb[y * b.w + x], px = mx + x * sp + sp / 2, py = sy + 15 + y * sp + sp / 2;
           if (c === null) continue;

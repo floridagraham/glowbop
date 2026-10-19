@@ -69,6 +69,7 @@
     if (sub && sub.classList.contains('sub')) add.appendChild(sub);
     [seg, $('suFound'), $('suAdd')].forEach(n => n && add.appendChild(n));
     const side = sl.querySelector('.sl-side'); if (side) body('lights').appendChild(side);   // the light you picked: its controls first
+    take($('hlPanel'), 'lights');                                // 📶 Wi-Fi health, live
     take($('ckPanel'), 'lights');                                // 🩺 Check my lights, right under the picked light
     body('lights').appendChild(add);
     take(lp, 'lights');
