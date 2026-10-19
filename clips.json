@@ -2635,5 +2635,131 @@
   "title": "Waves",
   "group": "Demo effects",
   "desc": "Recorded from the GlowBop engine"
+ },
+ "sprite-jumprope": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Jump rope",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-leapfrog": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Leapfrog",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-chairs": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Musical chairs",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-tug": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Tug of war",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-bubbles": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Bubble pop",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-ring": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Ring around",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-tag": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Tag, you're it",
+  "group": "Looks",
+  "desc": "Toy Box"
+ },
+ "sprite-potato": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Hot potato",
+  "group": "Looks",
+  "desc": "Toy Box"
+ },
+ "chill-clouds": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Color clouds",
+  "group": "Looks",
+  "desc": "Chill Lounge"
+ },
+ "chill-trails": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Glow trails",
+  "group": "Looks",
+  "desc": "Chill Lounge"
+ },
+ "chill-velvet": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Velvet melt",
+  "group": "Looks",
+  "desc": "Deep Calm"
+ },
+ "chill-ripples": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Slow ripples",
+  "group": "Looks",
+  "desc": "Deep Calm"
+ },
+ "fractal-dive": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Mandelbrot dive",
+  "group": "Looks",
+  "desc": "Fractal Dreams"
+ },
+ "fractal-julia": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Julia dance",
+  "group": "Looks",
+  "desc": "Fractal Dreams"
  }
 }
