@@ -109,6 +109,8 @@
         <button class="btn" data-ms="beat">${GB.svg('note')}<span>Beat</span></button>
         <button class="btn" data-ms="ambient">${GB.svg('sparkle')}<span>Glow</span></button>
       </div>
+      <div class="sub">Which screen</div>
+      <div class="seg" id="mdMirScreen"><button class="btn on" disabled>Main screen</button></div>
       <div class="sub">Area</div>
       <div class="seg" id="mdMirArea">
         <button class="btn" data-ma="smart">Smart fill</button>
@@ -122,8 +124,20 @@
     };
     el.querySelectorAll('[data-ms]').forEach(b => b.onclick = async () => { mirStyle = b.dataset.ms; if (mirState) await GB.control({mirror: {style: mirStyle, area: mirArea}}); renderMirror(); });
     el.querySelectorAll('[data-ma]').forEach(b => b.onclick = async () => { mirArea = b.dataset.ma; if (mirState) await GB.control({mirror: {style: mirStyle, area: mirArea}}); renderMirror(); });
-    renderMirror();
+    renderMirror(); loadScreens();
   });
+  // 🖥️ Oct 18 (Graham: "mirror my screen just chose a random screen, we want to choose"): one key per laptop screen
+  async function loadScreens() {
+    const box = $('mdMirScreen'); if (!box) return;
+    let r = null; try { r = await GB.get('/api/mirror/screens'); } catch (e) {}
+    const S = (r && r.screens) || [], pick = (r && r.pick) || 0;
+    if (S.length < 2) { box.innerHTML = `<button class="btn on" disabled>${S.length ? 'Main screen · ' + S[0].w + '×' + S[0].h : 'Main screen'}</button>`; return; }
+    const cur = S.find(m => m.i === pick) ? pick : (S.find(m => m.primary) || S[0]).i;
+    box.innerHTML = S.map(m => `<button class="btn${m.i === cur ? ' on' : ''}" data-scr="${m.i}" style="--c:var(--cyan)">${GB.svg(m.primary ? 'laptop' : 'monitor')}<span>Screen ${m.i}${m.primary ? ' (main)' : ''}<small style="display:block;font-size:.75em;opacity:.8">${m.w}×${m.h}</small></span></button>`).join('');
+    box.querySelectorAll('[data-scr]').forEach(b => b.onclick = async () => {
+      if (await GB.post('/api/mirror/screen', {screen: +b.dataset.scr})) { GB.toast('🖥️ Mirroring screen ' + b.dataset.scr); loadScreens(); } });
+  }
+  GB.on && GB.on('page', id => { if (id === 'scenes') loadScreens(); });
   function renderMirror() {
     const go = $('mdMirGo'); if (!go) return;
     if (mirState) { mirStyle = mirState.style || mirStyle; mirArea = mirState.area || mirArea; }

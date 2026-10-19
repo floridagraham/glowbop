@@ -21,7 +21,7 @@
   html.prohome #pg-home > .panel.box:nth-of-type(4n+2) { --c:#ff9f5a !important; }
   html.prohome #pg-home > .panel.box:nth-of-type(4n+3) { --c:#ffd21a !important; }
   html.prohome #pg-home > .panel.box:nth-of-type(4n+4) { --c:#4de8c8 !important; }
-  #rail button[data-p=home] { background:#ffb23d; }
+  #rail button[data-p=home] { --c:#ffb23d; background:#ffb23d; }
   /* ---- header key */
   #phHd { min-height:40px; margin-right:6px; gap:6px; } #phHd .ic { width:18px; height:18px; fill:currentColor; }
   #phHd .ps { display:none; } @media (max-width:1300px) { #phHd .pl { display:none; } #phHd .ps { display:inline; } } @media (max-width:560px) { #phHd .ps { display:none; } #phHd { padding:0 12px; } }

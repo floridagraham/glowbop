@@ -22,6 +22,8 @@
   .ab-row .lab { color:var(--lav); font:600 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:2px; text-transform:uppercase; margin-right:4px; }
   .ab-msg { color:#ffcc66; font-size:calc(14px * var(--fs, 1)); margin:6px 0; min-height:1.2em; }
   .ab-beta { font:700 10px var(--cond); letter-spacing:2px; background:var(--pink); color:#fff; border-radius:6px; padding:2px 6px; margin-left:8px; vertical-align:middle; }
+  .ab-vn { display:inline-flex; align-items:center; gap:6px; color:var(--lav); font:600 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:1px; }
+  .ab-vn input { width:84px; min-height:34px; border-radius:10px; border:2px solid var(--lav); background:#120a22; color:#fff; font:700 calc(15px * var(--fs, 1)) var(--mono); padding:0 8px; }
   .ab-lock { padding:12px; border-radius:0 12px 0 12px; background:#2a1d00; color:#ffcc66; }
   #rail button.freetag { position:relative; }
   #rail button.freetag::after { content:'PRO'; position:absolute; top:5px; right:6px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
@@ -29,11 +31,16 @@
 
   // ---------------------------------------------------------------- state
   let SIGN = null, ST = null, SEL = '', SRC = null, KIND = '', RAW = null, ORDER = null, TALL = 0, FLIP = false, REV = false, KEEP = false, START = -1, NAME = '';
+  // 🧵 Oct 18 (Graham: "people can choose the number of lights in their string, add their string, or assign a string already in the system"):
+  //   assign any string already in GlowBop, add a new one (LIGHTS page), or just type a bulb count to preview (a pretend string, nothing lights up).
+  let VN = 308; try { VN = +localStorage.getItem('gb_art_vn') || 308; } catch (_) {}
+  const VIRT = '__preview';
   const strs = () => (ST ? ST.devices.filter(d => d.kind === 'string') : []);
-  const dev = id => (ST ? ST.devices.find(d => d.id === id) : null);
+  const dev = id => id === VIRT ? {id: VIRT, name: 'Preview', n: VN, kind: 'string', virtual: true} : (ST ? ST.devices.find(d => d.id === id) : null);
+  const prevOf = id => { const d = id !== VIRT && ST ? ST.devices.find(x => x.id === id) : null; return !!(d && d.back); };   // ↩️ GlowBop kept its old layout
   const msg = t => { const m = $('abMsg'); if (m) m.textContent = t || ''; };
   async function load() { try { ST = await GB.get('/api/lights/stage'); } catch (e) { ST = null; } if (!ST || !Array.isArray(ST.devices)) ST = {devices: []};
-    if (!SEL || !dev(SEL)) SEL = (strs()[0] || {}).id || ''; paintPick(); }
+    if (!SEL || !dev(SEL)) SEL = (strs()[0] || {}).id || VIRT; paintPick(); }
 
   // ---------------------------------------------------------------- reading files -> ordered points [[x, y], ...] (y down)
   const ext = f => (f.name.split('.').pop() || '').toLowerCase();
@@ -142,7 +149,7 @@
   function result() {
     const d = dev(SEL); if (!d || !ORDER || !ORDER.length) return null;
     if (SIGN) {                                    // 🪧 a sign file: every bulb is placed exactly (no reorder / respread); size from the LIT bulbs
-      const B = signBulbs(SIGN, d.n); let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      const B = signBulbs(refitSign(SIGN, d.n), d.n); let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
       B.pts.forEach(([x, y], i) => { if (B.hide[i]) return; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
       const s = KEEP ? 1 : ((TALL || PLACE.h || 21) - 1) / Math.max(1e-6, y1 - y0);
       const P = B.pts.map(([x, y]) => [Math.round(((x - x0) * s + PLACE.x1 + 1) * 1000) / 1000, Math.round(((FLIP ? (y1 - y) : (y - y0)) * s + PLACE.y0) * 1000) / 1000]);
@@ -172,7 +179,8 @@
       g.fillStyle = col; g.font = `700 ${12 * devicePixelRatio}px sans-serif`; g.textAlign = 'center'; g.fillText(lab, X(x), Y(y) - r - 9 * devicePixelRatio); };
     mark(0, '#3ce08a', 'START'); mark(P.length - 1, '#ff3d9a', 'END');
     const w = Math.round(x1 - x0) + 1, h = Math.round(y1 - y0) + 1;
-    if (P.hide) { const dark = P.hide.filter(Boolean).length; $('abInfo').innerHTML = `🪧 <b>${SIGN.spots.length}</b> spots · <b>${d.n - dark}</b> bulbs lit, <b>${dark}</b> kept dark (lead, bridges, leftovers) · about <b>${w} × ${h}</b> bulb spots${P.warn ? ' · ⚠️ ' + esc(P.warn) : ''}`; return; }
+    if (P.hide) { const dark = P.hide.filter(Boolean).length, F = refitSign(SIGN, d.n), per = (F.strands || []).map(x => x.lit).filter((v, i, a) => a.indexOf(v) === i).join(' / ');
+      $('abInfo').innerHTML = `🪧 <b>${SIGN.spots.length}</b> spots · <b>${per}</b> bulbs per spot on your <b>${d.n}</b>-bulb ${d.virtual ? 'preview' : 'string'} · <b>${d.n - dark}</b> lit, <b>${dark}</b> dark (lead, bridges, leftovers) · about <b>${w} × ${h}</b> bulb spots${F !== SIGN ? ' · refitted from the file\'s ' + (SIGN.bulbs || '?') + ' bulbs' : ''}${P.warn ? ' · ⚠️ ' + esc(P.warn) : ''}`; return; }
     $('abInfo').innerHTML = `<b>${d.n}</b> bulbs · about <b>${w} × ${h}</b> bulb spots${RAW && RAW.length !== d.n ? ` · the file had ${RAW.length} ${KIND === 'photo' ? 'dots' : 'points'}, spread to fit your ${d.n} bulbs` : ''}`;
   }
 
@@ -203,11 +211,27 @@
   }
   async function putOnWall() {
     const d = dev(SEL), P = result(); if (!d || !P) return;
+    if (d.virtual) return GB.toast('👀 That\'s a preview. Pick one of your strings above (or add one) to light it up');
     if (locked()) return GB.toast('🔒 Mapping lights from a file is part of GlowBop Pro');
     let k = 0, bd = -1; P.forEach((q, i) => { const dd = (q[0] - P[0][0]) ** 2 + (q[1] - P[0][1]) ** 2; if (dd > bd) { bd = dd; k = i; } });
     const r = await GB.post('/api/lights/lay', {id: d.id, lay: {kind: 'points', pts: P, ref: k, src: KIND, name: NAME, parts: [{pts: [P[0], P[k]]}], hide: P.hide ? P.hide.map((h, i) => h ? i : -1).filter(i => i >= 0) : []}});
-    if (r && r.ok) { GB.toast(`🎨 ${d.name} mapped from ${NAME || 'your file'}. Fine-tune it on the LIGHTS page.`); GB.sfx && GB.sfx('ok'); GB.slReload && GB.slReload(); }
+    if (r && r.ok) { GB.toast(`🎨 ${d.name} mapped from ${NAME || 'your file'}. Fine-tune it on the LIGHTS page.`); GB.sfx && GB.sfx('ok'); GB.slReload && GB.slReload(); await load(); }
     else if (r && r.error) GB.toast('😕 ' + r.error);
+  }
+
+  // 🧱 Oct 18: Sign Blueprint's "Pull into my wall": light a finished sign project with one of your strings
+  GB.artRefit = refitSign;                         // 🛠️ Sign Blueprint's bulb finder uses the same refit
+  GB.artPullSign = async (j, id) => {
+    await load(); const d = dev(id); if (!d) return GB.toast('😕 That light isn\'t here any more');
+    SEL = id; SIGN = j; KIND = 'sign'; NAME = j.name || 'Sign'; KEEP = false; TALL = 0; REV = false; FLIP = false; START = -1;
+    PLACE = await (GB.slPlaceFor ? GB.slPlaceFor(SEL) : Promise.resolve(PLACE)); RAW = ORDER = signBulbs(refitSign(j, d.n), d.n).pts;
+    paintPick(); paintOpts(); preview(); await putOnWall(); paintPick();
+  };
+  async function putBack() {
+    const d = dev(SEL); if (!d || !prevOf(d.id)) return;
+    const r = await GB.post('/api/lights/lay', {id: d.id, back: true});
+    if (r && r.ok) { GB.toast(`↩️ ${d.name} is back the way it was`); GB.sfx && GB.sfx('ok'); GB.slReload && GB.slReload(); await load(); }
+    else GB.toast('😕 ' + ((r && r.error) || 'Could not put it back'));
   }
 
   // ---------------------------------------------------------------- .glowbop files
@@ -223,6 +247,20 @@
   const TEMPLATE_308 = {glowbop: 1, type: 'curtain-template', name: '308-bulb string → 15 × 21 curtain', n: 308, h: 21,
     how: 'Start at the TOP next to your other lights, run drop 1 down 21 bulbs, drop 2 back up beside it, and keep snaking: 15 drops, the last one 14 bulbs.'};
   // 🪧 sign files (type 'sign'): spots + each strand's route from the plug -> every bulb's spot, and which bulbs stay dark
+  // 🪧 Oct 18: a sign file made for one bulb count, refitted to yours: each strand gets its share of your bulbs, and the bulbs bunched
+  //   in each spot go up or down so the whole string is used (lead and bridge bulbs stay as drawn, any spare at the end stays dark).
+  function refitSign(j, N) {
+    const caps = (j.strands || []).map(st => +st.bulbs || 0), tot = caps.reduce((a, b) => a + b, 0);
+    if (!N || !tot || N === tot) return j;
+    const out = JSON.parse(JSON.stringify(j)); let left = N;
+    out.strands.forEach((st, si) => {
+      const cap = si === out.strands.length - 1 ? left : Math.round(N * caps[si] / tot); left -= cap; st.bulbs = cap;
+      const steps = (st.route || []).length || 1, br = +st.bridge || 0, lead = +st.lead || 0;
+      st.route = (st.route || []).map(e => typeof e === 'object' ? Object.assign({}, e, {lit: undefined}) : e).map(e => typeof e === 'object' && e.bridge == null ? e.spot : e);
+      st.lit = Math.max(1, Math.floor((cap - lead - steps * br) / steps));
+    });
+    out.bulbs = N; return out;
+  }
   function signBulbs(j, N) {
     const sp = +j.spacing || 1, byId = {}; (j.spots || []).forEach(o => byId[o.spot] = o);
     const at = o => [o.x / sp, o.y / sp], cord = j.cord ? at(j.cord) : null, pts = [], hide = [], col = []; let warn = '';
@@ -253,8 +291,8 @@
     await load();
     if (j.type === 'sign') {
       if (!(j.spots || []).length || !(j.strands || []).length) return msg('😕 This sign file has no spots or strands');
-      const d = dev(SEL) || strs().find(x => x.n === j.bulbs); if (!d) return msg('😕 Add a string light first, then import the sign');
-      SEL = d.id; SIGN = j; KIND = 'sign'; NAME = j.name || NAME; RAW = ORDER = signBulbs(j, d.n).pts; KEEP = true; TALL = 0;
+      const d = dev(SEL) || strs().find(x => x.n === j.bulbs) || dev(VIRT);
+      SEL = d.id; SIGN = j; KIND = 'sign'; NAME = j.name || NAME; RAW = ORDER = signBulbs(refitSign(j, d.n), d.n).pts; KEEP = false; TALL = 0;   // Oct 18: as tall as the main panel by default
       PLACE = await (GB.slPlaceFor ? GB.slPlaceFor(SEL) : Promise.resolve(PLACE));
       msg(`✅ ${j.name || 'Sign'}: ${j.spots.length} spots, ${j.strands.length} strand${j.strands.length > 1 ? 's' : ''}. Lit spots show in their colors, dark bulbs as rings.`);
       paintPick(); paintOpts(); preview(); return;
@@ -287,9 +325,17 @@
   // ---------------------------------------------------------------- panels
   function paintPick() {
     const box = $('abPick'); if (!box) return; const ss = strs();
-    box.innerHTML = ss.length ? '<span class="lab" style="color:var(--lav);font:600 12px var(--cond);letter-spacing:2px;margin-right:4px">MAP THIS LIGHT</span>' + ss.map(d => `<button class="chip${d.id === SEL ? ' on' : ''}" data-ab="${esc(d.id)}">🧵 ${esc(d.name)} · ${d.n}</button>`).join('')
-      : '<p class="note">Add a string light on the SETUP page first. (Curtains already know where their bulbs are.)</p>';
+    box.innerHTML = '<span class="lab" style="color:var(--lav);font:600 12px var(--cond);letter-spacing:2px;margin-right:4px">ASSIGN A STRING</span>'
+      + ss.map(d => `<button class="chip${d.id === SEL ? ' on' : ''}" data-ab="${esc(d.id)}">🧵 ${esc(d.name)} · ${d.n}${d.lay && d.lay.kind === 'points' ? ' · 🎨' : ''}</button>`).join('')
+      + `<button class="chip${SEL === VIRT ? ' on' : ''}" data-ab="${VIRT}">👀 Just preview</button>`
+      + (SEL === VIRT ? `<span class="ab-vn"><input type="number" id="abVN" min="10" max="2000" step="1" value="${VN}"> bulbs</span>` : '')
+      + `<button class="chip" id="abAddStr">＋ Add a string</button>`
+      + (prevOf(SEL) ? `<button class="chip" id="abBack" style="--c:#3ce08a">↩️ Put it back</button>` : '');
     box.querySelectorAll('[data-ab]').forEach(b => b.onclick = async () => { SEL = b.dataset.ab; PLACE = GB.slPlaceFor ? await GB.slPlaceFor(SEL) : PLACE; paintPick(); preview(); });
+    const vn = $('abVN'); if (vn) vn.onchange = () => { VN = Math.max(10, Math.min(2000, Math.round(+vn.value || 308))); vn.value = VN; try { localStorage.setItem('gb_art_vn', VN); } catch (_) {} preview(); };
+    const add = $('abAddStr'); if (add) add.onclick = () => GB.go('lights');
+    const back = $('abBack'); if (back) back.onclick = putBack;
+    const go = $('abGo'); if (go) go.textContent = SEL === VIRT ? '👀 Preview only: assign a string to light it' : '🎨 Put it on my wall';
     $('abLock').hidden = !locked();
   }
   GB.panel('art', 10, el => {
@@ -343,13 +389,12 @@
       <p class="note">Save your whole wall as one file to share or back up. Import one (above, or here) and lights with the same bulb count map the same way.</p>
       <div class="ab-row"><button class="btn c" id="abExp" style="--c:var(--violet)">📤 Export my wall</button><button class="btn" id="abImp">📥 Import a .glowbop file</button></div>
       <div class="ab-row"><span class="lab">Templates</span><button class="btn" id="abT308">⭐ 308-bulb string → 15 × 21 curtain</button></div>
-      <div class="ab-row"><span class="lab">Signs</span><button class="btn c" id="abSign" style="--c:var(--pink)">🪧 Use the GlowBop logo sign (308 bulbs)</button><a class="btn" href="ui/templates/GlowBop-Logo-Sign-308.glowbop" download>⬇️ Download it</a></div>
+      <div class="ab-row"><span class="lab">Signs</span><button class="btn c" id="abSign" style="--c:var(--pink)">🪧 Open the GlowBop logo sign in Sign Blueprint</button><a class="btn" href="ui/templates/GlowBop-Logo-Sign-308.glowbop" download>⬇️ Download it</a></div>
       <p class="note">A sign file lists the spots (holes in your board), where the plug is, and each strand's route through the spots. GlowBop lights the bulbs bunched in each spot and keeps the wire runs between them dark. Download the logo sign to see the format, edit it for your own logo, and import it.</p>`;
     el.querySelector('#abExp').onclick = exportLayout;
     el.querySelector('#abImp').onclick = () => $('abFile').click();
     el.querySelector('#abT308').onclick = () => download('curtain-308-15x21.glowbop', TEMPLATE_308);
-    el.querySelector('#abSign').onclick = async () => { try { const t = await (await fetch('ui/templates/GlowBop-Logo-Sign-308.glowbop')).text();
-      await takeFile(new File([t], 'GlowBop-Logo-Sign-308.glowbop', {type: 'application/json'})); $('abPrev').scrollIntoView({behavior: 'smooth', block: 'center'}); } catch (e) { GB.toast('😕 Could not load the sign file'); } };
+    el.querySelector('#abSign').onclick = () => GB.signLab ? GB.signLab.open('glowbop-logo-sign') : GB.toast('😕 Sign Blueprint isn\'t loaded');
   });
   GB.on('page', id => { if (id === 'art') { load(); setTimeout(preview, 50); } });
   GB.on('pro', () => { if (GB.page === 'art') paintPick(); });

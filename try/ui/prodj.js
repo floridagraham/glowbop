@@ -18,16 +18,16 @@
   //   full: boxes that need the whole width, in a band underneath.
   const W3 = ['v:wall', 'v:keys', 'v:mode', 'v:reads'];
   const TPL = {
-    dj:     {wide: [[0, 17, ['v:wall', '#djBuild', 'v:mode']], [17, 15, ['djPadsPanel', '#djCool']], [32, 16, ['#djColor', '#djTap', '#djLooks']]],
-             tall: [[0, 24, ['v:wall', '#djBuild', '#djCool']], [24, 24, ['djPadsPanel', '#djColor', '#djTap']]]},
-    prodj:  {wide: [[0, 17, ['v:wall', 'v:keys', 'muCard', 'v:mode', 'v:reads']], [17, 15, ['#djBuild', '#djCool', '#djColor']], [32, 16, ['djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]],
-             tall: [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', '#djCool', '#djColor']], [24, 24, ['#djBuild', 'djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]]},
+    dj:     {wide: [[0, 17, ['v:wall', 'v:mode']], [17, 15, ['#djBuild', 'djPadsPanel']], [32, 16, ['#djColor', '#djTap', '#djLooks']]],
+             tall: [[0, 24, ['v:wall', '#djBuild']], [24, 24, ['djPadsPanel', '#djColor', '#djTap']]]},
+    prodj:  {wide: [[0, 17, ['v:wall', 'v:keys', 'muCard', 'v:mode', 'v:reads']], [17, 15, ['#djBuild', '#djColor']], [32, 16, ['djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]],
+             tall: [[0, 24, ['v:wall', 'v:keys', 'muCard', 'v:mode', '#djColor']], [24, 24, ['#djBuild', 'djPadsPanel', '#djTap', 'pdPanel', '#djLooks']]]},
     prohome:{wide: [[0, 17, ['v:wall', 'v:mode', 'v:reads']], [17, 15, ['phScenes']], [32, 16, ['phSched']]], tall: [[0, 24, ['v:wall', 'phScenes']], [24, 24, ['phSched']]]},
   };
   TPL.pro = {wide: [[0, 48, ['#proTour']]], tall: [[0, 48, ['#proTour']]], full: ['.pt-feats', '.pt-foot']};   // the upgrade page: no Live wall, cards across the whole width   // the Pro tour: feature cards across the whole width
   GB.layTPL = TPL;                                 // pages add their own templates (GB.layTPL.music = {...})
   // 🧑‍🎨 Graham's own arrangements ship as the starting layout on those pages (a new install, or after Reset)
-  const DEFAULTS = {"music:wide":{"v:wall":{"x":0,"y":0,"w":17,"h":79},"v:mode":{"x":17,"y":61,"w":15,"h":18},"v:reads":{"x":0,"y":79,"w":32,"h":30},"muCard":{"x":17,"y":0,"w":15,"h":61},"p0":{"x":32,"y":0,"w":16,"h":51},"p1":{"x":32,"y":51,"w":16,"h":58},"v:keys":{"x":0,"y":109,"w":24,"h":30}},"music:pad":{"v:wall":{"x":0,"y":0,"w":17,"h":79},"v:mode":{"x":17,"y":64,"w":16,"h":15},"v:reads":{"x":0,"y":79,"w":32,"h":26},"muCard":{"x":17,"y":0,"w":16,"h":64},"p0":{"x":33,"y":0,"w":15,"h":52},"p1":{"x":33,"y":52,"w":15,"h":55}},"dj:wide":{"v:wall":{"x":0,"y":15,"w":17,"h":65},"p0":{"x":17,"y":0,"w":31,"h":34},"v:mode":{"x":0,"y":0,"w":17,"h":15},"djPadsPanel":{"x":32,"y":34,"w":16,"h":46},"p1":{"x":17,"y":34,"w":15,"h":19},"p2":{"x":17,"y":106,"w":15,"h":36},"p3":{"x":17,"y":53,"w":15,"h":27},"p4":{"x":32,"y":80,"w":16,"h":57},"v:reads":{"x":0,"y":80,"w":32,"h":26},"p5":{"x":17,"y":142,"w":31,"h":40},"djMidiCard":{"x":0,"y":106,"w":17,"h":18},"v:keys":{"x":0,"y":182,"w":24,"h":30}},"dj:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":60},"p0":{"x":24,"y":0,"w":24,"h":41},"p1":{"x":24,"y":41,"w":24,"h":21},"djPadsPanel":{"x":24,"y":62,"w":24,"h":83},"p2":{"x":24,"y":145,"w":24,"h":81},"p3":{"x":0,"y":106,"w":24,"h":29},"v:mode":{"x":0,"y":135,"w":24,"h":10},"p4":{"x":0,"y":145,"w":24,"h":69},"p5":{"x":0,"y":60,"w":24,"h":46},"djMidiCard":{"x":24,"y":226,"w":24,"h":72}},"prodj:wide":{"v:wall":{"x":0,"y":0,"w":17,"h":69},"v:keys":{"x":0,"y":69,"w":17,"h":18},"muCard":{"x":32,"y":0,"w":16,"h":47},"v:mode":{"x":0,"y":87,"w":17,"h":11},"v:reads":{"x":0,"y":98,"w":17,"h":29},"p0":{"x":17,"y":0,"w":15,"h":54},"p1":{"x":17,"y":54,"w":15,"h":16},"p2":{"x":17,"y":70,"w":15,"h":30},"djPadsPanel":{"x":32,"y":47,"w":16,"h":55},"p3":{"x":17,"y":100,"w":15,"h":27},"p4":{"x":32,"y":102,"w":16,"h":53},"p5":{"x":0,"y":127,"w":32,"h":29},"djMidiCard":{"x":24,"y":156,"w":24,"h":17},"fdPanel":{"x":24,"y":173,"w":24,"h":52},"lpPanel":{"x":0,"y":156,"w":24,"h":31},"alPanel":{"x":0,"y":187,"w":24,"h":53},"cuPanel":{"x":24,"y":225,"w":24,"h":53}},"prodj:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":53},"v:keys":{"x":0,"y":53,"w":24,"h":23},"muCard":{"x":0,"y":76,"w":24,"h":68},"v:mode":{"x":0,"y":144,"w":24,"h":12},"p1":{"x":0,"y":184,"w":24,"h":17},"p2":{"x":0,"y":156,"w":24,"h":28},"p0":{"x":24,"y":0,"w":24,"h":54},"djPadsPanel":{"x":24,"y":54,"w":24,"h":65},"p3":{"x":24,"y":201,"w":24,"h":28},"p4":{"x":24,"y":163,"w":24,"h":38},"v:reads":{"x":0,"y":347,"w":24,"h":6},"p5":{"x":24,"y":119,"w":24,"h":44},"djMidiCard":{"x":0,"y":331,"w":24,"h":16},"fdPanel":{"x":0,"y":265,"w":24,"h":66},"lpPanel":{"x":24,"y":229,"w":24,"h":41},"alPanel":{"x":24,"y":270,"w":24,"h":69},"cuPanel":{"x":0,"y":201,"w":24,"h":64}},"prohome:wide":{"v:wall":{"x":0,"y":0,"w":29,"h":82},"v:mode":{"x":0,"y":82,"w":29,"h":10},"v:reads":{"x":0,"y":92,"w":29,"h":27},"phScenes":{"x":29,"y":0,"w":7,"h":82},"phSched":{"x":29,"y":82,"w":19,"h":58},"v:keys":{"x":0,"y":140,"w":24,"h":6},"grpPanel":{"x":36,"y":0,"w":12,"h":82},"znSubs":{"x":0,"y":119,"w":29,"h":21},"mdHolPanel":{"x":29,"y":140,"w":19,"h":196}},"prohome:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":60},"phScenes":{"x":0,"y":60,"w":24,"h":47},"phSched":{"x":24,"y":0,"w":24,"h":50},"v:keys":{"x":0,"y":107,"w":24,"h":6},"v:mode":{"x":24,"y":50,"w":24,"h":12},"grpPanel":{"x":0,"y":113,"w":24,"h":62},"znSubs":{"x":24,"y":62,"w":24,"h":20},"mdHolPanel":{"x":24,"y":82,"w":24,"h":54}}};   // Oct 16 night: DJ + Pro DJ (laptop / iPad sideways = wide, iPad upright = tall) and Pro Home · Oct 17: MUSIC (laptop + iPad sideways)
+  const DEFAULTS = {"music:wide":{"v:wall":{"x":0,"y":0,"w":17,"h":79},"v:reads":{"x":0,"y":79,"w":32,"h":9},"muCard":{"x":17,"y":0,"w":15,"h":79},"p0":{"x":32,"y":0,"w":16,"h":51},"p1":{"x":32,"y":51,"w":16,"h":58},"v:keys":{"x":0,"y":88,"w":24,"h":30}},"music:pad":{"v:wall":{"x":0,"y":13,"w":25,"h":51},"v:reads":{"x":0,"y":0,"w":25,"h":13},"muCard":{"x":25,"y":51,"w":23,"h":68},"p0":{"x":25,"y":0,"w":23,"h":51},"p1":{"x":0,"y":64,"w":25,"h":55},"v:keys":{"x":0,"y":119,"w":24,"h":30}},"dj:wide":{"v:wall":{"x":0,"y":0,"w":17,"h":65},"p0":{"x":17,"y":9,"w":31,"h":44},"djPadsPanel":{"x":32,"y":53,"w":16,"h":47},"p1":{"x":17,"y":131,"w":15,"h":66},"p2":{"x":17,"y":53,"w":15,"h":28},"p3":{"x":32,"y":131,"w":16,"h":63},"v:reads":{"x":17,"y":0,"w":31,"h":9},"p4":{"x":17,"y":100,"w":31,"h":31},"djMidiCard":{"x":0,"y":65,"w":17,"h":63},"v:keys":{"x":0,"y":197,"w":24,"h":30}},"dj:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":60},"p0":{"x":24,"y":0,"w":24,"h":46},"djPadsPanel":{"x":24,"y":46,"w":24,"h":83},"p1":{"x":24,"y":129,"w":24,"h":81},"p2":{"x":0,"y":106,"w":24,"h":29},"v:mode":{"x":0,"y":135,"w":24,"h":10},"p3":{"x":0,"y":145,"w":24,"h":69},"p4":{"x":0,"y":60,"w":24,"h":46},"djMidiCard":{"x":24,"y":210,"w":24,"h":72}},"prodj:wide":{"v:wall":{"x":0,"y":0,"w":17,"h":69},"v:keys":{"x":0,"y":69,"w":17,"h":18},"muCard":{"x":32,"y":0,"w":16,"h":47},"v:mode":{"x":0,"y":87,"w":17,"h":11},"v:reads":{"x":0,"y":98,"w":17,"h":29},"p0":{"x":17,"y":0,"w":15,"h":59},"p1":{"x":17,"y":59,"w":15,"h":30},"djPadsPanel":{"x":32,"y":47,"w":16,"h":55},"p2":{"x":17,"y":89,"w":15,"h":27},"p3":{"x":32,"y":102,"w":16,"h":53},"p4":{"x":0,"y":132,"w":32,"h":29},"djMidiCard":{"x":24,"y":161,"w":24,"h":17},"fdPanel":{"x":24,"y":178,"w":24,"h":52},"lpPanel":{"x":0,"y":161,"w":24,"h":31},"alPanel":{"x":0,"y":192,"w":24,"h":53},"cuPanel":{"x":24,"y":230,"w":24,"h":53}},"prodj:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":53},"v:keys":{"x":0,"y":53,"w":24,"h":23},"muCard":{"x":0,"y":76,"w":24,"h":68},"v:mode":{"x":0,"y":144,"w":24,"h":12},"p1":{"x":0,"y":156,"w":24,"h":28},"p0":{"x":24,"y":0,"w":24,"h":59},"djPadsPanel":{"x":24,"y":59,"w":24,"h":65},"p2":{"x":24,"y":206,"w":24,"h":28},"p3":{"x":24,"y":168,"w":24,"h":38},"v:reads":{"x":0,"y":330,"w":24,"h":6},"p4":{"x":24,"y":124,"w":24,"h":44},"djMidiCard":{"x":0,"y":314,"w":24,"h":16},"fdPanel":{"x":0,"y":248,"w":24,"h":66},"lpPanel":{"x":24,"y":234,"w":24,"h":41},"alPanel":{"x":24,"y":275,"w":24,"h":69},"cuPanel":{"x":0,"y":184,"w":24,"h":64}},"prohome:wide":{"v:wall":{"x":0,"y":0,"w":29,"h":82},"v:mode":{"x":0,"y":82,"w":29,"h":10},"v:reads":{"x":0,"y":92,"w":29,"h":27},"phScenes":{"x":29,"y":0,"w":7,"h":82},"phSched":{"x":29,"y":82,"w":19,"h":58},"v:keys":{"x":0,"y":140,"w":24,"h":6},"grpPanel":{"x":36,"y":0,"w":12,"h":82},"znSubs":{"x":0,"y":119,"w":29,"h":21},"mdHolPanel":{"x":29,"y":140,"w":19,"h":196}},"prohome:tall":{"v:wall":{"x":0,"y":0,"w":24,"h":60},"phScenes":{"x":0,"y":60,"w":24,"h":47},"phSched":{"x":24,"y":0,"w":24,"h":50},"v:keys":{"x":0,"y":107,"w":24,"h":6},"v:mode":{"x":24,"y":50,"w":24,"h":12},"grpPanel":{"x":0,"y":113,"w":24,"h":62},"znSubs":{"x":24,"y":62,"w":24,"h":20},"mdHolPanel":{"x":24,"y":82,"w":24,"h":54}},"dj:pad":{"v:wall":{"x":0,"y":12,"w":21,"h":48},"p0":{"x":21,"y":0,"w":27,"h":47},"djPadsPanel":{"x":21,"y":47,"w":27,"h":48},"p1":{"x":40,"y":95,"w":8,"h":33},"p2":{"x":21,"y":95,"w":19,"h":34},"p3":{"x":0,"y":60,"w":21,"h":42},"v:reads":{"x":0,"y":0,"w":21,"h":12},"p4":{"x":17,"y":146,"w":31,"h":40},"djMidiCard":{"x":21,"y":129,"w":12,"h":17},"v:keys":{"x":0,"y":186,"w":24,"h":30}},"prodj:pad":{"v:wall":{"x":0,"y":12,"w":17,"h":29},"v:keys":{"x":0,"y":41,"w":17,"h":23},"muCard":{"x":0,"y":64,"w":17,"h":68},"v:reads":{"x":0,"y":0,"w":17,"h":12},"p0":{"x":17,"y":0,"w":31,"h":50},"djPadsPanel":{"x":17,"y":50,"w":31,"h":47},"p1":{"x":32,"y":97,"w":16,"h":28},"p2":{"x":32,"y":125,"w":16,"h":42},"p3":{"x":0,"y":137,"w":24,"h":38},"djMidiCard":{"x":17,"y":97,"w":15,"h":17},"fdPanel":{"x":24,"y":167,"w":24,"h":53},"lpPanel":{"x":0,"y":175,"w":24,"h":31},"alPanel":{"x":0,"y":206,"w":24,"h":69},"cuPanel":{"x":24,"y":220,"w":24,"h":50}}};   // Oct 16 night: DJ + Pro DJ (laptop / iPad sideways = wide, iPad upright = tall) and Pro Home · Oct 17: MUSIC (laptop + iPad sideways) · Oct 18: Graham's own MUSIC, DJ + Pro DJ arrangements (laptop, iPad sideways, iPad upright) are the defaults
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches && S.get('gb_intro_motion') !== 'full';
   const isOn = () => GB.pro === true && S.get('gb_prodj') === '1';
 
@@ -41,10 +41,10 @@
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+5) { --c:#cc99ff !important; }
   html.prodj #pg-dj > .panel.box:nth-of-type(6n+6) { --c:#4de8c8 !important; }
   html.prodj #pg-dj > .panel.box { box-shadow:inset 0 0 0 1px #4de8c822; }
-  #rail #pdTab { background:#ff3d7a; }   /* sunset pink (between SHOWS orange and LOOPS+CUES magenta) */
+  #rail #pdTab { --c:#ff3d7a; background:#ff3d7a; }   /* sunset pink (between SHOWS orange and LOOPS+CUES magenta) */
   #rail .rail-sep[data-g=pro], #rail button[data-p=pro] { display:none !important; }   /* the PRO DJ / PRO HOME tabs say it; no label row, no tour key */
   #rail button.locked { position:relative; box-shadow:none !important; }   /* Oct 16 night: locked Pro tabs keep their full colour and wear a gold lock badge */
-  #rail button.locked::after { content:'🔒 PRO'; position:absolute; top:5px; right:6px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
+  #rail button.locked::after { content:'PRO'; padding-left:15px !important; background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20d='M12%2017c1.1%200%202-.9%202-2s-.9-2-2-2-2%20.9-2%202%20.9%202%202%202zm6-9h-1V6c0-2.76-2.24-5-5-5S7%203.24%207%206h2c0-1.66%201.34-3%203-3s3%201.34%203%203v2H6c-1.1%200-2%20.9-2%202v10c0%201.1.9%202%202%202h12c1.1%200%202-.9%202-2V10c0-1.1-.9-2-2-2zm0%2012H6V10h12v10z'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:4px 50% !important; background-size:9px 9px !important; position:absolute; top:5px; right:6px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
   #rail button.nope { animation:pdNope .35s ease; } @keyframes pdNope { 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
   #rail button.tease { animation:pdTease .7s ease; } @keyframes pdTease { 0% { box-shadow:0 0 0 0 #ffd21a; } 40% { box-shadow:0 0 22px 6px #ffd21a; filter:brightness(1.35); } 100% { box-shadow:0 0 0 0 #ffd21a00; } }
   /* ---- Pro DJ is a tighter console: smaller paddings and keys so more fits on one screen */
@@ -209,7 +209,7 @@
   }
   GB.proSound = proSound;                         // GB.proSound(true) to hear it
   // a template made before a page's boxes finished loading gets redone once they have (only if you haven't moved anything)
-  const recompact = () => { const k = canArrange() ? pageKey() : null; if (k && !arranging && S.get(store(k) + ':auto') === '1') compact(true); };
+  const recompact = () => { const k = canArrange() ? pageKey() : null; if (k && !arranging && !turning() && S.get(store(k) + ':auto') === '1') compact(true); };
   // ✨ Oct 17: the Pro upgrade page's cards grew pictures after the template was made: re-measure it (unless you arranged it yourself)
   const refitPage = () => { const k = pageKey(); if (!k || arranging) return; if (!S.get(store(k)) || S.get(store(k) + ':auto') === '1') compact(true); };
   GB.proDJ = {refit: refitPage, recompact, isOn, setOn: (on, anim) => setOn(on, anim), flicker: f => flicker(f), relayout: () => layout(), syncBorrow: () => syncBorrow()};   // shared with prohome.js
@@ -364,7 +364,8 @@
     return 'tall'; };                                              // iPad upright
   const BASE = {pad: 'wide', side: 'tall'};                         // a new screen shape starts as a copy of its nearest cousin (iPad sideways = your laptop layout)
   // ✏️ Every page can be arranged, by everyone (Oct 16, Graham). Pro pages only once they're unlocked.
-  const pageKey = () => { const p = GB.page; if (!p) return null; if (p === 'dj') return isOn() ? 'prodj' : 'dj';
+  const pageKey = () => { const p = GB.page; if (!p) return null; if (p === 'lights' && GB.ltShell) return null;   // 🧭 Oct 18: LIGHTS studio lays itself out (board + tabbed panel)
+    if (p === 'dj') return isOn() ? 'prodj' : 'dj';
     if (p === 'home') return GB.pro === true ? 'prohome' : null; if (PRO_PAGES.includes(p) && GB.pro !== true) return null; return p; };
   const canArrange = () => !!pageKey() && !window.__demoWall;   // every screen, iPhone too (Oct 16 night)   // the website demo stays a plain console (no Arrange)
   const store = k => 'gb_lay3:' + k + ':' + bucket();   // v2 (Oct 16): old hand-made Pro DJ layouts start fresh on the Compact template
@@ -408,8 +409,24 @@
   GB.layPut = put;
   const load = k => { let v = S.get(store(k)); const b = BASE[bucket()];
     if (!v && b) { const bk = 'gb_lay3:' + k + ':' + b, bv = S.get(bk); if (bv) { v = bv; put(store(k), bv); put(store(k) + ':auto', S.get(bk + ':auto') || ''); } }   // first visit on this shape: copy the cousin
-    try { return JSON.parse(v || 'null'); } catch (e) { return null; } };
-  const save = (k, L) => put(store(k), JSON.stringify(L));
+    let L; try { L = JSON.parse(v || 'null'); } catch (e) { return null; }
+    const mk = 'gb_laymig_cool:' + store(k);              // 🌙 Oct 18: the Cool down box moved inside Build & drop, so saved DJ layouts drop its slot once
+    if (/^(dj|prodj)$/.test(k) && !S.get(mk)) { if (L && typeof L === 'object' && !Array.isArray(L)) { const o = {};
+        Object.keys(L).forEach(x => { const m = /^p(\d+)$/.exec(x); if (!m) { o[x] = L[x]; return; } const n = +m[1]; if (n === 1) return; o[n > 1 ? 'p' + (n - 1) : x] = L[x]; });
+        const c = L.p1, ov = (a, b) => a && b && a.x < b.x + b.w && b.x < a.x + a.w;     // close the old Cool down gap, then give Build & drop room for its switch
+        const hit = (a, b) => ov(a, b) && a.y < b.y + b.h && b.y < a.y + a.h;
+        if (c && c.h) Object.keys(o).sort((a, b) => o[a].y - o[b].y).forEach(k => { const it = o[k]; if (!(ov(it, c) && it.y >= c.y + c.h)) return;   // slide up into the gap, as far as it goes without landing on another box
+          for (let s = c.h; s > 0; s--) { const t = Object.assign({}, it, {y: it.y - s}); if (!Object.keys(o).some(q => q !== k && hit(t, o[q]))) { it.y -= s; break; } } });
+        const p0 = o.p0; if (p0 && p0.h) { const bot = p0.y + p0.h; Object.keys(o).forEach(x => { const it = o[x]; if (x !== 'p0' && ov(it, p0) && it.y >= bot) it.y += 5; }); p0.h += 5; }
+        L = o; save(k, L); }
+      try { S.set(mk, '1'); } catch (_) {} }
+    return L; };
+  // 🔄 Oct 18 (Graham: "every time I turn the iPad one of them gets messed up"): a layout is saved under the screen shape it was laid out for,
+  //   never under whatever shape the iPad is turning into, and nothing re-saves while the screen is turning.
+  const keyB = (k, b) => 'gb_lay3:' + k + ':' + (b || bucket());
+  const save = (k, L, b) => put(keyB(k, b), JSON.stringify(L));
+  let lastRz = 0; const turning = () => Date.now() - lastRz < 3000 || (cur && cur.b && cur.b !== bucket());
+  addEventListener('resize', () => { lastRz = Date.now(); }); addEventListener('orientationchange', () => { lastRz = Date.now(); });
   function clearLay() {
     const m = $('main'); m.classList.remove('lay');
     document.querySelectorAll('.lay-it').forEach(el => { el.classList.remove('lay-it'); el.style.gridColumn = el.style.gridRow = ''; });
@@ -417,6 +434,7 @@
   }
   function place(el, p) { el.classList.add('lay-it'); el.style.gridColumn = (p.x + 1) + ' / span ' + p.w; el.style.gridRow = (p.y + 1) + ' / span ' + p.h; }
   let cur = null;                                   // {key, L}
+  GB.reflowLayout = () => layout();
   function layout() {
     const k = canArrange() ? pageKey() : null, L = k && load(k);
     // 🎵 Oct 17: the show status bar moved up into the header: drop its box from saved layouts and let everything float up
@@ -426,7 +444,8 @@
     if (L && L['v:reads'] && L['v:reads'].h > 9 && S.get('gb_rmini:' + store(k)) !== '1') { L['v:reads'].h = 9; settle(L, 'v:reads'); save(k, L); S.set('gb_rmini:' + store(k), '1'); }
     if (k && L && !arranging && S.get(store(k) + ':auto') === '1' && items().some(el => !L[el.dataset.lk])) return compact(true);   // an untouched template + new boxes: rebuild it
     if (k && !L && !arranging) { $('layFab') && $('layFab').classList.add('show'); const D = DEFAULTS[k + ':' + bucket()] || DEFAULTS[k + ':' + BASE[bucket()]];   // every page starts on its tidy template
-      if (D && items().every(el => D[el.dataset.lk])) { save(k, JSON.parse(JSON.stringify(D))); put(store(k) + ':auto', '2'); return layout(); }   // Graham's own arrangement ships as the default
+      if (D && items().every(el => D[el.dataset.lk] || el.dataset.lk === 'v:mode')) {   // (the mode bar isn't a box any more)
+        save(k, JSON.parse(JSON.stringify(D))); put(store(k) + ':auto', '2'); return layout(); }   // Graham's own arrangement ships as the default
       return compact(true); }
     $('layFab') && $('layFab').classList.toggle('show', !!k); $('railArr') && ($('railArr').hidden = !k);
     if (!k || (!L && !arranging)) { clearLay(); cur = null; return; }
@@ -437,7 +456,7 @@
     list.forEach(el => { if (!LL[el.dataset.lk]) { LL[el.dataset.lk] = {x: 0, y: bottom, w: 24, h: 30}; bottom += 30; } });
     clearLay(); $('main').classList.add('lay');
     list.forEach(el => place(el, LL[el.dataset.lk]));
-    cur = {key: k, L: LL};
+    cur = {key: k, L: LL, b: bucket()};
     if (!arranging && L && (k === 'dj' || k === 'prodj') && S.get('gb_bmini:' + store(k)) !== '1') setTimeout(() => slimBuild(k, LL), 400);
     if (arranging) handles();
   }
@@ -450,7 +469,7 @@
     return Math.max(6, Math.ceil((hgt + 14) / ROW));
   }
   function slimBuild(k, L) {
-    if (arranging || !cur || cur.key !== k || pageKey() !== k) return;
+    if (arranging || !cur || cur.key !== k || pageKey() !== k || turning()) return;
     const bEl = $('djBuild') && $('djBuild').closest('[data-lk]'), rEl = document.querySelector('#main [data-lk="v:reads"]');
     if (!bEl || !L[bEl.dataset.lk]) return;
     const bid = bEl.dataset.lk, b = L[bid];
@@ -493,14 +512,14 @@
       };
       const end = () => { handle.removeEventListener('pointermove', mv); handle.classList.remove('drag'); el.style.zIndex = '';
         settle(cur.L, id); Object.keys(cur.L).forEach(k => { const n = document.querySelector('#main [data-lk="' + CSS.escape(k) + '"].lay-it'); if (n) place(n, cur.L[k]); });
-        save(cur.key, cur.L); put(store(cur.key) + ':auto', ''); };
+        save(cur.key, cur.L, cur.b); put(keyB(cur.key, cur.b) + ':auto', ''); };
       handle.addEventListener('pointermove', mv); handle.addEventListener('pointerup', end, {once: true}); handle.addEventListener('pointercancel', end, {once: true});
     });
   }
   function arrange(on) {
     if (on && !canArrange()) { GB.toast('Unlock Pro to arrange this page'); return; }
     arranging = on; document.documentElement.classList.toggle('gb-arr', on);
-    if (on) { layout(); if (cur && !load(cur.key)) save(cur.key, cur.L); handles(); GB.sfx && GB.sfx('tap'); }
+    if (on) { layout(); if (cur && !load(cur.key)) save(cur.key, cur.L, cur.b); handles(); GB.sfx && GB.sfx('tap'); }
     else { document.querySelectorAll('.lay-hand, .lay-grip').forEach(n => n.remove()); layout(); GB.toast && GB.toast('✅ Layout saved');
       if (cur && GB.stat) GB.stat('layout_saved', {layout_page: cur.key, layout_shape: bucket(), boxes: cur.L, box_count: Object.keys(cur.L).length}); }   // 📊 how people arrange their screens
   }
@@ -540,7 +559,7 @@
       cols.forEach(([x], c) => { Object.keys(L).filter(i => L[i].x === x).sort((a, b) => L[a].y - L[b].y).forEach(i => { L[i].y = lane2[c]; L[i].h = H[i]; lane2[c] += H[i]; }); });
       lane.splice(0, lane.length, ...lane2); }
     let band = Math.max(0, ...lane); full.forEach(i => { if (!i || !byId[i]) return; L[i] = {x: 0, y: band, w: COLS, h: H[i]}; band += H[i]; });
-    save(k, L); put(store(k) + ':auto', silent ? '1' : ''); cur = {key: k, L}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
+    save(k, L); put(store(k) + ':auto', silent ? '1' : ''); cur = {key: k, L, b: bucket()}; list.forEach(el => place(el, L[el.dataset.lk])); if (arranging) handles();
     if (!silent) GB.toast && GB.toast('⚡ Compact layout. Drag anything to fine-tune');
   }
   function reset() { const k = pageKey(); if (!k) return; GB.stat && GB.stat('layout_reset', {layout_page: k, layout_shape: bucket()}); put(store(k), ''); put(store(k) + ':auto', ''); arranging = false; document.documentElement.classList.remove('gb-arr'); clearLay(); cur = null; layout(); GB.toast('↺ Back to the tidy template'); }
@@ -592,16 +611,30 @@
   try { const wb = $('wallBox'); if (wb) { let rq = 0; new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => GB.redrawWall && GB.redrawWall()); }).observe(wb); } } catch (e) {}
   // a tidy template grows with its boxes: when one fills up (a list loaded, a card opened), the template refits itself
   let fitT = 0, fits = [];
-  const fit = () => { clearTimeout(fitT); fitT = setTimeout(() => { if (!cur || arranging || document.hidden) return;
+  const fit = () => { clearTimeout(fitT); fitT = setTimeout(() => { if (!cur || arranging || document.hidden || turning()) return;
     const full = [...document.querySelectorAll('#main .lay-it')].filter(el => el.dataset.lk !== 'v:wall' && el.scrollHeight > el.clientHeight + 12); if (!full.length) return;
     const now = Date.now(); fits = fits.filter(t => now - t < 20000); if (fits.length >= 4) return;   // never chase a box that can't settle
     fits.push(now);
     if (S.get(store(cur.key) + ':auto') !== '1') {   // your own (or a shipped) arrangement keeps its places; a box that's cut off on this screen just grows to fit
       full.forEach(el => { const p = cur.L[el.dataset.lk]; if (p) p.h += Math.ceil((el.scrollHeight - el.clientHeight) / ROW) + 1; });
-      full.forEach(el => settle(cur.L, el.dataset.lk)); save(cur.key, cur.L); layout(); return; }
+      full.forEach(el => settle(cur.L, el.dataset.lk)); save(cur.key, cur.L, cur.b); layout(); return; }
     recompact(); }, 300); };
   try { new MutationObserver(fit).observe($('pages'), {childList: true, subtree: true}); } catch (e) {}
   setInterval(fit, 1500);
+  // ⚡ Oct 18 (Graham: "a button that will auto-resize all the boxes"): one tap fits every box on this page to its content, for everyone.
+  //   The ⚡ key in the top bar, or double-tap any box's title. It stays fitted (boxes refit as they change) until you arrange by hand.
+  const fitAll = () => { const k = pageKey(); if (!k || window.__demoWall) { GB.toast && GB.toast('This page already fits itself'); return; }
+    if (arranging) arrange(false); compact(true); GB.sfx && GB.sfx('ok'); GB.toast && GB.toast('⚡ Boxes fitted'); GB.stat && GB.stat('layout_fit', {layout_page: k, layout_shape: bucket()}); };
+  GB.proDJ.fit = fitAll;
+  let lastTap = 0, lastBox = null;
+  document.addEventListener('pointerup', e => { const ph = e.target.closest && e.target.closest('#main .ph'); if (!ph || e.target.closest('button, a, input, select, .gb-ihold i')) return;
+    const box = ph.closest('[data-lk]') || ph.parentElement, now = performance.now();
+    if (box === lastBox && now - lastTap < 380) { lastTap = 0; lastBox = null; fitAll(); } else { lastTap = now; lastBox = box; } });
+  const addFit = () => { const qk = document.getElementById('qk'); if (!qk || document.getElementById('qkFit')) return;
+    const b = document.createElement('button'); b.className = 'btn c sm'; b.id = 'qkFit'; b.title = 'Fit all the boxes (or double-tap a box title)'; b.setAttribute('aria-label', 'Fit all the boxes');
+    b.style.setProperty('--c', '#ffc23d'); b.innerHTML = '⚡<span class="qkfl"> FIT</span>'; GB.css('@media (max-width: 600px) { #qkFit .qkfl { display:none; } }'); b.onclick = fitAll;
+    const fs = document.getElementById('qkFs'); qk.insertBefore(b, fs ? fs.nextSibling : qk.firstChild); };
+  setTimeout(addFit, 700); setTimeout(addFit, 2700);
   GB.on('wallshape', () => setTimeout(() => GB.proDJ.recompact(), 200));   // the Live wall's real shape arrived: refit an untouched template
   let refit = false; GB.on('catalog', () => { if (!refit) { refit = true; setTimeout(() => GB.proDJ.recompact(), 500); } });   // looks loaded: refit an untouched template once
   let rt = 0, sig = '';                           // re-lay only when the screen shape really changes (phone turned, window resized past a size)

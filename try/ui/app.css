@@ -38,7 +38,13 @@ a { color:var(--cyan); }
 #rail { grid-area:rail; display:flex; flex-direction:column; gap:5px; padding-top:5px; position:sticky; top:0; align-self:start; height:100vh; height:100dvh; overflow-y:auto; scrollbar-width:none; }
 #rail::-webkit-scrollbar { display:none; }
 #rail button { appearance:none; border:0; border-radius:0; background:var(--c); color:#000; font:700 calc(14px * min(var(--fs, 1), 1.08))/1 var(--cond); letter-spacing:1px; text-align:right; padding:0 8px 7px 0; min-height:58px; flex:1 0 58px; display:flex; align-items:flex-end; justify-content:flex-end; cursor:pointer; position:relative; transition:filter .15s; opacity:.82; }
-#rail button.on { opacity:1; box-shadow:inset -6px 0 0 #fff; }
+#rail button.on { opacity:1; box-shadow:none; }
+/* 18:48 Graham: "trouble seeing which one I'm on ... I like the pulsing dot over the last two letters of the word" */
+/* 22:58 Oct 18 (Graham: "when you press the button and that tab is open, the button is basically gone... a little bar on the end, and the
+   colour the button was is now the colour of the font"): the open tab is plain black, its words in the button's colour, a bar where it meets the page */
+#rail button[data-p=pro].on { --c:var(--gold); }
+#rail button.on, #rail button[data-p=pro].on { background:#000 !important; color:var(--c) !important; box-shadow:inset -5px 0 0 var(--c) !important; opacity:1; }
+#rail button.on .rail-lock { color:var(--c); opacity:1; }
 #rail button:active { filter:brightness(1.25); }
 /* 14 keys in 3 groups, sized from the screen height so the whole rail (down to SETUP) is on screen: a key never drops under
    44px (the touch minimum) and MUSIC stays the big one. The tail soaks up whatever height is left. */
@@ -521,3 +527,27 @@ body:not([data-page=music]):not([data-page=dj]) #view .panel.reads-panel { displ
 .sl-cm .sl-cmh{display:block;font:700 calc(15px * var(--fs, 1)) var(--cond);letter-spacing:1px;color:#ff8cc4;margin-bottom:6px;text-transform:uppercase}
 .sl-cmask{margin:6px 0}
 .sl-cmask b{display:inline;color:#ffcc66;margin-right:4px}
+
+/* 📏 BUTTON SIZES (Oct 18, 23:09, Graham picked "Mix A + B": "sometimes they're just too big and sometimes they're just too small").
+   Three sizes everywhere, finger friendly:
+     L 64  big actions + hit pads (HOLD TO BUILD, TAP, COOL, the DJ pads, play / skip), solid colour
+     M 48  every regular button, solid colour
+     S 36  chips (style picks, options): a slim outline pill in its colour that fills in solid when it's on
+   Words that don't fit shrink to fit (fittext.js). Map / editor toolbars keep their small icon keys. */
+html body #main .btn:not(.sm) { min-height:48px !important; height:48px; padding-top:0; padding-bottom:0; }
+html body #main .btn.lg,
+html body #main #djBuild, html body #main #djTap, html body #main .dj-cc > #djCool,
+html body #main #muPrev, html body #main #muPlay, html body #main #muNext,
+html body #main .dj-skip .btn, html body #main .pads .btn { min-height:64px !important; height:64px !important; max-height:64px; }
+html body #main .dj-pads .tile, html body #main .tile.pro-pad { min-height:64px !important; height:64px !important; max-height:64px; padding:4px 6px !important; gap:2px; }
+html body #main .dj-pads .tile .em, html body #main .tile.pro-pad .em { font-size:calc(20px * var(--fs, 1)); }
+html body #main .seg > .btn { min-height:36px !important; height:36px; }
+html body #main #slStage .btn, html body #main .btn.sm { min-height:40px !important; height:40px; }
+html body #main .chip { min-height:36px !important; height:36px; padding:0 13px !important; border-radius:999px !important; background-color:transparent !important;
+  color:color-mix(in srgb, var(--c, var(--pink)) 75%, #fff) !important; box-shadow:inset 0 0 0 1.5px var(--c, var(--pink)) !important; font-size:calc(14px * var(--fs, 1)); }
+html body #main .chip.on, html body #main .chip.sel { background-color:var(--c, var(--pink)) !important; color:#000 !important; box-shadow:0 0 12px -2px var(--c, var(--pink)) !important; }
+html body #main .chip:disabled { opacity:.45; }
+html body #main .dj-cst .chip, html body #main .chip:not(.gb-wm):empty { padding:0 !important; min-width:0; }   /* icon-only mood keys under COOL stay inside their column */
+/* 23:21 Oct 18 (Graham: "build to hold and cool down need to be a different size, 66 33"): HOLD TO BUILD two thirds, COOL one third */
+html body #main .dj-bc > #djBuild { flex:2 1 0 !important; min-width:0; }
+html body #main .dj-bc > .dj-cc { flex:1 1 0 !important; min-width:0; }

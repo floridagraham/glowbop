@@ -72,6 +72,7 @@
   const DEVCOL = GB.DEVCOL;
   const HELP = {twinkly: 'Twinkly: find the IP in the Twinkly app (Device settings → Wi-Fi), or use Find my lights.',
     wled: 'WLED: the IP is shown in the WLED app, or on your router. GlowBop takes over the strip while running, then WLED goes back to its own effect.',
+    lifx: 'LIFX: set the light up in the LIFX app first so it is on your Wi-Fi. A String is 12 bulbs with 3 colour zones in each, so GlowBop runs it as 36 pixels.',
     govee: 'Govee: first turn on "LAN Control" for the light in the Govee app (light → settings ⚙). Govee lights show one color at a time.',
     surplife: 'Surplife curtain: Find my lights finds it over Bluetooth (close the Surplife app on your phone first: only one connection at a time). Or type its Bluetooth address, e.g. AA:BB:CC:DD:EE:FF.',
     daybetter: 'DayBetter strips and light poles: Find my lights finds them over Bluetooth (close the DayBetter app on your phone first: only one connection at a time). Each strip glows one color at a time, picked from the show and pulsing with the beat.',
@@ -79,11 +80,11 @@
     nanoleaf: 'Nanoleaf, 3 steps: 1) In the Nanoleaf app, connect the light to your Wi-Fi (not just Bluetooth). 2) Open the light\'s settings and turn on the API ("Connect to API"). GlowBop can only see a Nanoleaf once its API is on. 3) Tap Find my lights, then tap the Nanoleaf. If it asks again, tap "Connect to API" once more within 30 seconds. You only pair once.'};
   // 🌿 Nanoleaf pairs once: GlowBop listens for 30 s while the owner taps "Connect to API" in the Nanoleaf app
   const nlHint = () => { const t = $('toast'); t.innerHTML = '<span></span>'; t.firstChild.textContent = '🌿 Pairing… if it doesn\'t connect, open the light in the Nanoleaf app and tap "Connect to API". GlowBop is listening for 30 seconds.'; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 30000); };
-  const BRAND = {twinkly: 'Twinkly', wled: 'WLED', govee: 'Govee', surplife: 'Surplife curtain (Bluetooth)', daybetter: 'DayBetter (Bluetooth)', blecheap: 'Bluetooth LED strip', nanoleaf: 'Nanoleaf'};
+  const BRAND = {twinkly: 'Twinkly', wled: 'WLED', govee: 'Govee', surplife: 'Surplife curtain (Bluetooth)', daybetter: 'DayBetter (Bluetooth)', blecheap: 'Bluetooth LED strip', nanoleaf: 'Nanoleaf', lifx: 'LIFX'};
   // ⭐ Full show: every LED is drawn separately (the real GlowBop look). Basic sync: the whole light shows one color.
-  const FULL = new Set(['twinkly', 'wled', 'surplife', 'xlights']);
+  const FULL = new Set(['twinkly', 'wled', 'surplife', 'xlights', 'nanoleaf', 'lifx']);   // Oct 18 (Graham): Nanoleaf strings are per-bulb, LIFX per-zone
   const tier = t => FULL.has(t) ? '<span class="su-tier full" title="Every LED moves on its own: the full GlowBop show">Full show</span>' : '<span class="su-tier basic" title="The whole light glows one color that follows the music">Basic sync</span>';
-  const tierNote = t => FULL.has(t) ? '⭐ Full show: every LED moves on its own. ' : '🔵 Basic sync: the whole light glows one color with the music. For the full show, use Twinkly, WLED or a pixel curtain. ';
+  const tierNote = t => FULL.has(t) ? '⭐ Full show: every LED moves on its own. ' : '🔵 Basic sync: the whole light glows one color with the music. For the full show, use Twinkly, Nanoleaf, LIFX, WLED or a pixel curtain. ';
   // 🔵 Bluetooth link status in plain English. The cause sits with the light (its range, its sleep timer, its phone app), never GlowBop.
   const LINK = {
     connected: ['🟢', 'Connected', ''],
@@ -142,7 +143,7 @@
       <div class="seg"><button class="btn c" id="suScan" style="--c:var(--cyan)">${lbl('search', 'Find my lights')}</button><button class="btn" id="suAddBtn">${lbl('add', 'Add by brand')}</button></div>
       <div id="suFound" class="list"></div>
       <div id="suAdd" class="su-inset" hidden>
-        <select id="suBrand" aria-label="Brand"><optgroup label="⭐ Full show"><option value="twinkly">Twinkly</option><option value="wled">WLED</option><option value="surplife">Surplife curtain (Bluetooth)</option></optgroup><optgroup label="Basic sync (one color)"><option value="govee">Govee</option><option value="daybetter">DayBetter (Bluetooth)</option><option value="blecheap">Bluetooth LED strip</option><option value="nanoleaf">Nanoleaf (Wi-Fi)</option></optgroup></select>
+        <select id="suBrand" aria-label="Brand"><optgroup label="⭐ Full show"><option value="twinkly">Twinkly</option><option value="wled">WLED</option><option value="surplife">Surplife curtain (Bluetooth)</option><option value="nanoleaf">Nanoleaf string lights (Wi-Fi)</option><option value="lifx">LIFX (String, Neon, Beam, Tile, bulbs)</option></optgroup><optgroup label="Basic sync (one color)"><option value="govee">Govee</option><option value="daybetter">DayBetter (Bluetooth)</option><option value="blecheap">Bluetooth LED strip</option></optgroup></select>
         <div class="su-addrow"><input type="search" id="suIp" placeholder="IP address, e.g. 192.168.0.50" aria-label="IP address" autocapitalize="off" spellcheck="false"><button class="btn c" id="suAddGo" style="--c:var(--cyan)">Add</button></div>
         <p class="note" id="suHelp"></p>
       </div>
@@ -165,11 +166,17 @@
     el.id = 'grpPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
     el.innerHTML = `<div class="ph"><span>Light groups</span></div>
       <p class="note">Each group runs its own show.</p>
-      <div class="seg"><button class="btn" id="suAll">${lbl('lists', 'All together')}</button><button class="btn" id="suEach">${lbl('shuffle', 'Each separate')}</button></div>
+      <div class="seg"><button class="btn" id="suAll">${lbl('lists', 'All lights, one show')}</button><button class="btn" id="suEach">${lbl('shuffle', 'Every light its own show')}</button></div>
       <div id="suGrp" class="su-box"></div>
       ${applyRow(false)}`;
-    $('suAll').onclick = () => { if (!LS) return; GE = {}; LS.devices.forEach(d => GE[d.id] = {g: 1}); saveGroups(); };
-    $('suEach').onclick = () => { if (!LS) return; GE = {}; LS.devices.slice(0, 4).forEach((d, i) => { GE[d.id] = {g: i + 1}; GE['_n' + (i + 1)] = d.name; }); LS.devices.slice(4).forEach(d => GE[d.id] = {g: 4}); saveGroups(); };
+    // 🧩 Oct 18 (Graham: "I saved them both in group one and then it decided..."): at 19:42 his groups were saved right, then one tap on
+    //   the old "Each separate" key (it reads like "groups play separately") split every light apart. Both quick keys now replace your
+    //   own groups only on a second tap, and say what they do.
+    let armed = '', armT = 0;
+    const custom = () => { const g = (LS && LS.groups) || []; return g.length > 1 && g.some(x => x.devices.length > 1); };
+    const twice = (k, msg, go) => { if (custom() && armed !== k) { armed = k; clearTimeout(armT); armT = setTimeout(() => armed = '', 4000); GB.toast(msg); return; } armed = ''; go(); };
+    $('suAll').onclick = () => { if (!LS) return; twice('all', '🧩 Tap again to put every light in one show (this replaces your groups)', () => { GE = {}; LS.devices.forEach(d => GE[d.id] = {g: 1}); saveGroups(); }); };
+    $('suEach').onclick = () => { if (!LS) return; twice('each', '🧩 Tap again to give every light its own show (this splits your groups apart)', () => { GE = {}; LS.devices.slice(0, 4).forEach((d, i) => { GE[d.id] = {g: i + 1}; GE['_n' + (i + 1)] = d.name; }); LS.devices.slice(4).forEach(d => GE[d.id] = {g: 4}); saveGroups(); }); };
   });
 
   // 🗺️ 1c. layout + shape (flat wall, or wrapped round a cylinder / box / globe)
@@ -424,7 +431,8 @@
     const byG = {}; LS.devices.forEach(d => { const n = (GE[d.id] || {g: 1}).g; (byG[n] = byG[n] || []).push(d.id); });
     const groups = Object.keys(byG).sort().map(n => { const one = byG[n].length === 1 ? LS.devices.find(d => d.id === byG[n][0]).name : null;
       const typed = GE['_n' + n]; const old = (LS.groups || [])[n - 1];
-      return {id: 'g' + n, name: typed || (old && old.name) || one || (n === '1' ? 'Main' : 'Group ' + n), devices: byG[n]}; });
+      const oldNm = old && !(/^all lights$/i.test(old.name) && Object.keys(byG).length > 1) ? old.name : '';   // a group that isn't everything never keeps the name "All lights"
+      return {id: 'g' + n, name: typed || oldNm || one || (n === '1' ? 'Wall' : 'Group ' + n), devices: byG[n]}; });
     if (await GB.post('/api/lights/groups', {groups})) { lsDirty = true; GE = null; GB.toast(groups.length > 1 ? `🧩 ${groups.length} groups saved: tap Apply & restart` : 'All lights together: tap Apply & restart'); loadLights(); }
   }
 
@@ -455,7 +463,11 @@
       const row = document.createElement('div'); row.className = 'item';
       row.innerHTML = `<span class="su-dot" style="background:#555;color:transparent"></span><div class="su-tx"><b>${esc(f.name)}</b>${tier(f.type)}<small>${esc(BRAND[f.type] || f.type)} · ${esc(f.ip)}${f.n ? ' · ' + f.n + ' lights' : ''}${f.model ? ' · ' + esc(f.model) : ''}</small></div>`;
       const b = btn('c sm', f.added ? 'Added' : lbl('add', 'Add')); b.style.setProperty('--c', 'var(--cyan)'); b.style.flex = '0 0 auto'; b.disabled = !!f.added;
-      b.onclick = async () => { if (f.type === 'nanoleaf') nlHint(); if (await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name, style: f.style, model: f.model, port: f.port})) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; GB.toast('💡 Added ' + f.name); loadLights(); GB.freed && GB.freed(f.name); } };
+      b.onclick = async () => { if (f.type === 'nanoleaf') nlHint(); const r = await GB.post('/api/lights/add', {type: f.type, ip: f.ip, name: f.name, style: f.style, model: f.model, port: f.port, mac: f.mac, serial: f.serial, target: f.target, zones: f.zones, product: f.product, tiles: f.tiles, legacy: f.legacy});
+        if (r && r.ok) { b.innerHTML = 'Added'; b.disabled = true; lsDirty = true; loadLights(); GB.freed && GB.freed(f.name);
+          // ✨ Oct 18: say what GlowBop made of it and where it went on the board
+          if (r.placed && GB.notice) GB.notice({tone: 'good', icon: '✨', from: 'New light', title: 'Added ' + (r.name || f.name), body: `${BRAND[f.type] || f.type}${f.n > 1 ? ', ' + f.n + ' lights' : ''}: placed as ${r.placed}. Drag it on the LIGHTS board to where it really hangs.`, tip: FULL.has(f.type) ? 'Full show: every bulb moves on its own.' : 'Basic sync: the whole light glows one color with the show.'});
+          else GB.toast('💡 Added ' + f.name); } };
       row.appendChild(b); box.appendChild(row);
     });
   }

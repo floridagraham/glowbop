@@ -14,7 +14,45 @@
   const CCOL = ['#7a6cff', '#ff7ac8', '#4fd1c5', '#ffb86b'];
   GB.css(`
   .sl-top { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-  .sl-top .chip { min-height:40px; }
+  .sl-top .chip { min-height:40px; background:color-mix(in srgb, var(--c) 20%, #0b0814); color:color-mix(in srgb, var(--c) 70%, #fff); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--c) 45%, transparent); transition:background .15s, box-shadow .15s; }
+  .sl-top .chip.on { background:var(--c); color:#000; box-shadow:0 0 16px color-mix(in srgb, var(--c) 70%, transparent), inset 0 0 0 2px #fff; }
+  /* 📋 Oct 18 (Graham: "a little box that has all your lights in it, and then you click and expand"; "get more real estate on the iPad") */
+  #slPanel > .note, #slPanel .sl-top { display:none !important; }
+  .sl-list { display:flex; flex-direction:column; gap:6px; }
+  .sl-lt { font:800 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; text-transform:uppercase; color:var(--dim); }
+  .sl-li { border-radius:12px; background:color-mix(in srgb, var(--c) 9%, #0b0814); box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--c) 35%, transparent); }
+  .sl-li.on { background:color-mix(in srgb, var(--c) 14%, #0b0814); box-shadow:inset 0 0 0 2px var(--c), 0 0 14px color-mix(in srgb, var(--c) 45%, transparent); }
+  .sl-lih { display:flex; width:100%; align-items:center; gap:8px; background:none; border:0; color:color-mix(in srgb, var(--c) 60%, #fff); padding:6px 10px; min-height:42px; font:700 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:.5px; cursor:pointer; text-align:left; }
+  .sl-li.on .sl-lih { color:#fff; }
+  .sl-lih i { width:12px; height:12px; border-radius:50%; background:var(--c); flex:0 0 auto; opacity:.45; }
+  .sl-li.on .sl-lih i { opacity:1; box-shadow:0 0 8px var(--c); }
+  .sl-lih span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sl-lih small { color:var(--dim); font-size:12px; white-space:nowrap; } .sl-lih small.off { color:#ff6a8a; }
+  .sl-lih b { color:var(--c); }
+  .sl-lib { padding:0 8px 10px; display:flex; flex-direction:column; gap:8px; }
+  .sl-li:not(.on) .sl-lib { display:none; }
+  /* 📱 Oct 18 (Graham, iPad: "my lights is way at the bottom, it's in the way"): narrow screens get the list as one slim row of
+     light chips right above the board; the picked light's controls open under the board */
+  #slAsk:not([hidden]) { display:flex !important; flex-wrap:wrap; align-items:center; gap:6px; padding:6px 10px !important; margin:0 0 6px !important; font-size:calc(13px * var(--fs, 1)); }
+  #slAsk span { flex:1 1 220px; min-width:0; } #slAsk .btn { min-height:34px !important; padding:0 12px !important; font-size:13px !important; flex:0 0 auto; }
+  .sl-list.strip { flex:0 0 auto; min-height:46px; flex-direction:row; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap:6px; margin:0 0 6px; padding-bottom:2px; scrollbar-width:none; }
+  .sl-list.strip .sl-lt { display:none; }
+  .sl-list.strip .sl-li { flex:0 0 auto; } .sl-list.strip .sl-lih { min-height:38px; padding:4px 12px; } .sl-list.strip .sl-lih b { display:none; }
+  .sl-list.strip .sl-lib { display:none !important; }
+  #slCtl { display:flex; flex-direction:column; gap:8px; } #slCtl:empty { display:none; }
+  .sl-fab { position:absolute; top:6px; right:6px; z-index:3; display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; max-width:calc(100% - 12px); pointer-events:none; }
+  .sl-fab .btn { pointer-events:auto; min-height:38px !important; min-width:40px; padding:0 9px !important; font-size:15px !important; background:#0d0b18e6; border-radius:10px; }
+  .sl-fab .btn.on { background:var(--cyan); color:#000; } .sl-fab .btn:disabled { opacity:.35; }
+  .sl-fab .sep { width:6px; }
+  .sl-view { position:absolute; top:50px; right:6px; z-index:4; width:min(300px, calc(100% - 12px)); background:#0d0b18f4; border:2px solid #ffc23d; border-radius:0 14px 0 14px; padding:10px; box-shadow:0 10px 30px #000b; }
+  .sl-view[hidden] { display:none; }
+  .sl-view b { display:block; font:800 13px var(--cond); letter-spacing:1.5px; color:#ffc23d; text-transform:uppercase; margin-bottom:6px; }
+  .sl-view .g { display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; margin-bottom:6px; }
+  .sl-view .g .btn { min-height:40px !important; padding:0 4px !important; font-size:13px !important; }
+  .sl-view p { margin:4px 0 0; font:600 12px var(--cond); color:var(--dim); letter-spacing:.5px; }
+  .sl-beep { border-top:1px solid var(--line); padding-top:4px; } .sl-beep > summary { cursor:pointer; list-style:none; font:700 13px var(--cond); color:var(--amber); letter-spacing:1px; padding:6px 0; }
+  .sl-pick { display:inline-flex; flex-wrap:wrap; gap:6px; margin-left:6px; vertical-align:middle; }
+  .sl-pick button { border:0; border-radius:999px; min-height:34px; padding:0 12px; font:700 13px var(--cond); letter-spacing:.5px; cursor:pointer; background:color-mix(in srgb, var(--c) 25%, #0b0814); color:#fff; box-shadow:inset 0 0 0 2px var(--c); }
   .sl-stage { position:relative; height:min(64vh, 640px); min-height:280px; border-radius:0 14px 0 14px; background:#06050c; border:1px solid var(--line); overflow:hidden; touch-action:none; }
   .sl-stage svg { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; user-select:none; -webkit-user-select:none; }
   .sl-stage .h { cursor:grab; }
@@ -35,7 +73,7 @@
   .sl-full .sl-hd { display:flex; grid-column:1 / -1; align-items:center; gap:8px; border-bottom:2px solid var(--cyan); padding-bottom:6px; }
   .sl-full .sl-hd b { flex:1; min-width:0; font:800 calc(18px * var(--fs, 1)) var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--cyan); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .sl-full .sl-hd .btn { min-height:46px; }
-  .sl-full .sl-top { grid-column:1; grid-row:2; }
+  .sl-full .sl-top, .sl-full .sl-list { grid-column:1; grid-row:2; }
   .sl-full .sl-stage { grid-column:1; grid-row:3; height:auto; min-height:0; }
   .sl-full .sl-hint { grid-column:1; grid-row:4; }
   .sl-full .sl-side { grid-column:2; grid-row:2 / 5; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-right:2px; }
@@ -62,6 +100,7 @@
     #slPanel:not(.sl-full) { display:grid; grid-template-columns:minmax(0, 1fr) minmax(230px, 270px); column-gap:12px; align-content:start; }
     #slPanel:not(.sl-full) > .ph, #slPanel:not(.sl-full) > .note, #slPanel:not(.sl-full) > .sl-more { grid-column:1 / -1; }
     #slPanel:not(.sl-full) > .sl-top, #slPanel:not(.sl-full) > .sl-stage, #slPanel:not(.sl-full) > .sl-hint, #slPanel:not(.sl-full) > .sl-go { grid-column:1; }
+    #slPanel:not(.sl-full) > .sl-list { grid-column:1; }
     #slPanel:not(.sl-full) > .sl-side { grid-column:2; grid-row:3 / span 4; align-self:start; display:flex; flex-direction:column; gap:8px; max-height:calc(100vh - 150px); overflow:auto; }
     #slPanel:not(.sl-full) .sl-stage { height:max(380px, calc(100vh - 290px)); }
     #slPanel:not(.sl-full) #slTools { display:flex; flex-direction:column; gap:8px; }
@@ -86,6 +125,11 @@
   .sl-more[open] > summary::after { transform:rotate(90deg); }
   .sl-sub { background:none !important; border:0 !important; padding:0 0 8px !important; margin:0 !important; box-shadow:none !important; }
   .sl-sub > .ph { display:none !important; }
+  .sl-undo { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:9999; display:flex; gap:12px; align-items:center; max-width:calc(100vw - 32px);
+    background:#12091f; color:#fff; border-radius:14px; padding:10px 12px 10px 16px; font:700 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:.3px;
+    box-shadow:0 0 0 2px #33d6ff, 0 0 22px #33d6ff66, 0 10px 30px #000c; animation:slUp .25s ease-out; }
+  .sl-undo button { flex:0 0 auto; min-height:40px; padding:0 16px; border:0; border-radius:10px; background:#33d6ff; color:#000; font:800 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:1px; cursor:pointer; }
+  @keyframes slUp { from { opacity:0; transform:translate(-50%, 14px); } }
   `);
 
   let ST = null, sel = '', strand = 0, BULB = false, DRAW = null, BENDS = false, LAY = {}, dirty = {}, svg = null, view = null, zoom = 1, drag = null, lastPick = 0, MOVE = {};
@@ -209,12 +253,23 @@
     let h = '';
     if (SNAP) h += `<defs><pattern id="slGrid" patternUnits="userSpaceOnUse" x="-0.5" y="-0.5" width="1" height="1"><circle cx="0.5" cy="0.5" r="0.07" fill="#8f86ff" fill-opacity="0.35"/></pattern></defs>`
       + `<rect x="${view.cx - view.w}" y="${view.cy - view.h}" width="${view.w * 2}" height="${view.h * 2}" fill="url(#slGrid)" pointer-events="none"/>`;
+    // 🧲 lights that share one show get one glowing outline around them all, with the show's name
+    ((ST && ST.groups) || []).forEach((g, gi) => {
+      const bs = g.devices.map(id => dev(id)).filter(Boolean).map(boxOf).filter(Boolean); if (bs.length < 2) return;
+      const u = {x0: Math.min(...bs.map(b => b.x0)) - 1.4, y0: Math.min(...bs.map(b => b.y0)) - 1.4, x1: Math.max(...bs.map(b => b.x1)) + 1.4, y1: Math.max(...bs.map(b => b.y1)) + 1.4};
+      const gc = SCOL[(gi + 1) % SCOL.length];
+      h += `<rect x="${u.x0}" y="${u.y0}" width="${u.x1 - u.x0}" height="${u.y1 - u.y0}" rx="1.2" fill="${gc}" fill-opacity="0.05" stroke="${gc}" stroke-width="${HR * 0.09}" stroke-dasharray="${HR * 0.5} ${HR * 0.25}" pointer-events="none"/>`
+        + `<text x="${u.x0 + 0.4}" y="${u.y1 + HR * 0.95}" font-size="${HR * 0.8}" fill="${gc}" font-family="Saira Condensed, system-ui" font-weight="800" pointer-events="none">🔗 ${esc(g.name)} · one show</text>`;
+    });
     let ci = 0;
     ST.devices.forEach(d => {
       if (d.kind !== 'grid') return; const col = CCOL[ci++ % CCOL.length], on = d.id === sel, pts = cpts(d), b = bbox(pts);
+      const tw = TWIST && TWIST.id === d.id ? ` transform="rotate(${TWIST.deg.toFixed(1)} ${(b.x0 + b.x1) / 2} ${(b.y0 + b.y1) / 2})"` : '';
+      h += `<g${tw}>`;
       h += `<g class="lv" data-d="${esc(d.id)}" data-o="0" opacity="${on ? 1 : 0.85}">${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${R}" fill="${col}"/>`).join('')}</g>`;
       h += `<rect class="c" data-id="${esc(d.id)}" x="${b.x0 - 0.6}" y="${b.y0 - 0.6}" width="${b.x1 - b.x0 + 1.2}" height="${b.y1 - b.y0 + 1.2}" rx="0.6" fill="${col}" fill-opacity="${on ? 0.12 : 0.02}" stroke="${col}" stroke-width="${on ? HR * 0.12 : HR * 0.05}" stroke-dasharray="${on ? 'none' : HR * 0.3}" style="cursor:move"/>`;
-      h += `<text x="${b.x0}" y="${b.y0 - 0.9}" font-size="${HR * 0.9}" fill="${col}" font-family="Saira Condensed, system-ui" font-weight="700" pointer-events="none">${esc(d.name)}${on ? '  ✥ drag to move' : ''}</text>`;
+      h += `<text x="${b.x0}" y="${b.y0 - 0.9}" font-size="${HR * 0.9}" fill="${col}" font-family="Saira Condensed, system-ui" font-weight="700" pointer-events="none">${esc(d.name)}${on ? '  ✥ drag · twist to turn' : ''}</text>`;
+      h += `</g>`;
     });
     strings().forEach(d => {
       const lay = LAY[d.id]; if (!lay) return;
@@ -253,13 +308,27 @@
     box.innerHTML = ss.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${SCOL[i % SCOL.length]}">${d.curtain ? '〰️' : '🧵'} ${esc(d.name)} · ${d.n}</button>`).join('')
       + cc.map((d, i) => `<button class="chip${d.id === sel ? ' on' : ''}" data-sl="${esc(d.id)}" style="--c:${CCOL[i % CCOL.length]}">▦ ${esc(d.name)}</button>`).join('');
     box.querySelectorAll('[data-sl]').forEach(b => b.onclick = () => { sel = b.dataset.sl; strand = 0; CH = 0; paintTop(); draw(); paintCurtainCard(); });
+    paintList();
+  }
+  // 📋 My lights: one row per light; tap one to open its controls right under it, tap again to close it
+  function paintList() {
+    const list = $('slList'), hold = $('slHold'); if (!list || !hold) return;
+    ['slCurt', 'slCm', 'slTools'].forEach(i => { const n = $(i); if (n) hold.appendChild(n); });
+    const rows = strings().map((d, i) => { const L = LAY[d.id]; return [d, SCOL[i % SCOL.length], L && L.kind === 'curtain' ? '🔓' : L && L.wall ? '▦' : '🧵']; })
+      .concat(curtains().map((d, i) => [d, CCOL[i % CCOL.length], '▦']));
+    if (!rows.length) { list.innerHTML = '<p class="note">Add your lights above, then lay them out here.</p>'; return; }
+    list.innerHTML = '<b class="sl-lt">💡 My lights</b>' + rows.map(([d, c, ic]) => `<div class="sl-li${d.id === sel ? ' on' : ''}" style="--c:${c}"><button class="sl-lih" data-li="${esc(d.id)}"><i></i><span>${ic} ${esc(d.name)}</span><small${d.connected === false ? ' class="off"' : ''}>${d.n}${d.connected === false ? ' · offline' : ''}${(GB.lightsTune || []).some(t => t.id === d.id) ? ' · 🐢 ' + GB.lightsTune.find(t => t.id === d.id).fps + ' fps' : ''}</small><b>${d.id === sel ? '▾' : '▸'}</b></button><div class="sl-lib"></div></div>`).join('');
+    list.querySelectorAll('[data-li]').forEach(b => b.onclick = () => { const id = b.dataset.li; sel = sel === id ? '' : id; strand = 0; CH = 0; BULB = false; paintTop(); draw(); paintCurtainCard(); });
+    const strip = list.classList.contains('strip'), body = strip ? (sel ? $('slCtl') : null) : list.querySelector('.sl-li.on .sl-lib');
+    if (body) ['slCurt', 'slCm', 'slTools'].forEach(i => { const n = $(i); if (n) body.appendChild(n); });
   }
   function paintTools() {
     document.querySelectorAll('#slSnap [data-sn]').forEach(b => b.classList.toggle('on', (b.dataset.sn === '1') === SNAP));
     const d = dev(sel), lay = d && LAY[sel], box = $('slTools'), cb = $('slCurt'); if (!box) return;
     const isC = !!(d && d.kind === 'grid'); cb.hidden = !isC;
     if (!d) { box.hidden = true; $('slR').textContent = $('slR2').textContent = ''; $('slHint').textContent = $('slHint').textContent || 'Click a curtain or a string to edit it'; return; }
-    if (isC) { $('slDrops').textContent = GB.pro === false ? '🔒 Bend its drops · PRO' : '〰️ Bend its drops'; box.hidden = true; $('slR').textContent = $('slR2').textContent = Object.keys(MOVE).length ? 'NOT SAVED' : 'CURTAIN'; return; }
+    const sn = $('slSnapT'); if (sn) sn.classList.toggle('on', SNAP);
+    if (isC) { $('slDrops').textContent = GB.pro === false ? '🔒 Unlock drops · PRO' : '🔓 Unlock drops'; box.hidden = true; $('slR').textContent = $('slR2').textContent = Object.keys(MOVE).length ? 'NOT SAVED' : 'CURTAIN'; return; }
     if (!d || !lay) { box.hidden = true; return; }
     if (lay.kind === 'points') { box.hidden = true; $('slR').textContent = $('slR2').textContent = dirty[sel] ? 'NOT SAVED' : '🎨 FROM A FILE';
       $('slHint').textContent = '🎨 Mapped from a file (Art board). Drag START to move it, END to turn or resize it, then Save. To change the shape, import again on the ART page.'; paintCurtainCard(); return; }
@@ -279,8 +348,9 @@
     paintCurtainCard();
     $('slCurveRow').style.display = fr > 1 || isWall ? 'none' : '';
     $('slBulb').style.display = isWall ? 'none' : ''; $('slFlip').style.display = isWall ? 'none' : '';
-    $('slDraw').style.display = isWall || isCur ? 'none' : ''; $('slDraw').textContent = DRAW ? '✓ Done drawing' : '✍️ Draw it'; $('slBends').textContent = BENDS ? '💡 Hide the bends' : '💡 Show me the bends';
-    $('slBulb').classList.toggle('on', BULB); $('slBulb').textContent = BULB ? '✋ Moving bulbs: tap to stop' : '✋ Move single bulbs';
+    // 🌲 Oct 18 (Graham: "wrap a curtain around a tree and run strings up it… draw that"): an unlocked curtain's drops can be drawn too
+    $('slDraw').style.display = isWall ? 'none' : ''; $('slDraw').textContent = DRAW ? '✓ Done' : (isCur ? '✍️ Draw drop ' + (strand + 1) : '✍️ Draw it'); $('slBends').textContent = BENDS ? '💡 Hide' : '💡 Bends';
+    $('slBulb').classList.toggle('on', BULB); $('slBulb').textContent = BULB ? '✋ Stop' : '✋ Bulbs';
     $('slUnpin').style.display = Object.keys(p.pins || {}).length ? '' : 'none';
     $('slCurveRow').querySelectorAll('[data-cv]').forEach(b => { b.classList.toggle('on', !!p.smooth === (b.dataset.cv === '1')); if (b.dataset.cv === '1') b.innerHTML = GB.pro === false ? '🔒 Smooth curves · PRO' : '💎 Smooth curves'; });
     $('slSave').classList.toggle('pulse', !!dirty[sel]);
@@ -325,8 +395,10 @@
     const R = Math.ceil(N / h); lay.wall = R; lay.gap = -1; lay.parts[0].pts = [a, [a[0], a[1] + h - 1]];
     lay.parts.forEach(p => { p.smooth = false; delete p.pins; p.rev = false; }); wallSync(lay);
     const last = N - (R - 1) * h;
-    $('slHint').textContent = `🧵 ${R} drops of ${h}${last < h ? ` (the last drop is ${last} bulbs)` : ''}. Hang it like this: start at the TOP next to your other lights, run the first drop down, the next one back up beside it, and keep snaking. Then Save.`;
+    $('slHint').textContent = `🧵 ${R} drops of ${h}${last < h ? ` (the last drop is ${last} bulbs)` : ''}, saved. Hang it like this: start at the TOP next to your other lights, run the first drop down, the next one back up beside it, and keep snaking.`;
     change();
+    // Oct 18 (Graham: "Make it a curtain isn't auto forming a box, that's what it should just do"): it forms the box AND saves it, one tap
+    const id = sel; GB.post('/api/lights/lay', {id, lay: LAY[id]}).then(r => { if (r && r.ok) { dirty[id] = false; GB.sfx && GB.sfx('ok'); GB.toast(`🧵 ${R} × ${h} curtain made and saved`); paintCurtainCard(); } });
   }
   function paintCurtainCard() {
     const box = $('slCm'); if (!box) return; const d = dev(sel);
@@ -370,20 +442,39 @@
     const d = strings().find(x => !isPanel(x) && !skip[x.id] && panels().length);
     if (!d) { box.hidden = true; return; } box.hidden = false;
     const cb = curtainBox(), h = cb ? cb.h : 21;
-    box.innerHTML = `<b>🧵 New string light: ${esc(d.name)} (${d.n} bulbs)</b> Make it a curtain that matches your main panel? That's <b>${Math.ceil(d.n / h)} drops of ${h}</b>, so text and shows line up across all your lights.
-      <div class="seg" style="margin-top:8px"><button class="btn c" data-ak="go" style="--c:var(--pink)">🧵 Make a curtain</button><button class="btn" data-ak="no">Not now</button></div>`;
-    box.querySelector('[data-ak="go"]').onclick = () => { sel = d.id; strand = 0; CH = 0; paintTop(); draw(); setTimeout(() => { const c = $('slCm'); if (c) c.scrollIntoView({behavior: 'smooth', block: 'center'}); }, 80); };
+    // Oct 18 (Graham: "that big Make a curtain button at the top is distracting… when you push it, it wasn't working"): one slim line,
+    //   and the button really makes the curtain (and saves it) instead of just scrolling to the card.
+    box.innerHTML = `<span>🧵 <b>${esc(d.name)}</b>: make it a ${Math.ceil(d.n / h)} × ${h} curtain like your main panel?</span><button class="btn c" data-ak="go" style="--c:var(--pink)">🧵 Make it</button><button class="btn" data-ak="no">✕</button>`;
+    box.querySelector('[data-ak="go"]').onclick = () => { sel = d.id; strand = 0; CH = 0; paintTop(); makeCurtain(h); paintAsk(); };
     box.querySelector('[data-ak="no"]').onclick = () => { skip[d.id] = 1; try { localStorage.setItem('gb_cm_skip', JSON.stringify(skip)); } catch (e) {} paintAsk(); };
   }
   function change() { dirty[sel] = true; view = view || null; commit(); draw(); }
   // ↶↷ undo / redo (Oct 17, Graham): every drag, bend, fold, flip and move is one step
+  // Oct 18 (Graham: "the undo button doesn't really work"): a curtain now saves itself the moment you let go, and its
+  //   undo step remembers exactly where it was and which way it faced, so undo puts the real curtain back (no more stale offsets).
   let HIST = [], FUT = [], LAST = null;
-  const stateNow = () => JSON.stringify({LAY, MOVE});
-  function commit() { const cur = stateNow(); if (LAST !== null && cur !== LAST) { HIST.push(LAST); if (HIST.length > 80) HIST.shift(); FUT = []; } LAST = cur; paintUR(); }
-  function restore(st) { const o = JSON.parse(st); LAY = o.LAY || {}; MOVE = o.MOVE || {}; LAST = st;
-    Object.keys(LAY).forEach(id => dirty[id] = true); Object.keys(MOVE).forEach(id => dirty[id] = true); draw(); paintUR(); }
-  function undo() { if (!HIST.length) return GB.toast('Nothing to undo'); FUT.push(LAST); restore(HIST.pop()); GB.toast('↶ Undone'); }
-  function redo() { if (!FUT.length) return GB.toast('Nothing to redo'); HIST.push(LAST); restore(FUT.pop()); GB.toast('↷ Redone'); }
+  const stateNow = () => JSON.stringify({LAY});
+  function pushOp(op) { HIST.push(op); if (HIST.length > 80) HIST.shift(); FUT = []; paintUR(); }
+  function commit() { const cur = stateNow(); if (LAST !== null && cur !== LAST) pushOp({lay: LAST}); LAST = cur; paintUR(); }
+  function restore(st) { const o = JSON.parse(st); LAY = o.LAY || {}; LAST = st; Object.keys(LAY).forEach(id => dirty[id] = true); draw(); paintUR(); }
+  const curState = d => { const b = bbox(d.pts), o = d.orient || {}; return {place: [b.x0, b.y0], rot: (o.rot || 0) % 360, flip: !!o.flip}; };
+  async function applyCurt(id, st) {
+    const r = await GB.post('/api/lights/place', {id, place: st.place, rot: st.rot, flip: st.flip});
+    if (r && r.ok) { dirty[id] = false; delete MOVE[id]; await load(true); return true; } return false;
+  }
+  async function curtSave(id, to, quiet) {                        // save a curtain's new spot / turn now, as one undo step
+    const d = dev(id); if (!d) return; const from = curState(d);
+    if (JSON.stringify(from) === JSON.stringify(to)) { delete MOVE[id]; dirty[id] = false; return draw(); }
+    if (await applyCurt(id, to)) { pushOp({curt: id, from, to}); if (!quiet) GB.sfx && GB.sfx('ok'); }
+  }
+  async function undo() { const op = HIST.pop(); if (!op) return GB.toast('Nothing to undo');
+    if (op.curt) { if (!(await applyCurt(op.curt, op.from))) { HIST.push(op); return; } FUT.push(op); }
+    else { FUT.push({lay: LAST}); restore(op.lay); }
+    paintUR(); GB.toast('↶ Undone'); }
+  async function redo() { const op = FUT.pop(); if (!op) return GB.toast('Nothing to redo');
+    if (op.curt) { if (!(await applyCurt(op.curt, op.to))) { FUT.push(op); return; } HIST.push(op); }
+    else { HIST.push({lay: LAST}); restore(op.lay); }
+    paintUR(); GB.toast('↷ Redone'); }
   // 🔔 Oct 17: tap when a light's power box beeps: GlowBop logs the moment (beeps.jsonl) and turns that light's power down a notch
   // 🔔 Oct 17: "My lights are beeping", the same for every light (no brand named). Tonight's lesson: the "light" beeping all day was the
   //   dishwasher, so it first asks you to check what else is beeping nearby, then turns the whole show down a notch if you still want.
@@ -451,17 +542,25 @@
     const mk = bendMarks(d, lay); const r = await GB.post('/api/lights/marks', {id: d.id, marks: mk, secs: 30});
     if (r) { BENDS = true; GB.toast(`💡 ${mk.length} bulbs lit: green = start, pink = end, amber / purple = bend here (left / right). 30 seconds.`); draw(); setTimeout(() => { BENDS = false; draw(); }, 30000); }
   }
+  let TWIST = null;                                  // 🔄 two fingers on a curtain: {id, a0, deg}; snaps to quarter turns when you let go
   function onDown(e) {
     hideMenu(); if (e.button === 2) return;
     if (DRAW && LAY[sel]) {                                            // ✍️ drawing: every bulb-width of travel lays the next bulb
       e.preventDefault(); const at = toWorld(e); if (!DRAW.placed.length) DRAW.placed.push(at);
       drag = {draw: true}; try { svg.setPointerCapture(e.pointerId); } catch (x) {} onMove(e); return;
     }
-    const c = e.target.closest && e.target.closest('.c');
-    if (c && !(e.target.closest('.h'))) {                               // ▦ grab a curtain anywhere and move it
-      e.preventDefault(); const id = c.dataset.id; if (sel !== id) { sel = id; paintTop(); }
-      drag = {curt: id, at: toWorld(e), from: (MOVE[id] || [0, 0]).slice()}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
-      $('slHint').textContent = 'Drag the curtain to where it really hangs'; draw(); return;
+    const onH = e.target.closest && e.target.closest('.h'), here = onH ? [] : curtainsAt(toWorld(e));
+    if (!onH && !BULB) {                                                // 🧱 a strand laid as a wall: grab it anywhere on its body and move it, like a curtain
+      const [wx, wy] = toWorld(e), ws = strings().filter(isWallStr).filter(d => { const b = boxOf(d); return b && wx >= b.x0 - 0.7 && wx <= b.x1 + 0.7 && wy >= b.y0 - 0.7 && wy <= b.y1 + 0.7; });
+      const w = ws.find(d => d.id === sel) || (!here.length || !here.includes(sel) ? ws[0] : null);
+      if (w) { e.preventDefault(); if (sel !== w.id) { sel = w.id; strand = 0; paintTop(); paintCurtainCard && paintCurtainCard(); }
+        drag = {wall: w.id, at: [wx, wy], from: JSON.parse(JSON.stringify(LAY[w.id].parts.map(p => p.pts))), lay0: JSON.parse(JSON.stringify(LAY[w.id])), moved: false}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+        $('slHint').innerHTML = `✥ Moving <b>${esc(w.name)}</b>. Drop it right next to another light and they join into one show.`; draw(); return; }
+    }
+    if (here.length && !(dev(sel) && dev(sel).kind === 'string' && nearString(sel, toWorld(e)))) {   // ▦ grab a curtain anywhere and move it
+      e.preventDefault(); const id = here.includes(sel) ? sel : here[0]; if (sel !== id) { sel = id; paintTop(); paintCurtainCard(); }
+      drag = {curt: id, at: toWorld(e), from: (MOVE[id] || [0, 0]).slice(), moved: false}; try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+      pickHint(here, id); draw(); return;
     }
     if (BULB && LAY[sel]) {                                           // ✋ grab the nearest bulb of this strand
       const lay = LAY[sel], d = dev(sel), per = layPoints(d, lay), pts = per[strand] || [], [x, y] = toWorld(e);
@@ -479,6 +578,20 @@
     const d = dev(sel); blink(d, LAY[sel], k, i);
     $('slHint').textContent = i === 0 ? 'Watch the real string: the blinking bulb is this end' : 'Drag it to where that bulb really is';
   }
+  // 👆 Oct 18 (Graham: "these are now overlapping… you want to click on them and be separate"): which curtains are under a point,
+  //   thinnest first (a LIFX line across a Twinkly wins on its line); the one you've picked always wins, and a chooser offers the rest.
+  function curtainsAt([x, y]) {
+    const out = [];
+    curtains().forEach(d => { const b = bbox(cpts(d)), pad = 0.7; if (x >= b.x0 - pad && x <= b.x1 + pad && y >= b.y0 - pad && y <= b.y1 + pad) out.push([d.id, (b.x1 - b.x0 + 1) * (b.y1 - b.y0 + 1)]); });
+    return out.sort((a, b) => a[1] - b[1]).map(a => a[0]);
+  }
+  function nearString(id, [x, y]) { const d = dev(id), lay = LAY[id]; if (!d || !lay) return false; const lim = Math.max(0.8, (view ? Math.min(view.w, view.h) : 20) / 25) ** 2;
+    return layPoints(d, lay).some(pts => pts.some(([px, py]) => (px - x) ** 2 + (py - y) ** 2 < lim)); }
+  function pickHint(here, id) {
+    const hn = $('slHint'); if (!hn) return; const d = dev(id);
+    hn.innerHTML = `✥ Moving <b>${esc(d ? d.name : '')}</b>. Let go to drop it: the real lights switch over then.` + (here.length > 1 ? ` <span class="sl-pick">Also here: ${here.filter(x => x !== id).map(x => { const o = dev(x), i = curtains().findIndex(c => c.id === x); return `<button data-pk="${esc(x)}" style="--c:${CCOL[i % CCOL.length]}">▦ ${esc(o ? o.name : x)}</button>`; }).join('')}</span>` : '');
+    hn.querySelectorAll('[data-pk]').forEach(b => b.onclick = () => { sel = b.dataset.pk; paintTop(); paintCurtainCard(); draw(); hn.textContent = '▦ ' + (dev(sel) || {}).name + ' picked: drag it, or twist two fingers on it to turn it'; });
+  }
   function onMove(e) {
     if (!drag) return; e.preventDefault();
     if (drag.draw) {
@@ -492,7 +605,9 @@
     if (drag.pan) { if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 4) drag.moved = true; if (!drag.moved) return; view.cx = drag.cx - (e.clientX - drag.sx) / drag.k; view.cy = drag.cy - (e.clientY - drag.sy) / drag.k; return draw(); }
     if (drag.bulb !== undefined) { const [x, y] = toWorld(e), p = LAY[sel].parts[strand]; p.pins = p.pins || {}; p.pins[drag.bulb] = [snap(x), snap(y)]; dirty[sel] = true;
       const now = Date.now(); if (now - lastPick > 300) { lastPick = now; GB.post('/api/lights/pick', {id: sel, i: drag.real, secs: 1.2}); } return draw(); }
-    if (drag.curt) { const [x, y] = toWorld(e); MOVE[drag.curt] = [snap(drag.from[0] + x - drag.at[0]), snap(drag.from[1] + y - drag.at[1])]; dirty[drag.curt] = true; return draw(); }
+    if (drag.wall) { const [x, y] = toWorld(e), dx = snap(x - drag.at[0]), dy = snap(y - drag.at[1]), lay = LAY[drag.wall];
+      lay.parts.forEach((p, k) => { p.pts = drag.from[k].map(([a, b]) => [a + dx, b + dy]); const p0 = drag.lay0.parts[k].pins; if (p0) Object.keys(p0).forEach(j => p.pins[j] = [p0[j][0] + dx, p0[j][1] + dy]); }); wallSync(lay); if (dx || dy) drag.moved = true; dirty[drag.wall] = true; return draw(); }
+    if (drag.curt) { const [x, y] = toWorld(e); MOVE[drag.curt] = [snap(drag.from[0] + x - drag.at[0]), snap(drag.from[1] + y - drag.at[1])]; if (MOVE[drag.curt][0] || MOVE[drag.curt][1]) drag.moved = true; dirty[drag.curt] = true; return draw(); }
     const [x, y] = toWorld(e), lay = LAY[sel], p = lay.parts[drag.k].pts;
     if (lay.wall) {                                                   // 🧱 the whole wall moves / stretches together
       const p0 = lay.parts[0].pts, nx = snap(x), ny = snap(y);
@@ -502,8 +617,28 @@
     }
     p[drag.i] = [snap(x), snap(y)]; dirty[sel] = true; draw(); blink(dev(sel), lay, drag.k, drag.i);
   }
-  function onUp() {
+  async function onUp() {
     if (drag && drag.draw) { drag = null; drawCommit(); drawHint(); draw(); return; }
+    if (drag && drag.wall) {                                             // 🧱 let go of a strand wall: click it into place, save it, join if it touches
+      const id = drag.wall, d = dev(id), lay = LAY[id], lay0 = drag.lay0, moved = drag.moved; drag = null; svg.style.cursor = ''; $('slHint').textContent = '';
+      if (!moved) { dirty[id] = false; return draw(); }
+      const m = SNAP ? magnet(id, boxOf(d)) : null;
+      if (m) { lay.parts.forEach(p => { p.pts = p.pts.map(([a, b]) => [a + m[0], b + m[1]]); if (p.pins) Object.keys(p.pins).forEach(j => p.pins[j] = [p.pins[j][0] + m[0], p.pins[j][1] + m[1]]); }); wallSync(lay); }
+      commit(); const r = await GB.post('/api/lights/lay', {id, lay});
+      if (r && r.ok) { dirty[id] = false; GB.sfx && GB.sfx('ok'); await load(true);
+        groupCheck(id, () => GB.post('/api/lights/lay', {id, lay: lay0})); }
+      return;
+    }
+    if (drag && drag.curt) {                                             // ▦ let go: the curtain saves itself (one undo step) and the real lights follow
+      const id = drag.curt, d = dev(id); drag = null; svg.style.cursor = '';
+      if (d && MOVE[id] && (MOVE[id][0] || MOVE[id][1])) {
+        let b = bbox(cpts(d)); const m = SNAP ? magnet(id, b) : null, o = d.orient || {}, from = curState(d);
+        if (m) { MOVE[id] = [MOVE[id][0] + m[0], MOVE[id][1] + m[1]]; b = bbox(cpts(d)); }         // 🧲 click into place next to its neighbour
+        curtSave(id, {place: [b.x0, b.y0], rot: (o.rot || 0) % 360, flip: !!o.flip}).then(() => groupCheck(id, () => applyCurt(id, from)));
+      }
+      else { delete MOVE[id]; dirty[id] = false; draw(); }
+      return;
+    }
     const tap = drag && drag.pan && !drag.moved ? drag.at : null;
     if (drag && !drag.pan) commit();
     if (drag) { drag = null; $('slHint').textContent = ''; svg.style.cursor = ''; }
@@ -516,6 +651,75 @@
     if (DRAW) return;                              // (taps while drawing are handled by the drawing)
     if (best) { sel = best.id; strand = best.k; } else { sel = ''; BULB = false; }
     paintTop(); draw();
+  }
+
+  // ---------------- 🧲 SNAP TO JOIN (Oct 18, Graham: "be able to join the curtains... when you put them together, now they're a group.
+  //   Right now you gotta place them together and you gotta choose all these things"). Drop a light right next to another and it clicks
+  //   into place like a magnet and joins that light's show: one picture across both. Pull it away from its group and it becomes its own
+  //   show (Pro). Long-press (or right-click) any light for Join / Split too. Every change comes with an Undo.
+  //   Oct 18, take 2 (Graham: "it should just join"): joining MERGES the two shows (no more "add to this, add to that"), a strand laid
+  //   as a wall drags from anywhere on its body like a curtain, and the bar under it has ⇋ FLIP IT for a light that comes out backwards.
+  const boxOf = d => d.kind === 'grid' ? bbox(cpts(d)) : (LAY[d.id] ? bbox(layPoints(d, LAY[d.id]).flat()) : null);
+  const isWallStr = d => d && d.kind === 'string' && LAY[d.id] && (LAY[d.id].wall || LAY[d.id].kind === 'curtain');   // a strand made into a wall or a curtain moves like a curtain
+  const solids = () => (ST ? ST.devices.filter(d => d.kind === 'grid' || isWallStr(d)) : []);    // lights with a body you can drag
+  const gOf = id => ((ST && ST.groups) || []).find(g => g.devices.includes(id));
+  const gapBetween = (a, b) => Math.max(Math.max(a.x0 - b.x1, b.x0 - a.x1) - 1, Math.max(a.y0 - b.y1, b.y0 - a.y1) - 1);   // bulbs between two boxes (0 = side by side, < 0 = overlapping)
+  const flush = q => q >= -1 && q <= 0.5;          // side by side (or sharing one row / column), not one laid on top of the other
+  const PULL = 2.5, AWAY = 3;
+  function magnet(id, b) {                         // -> [dx, dy] that clicks this box flush against the nearest light, or null
+    let best = null;
+    solids().forEach(o => { if (o.id === id) return; const c = boxOf(o); if (!c || gapBetween(b, c) < -1.5) return;   // laid on top on purpose: leave it
+      const ovY = Math.min(b.y1, c.y1) - Math.max(b.y0, c.y0), ovX = Math.min(b.x1, c.x1) - Math.max(b.x0, c.x0), cand = [];
+      if (ovY >= 0) [c.x1 + 1 - b.x0, c.x0 - 1 - b.x1].forEach(dx => cand.push([dx, Math.abs(c.y0 - b.y0) <= 2 ? c.y0 - b.y0 : 0]));     // beside it (tops lined up)
+      if (ovX >= 0) [c.y1 + 1 - b.y0, c.y0 - 1 - b.y1].forEach(dy => cand.push([Math.abs(c.x0 - b.x0) <= 2 ? c.x0 - b.x0 : 0, dy]));     // above / below it
+      cand.forEach(([dx, dy]) => { const q = Math.hypot(dx, dy); if (q <= PULL && q > 0 && (!best || q < best.q)) best = {dx, dy, q}; });
+    });
+    return best ? [best.dx, best.dy] : null;
+  }
+  function undoBar(msg, fn, flipId) {
+    document.querySelectorAll('.sl-undo').forEach(x => x.remove());
+    const bar = document.createElement('div'); bar.className = 'sl-undo';
+    bar.innerHTML = `<span>${esc(msg)}</span>${flipId ? '<button class="fl">⇋ FLIP IT</button>' : ''}<button class="un">UNDO</button>`;
+    bar.querySelector('.un').onclick = () => { bar.remove(); fn(); };
+    if (flipId) bar.querySelector('.fl').onclick = () => flipLight(flipId);
+    document.body.appendChild(bar); setTimeout(() => bar.remove(), 12000);
+  }
+  async function flipLight(id) {                   // ⇋ mirror one light left to right where it sits (a curtain, or a strand wall)
+    const d = dev(id); if (!d) return;
+    if (d.kind === 'grid') { sel = id; paintTop(); return turn('flip'); }
+    const lay = LAY[id]; if (!lay) return; const b = boxOf(d), m = x => b.x0 + b.x1 - x;
+    lay.parts.forEach(p => { p.pts = p.pts.map(([x, y]) => [m(x), y]); if (p.pins) Object.keys(p.pins).forEach(k => p.pins[k] = [m(p.pins[k][0]), p.pins[k][1]]); });
+    if (lay.wall) lay.gap = -(lay.gap || 1);
+    const r = await GB.post('/api/lights/lay', {id, lay}); if (r && r.ok) { GB.toast('⇋ Flipped ' + d.name); dirty[id] = false; await load(true); }
+  }
+  const proTease = () => GB.toast('✨ Pulling a light off into its own show comes with Pro. Home DJ plays all your lights together.');
+  async function regroup(url, body, back) {
+    const r = await GB.post(url, body); if (!r || !r.ok || r.same) return;
+    GB.sfx && GB.sfx('ok'); setTimeout(() => load(true), 9000);
+    undoBar((url.endsWith('join') ? '🧲 ' : '✂️ ') + (r.msg || 'Groups changed') + '. The show restarts for a moment.', async () => {
+      await GB.post('/api/lights/regroup', {groups: r.prev || []}); if (back) await back();
+      GB.toast('↶ Put back the way it was'); setTimeout(() => load(true), 9000);
+    }, url.endsWith('join') ? body.id : null);
+  }
+  async function groupCheck(id, back) {            // after a drop: clicked against another show? pulled away from its own?
+    const d = dev(id), me = d && boxOf(d), g = gOf(id); if (!me || !g) return;
+    const mates = g.devices.filter(x => x !== id);
+    const near = solids().filter(o => o.id !== id).map(o => [o, gapBetween(me, boxOf(o))]).sort((a, b) => Math.abs(a[1]) - Math.abs(b[1]));
+    const other = near.find(([o, q]) => flush(q) && !mates.includes(o.id));
+    if (other) return regroup('/api/lights/join', {id, to: other[0].id}, back);          // the two shows become one
+    if (near.some(([o, q]) => q <= AWAY && mates.includes(o.id))) return;               // still with its own group: nothing changes
+    const mb = mates.map(dev).filter(Boolean).map(boxOf).filter(Boolean);
+    if (mb.length && mb.every(b => gapBetween(me, b) > AWAY)) return GB.pro === false ? proTease() : regroup('/api/lights/split', {id}, back);
+  }
+  function groupItems(id) {                        // long-press menu: 🔗 join the show it's touching, ✂️ split into its own show
+    const out = [], g = gOf(id), d = dev(id), me = d && boxOf(d); if (!g) return out;
+    const mates = g.devices.filter(x => x !== id), seen = new Set();
+    if (me) ST.devices.filter(o => o.id !== id && !mates.includes(o.id)).map(o => [o, boxOf(o)]).filter(x => x[1] && gapBetween(me, x[1]) <= 1.5)
+      .forEach(([o]) => { const og = gOf(o.id) || {id: o.id, name: o.name}; if (seen.has(og.id)) return; seen.add(og.id);
+        out.push(['🔗 Join with ' + og.name, () => regroup('/api/lights/join', {id, to: o.id})]); });
+    if (mates.length) out.push(['✂️ Split into its own show', () => GB.pro === false ? proTease() : regroup('/api/lights/split', {id})]);
+    if (d) out.push(['⇋ Flip it left to right', () => flipLight(id)]);
+    return out;
   }
 
   // ---------------- 🔍 zoom (wheel, buttons, right-click) and the right-click menu
@@ -538,6 +742,7 @@
     const [x, y] = toWorld(e), stage = $('slStage'), sr = stage.getBoundingClientRect(), items = [];
     const h = e.target.closest && e.target.closest('.h');
     let c = e.target.closest && e.target.closest('.c');
+    if (!c && !h) { const at = curtainsAt([x, y]); if (at.length) c = {dataset: {id: at.includes(sel) ? sel : at[0]}}; }
     if (!h) {                                       // 👆 on (or right next to) a string: pick it first, so "Add a bend here" is right there
       let best = null; const lim = Math.max(0.8, (view ? Math.min(view.w, view.h) : 20) / 25) ** 2;
       strings().forEach(d => { const L = LAY[d.id]; if (!L) return; layPoints(d, L).forEach((pts, k) => pts.forEach(([px, py]) => { const q = (px - x) ** 2 + (py - y) ** 2; if (q < lim && (!best || q < best.q)) best = {id: d.id, k, q}; })); });
@@ -548,8 +753,10 @@
       if (i > 0 && i < pp.length - 1) items.push(['✖ Remove this bend', () => { pp.splice(i, 1); change(); }]);
       else items.push(['⇄ Flip this strand', () => { lay.parts[k].rev = !lay.parts[k].rev; change(); }]); }
     else if (c) { const id = c.dataset.id; if (sel !== id) { sel = id; paintTop(); draw(); }
-      items.push(['↻ Turn 90°', () => turn('rot')], ['⇋ Mirror', () => turn('flip')]); }
+      items.push(['🔓 Unlock its drops', () => $('slDrops').click()], ['↻ Turn 90°', () => turn('rot')], ['⇋ Mirror', () => turn('flip')], ...groupItems(id)); }
+    else if (lay && lay.kind === 'curtain') { items.push(['✍️ Draw this drop', () => $('slDraw').click()], ['🔒 Lock it back into a curtain', () => $('slStraight').click()]); }
     else if (lay && dev(sel) && dev(sel).kind === 'string') { const ns = nearestSeg(lay, x, y);
+      groupItems(sel).forEach(it => items.push(it));
       if (ns) items.push(['＋ Add a bend here', () => { strand = ns.k; lay.parts[ns.k].pts.splice(ns.i, 0, [snap(x), snap(y)]); $('slHint').textContent = 'Bend added: drag it into place'; change(); }]);
       else items.push(['Folded strands bend at their ends only', null]); }
     if (items.length) items.push(null);
@@ -585,7 +792,7 @@
   setInterval(paintLive, 125);
   // 🔄 Oct 17 (Graham: "I see it on the iPad, not on the laptop"): every screen picks up layout changes saved on another one
   let SIG = '';
-  const sigOf = st => JSON.stringify((st.devices || []).map(d => [d.id, d.kind, d.lay || null, d.pts ? d.pts.length + ':' + (d.pts[0] || []).join(',') : '']));
+  const sigOf = st => JSON.stringify([(st.devices || []).map(d => [d.id, d.kind, d.lay || null, d.pts ? d.pts.length + ':' + (d.pts[0] || []).join(',') : '']), st.groups || []]);
   setInterval(async () => {
     if (!svg || GB.page !== 'lights' || document.hidden || drag || Object.values(dirty).some(Boolean) || Object.keys(MOVE).length) return;
     let st; try { st = await GB.get('/api/lights/stage'); } catch (e) { return; }
@@ -619,14 +826,23 @@
     }
     if (ok) { GB.sfx && GB.sfx('ok'); GB.toast('💾 Saved. The live wall now shows your lights where you put them'); await load(true); }
   }
-  async function turn(extra) {
+  // Oct 18 (Graham: "when you push 90 degrees, it gets out of phase immediately"): the turn snapped the corner to a whole bulb,
+  //   which knocked an overlapping curtain off its half-bulb offset. Now only the move is snapped, the offset stays.
+  let TA = null;                                                  // the middle we're turning round (see turn)
+  async function turn(extra, steps) {
     const d = dev(sel); if (!d || d.kind !== 'grid') return;
-    const o = d.orient || {rot: 0, flip: false}, b = bbox(cpts(d)), cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
-    let body = {};
-    if (extra === 'rot') { const w = b.x1 - b.x0, hh = b.y1 - b.y0; body = {rot: ((o.rot || 0) + 90) % 360, place: [snap(cx - hh / 2), snap(cy - w / 2)]}; }   // turn around its middle
-    else body = {flip: !o.flip, place: [b.x0, b.y0]};
-    const r = await GB.post('/api/lights/place', Object.assign({id: d.id}, body));
-    if (r && r.ok) { dirty[d.id] = false; delete MOVE[d.id]; await load(true); }
+    const o = d.orient || {rot: 0, flip: false}, b = bbox(cpts(d));
+    // 🔄 Oct 18 (Graham: "I pushed the 90 degree button four times to get it back and it messed it up"): each turn re-rounded the
+    //   middle, so a 10 x 21 curtain crept a column sideways every lap. Turns in a row now spin round the SAME middle, so four turns
+    //   put it back exactly where it started.
+    let cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+    if (TA && TA.id === d.id && Math.abs(TA.cx - cx) <= 1.01 && Math.abs(TA.cy - cy) <= 1.01) { cx = TA.cx; cy = TA.cy; } else TA = {id: d.id, cx, cy};
+    let to;
+    if (extra === 'rot') { const q = ((steps == null ? 1 : steps) % 4 + 4) % 4; if (!q) return draw();
+      const w = b.x1 - b.x0, hh = b.y1 - b.y0, nw = q % 2 ? hh : w, nh = q % 2 ? w : hh;
+      to = {place: [Math.round(cx - nw / 2), Math.round(cy - nh / 2)], rot: ((o.rot || 0) + 90 * q) % 360, flip: !!o.flip}; }   // turn around its middle
+    else to = {place: [b.x0, b.y0], rot: (o.rot || 0) % 360, flip: !o.flip};
+    await curtSave(d.id, to);
   }
 
   GB.panel('lights', 5, el => {
@@ -640,8 +856,8 @@
       <div class="sl-hint" id="slHint"></div>
       <button class="btn c wide sl-go" id="slBig" style="--c:var(--cyan)">✏️ Customize full screen</button>
       <div class="sl-side"><div id="slBeep" hidden><button class="btn c wide" id="slBeepGo" style="--c:var(--amber)">🔔 My lights are beeping</button><div id="slBeepAsk" class="sl-ask" hidden><b>👂 First, is it really the lights?</b> Check for anything else that beeps nearby: dishwasher, oven, fridge door, smoke alarm, a phone. (We once spent a whole night blaming the lights. It was the dishwasher.) <button class="btn c wide" id="slBeepYes" style="--c:var(--amber);margin-top:8px">It's the lights: turn the show down a notch</button></div><p class="note" id="slBeepNote" style="margin:4px 0 0"></p></div><div class="sl-row" id="slUR"><b>Steps</b><div class="seg"><button class="btn" id="slUndo" disabled>↶ Undo</button><button class="btn" id="slRedo" disabled>↷ Redo</button></div></div><div id="slCurt" hidden>
-        <p class="note">Drag the curtain to where it hangs. Turn or mirror it if its lights run another way.</p>
-        <div class="sl-tools"><button class="btn" id="slRot">↻ Turn 90°</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn" id="slDrops">〰️ Bend its drops</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
+        <p class="note" style="margin:0">Drag it, or twist two fingers to turn. Press and hold to unlock its drops.</p>
+        <div class="sl-tools"><button class="btn" id="slRot">↻ Turn</button><button class="btn" id="slMir">⇋ Mirror</button><button class="btn" id="slDrops">🔓 Unlock drops</button><button class="btn c" id="slSaveC" style="--c:var(--green)">💾 Save</button></div>
       </div><div id="slCm" class="sl-cm" hidden></div><div id="slTools">
         <div class="sl-row"><b>Strands</b><div class="seg" id="slStrands"></div></div>
         <div class="sl-row" id="slWhichRow"><b>Laying</b><div class="sl-row" id="slWhich"></div></div>
@@ -650,21 +866,57 @@
         <div class="sl-row" id="slWallRow" style="display:none"><b>Wall rows</b><div class="seg" id="slWallPick"></div></div>
         <div class="sl-row" id="slCurveRow"><b>Bends</b><div class="seg"><button class="btn" data-cv="0">Sharp corners</button><button class="btn" data-cv="1">💎 Smooth curves</button></div></div>
         <div class="sl-tools">
-          <span id="slBendRow" style="display:contents"><button class="btn" id="slBend">＋ Add a bend</button><button class="btn" id="slUnbend">− Remove bend</button></span>
-          <button class="btn" id="slBulb">✋ Move single bulbs</button>
-          <button class="btn" id="slUnpin">↺ Reset bulbs</button>
-          <button class="btn" id="slFlip">⇄ Flip direction</button>
+          <span id="slBendRow" style="display:contents"><button class="btn" id="slBend">＋ Bend</button><button class="btn" id="slUnbend">− Bend</button></span>
+          <button class="btn" id="slBulb">✋ Bulbs</button>
+          <button class="btn" id="slUnpin">↺ Bulbs</button>
+          <button class="btn" id="slFlip">⇄ Flip</button>
           <button class="btn c" id="slDraw" style="--c:var(--pink)">✍️ Draw it</button>
-          <button class="btn c" id="slWall" style="--c:var(--amber)">🧱 Make it a wall</button>
-          <button class="btn c" id="slBends" style="--c:var(--green)">💡 Show me the bends</button>
+          <button class="btn c" id="slWall" style="--c:var(--amber)">🧱 Wall</button>
+          <button class="btn c" id="slBends" style="--c:var(--green)">💡 Bends</button>
           <button class="btn" id="slReset">↺ Start over</button>
-          <button class="btn" id="slStraight">▦ Straight curtain again</button>
+          <button class="btn" id="slStraight">🔒 Lock curtain</button>
           <button class="btn c" id="slSave" style="--c:var(--green)">💾 Save</button>
         </div>
       </div>
       <div class="sl-row"><b>Snap</b><div class="seg" id="slSnap"><button class="btn" data-sn="1">🧲 Snap to grid</button><button class="btn" data-sn="0">Free</button></div></div>
       <div class="sl-row sl-zoom"><b>Zoom</b><div class="seg"><button class="btn" id="slZo" aria-label="Zoom out">−</button><button class="btn" id="slFit">Fit</button><button class="btn" id="slZi" aria-label="Zoom in">+</button></div></div></div>`;
     svg = el.querySelector('#slSvg');
+    {                                                              // 📋 Oct 18: the light list on the side, the board tools floating on the board
+      const side = el.querySelector('.sl-side'), list = document.createElement('div'); list.id = 'slList'; list.className = 'sl-list'; side.prepend(list);
+      const ctl = document.createElement('div'); ctl.id = 'slCtl'; side.prepend(ctl);
+      const narrow = matchMedia('(max-width: 899px)');
+      const place = () => { const st = el.querySelector('#slStage');
+        // Oct 18 (Graham: "when you fold it to horizontal they go over to the side and down at the bottom"): every screen gets the
+        //   slim row of lights above the board; the picked light's controls fill the side column (or sit under the board when narrow)
+        void narrow; list.classList.add('strip'); st.parentNode.insertBefore(list, st);
+        paintList(); };
+      narrow.addEventListener ? narrow.addEventListener('change', place) : narrow.addListener(place); setTimeout(place, 0);
+      const hold = document.createElement('div'); hold.id = 'slHold'; hold.hidden = true; side.appendChild(hold);
+      ['slCurt', 'slCm', 'slTools'].forEach(i => hold.appendChild(el.querySelector('#' + i)));
+      const fab = document.createElement('div'); fab.className = 'sl-fab';
+      const sn = document.createElement('button'); sn.className = 'btn'; sn.id = 'slSnapT'; sn.title = 'Snap to grid'; sn.textContent = '🧲';
+      sn.onclick = () => { SNAP = !SNAP; try { localStorage.setItem('gb_sl_snap', SNAP ? '1' : '0'); } catch (x) {} GB.toast(SNAP ? '🧲 Snap on: everything clicks onto bulb spots' : '✋ Snap off: place freely'); draw(); };
+      const u = el.querySelector('#slUndo'), r = el.querySelector('#slRedo'), zo = el.querySelector('#slZo'), fi = el.querySelector('#slFit'), zi = el.querySelector('#slZi'), big = el.querySelector('#slBig');
+      u.textContent = '↶'; u.title = 'Undo'; r.textContent = '↷'; r.title = 'Redo'; fi.textContent = '⤢'; fi.title = 'Fit everything'; big.textContent = '⛶'; big.title = 'Full screen'; big.className = 'btn';
+      const gap = () => { const g = document.createElement('span'); g.className = 'sep'; return g; };
+      // 🎬 Oct 18 (Graham: "twist the light show"; "turn the show was malfunctioning before, make sure that button is better"):
+      //   the lights stay where they hang, the whole picture turns / mirrors / zooms / slides. Each tap is saved and live at once.
+      const tv = document.createElement('button'); tv.className = 'btn'; tv.id = 'slViewBtn'; tv.title = 'Turn the show'; tv.textContent = '🎬';
+      const vp = document.createElement('div'); vp.className = 'sl-view'; vp.id = 'slView'; vp.hidden = true;
+      vp.innerHTML = `<b>🎬 Turn the show</b><div class="g"><button class="btn" data-vo="ccw">↺ 90°</button><button class="btn" data-vo="cw">↻ 90°</button><button class="btn" data-vo="fx">⇋ Mirror</button><button class="btn" data-vo="fy">⇅ Flip</button></div>
+        <div class="g"><button class="btn" data-vo="left">←</button><button class="btn" data-vo="up">↑</button><button class="btn" data-vo="down">↓</button><button class="btn" data-vo="right">→</button></div>
+        <div class="g"><button class="btn" data-vo="zout">🔍−</button><button class="btn" data-vo="zin">🔍+</button><button class="btn" data-vo="center">◎ Center</button><button class="btn" data-vo="reset">↺ Reset</button></div><p id="slViewSt">Your lights stay put: only the picture turns.</p>`;
+      const vtxt = v => { const t = []; if (v.rot) t.push('turned ' + v.rot + '°'); if (v.fx) t.push('mirrored'); if (v.fy) t.push('flipped'); if (Math.abs(v.zoom - 1) > 0.01) t.push('zoom ' + Math.round(v.zoom * 100) + '%');
+        if (v.dx || v.dy) t.push('moved ' + (v.dx ? Math.round(v.dx * 100) + '% ' + (v.dx > 0 ? 'right' : 'left') : '') + (v.dx && v.dy ? ', ' : '') + (v.dy ? Math.round(Math.abs(v.dy) * 100) + '% ' + (v.dy > 0 ? 'down' : 'up') : ''));
+        tv.classList.toggle('on', !!t.length); return t.length ? '🎬 Show ' + t.join(' · ') : 'Straight, as it comes. Your lights stay put: only the picture turns.'; };
+      tv.onclick = () => { vp.hidden = !vp.hidden; };
+      vp.addEventListener('click', async e => { const b = e.target.closest('[data-vo]'); if (!b) return; const r = await GB.post('/api/lights/view', {op: b.dataset.vo});
+        if (r && r.view) { $('slViewSt').textContent = vtxt(r.view); GB.sfx && GB.sfx('tap'); } });
+      GB.get && GB.get('/api/lights/stage').then(st => { if (st && st.view) $('slViewSt').textContent = vtxt(st.view); }).catch(() => {});
+      fab.append(u, r, gap(), sn, tv, gap(), zo, fi, zi, gap(), big); el.querySelector('#slStage').append(fab, vp);
+      [el.querySelector('#slUR'), el.querySelector('#slSnap') && el.querySelector('#slSnap').closest('.sl-row'), el.querySelector('.sl-zoom')].forEach(n => n && n.remove());
+      const bp = el.querySelector('#slBeep'); if (bp) { const det = document.createElement('details'); det.className = 'sl-beep'; det.innerHTML = '<summary>🔔 Lights beeping?</summary>'; bp.hidden = false; det.appendChild(bp); side.appendChild(det); }
+    }
     // 📱 Oct 17 (Graham: "yes, moving things on the iPad"): two fingers pinch to zoom and slide; press and hold opens the menu
     const PT = new Map(); let pinch = null, hold = null;
     const midOf = () => { const a = [...PT.values()]; return [(a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1]; };
@@ -672,7 +924,15 @@
       if (e.pointerType === 'touch') {
         PT.set(e.pointerId, {x: e.clientX, y: e.clientY});
         if (PT.size === 2) {                                   // second finger: stop whatever one finger was doing, start a pinch
-          clearTimeout(hold); hold = null; drag = null; if (!view) fit();
+          clearTimeout(hold); hold = null;
+          const a = [...PT.values()], mid = toWorld({clientX: (a[0].x + a[1].x) / 2, clientY: (a[0].y + a[1].y) / 2});
+          const grab = drag && drag.curt ? drag.curt : (curtainsAt(mid).includes(sel) ? sel : null);
+          if (grab) {                                          // 🔄 Oct 18 (Graham: "pinch it and twirl it"): twist the curtain, lights stay put until you let go
+            if (drag && drag.curt) { delete MOVE[drag.curt]; dirty[drag.curt] = false; }
+            drag = null; sel = grab; TWIST = {id: grab, a0: Math.atan2(a[1].y - a[0].y, a[1].x - a[0].x), deg: 0};
+            $('slHint').textContent = '🔄 Twist to turn it. Let go and it snaps to the nearest quarter turn'; e.preventDefault(); draw(); return;
+          }
+          drag = null; if (!view) fit();
           const [mx, my, d] = midOf(), m = svg.getScreenCTM(), r = svg.getBoundingClientRect();
           const pt = svg.createSVGPoint(); pt.x = mx; pt.y = my; const w = pt.matrixTransform(m.inverse());
           pinch = {d0: d, w0: view.w, h0: view.h, k0: m.a, P: [w.x, w.y], cxs: r.left + r.width / 2, cys: r.top + r.height / 2}; e.preventDefault(); return;
@@ -686,13 +946,18 @@
     svg.addEventListener('pointermove', e => {
       if (e.pointerType === 'touch' && PT.has(e.pointerId)) {
         const o = PT.get(e.pointerId); if (Math.hypot(e.clientX - o.x, e.clientY - o.y) > 8 && hold) { clearTimeout(hold); hold = null; }
+        if (TWIST) { PT.set(e.pointerId, {x: e.clientX, y: e.clientY}); if (PT.size < 2) return; e.preventDefault();
+          const a = [...PT.values()]; let dg = (Math.atan2(a[1].y - a[0].y, a[1].x - a[0].x) - TWIST.a0) * 180 / Math.PI; dg = ((dg + 540) % 360) - 180;
+          TWIST.deg = dg; const q = Math.round(dg / 90); $('slHint').textContent = q ? `🔄 Let go to turn it ${Math.abs(q) * 90}° ${q > 0 ? 'clockwise' : 'the other way'}` : '🔄 Keep twisting: it snaps to quarter turns'; return draw(); }
         if (pinch) { PT.set(e.pointerId, {x: e.clientX, y: e.clientY}); if (PT.size < 2) return; e.preventDefault();
           const [mx, my, d] = midOf(), g = pinch.d0 / d, w = Math.max(4, Math.min(600, pinch.w0 * g)), k = pinch.k0 * (pinch.w0 / w);
           view.w = w; view.h = pinch.h0 * (w / pinch.w0); view.cx = pinch.P[0] - (mx - pinch.cxs) / k; view.cy = pinch.P[1] - (my - pinch.cys) / k; return draw(); }
       }
       onMove(e);
     });
-    const end = e => { if (e.pointerType === 'touch') { PT.delete(e.pointerId); clearTimeout(hold); hold = null; if (pinch) { if (PT.size < 2) pinch = null; drag = null; return; } } onUp(e); };
+    const end = e => { if (e.pointerType === 'touch') { PT.delete(e.pointerId); clearTimeout(hold); hold = null;
+        if (TWIST) { if (PT.size < 2) { const t = TWIST, q = Math.round(t.deg / 90); TWIST = null; drag = null; sel = t.id; if (q) turn('rot', q); else { draw(); $('slHint').textContent = ''; } } return; }
+        if (pinch) { if (PT.size < 2) pinch = null; drag = null; return; } } onUp(e); };
     svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
     svg.addEventListener('contextmenu', onMenu);
     svg.addEventListener('wheel', e => { e.preventDefault(); hideMenu(); zoomAt(e.deltaY > 0 ? 1.15 : 1 / 1.15, toWorld(e)); }, {passive: false});
@@ -748,6 +1013,7 @@
       d.kind = 'string'; d.curtain = true; delete MOVE[d.id]; LAY[d.id] = {parts, gap: 1, kind: 'curtain'}; strand = 0;
       GB.toast('〰️ ' + parts.length + ' drops: tap one, drag its ends or press and hold to bend it. Save when done.'); paintTop(); change(); };
     el.querySelector('#slStraight').onclick = async () => { const d = dev(sel); if (!d) return;
+      if (!d.lay) { delete LAY[d.id]; dirty[d.id] = false; GB.toast('🔒 Locked back into a curtain'); await load(true); return; }   // only unlocked on screen: nothing saved to undo
       const r = await GB.post('/api/lights/lay', {id: d.id, lay: null}); if (r && r.ok) { dirty[d.id] = false; delete LAY[d.id]; GB.toast('▦ Back to a straight curtain'); await load(true); } };
     // 🧱 Oct 17 (Graham: "make a string a wall: bend it back and forth and staple it"): the whole string snakes into rows, strand by strand
     el.querySelector('#slWall').onclick = () => {

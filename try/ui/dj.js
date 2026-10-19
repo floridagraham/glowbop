@@ -240,10 +240,13 @@
   GB.panel('dj', 3, el => {                                    // 🔝 Build & drop sits at the very top of the DJ page
     el.classList.add('box', 'dj-buildbox'); el.style.setProperty('--c', 'var(--pink)');
     el.innerHTML = `<div class="ph"><span>Build &amp; drop</span><span class="r" id="djBuildR">HOLD, THEN LET GO</span></div>
-      <button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">HOLD TO BUILD</span><span class="bcnt"></span><span class="bbar"></span></button>
+      <div class="dj-bc"><button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">HOLD TO BUILD</span><span class="bcnt"></span><span class="bbar"></span></button>
+        <div class="dj-cc"><button class="btn c" id="djCool" style="--c:var(--lav)"><span class="cic">${GB.svg('moon')}</span><span class="clbl">COOL</span><small class="csub">HOLD · TAP TO LATCH</small></button>
+          <div class="dj-cst">${COOLS.map(c => `<button class="chip" data-cs="${c[0]}" title="${c[2]}">${c[1]}</button>`).join('')}</div></div></div>
       <div class="dj-cols"><div class="dj-col"><div class="dj-sub"><span>${GB.svg('faders')} BUILD</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div></div>
         <div class="dj-col"><div class="dj-sub"><span>${GB.svg('burst')} DROP</span><span id="djDropMode"></span></div><div id="djDropPick"></div></div></div>
-      <p class="note">Hold it: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds. Let go: it drops. Slide your finger off the key to cancel.
+      <p class="note dj-bnote">🌙 <b>Cool</b> (the small key): same look, just calmer. Hold it for a breather, or tap once to latch it and tap again to bring the lights back. Pick its style underneath: Chill, Moonlight, Slow-mo or Embers.
+        Hold the big key: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds. Let go: it drops. Slide your finger off the key to cancel.
         Pick one style, tick your own mix, or go full random: every build and every drop can be different.</p>`;
     const b = $('djBuild'), lbl = b.querySelector('.blbl'), cnt = b.querySelector('.bcnt'); let held = false, t0 = 0, raf = 0, cur = 'rise';
     const paint = () => {
@@ -271,38 +274,57 @@
     b.addEventListener('pointerleave', () => end(true)); b.addEventListener('pointercancel', () => end(true));
     b.addEventListener('contextmenu', e => e.preventDefault());
     paint();
+    mountCool(el);
   });
   // ------------------------------------------------------------------ 🌙 cool down (Oct 16): hold for a breather, tap to latch it on
   GB.css(`
+  .dj-bc { display:flex; gap:8px; align-items:stretch; flex:1 1 auto; }
+  .dj-bc > #djBuild { flex:3 1 0; min-width:0; }
+  .dj-cc { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:5px; }
+  .dj-cc > #djCool { flex:1 1 auto; min-height:64px !important; padding:6px 4px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; letter-spacing:2px; font-size:calc(18px * var(--fs, 1)); }
+  #djCool .cic svg { width:calc(20px * var(--fs, 1)); height:calc(20px * var(--fs, 1)); fill:currentColor; }
+  #djCool .csub { font:700 calc(8.5px * var(--fs, 1)) var(--mono); letter-spacing:.5px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  #djCool.latched::after { content:none !important; }
+  .dj-cst { display:grid; grid-template-columns:repeat(4, 1fr); gap:3px; }
+  .dj-cst .chip { --c:var(--lav); min-height:28px; padding:0; justify-content:center; font-size:calc(14px * var(--fs, 1)); margin:0; }
+  .dj-cst .chip.on { background:var(--lav); border-color:var(--lav); box-shadow:0 0 10px #cc99ff88; }
+  .dj-cc { container-type:inline-size; }
+  @container (max-width: 150px) { .dj-cst { grid-template-columns:repeat(2, 1fr); } #djCool .csub { display:none; } .dj-cc > #djCool { letter-spacing:1px; } }
   #djCool { min-height:76px; font-size:calc(22px * var(--fs, 1)); letter-spacing:3px; touch-action:none; user-select:none; -webkit-user-select:none; transition:background .5s, color .5s, box-shadow .5s; }
   #djCool.on { background:linear-gradient(135deg,#cc99ff,#6677ff); color:#120a22; box-shadow:0 0 34px #cc99ff88; animation:djCoolB 3.2s ease-in-out infinite; }
   #djCool.latched::after { content:'LATCHED · TAP TO RELEASE'; display:block; font:700 calc(11px * var(--fs, 1)) var(--mono); letter-spacing:1px; opacity:.75; margin-top:4px; }
   @keyframes djCoolB { 0%,100% { box-shadow:0 0 18px #cc99ff55; } 50% { box-shadow:0 0 44px #cc99ffaa; } }
   @media (prefers-reduced-motion: reduce) { #djCool.on { animation:none; } }
   `);
-  GB.panel('dj', 5, el => {
-    el.classList.add('box'); el.style.setProperty('--c', 'var(--lav)');
-    el.innerHTML = `<div class="ph"><span>Cool down</span><span class="r" id="djCoolR">HOLD, OR TAP TO LATCH</span></div>
-      <button class="btn c wide" id="djCool" style="--c:var(--lav)">${GB.svg('moon')} COOL DOWN</button>
-      <p class="note">Same look, just calmer: dimmer, half speed, no strobes or flashes, softer colors with light trails. Hold it for a breather, or tap once to keep it on and tap again to bring the lights back. If the song gets loud again, the lights come back up on their own.</p>`;
-    const b = el.querySelector('#djCool'); let down = 0, keep = 0, latched = false;
-    const show = (on, lat) => { b.classList.toggle('on', on); b.classList.toggle('latched', !!lat); const r = $('djCoolR'); if (r) r.textContent = lat ? 'LATCHED ON' : on ? 'COOLING DOWN' : 'HOLD, OR TAP TO LATCH'; };
+  const COOLS = [['chill', '😌', 'Chill'], ['moon', '🌙', 'Moonlight'], ['slowmo', '🐢', 'Slow-mo'], ['ember', '🔥', 'Embers']];
+  // 🌙 Oct 18 (Graham: "the cool down button can go into the hold to build pad, as an alternate style... holdable or latchable"):
+  //   no separate box any more: HOLD TO BUILD takes 75 % of the Build & drop box, and the COOL key sits beside it (25 %), always out,
+  //   with its four styles underneath (Chill, Moonlight, Slow-mo, Embers). Hold it for a breather, or tap to latch.
+  function mountCool(el) {
+    const b = el.querySelector('#djCool'), sub = b.querySelector('.csub'); let down = 0, keep = 0, latched = false;
+    let cs = 'chill'; try { cs = localStorage.getItem('gb_cool_style') || 'chill'; } catch (_) {}
+    const paintCs = () => el.querySelectorAll('.dj-cst .chip').forEach(c => c.classList.toggle('on', c.dataset.cs === cs));
+    el.querySelectorAll('.dj-cst .chip').forEach(c => c.addEventListener('click', () => { cs = c.dataset.cs; paintCs(); try { localStorage.setItem('gb_cool_style', cs); } catch (_) {}
+      dj({cool_style: cs}); GB.sfx && GB.sfx('tap'); GB.toast && GB.toast('🌙 Cool style: ' + COOLS.find(x => x[0] === cs)[2]); }));
+    paintCs();
+    const show = (on, lat) => { b.classList.toggle('on', on); b.classList.toggle('latched', !!lat); sub.textContent = lat ? 'LATCHED · TAP OFF' : on ? 'COOLING…' : 'HOLD · TAP TO LATCH'; };
     b.addEventListener('pointerdown', e => {
       e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (_) {}
       down = performance.now(); if (latched) return;
-      show(true, false); dj({cool: true, ttl: 1.5}); clearInterval(keep);
+      show(true, false); dj({cool: true, ttl: 1.5, cool_style: cs}); clearInterval(keep);
       keep = setInterval(() => dj({cool: true, ttl: 1.5}), 500);          // keeps it on while held; if the Wi-Fi drops it lets go by itself
       GB.sfx && GB.sfx('tap');
     });
     const up = e => {
       if (!down) return; const quick = performance.now() - down < 350; down = 0; clearInterval(keep);
       if (latched) { latched = false; show(false, false); dj({cool: false}); GB.toast && GB.toast('✨ Lights coming back up'); return; }
-      if (quick && e.type === 'pointerup') { latched = true; show(true, true); dj({cool: true, latch: true}); GB.toast && GB.toast('🌙 Cool down latched on. Tap again to bring it back'); }
+      if (quick && e.type === 'pointerup') { latched = true; show(true, true); dj({cool: true, latch: true, cool_style: cs}); GB.toast && GB.toast('🌙 Cool down latched on. Tap again to bring it back'); }
       else { show(false, false); dj({cool: false}); }
     };
     b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
+    b.addEventListener('contextmenu', e => e.preventDefault());
     GB.on('status', s => { const d = s.dj || {}; if (down) return; latched = !!d.cool_latched; show(!!d.cool, latched); });
-  });
+  }
 
   // ------------------------------------------------------------------ 🎨 colour key (Oct 16; unlimited colours since Oct 17): pick colours, tap to latch the whole show into them
   GB.css(`
@@ -489,13 +511,13 @@
   const PRO_PADS = ['sweep', 'shockwave', 'colorbomb', 'lightning', 'countdown', 'heartbeat', 'star'];
   GB.css(`
   .dj-pads .tile.pro-pad.locked { opacity:1; filter:none !important; }   /* Oct 16 night: full colour, the gold lock badge says it's Pro */
-  .dj-pads .tile.pro-pad.locked::after { content:'🔒 PRO'; position:absolute; top:4px; right:8px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
+  .dj-pads .tile.pro-pad.locked::after { content:'PRO'; padding-left:15px !important; background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20d='M12%2017c1.1%200%202-.9%202-2s-.9-2-2-2-2%20.9-2%202%20.9%202%202%202zm6-9h-1V6c0-2.76-2.24-5-5-5S7%203.24%207%206h2c0-1.66%201.34-3%203-3s3%201.34%203%203v2H6c-1.1%200-2%20.9-2%202v10c0%201.1.9%202%202%202h12c1.1%200%202-.9%202-2V10c0-1.1-.9-2-2-2zm0%2012H6V10h12v10z'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:4px 50% !important; background-size:9px 9px !important; position:absolute; top:4px; right:8px; font:800 9px/1 var(--mono); letter-spacing:1px; background:#ffd21a; color:#000; border-radius:6px; padding:3px 5px; box-shadow:0 0 0 1.5px #000; }
   .dj-lockline { display:flex; align-items:center; gap:8px; margin-top:10px; padding:8px 12px; border-radius:14px; background:#0007; border:1px dashed color-mix(in srgb, var(--orchid) 50%, transparent); color:var(--dim); font-size:calc(13px * var(--fs, 1)); cursor:pointer; }
   .dj-lockline b { color:var(--orchid); }
   .dj-homepick { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
   .dj-homepick .chip { min-height:38px; padding:0 11px; font-size:calc(13px * var(--fs, 1)); gap:4px; white-space:nowrap; --c:var(--pink); }
   .dj-homepick .chip.dj-lockchip { position:relative; padding-right:44px; }
-  .dj-homepick .chip.dj-lockchip::after { content:'🔒 PRO'; position:absolute; right:5px; top:50%; transform:translateY(-50%); font:800 8px/1 var(--mono); letter-spacing:.5px; background:#ffd21a; color:#000; border-radius:5px; padding:3px 4px; }
+  .dj-homepick .chip.dj-lockchip::after { content:'PRO'; padding-left:15px !important; background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20d='M12%2017c1.1%200%202-.9%202-2s-.9-2-2-2-2%20.9-2%202%20.9%202%202%202zm6-9h-1V6c0-2.76-2.24-5-5-5S7%203.24%207%206h2c0-1.66%201.34-3%203-3s3%201.34%203%203v2H6c-1.1%200-2%20.9-2%202v10c0%201.1.9%202%202%202h12c1.1%200%202-.9%202-2V10c0-1.1-.9-2-2-2zm0%2012H6V10h12v10z'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:4px 50% !important; background-size:9px 9px !important; position:absolute; right:5px; top:50%; transform:translateY(-50%); font:800 8px/1 var(--mono); letter-spacing:.5px; background:#ffd21a; color:#000; border-radius:5px; padding:3px 4px; }
   `);
   function proPaint() {
     const locked = GB.pro === false;

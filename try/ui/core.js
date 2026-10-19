@@ -19,7 +19,7 @@
 
   // ------------------------------------------------------------- talking to the engine
   let toastT = null;
-  GB.toast = m => { const t = $('toast'); t.innerHTML = '<span></span>'; t.firstChild.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1900); };
+  GB.toast = (m, ms) => { const t = $('toast'); t.innerHTML = '<span></span>'; t.firstChild.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms || Math.max(1900, Math.min(9000, String(m).length * 55))); };   // long messages stay up long enough to read
   GB.get = async p => { const r = await fetch(p, {cache: 'no-store'}); if (!r.ok) throw new Error(r.status); return r.json(); };
   GB.post = async (p, body) => {
     try {
@@ -118,11 +118,15 @@
       pitch: 'Run the whole house: one-tap house scenes (Dinner, Party, Movie night, Bedtime), schedules that turn the lights on at sunset and off at bedtime every day, zones and the holiday calendar.'},
     {name: 'DJ power tools', ic: 'bolt', c: 'var(--cyan)', page: 'dj', tab: 'DJ', prev: 'override',
       pitch: 'All 13 hit pads, pick your build and drop styles, Color lock, Cue the next look, and USB DJ controllers.'},
-    {name: 'Pro Art', ic: 'sparkle', c: '#ff6ad5', page: 'art', tab: 'PRO ART', prev: 'zones',
+    {name: 'Pro Art', ic: 'sparkle', c: '#ff9a3d', page: 'art', tab: 'PRO ART', prev: 'zones',
       pitch: 'Hang your lights in any shape (a heart, letters, your logo, a sign) and map them from a file: a drawing, a photo of the lights on, a spreadsheet, an xLights model or a GlowBop sign file. Plus live mapping while the show plays.'},
     {name: 'Unlimited lights', ic: 'bulb', c: 'var(--gold)', page: 'lights', tab: 'LIGHTS', prev: 'zones',
       pitch: 'Home DJ plays up to 4 light sets together. Pro runs as many as you hang (big pool cages, whole-house installs, giant matrix walls), with light groups so each area runs its own show.'},
   ];
+  // 🙈 Oct 18 (Graham: "hide the pro art right now… we'll do the art later"): Pro Art is parked. Off the rail and out of the Pro tour.
+  //   Bring it back on this device with localStorage gb_art_on = 1 (or ?art=1 in the URL), or flip ART_HIDDEN to false.
+  GB.ART_HIDDEN = (() => { try { if (/[?&]art=1/.test(location.search)) localStorage.setItem('gb_art_on', '1'); return localStorage.getItem('gb_art_on') !== '1'; } catch (_) { return true; } })();
+  if (GB.ART_HIDDEN) { const i = PRO_FEATURES.findIndex(f => f.name === 'Pro Art'); if (i >= 0) PRO_FEATURES.splice(i, 1); }
   const PRO_LIST = PRO_FEATURES.map(f => f.name);
   // Oct 16 (Graham): each Pro door feels like its own thing. Tapping PRO DJ shows the DJ tools first, PRO HOME the house tools first.
   const PRO_ORDER = GB.PRO_ORDER = {
@@ -174,6 +178,7 @@
     document.querySelectorAll('#rail button[data-p]').forEach(b => {
       const pg = PAGES.find(p => p.id === b.dataset.p); if (!pg) return;
       if (pg.pro) b.hidden = GB.pro !== true; else if (pg.home) b.hidden = GB.pro !== false;
+      else if (pg.door === 'art' && GB.ART_HIDDEN) b.hidden = true;
       else if (pg.door === 'art') {                // free for everyone until launch day (FREE tag), then a locked Pro door for Home users
         b.hidden = GB.pro == null; b.classList.toggle('locked', GB.pro === false && Date.now() >= GB.ART_PRO_FROM); b.classList.toggle('freetag', GB.pro === false && Date.now() < GB.ART_PRO_FROM); }
     });
@@ -577,17 +582,75 @@
   // 🎨 Oct 16 night (Graham picked A, 'warm & cool'): Pro tabs fade like a sunset (gold > orange > pink > purple),
   //   Visuals like the ocean (blue > cyan > teal > green), LIGHTS sky blue and SETUP soft violet (no grey: Graham). MUSIC cyan, DJ pink, TEXT white-lavender stay.
   GB.ART_PRO_FROM = Date.UTC(2026, 9, 31, 4);        // 🎃 Halloween, midnight Eastern (artboard.js + api.py ART_PRO_FROM match)
+  // 🔁 Oct 17: a light that drops off reconnects by itself (lights.py healer). Tell the person plainly: reconnecting, back, or check it.
+  const DOWN = {};
+  function lightsHealth(list) {
+    const now = {}; list.forEach(l => { now[l.id] = l;
+      if (!DOWN[l.id]) { DOWN[l.id] = {warned: false, name: l.name}; if (l.secs < 90) GB.toast && GB.toast('🔌 Reconnecting ' + l.name + '…'); }
+      if (l.secs > 120 && !DOWN[l.id].warned) { DOWN[l.id].warned = true; GB.toast && GB.notice({tone: 'bad', icon: '📶', title: l.name + (l.brand ? ' (' + l.brand + ')' : '') + ' dropped off your Wi-Fi', from: l.brand || '', body: 'The light itself stopped answering, GlowBop is fine. GlowBop keeps trying and puts it back on your wall the moment it answers.', tip: 'Check it\'s plugged in. Unplugging it for 10 seconds usually wakes it up.'}); } });
+    Object.keys(DOWN).forEach(id => { if (!now[id]) { const back = DOWN[id]; delete DOWN[id]; if (back) GB.toast && GB.toast('✅ ' + back.name + ' is back on the wall'); } });
+    GB.lightsDown = list;
+  }
+  // 🐢 Oct 18 (Graham: "let the owner know: the little chip in your lights can't keep up with the frame rate, we're adjusting it"):
+  //   when GlowBop slows a light down (or speeds it back up), say so once, in plain words.
+  // 🔔 Oct 18 (Graham: "put that heads up in the middle of the page as a pop-up… larger font… a notification style box"):
+  //   light-health news gets a centred notification card (app badge, title, plain words, a Got it button). One at a time, queued.
+  const NQ = []; let NOPEN = false;
+  GB.notice = n => { NQ.push(n); if (!NOPEN) nextNotice(); };
+  function nextNotice() {
+    const n = NQ.shift(); if (!n) { NOPEN = false; return; } NOPEN = true;
+    if (!$('gbNoticeCss')) { const st = document.createElement('style'); st.id = 'gbNoticeCss'; st.textContent = `
+      .gb-nz { position:fixed; inset:0; z-index:9000; display:flex; align-items:center; justify-content:center; padding:20px; background:#05040acc; backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); animation:gbNzIn .18s ease-out; }
+      .gb-nc { --t:#33d6ff; width:min(520px, 100%); background:linear-gradient(180deg, #17122a, #0d0a18); border-radius:22px; border:2px solid var(--t); box-shadow:0 24px 70px #000c, 0 0 40px -6px var(--t); overflow:hidden; animation:gbNcIn .28s cubic-bezier(.2,1.4,.4,1); }
+      .gb-nc .nh { display:flex; align-items:center; gap:10px; padding:12px 18px; background:color-mix(in srgb, var(--t) 18%, transparent); font:800 13px var(--cond, sans-serif); letter-spacing:2px; text-transform:uppercase; color:var(--t); }
+      .gb-nc .nh img { width:26px; height:26px; border-radius:7px; } .gb-nc .nh span { margin-left:auto; color:#cfc6e6; letter-spacing:1px; font-weight:600; }
+      .gb-nc .nb { padding:18px 22px 6px; display:flex; gap:16px; align-items:flex-start; }
+      .gb-nc .ni { font-size:46px; line-height:1; flex:0 0 auto; }
+      .gb-nc h3 { margin:0 0 8px; font:800 24px/1.15 var(--cond, sans-serif); letter-spacing:.5px; color:#fff; }
+      .gb-nc p { margin:0; font-size:18px; line-height:1.45; color:#efeaf9; }
+      .gb-nc .nt { margin-top:10px; font-size:15px; color:#cfc6e6; }
+      .gb-nc .nf { display:flex; justify-content:flex-end; gap:10px; padding:14px 18px 18px; }
+      .gb-nc .nf button { border:0; border-radius:14px; min-height:50px; padding:0 26px; font:800 17px var(--cond, sans-serif); letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; background:var(--t); color:#000; }
+      @keyframes gbNzIn { from { opacity:0; } } @keyframes gbNcIn { from { transform:scale(.85) translateY(20px); opacity:0; } }`; document.head.appendChild(st); }
+    const z = document.createElement('div'); z.className = 'gb-nz'; z.setAttribute('role', 'alertdialog');
+    const tone = {warn: '#ffc23d', bad: '#ff5a7a', good: '#3ce08a', info: '#33d6ff'}[n.tone] || '#33d6ff';
+    const tm = new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+    z.innerHTML = `<div class="gb-nc" style="--t:${tone}"><div class="nh"><img src="ui/icon-192.png" alt="">GlowBop · ${GB.esc(n.from || 'Light health')}<span>${tm}</span></div>
+      <div class="nb"><div class="ni">${n.icon || '🔔'}</div><div><h3>${GB.esc(n.title)}</h3><p>${GB.esc(n.body)}</p>${n.tip ? `<p class="nt">💡 ${GB.esc(n.tip)}</p>` : ''}</div></div>
+      <div class="nf"><button type="button">${GB.esc(n.ok || 'Got it')}</button></div></div>`;
+    const close = () => { z.remove(); clearTimeout(t); setTimeout(nextNotice, 250); };
+    z.querySelector('button').onclick = close; z.addEventListener('click', e => { if (e.target === z) close(); });
+    const t = n.auto ? setTimeout(close, n.auto) : 0;
+    document.body.appendChild(z); GB.sfx && GB.sfx(n.tone === 'good' ? 'ok' : 'tease'); try { z.querySelector('button').focus({preventScroll: true}); } catch (e) {}
+  };
+  const TUNE = {};
+  function lightsTune(list) {
+    // 🩺 Oct 18 (Graham: "the same alert for all lights, it just changes the brand name, and it knows the reason"): one pop-up for every brand
+    const now = {}; list.forEach(l => { now[l.id] = l; const was = TUNE[l.id], step = l.step == null ? (l.max - l.fps) : l.step, wstep = was ? (was.step == null ? (was.max - was.fps) : was.step) : 0;
+      // 🔕 21:38 Oct 18: the big pop-up shows once per light every 3 hours; after that a slow-down is just a small note
+      let quiet = false; try { const k = 'gb_tune_seen:' + l.id, t0 = +localStorage.getItem(k) || 0; quiet = Date.now() - t0 < 3 * 3600e3; if (step > wstep && !quiet) localStorage.setItem(k, String(Date.now())); } catch (e) {}
+      if ((!was || step !== wstep) && step > wstep && quiet) { GB.toast && GB.toast(`🐢 ${l.name} eased to ${l.fps} frames a second (its Wi-Fi)`); }
+      else if (!was || step !== wstep) { if (step > wstep) GB.notice({tone: 'warn', icon: '🐢', title: `${l.name}${l.brand ? ' (' + l.brand + ')' : ''} is struggling`,
+          body: `This is coming from the light, not GlowBop: ${l.why || "its little chip can't keep up"}. GlowBop eased it to ${l.fps} frames a second${l.bri && l.bri < 100 ? ' at ' + l.bri + '% brightness' : ''} so it keeps dancing.`,
+          tip: `After ${l.brand === 'Nanoleaf' ? 20 : 15} steady minutes GlowBop tries faster again. Nothing for you to do.`, from: l.brand || ''});
+        else GB.toast && GB.toast(`🐇 ${l.name} has been steady: back up to ${l.fps} frames a second.`); }
+      TUNE[l.id] = Object.assign({}, l, {step}); });
+    Object.keys(TUNE).forEach(id => { if (!now[id]) { const t = TUNE[id]; delete TUNE[id]; GB.toast && GB.toast(`🐇 ${t.name} is steady again: back to full speed (${t.max} frames a second).`); } });
+    GB.lightsTune = list;
+  }
+  // 🌈 Oct 18 (Graham: "recolor all the tabs now that we added Pro Art, same style"): each group is one smooth colour ramp down the rail.
+  //   PRO runs gold > amber > coral > hot pink > magenta > violet, VISUALS runs blue > sky > cyan > teal > green > lime.
   const PAGES = GB.PAGES = [
     {id: 'music', label: 'MUSIC', c: 'var(--cyan)', big: 2, g: 'perform'},   // Oct 16: GlowBop cyan (Graham)
     {id: 'dj', label: 'DJ', c: 'var(--pink)', g: 'perform'},       // Oct 16: GlowBop pink (Graham)
-    {id: 'text', label: 'TEXT', c: '#e9e6ff', g: 'perform'},   // Oct 16: white-lavender, so it doesn't look like PRO HOME
+    {id: 'text', label: 'TEXT', c: '#a98bff', g: 'perform'},   // Oct 16: white-lavender, so it doesn't look like PRO HOME
     {id: 'home', label: 'PRO HOME', c: '#ffc23d', pro: true, g: 'pro'},           // 🏠 Pro Home control center (prohome.js): its rail key shows only in Pro Home mode
-    {id: 'art', label: 'PRO ART', c: '#ff6ad5', g: 'pro', door: 'art'},   // 🎨 Oct 17 (Graham: "it should be out there, we want to attract people"): on the rail for everyone             // 🎨 Art board (artboard.js, Oct 17): map lights from a file, pictures, .glowbop files
-    {id: 'shows', label: 'SHOWS', c: '#ff8a3d', pro: true, g: 'pro'},
-    {id: 'autoloops', label: 'LOOPS+CUES', c: '#e83dcf', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
-    {id: 'cues', label: 'CUES', c: '#7dffb2', pro: true, g: 'pro', rail: 'autoloops'},   // 🎬 cue lists + GO (cues.js): shares the LOOPS & CUES key (a switch on top), so the phone rail still fits
-    {id: 'board', label: 'LIVE BOARD', c: '#b65cff', pro: true, g: 'pro'},     // 🎚️🔁 Fader board + Loop banks
-    {id: 'ops', label: 'OVERRIDE', c: '#9180ff', pro: true, g: 'pro'},
+    {id: 'art', label: 'PRO ART', c: '#ff9a3d', g: 'pro', door: 'art'},   // 🎨 Oct 17 (Graham: "it should be out there, we want to attract people"): on the rail for everyone             // 🎨 Art board (artboard.js, Oct 17): map lights from a file, pictures, .glowbop files
+    {id: 'shows', label: 'SHOWS', c: '#ff6a5c', pro: true, g: 'pro'},
+    {id: 'autoloops', label: 'LOOPS+CUES', c: '#ff4fa8', pro: true, g: 'pro'},   // 🔁🎞️ Autoloops + Scenes + tempo toolbox (autoloops.js)
+    {id: 'cues', label: 'CUES', c: '#ff4fa8', pro: true, g: 'pro', rail: 'autoloops'},   // 🎬 cue lists + GO (cues.js): shares the LOOPS & CUES key (a switch on top), so the phone rail still fits
+    {id: 'board', label: 'LIVE BOARD', c: '#d65cff', pro: true, g: 'pro'},     // 🎚️🔁 Fader board + Loop banks
+    {id: 'ops', label: 'OVERRIDE', c: '#9a80ff', pro: true, g: 'pro'},
     {id: 'pro', label: 'PRO', c: 'var(--gold)', home: true, g: 'pro', ic: 'sparkle'},   // ✨ Home: the Pro DJ tour
     {id: 'holiday', label: 'HOLIDAY', c: '#5c95ff', g: 'visuals'},         // moves up next to LOOKS when a holiday is close (seasonRail)
     {id: 'score', label: 'SPORTS', c: '#3fb0ff', g: 'visuals'},          // team scores + golf, racing, tennis, UFC boards
@@ -724,7 +787,7 @@
       p: 'Everything you have now stays. Pro DJ turns the console into a lighting desk for parties, DJ sets and events: the PRO DJ page plus SHOWS, LOOPS+CUES, LIVE BOARD and OVERRIDE.'},
     home: {t: 'GlowBop Pro Home', r: 'MORE CONTROL · FOR THE HOUSE', h: 'Run the whole house', c: '#ffb23d',
       p: 'Everything you have now stays. Pro Home runs every light set you hang: one-tap house scenes, sunset and bedtime schedules, zones and the holiday calendar, on the PRO HOME page.'},
-    art: {t: 'GlowBop Pro Art', r: 'MORE CONTROL · ANY SHAPE', h: 'Your lights, any shape', c: '#ff6ad5',
+    art: {t: 'GlowBop Pro Art', r: 'MORE CONTROL · ANY SHAPE', h: 'Your lights, any shape', c: '#ff9a3d',
       p: 'Everything you have now stays. Pro Art turns your lights into hearts, letters, your logo or a sign: map them from a drawing, a photo or a file, and fix them live while the show plays.'}};
   GB.proDoor = 'dj';                                // which Pro door you came through (PRO DJ or PRO HOME tab)
   function paintDoor() {
@@ -854,6 +917,11 @@
     const lab = (b.length > 1 ? 18 : 0) + (b.some(x => (x.devices || []).length > 1) ? 16 : 0);
     return Math.min(innerHeight * 0.82, lab + maxH * cssW / totW); };
   let pvSig = '';
+  // 🎛️ Oct 18: every screen's label also shows the vibe (look) it's running, so separate rooms are easy to tell apart
+  function vibeLabel(b, max) {
+    const v = GB.vibeOf && GB.vibeOf(b.id); let t = b.name.toUpperCase() + (v && v.look ? ' · ' + v.look.toUpperCase() + (v.pinned ? ' ●' : '') : '');
+    return t.length > max ? t.slice(0, Math.max(3, max - 1)) + '…' : t;
+  }
   function drawSetup(blocks) {
     PV = blocks; if (!blocks.length) return;
     const sig = blocks.map(b => b.w + 'x' + b.h).join(','); if (sig !== pvSig) { pvSig = sig; setTimeout(() => GB.emit('wallshape', sig), 50); }   // your lights' shape is known (or changed)
@@ -862,8 +930,22 @@
       const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
       return draw3D(blocks[0], cssW, FULL ? innerHeight - 40 : ($('wallBox').closest('.lay-it') ? Math.max(50, $('wallBox').clientHeight - 20) : 0) || (compact ? Math.max(GB.page === 'music' ? 120 : 150, innerHeight * (GB.page === 'music' ? 0.16 : 0.26)) : Math.max(240, Math.min(620, innerHeight * (wide ? 0.46 : 0.5)))), dpr);
     }
-    const many = blocks.length > 1, dpr = Math.min(2, window.devicePixelRatio || 1);
     const KX = b => (b.sc && b.sc[0]) || 1, KY = b => (b.sc && b.sc[1]) || 1;            // 🔵 a doubled axis draws at half spacing, so shapes stay true
+    // 📏 Oct 18 (Graham: "the light string is taking up all those rows, you can't see anything"): a thin group (a one-row string like the
+    //   LIFX) no longer takes a whole column beside the curtains; it draws as a full-width row of dots underneath them.
+    // 🖼️ 21:34 Graham: "make the string light even smaller dots so you can see the bigger wall... fill the live wall with the live wall":
+    //   the main group (the curtain wall) fills the box; every other group rides along underneath as a small preview row.
+    let thin = [];
+    if (blocks.length > 1) {
+      const big = blocks.filter(b => b.h / KY(b) > 3), pool = big.length ? big : blocks;
+      const main = pool.find(b => b.id === 'all') || pool.reduce((m, b) => (b.w * b.h > m.w * m.h ? b : m), pool[0]);
+      thin = blocks.filter(b => b !== main); blocks = [main];
+    }
+    const miniW = FULL ? innerWidth : Math.max(120, ($('wallBox').clientWidth - 20) || 360);
+    const miniSp = thin.length ? Math.max(2.5, Math.min(7, (miniW - 16 - 14 * (thin.length - 1)) / thin.reduce((a, b) => a + b.w, 0))) : 0;
+    const miniH = thin.length ? 15 + Math.max(...thin.map(b => b.h)) * miniSp + 6 : 0;
+    const thinGeo = () => ({sp: miniSp, h: miniH});
+    const many = blocks.length + thin.length > 1, dpr = Math.min(2, window.devicePixelRatio || 1);
     const gap = 2, totW = blocks.reduce((a, b) => a + b.w / KX(b), 0) + gap * (blocks.length - 1), maxH = Math.max(...blocks.map(b => b.h / KY(b)));
     const anyDev = blocks.some(b => (b.devices || []).length > 1);
     const box = $('wallBox'), cssW = FULL ? innerWidth : Math.max(120, (box.clientWidth - 20) || 360);
@@ -876,12 +958,22 @@
       const fit = Math.max(8, Math.floor((cssW - 16) / 7));          // aim for dots at least ~7 px apart; wrap into more rows when narrow
       let rows = s.n >= 100 ? 2 : 1; if (Math.ceil(s.n / rows) > fit) { rows = Math.ceil(s.n / fit); if (s.n >= 100 && rows % 2) rows++; }
       const per = Math.ceil(s.n / rows), sp = Math.max(4, Math.min(14, (cssW - 16) / per)); return {rows, per, sp, h: 18 + rows * sp + 6}; };
-    const stripH = strips.reduce((a, s) => a + stripGeo(s).h, 0);
+    const strip0 = strips.reduce((a, s) => a + stripGeo(s).h, 0);
     const wide = innerWidth >= 1000 && innerWidth >= innerHeight, compact = !wide && (GB.page !== 'music' || innerWidth < 700);   // phone: compact on MUSIC too, so its controls are on the first screen
     const inLay = !FULL && box.closest('.lay-it');                      // ✏️ arranged console: the picture fits whatever box size you gave the Live wall
     const maxCssH = FULL ? innerHeight - 40 : inLay ? Math.max(50, box.clientHeight - 20) : compact ? Math.max(GB.page === 'music' ? 110 : 130, innerHeight * (GB.page === 'music' ? 0.15 : 0.24)) : Math.max(220, innerHeight * 0.82)   // Oct 16: your lights fill the box edge to edge by default (tall for one curtain);
-    const st = Math.min(cssW / totW, Math.max(20, maxCssH - lab - stripH) / maxH);
-    const cssH = Math.round(lab + maxH * st + stripH), drawW = totW * st, ox0 = (cssW - drawW) / 2;
+    // the small previews go underneath, or down the right side when that leaves the main wall bigger (a wide, short box)
+    const stBelow = Math.min(cssW / totW, Math.max(20, maxCssH - lab - strip0 - miniH) / maxH);
+    let side = null;
+    if (thin.length) {
+      const hs = thin.reduce((a, b) => a + b.h, 0), over = 21 * thin.length;
+      const sp2 = Math.max(2, Math.min(7, (maxCssH - over) / Math.max(1, hs))), sideW = Math.max(...thin.map(b => b.w)) * sp2 + 16;
+      const stSide = Math.min((cssW - sideW) / totW, Math.max(20, maxCssH - lab - strip0) / maxH);
+      if (stSide > stBelow * 1.05) side = {sp: sp2, w: sideW, h: hs * sp2 + over};
+    }
+    const stripH = strip0 + (side ? 0 : miniH);
+    const st = side ? Math.min((cssW - side.w) / totW, Math.max(20, maxCssH - lab - strip0) / maxH) : stBelow;
+    const cssH = Math.round(Math.max(lab + maxH * st + stripH, side ? side.h + 6 : 0)), drawW = totW * st, ox0 = ((side ? cssW - side.w : cssW) - drawW) / 2;
     cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
     cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px';
     cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.fillStyle = '#05040a'; cx.fillRect(0, 0, cssW, cssH);
@@ -898,17 +990,35 @@
       cx.font = "600 12px 'Saira Condensed', system-ui"; cx.textBaseline = 'top';
       if (many) { cx.fillStyle = sel ? '#ff3d9a' : '#bbb';                    // selected group: a drawn play marker (a ▶ glyph turns into an emoji on iOS)
         if (sel) { cx.beginPath(); cx.moveTo(ox + 2, 3); cx.lineTo(ox + 9, 7.5); cx.lineTo(ox + 2, 12); cx.closePath(); cx.fill(); }
-        cx.fillText(b.name.toUpperCase(), ox + (sel ? 13 : 2), 2); }
+        cx.fillText(vibeLabel(b, Math.max(8, Math.floor(bw * st / 5.6))), ox + (sel ? 13 : 2), 2); }
       if ((b.devices || []).length > 1) b.devices.forEach((d, k) => {
         const col = DEVCOL[k % DEVCOL.length]; cx.strokeStyle = col + '88'; cx.lineWidth = 1;
         cx.strokeRect(ox + d.x0 * sX + 0.5, top + d.y0 * sY + 0.5, (d.x1 - d.x0 + 1) * sX - 1, (d.y1 - d.y0 + 1) * sY - 1);
         cx.fillStyle = col; cx.font = "11px 'Saira Condensed', system-ui"; cx.fillText(d.name.slice(0, Math.max(4, Math.floor((d.x1 - d.x0 + 1) * sX / 7))), ox + d.x0 * sX + 2, d.y0 > 0 ? top + d.y0 * sY - 13 : (many ? 18 : 0) + 1);   // 🧵 a light lower down: its name just above its own box
       });
       if (sel) { cx.strokeStyle = '#ff3d9a'; cx.lineWidth = 2; cx.strokeRect(ox - 1, top - 1, bw * st + 2, bh * st + 2); }
-      PVHIT.push({id: b.id, name: b.name, x0: ox, x1: ox + bw * st});
+      PVHIT.push({id: b.id, name: b.name, x0: ox, x1: ox + bw * st, y0: 0, y1: lab + bh * st});
       ox += (bw + gap) * st;
     });
     let sy = Math.round(lab + maxH * st);
+    if (thin.length) {
+      const sp = side ? side.sp : miniSp, totM = thin.reduce((a, b) => a + b.w * sp, 0) + 14 * (thin.length - 1); let mx = side ? cssW - side.w + 8 : (cssW - totM) / 2;
+      const sy0 = sy; if (side) sy = 4;
+      thin.forEach(b => {
+        const rgb = hexRGB(b.rgb), r = Math.max(1, sp * 0.42), sel = GB.gsel === b.id;
+        cx.font = "600 10px 'Saira Condensed', system-ui"; cx.textBaseline = 'top'; cx.fillStyle = sel ? '#ff3d9a' : '#999'; cx.fillText(vibeLabel(b, Math.max(6, Math.floor((side ? side.w - 16 : b.w * sp) / 4.8))), mx, sy + 3);
+        for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
+          const c = rgb[y * b.w + x], px = mx + x * sp + sp / 2, py = sy + 15 + y * sp + sp / 2;
+          if (c === null) continue;
+          if (!c || c === '000000') { cx.fillStyle = '#16121f'; cx.beginPath(); cx.arc(px, py, r * 0.55, 0, 6.283); cx.fill(); continue; }
+          cx.fillStyle = '#' + c; cx.beginPath(); cx.arc(px, py, r, 0, 6.283); cx.fill();
+        }
+        const bh2 = 15 + b.h * sp + 6;
+        PVHIT.push({id: b.id, name: b.name, x0: mx, x1: mx + b.w * sp, y0: sy, y1: sy + (side ? bh2 : miniH)});
+        if (side) sy += bh2; else mx += b.w * sp + 14;
+      });
+      if (!side) sy += miniH; else sy = sy0;
+    }
     strips.forEach(s => {
       const g = stripGeo(s), rgb = hexRGB(s.rgb), x0 = (cssW - g.per * g.sp) / 2, r = Math.max(1, g.sp * 0.38);
       cx.font = "600 12px 'Saira Condensed', system-ui"; cx.textBaseline = 'top'; cx.fillStyle = '#ffcc33'; cx.fillText(s.name.toUpperCase() + ' · ' + s.n + ' BULBS', x0, sy + 3);
@@ -920,8 +1030,9 @@
       }
       sy += g.h;
     });
-    const bulbs = blocks.reduce((a, b) => a + b.w * b.h, 0);
-    const r = $('wallInfo'); if (r) r.textContent = (blocks.length > 1 ? blocks.length + ' GROUPS · ' : '') + bulbs + ' BULBS';
+    const bulbs = blocks.concat(thin).reduce((a, b) => a + b.w * b.h, 0), ng = blocks.length + thin.length;
+    const bp = GB.status && GB.status.brightness != null ? +GB.status.brightness : 100;      // 💡 the picture is full strength; the lights may be dimmed
+    const r = $('wallInfo'); if (r) r.textContent = (ng > 1 ? ng + ' GROUPS · ' : '') + bulbs + ' BULBS' + (bp < 98 ? ' · LIGHTS AT ' + Math.round(bp) + '%' : '');
   }
   GB.setFull = on => {
     FULL = on; $('wallBox').classList.toggle('full', on); document.body.classList.toggle('wallfull', on);
@@ -996,6 +1107,7 @@
   async function statusLoop() {
     try {
       const s = GB.status = await GB.get('/api/status'); GB.lastOk = Date.now();
+      lightsHealth(s.lights_down || []); lightsTune(s.lights_tune || []);
       $('licGate').classList.toggle('show', s.licensed === false);
       const gi = GB.grpInfo(), cat = GB.catalog;
       $('rBpm').innerHTML = s.bpm ? Math.round(s.bpm) + '<small> BPM</small>' : '–';
@@ -1108,8 +1220,9 @@
       if (e.target.closest('.fullx')) return GB.setFull(false);
       if (V3.moved) { V3.moved = false; return; }
       if (PVHIT.length < 2) { if (!FULL) GB.setFull(true); return; }
-      const rc = cv.getBoundingClientRect(), x = (e.clientX - rc.left);
-      const h = PVHIT.find(p => x >= p.x0 - 4 && x <= p.x1 + 4); if (!h) return;
+      const rc = cv.getBoundingClientRect(), x = (e.clientX - rc.left), y = (e.clientY - rc.top);
+      const h = PVHIT.find(p => x >= p.x0 - 4 && x <= p.x1 + 4 && (p.y0 == null || (y >= p.y0 - 4 && y <= p.y1 + 4))); if (!h) return;
+      if (GB.vibeTap && GB.vibeTap(h)) return;                          // 🎛️ Pro DJ: a tap on a screen opens its vibes (vibes.js)
       GB.pickGroup(GB.gsel === h.id ? '' : h.id, h.name);
     });
     $('wFull').onclick = () => GB.setFull(true);

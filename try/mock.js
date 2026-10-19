@@ -55,7 +55,8 @@
   // the newest looks (calm pack, genres, flow) have no recording yet: a recording close in mood stands in for them
   const LOOK_STAND = {'Cinematic': 'look-deep-space', 'Concert Hall': 'look-royal-gold', 'Jazz Club': 'look-lava-lounge', 'Moonlit': 'look-midnight-galaxy',
     'Rock Arena': 'look-red-alert', 'Velvet Bounce': 'look-studio-54', 'Tropicana': 'look-rainbow-riot', 'Golden Porch': 'look-royal-gold', 'Toy Box': 'look-retro-arcade',
-    'Trip': 'look-psychedelic', 'Silk': 'look-liquid-dreams'};
+    'Trip': 'look-psychedelic', 'Silk': 'look-liquid-dreams',
+    'Chill Lounge': 'look-lava-lounge', 'Deep Calm': 'look-midnight-galaxy', 'Sprite Party': 'look-dance-crew', 'Fractal Dreams': 'look-psychedelic'};
   function lookClip(look, k) { const set = LOOK_SET[look]; if (set) return set[(k || 0) % set.length];
     const c = 'look-' + slug(look); return has(c) ? c : has(LOOK_STAND[look]) ? LOOK_STAND[look] : 'look-neon-party'; }
   const TEXTY = new Set(['ScrollText', 'LuckyText', 'BeatCounter', 'Countdown', 'NewYearCountdown', 'Touchdown']);   // 🔤 effects that write words / numbers: never in the demo's own show
@@ -1761,7 +1762,7 @@
       feeds: {mode: fd.mode, title: fd.mode !== 'off' ? fd.feeds[fd.mode].title : '', watching: w, alert: FD.alert ? FD.alert.event : '', flash: '', full_moon: false}, dj: djInfo(),
       shuffle: S.shuffle, characters: S.characters, held_look: S.held, pinned: S.pinned, calm: si.name === 'break' ? .6 : .2, grand: si.name === 'drop' ? .8 : .3,
       level: Math.round(lvl * 100) / 100, sparkles: S.sparkles, pace: S.pace, mood: S.mood || 'auto', scene: sc, text: TX.s.show,
-      groups: [{id: 'g1', name: 'Main', w: W, h: H, lights: 2, look: S.look, effect: src.label || S.effect, power: S.power, text: TX.s.show}],
+      groups: [{id: 'g1', name: 'Main', w: W, h: H, lights: 2, look: S.look, pinned: !!S.pinned, effect: src.label || S.effect, power: S.power, text: TX.s.show}],
       analysis: {key: 'A minor', mood: si.name === 'drop' ? 'euphoric' : 'groovy', known: 1, drops: 3, downbeat: true}, listening: 'Demo speakers', delay: S.delay, delay_auto: false,
       time: new Date().toTimeString().slice(0, 8)};
   }
@@ -1867,13 +1868,18 @@
 
   // ======================================================================= 🧵 Lay out your lights (stringlay.js / artboard.js, Oct 17): the two demo curtains plus a
   //   308-bulb string light, laid out in this tab only. GET /api/lights/stage, POST lay / main / place / pick / marks / beep.
-  const STG = {main: 'twinkly-192.168.0.164', place: {}, lay: {}, str: {id: 'nanoleaf-192.168.0.170', name: 'String lights', n: 308}};
+  const STG = {main: 'twinkly-192.168.0.164', place: {}, lay: {}, str: {id: 'nanoleaf-192.168.0.170', name: 'String lights', n: 308}, ws: {},
+    view: {rot: 0, fx: false, fy: false, zoom: 1, dx: 0, dy: 0}, groups: null};
+  // 🧲 which lights share one show (Oct 18 snap to join / split): every demo light starts in the Main show
+  const stgGroups = () => STG.groups || (STG.groups = [{id: 'g1', name: 'Main', devices: DEVS.map(d => d.id).concat([STG.str.id])}]);
+  const stgName = id => id === STG.str.id ? STG.str.name : ((DEVS.find(d => d.id === id) || {}).name || id);
+  const DEMO_RESTART = () => setTimeout(() => toast('🧲 Saved in the demo. On the app the show restarts with the new groups'), 500);
   function stageInfo() {
     const out = DEVS.map(d => { const pl = STG.place[d.id] || [d.x0, 0], pts = [];
       for (let i = 0; i < 420; i++) { const c = Math.floor(i / H), r = c % 2 ? H - 1 - (i % H) : i % H; pts.push([pl[0] + c, pl[1] + r]); }
       return {id: d.id, name: d.name, n: 420, connected: true, kind: 'grid', curtain: false, pts, orient: {rot: 0, flip: false}}; });
-    out.push({id: STG.str.id, name: STG.str.name, n: STG.str.n, connected: true, kind: 'string', curtain: false, lay: STG.lay[STG.str.id] || null});
-    return {devices: out, limits: [], main: STG.main};
+    out.push({id: STG.str.id, name: STG.str.name, n: STG.str.n, connected: true, kind: 'string', curtain: false, lay: STG.lay[STG.str.id] || null, back: false, workshop: STG.ws[STG.str.id] || null});
+    return {devices: out, limits: [], main: STG.main, view: Object.assign({}, STG.view), groups: stgGroups().map(g => ({id: g.id, name: g.name, devices: g.devices.slice()}))};
   }
   function stageCmd(path, b) {
     if (path === '/api/lights/lay') { if (b.id !== STG.str.id && !DEVS.some(d => d.id === b.id)) return {error: 'no such light'};
@@ -1884,6 +1890,35 @@
     if (path === '/api/lights/pick') return {ok: true};
     if (path === '/api/lights/marks') return {ok: true};
     if (path === '/api/lights/beep') return b.reset ? {ok: true, before: 0.9, after: 1} : {ok: true, before: 1, after: 0.9, waiting: false, floor: false};
+    if (path === '/api/lights/view') { const v = STG.view, op = String(b.op || '');            // 🎬 turn / mirror / zoom / slide the whole show
+      if (op === 'cw') v.rot = (v.rot + 90) % 360; else if (op === 'ccw') v.rot = (v.rot + 270) % 360; else if (op === 'fx') v.fx = !v.fx; else if (op === 'fy') v.fy = !v.fy;
+      else if (op === 'zin') v.zoom = clamp(v.zoom * 1.15, .25, 4); else if (op === 'zout') v.zoom = clamp(v.zoom / 1.15, .25, 4);
+      else if (op === 'left' || op === 'right') v.dx = clamp(v.dx + (op === 'left' ? -.05 : .05), -1, 1); else if (op === 'up' || op === 'down') v.dy = clamp(v.dy + (op === 'up' ? -.05 : .05), -1, 1);
+      else if (op === 'center') v.dx = v.dy = 0; else if (op === 'reset') Object.assign(v, {rot: 0, fx: false, fy: false, zoom: 1, dx: 0, dy: 0});
+      v.zoom = Math.round(v.zoom * 1000) / 1000; v.dx = Math.round(v.dx * 100) / 100; v.dy = Math.round(v.dy * 100) / 100;
+      return {ok: true, view: Object.assign({}, v)}; }
+    // 🩺 Check my lights (checkup.py): the demo lights are always healthy
+    if (path === '/api/lights/checkup') return {ok: true, t: wall(), findings: DEVS.filter(d => DEV_ON[d.id] !== false).map(d => ({lvl: 'ok', ic: 'wifi', title: d.name + ' (Twinkly): Wi-Fi good', body: 'Answered every check-in in about ' + (18 + ((R() * 14) | 0)) + ' ms.', fix: null}))
+      .concat([{lvl: 'ok', ic: 'wifi', title: STG.str.name + ' (Nanoleaf): Wi-Fi good', body: 'Answered every check-in in about ' + (25 + ((R() * 20) | 0)) + ' ms.', fix: null},
+               {lvl: 'ok', ic: 'check', title: 'Curtains line up on the map', body: 'No overlaps or gaps. If one still looks upside down or backwards on the wall, run the line-up and turn or flip it.', fix: {label: 'Run the line-up', act: 'lineup', ids: []}}])};
+    if (path === '/api/lights/fixup') { if (b.act === 'lineup') { LINEUP.on = true; LINEUP.until = now() + 60; return {ok: true, msg: 'Line-up is on: every curtain shows its number and an arrow that should point up'}; }
+      if (b.act === 'restart') return {ok: true, msg: 'In the demo nothing needs restarting', restart: false};
+      return {ok: true, msg: 'Fixed (in the demo, nothing on a real light changed)'}; }
+    // 🧲 snap to join / split into its own show / undo (in this tab only)
+    if (path === '/api/lights/join' || path === '/api/lights/split' || path === '/api/lights/regroup') {
+      const gs = stgGroups(), prev = gs.map(g => ({id: g.id, name: g.name, devices: g.devices.slice()}));
+      if (path === '/api/lights/regroup') { const ng = (b.groups || []).filter(g => g && Array.isArray(g.devices) && g.devices.length).map(g => ({id: String(g.id), name: String(g.name || g.id), devices: g.devices.slice()}));
+        STG.groups = ng.length ? ng : null; return {ok: true, restart: true, prev, msg: 'Groups put back'}; }
+      const gi = gs.find(g => g.devices.includes(b.id)); if (!gi) return {error: 'no such light'};
+      if (path === '/api/lights/join') { const gt = gs.find(g => g.devices.includes(b.to)); if (!gt) return {error: 'no such light'};
+        if (gt === gi) return {ok: true, same: true, group: gt.name};
+        const [keep, gone] = gs.indexOf(gi) < gs.indexOf(gt) ? [gi, gt] : [gt, gi], big = gi.devices.length > gt.devices.length ? gi : gt.devices.length > gi.devices.length ? gt : keep;
+        const nm = big.devices.length > 1 ? big.name : 'Wall'; keep.devices = keep.devices.concat(gone.devices); keep.name = nm; STG.groups = gs.filter(g => g !== gone);
+        DEMO_RESTART(); return {ok: true, restart: true, prev, msg: stgName(b.id) + ' and ' + stgName(b.to) + ' are one show now (' + nm + ')'}; }
+      if (gi.devices.length < 2) return {ok: true, same: true, group: gi.name};
+      gi.devices = gi.devices.filter(x => x !== b.id); let k = gs.length + 1; while (gs.some(g => g.id === 'g' + k)) k++;
+      gs.push({id: 'g' + k, name: stgName(b.id).slice(0, 30), devices: [b.id]}); DEMO_RESTART();
+      return {ok: true, restart: true, prev, msg: stgName(b.id) + ' is its own show'}; }
     return null;
   }
   // ======================================================================= 📌 Tonight's list + 🎉 show behind the scores (tonight.py)
@@ -1908,6 +1943,15 @@
     if ('dim' in b) TNS.dim = Math.max(0.1, Math.min(0.5, +b.dim || 0.25));
     if ('on' in b) TNS.on = !!b.on && TNS.items.length > 0;
     if (!TNS.items.length) TNS.on = false;
+  }
+
+  // ======================================================================= 🖥️ mirror: pick a laptop screen · 🪧 art projects (signs), kept in this tab
+  const MIRROR_SCREENS = [{i: 1, w: 1920, h: 1080, primary: true}, {i: 2, w: 2560, h: 1440, primary: false}];
+  let MIRROR_PICK = 0;
+  const ART = {}; let artSeeded = null;
+  function artSeed() {                                              // the GlowBop logo sign is the starter project, like on the app
+    return artSeeded || (artSeeded = realFetch(here('ui/templates/GlowBop-Logo-Sign-308.glowbop')).then(r => r.json())
+      .then(j => { if (!Object.keys(ART).length) ART['glowbop-logo-sign'] = Object.assign(j, {name: 'GlowBop Logo Sign', updated: wall()}); }).catch(() => {}));
   }
 
   // ======================================================================= the router
@@ -1967,6 +2011,9 @@
         case '/api/midi/capture': return {json: {text: ''}};
         case '/api/layout': return {json: layoutInfo()};
         case '/api/layout/zones': return {json: {zones: LAY.zones(), shapes: []}};
+        case '/api/mirror/screens': return {json: {screens: MIRROR_SCREENS, pick: MIRROR_PICK}};
+        case '/api/art/projects': await artSeed(); return {json: {projects: Object.entries(ART).map(([id, j]) => ({id, name: j.name || id, spots: (j.spots || []).length, updated: j.updated || 0})).sort((a, c) => c.updated - a.updated)}};
+        case '/api/art/project': { await artSeed(); const id = q.get('id') || '', j = ART[id]; return {json: j ? {id, project: JSON.parse(JSON.stringify(j))} : {error: 'no such project'}}; }
       }
     } else {
       switch (path) {
@@ -1982,6 +2029,15 @@
         case '/api/midi/relay': return ok({out: []});
         case '/api/midi/report': setTimeout(() => toast('Demo: nothing was sent. On the GlowBop app the test goes straight to support'), 2600); return ok({sent: true, ticket: 'GB-DEMO'});
         case '/api/layout/save': return {json: LAY.save(b)};
+        case '/api/mirror/screen': MIRROR_PICK = Math.max(0, +b.screen || 0); return ok({pick: MIRROR_PICK});
+        case '/api/art/project': { const j = b.project; if (!j || typeof j !== 'object' || j.type !== 'sign') return {status: 400, json: {error: 'not a sign project'}};
+          await artSeed(); let id = b.id && ART[b.id] ? b.id : (slug(j.name || 'sign') || 'sign'); if (!(b.id && ART[b.id])) { const base = id; let n = 2; while (ART[id]) id = base + '-' + n++; }
+          ART[id] = Object.assign(JSON.parse(JSON.stringify(j)), {glowbop: 1, updated: wall()}); return ok({id}); }
+        case '/api/art/delete': if (!ART[b.id]) return {status: 400, json: {error: 'no such project'}}; delete ART[b.id]; return ok();
+        case '/api/art/workshop': if (b.id !== STG.str.id) return {status: 400, json: {error: 'no such light'}};
+          if (b.on) STG.ws[b.id] = String(b.project || 'sign').slice(0, 60); else delete STG.ws[b.id]; return ok({workshop: STG.ws[b.id] || null});
+        case '/api/art/light': if (!STG.ws[b.id]) return {status: 400, json: {error: 'put that light in the workshop first'}};
+          return ok({lit: (b.bulbs || []).filter(x => x && (+x[1] || +x[2] || +x[3])).length});
         case '/api/layout/photo': LAY.photo = b.data || null; LAY.doc.photo = !!b.data;
           if (b.data) setTimeout(() => toast('📷 In the demo the photo stays in this browser tab'), 1800); return ok({photo: !!b.data});
         case '/api/layout/test': if (b.off) { LAY.testing = false; return ok(); }
