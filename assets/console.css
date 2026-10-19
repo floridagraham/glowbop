@@ -456,3 +456,19 @@ html,body{overflow-x:clip}
 /* wide screens: the whole row of keys slides right so Try free sits at the edge, wherever the keys end */
 @media(min-width:1041px){.nav.con-hd ul{margin-left:auto}.nav.con-hd .cta{margin-left:8px}}
 .nav.con-hd ul a.navdemo b{align-self:flex-end;margin-bottom:3px}
+/* 📏 Oct 19 (Graham: "update the website with the new look of our iPad buttons"): the app's button system on the site.
+   Three sizes (64 hero, 48 regular, 36 small). Main buttons are solid gradient keys that deepen toward the corner with a soft
+   icon behind the words (assets/site.js moves a leading emoji into .bwm). Everyday buttons are slim outline pills in their
+   colour that fill in on hover. No grey. */
+.btn{min-height:48px;border-radius:999px;padding:0 22px;border:0;background:transparent;color:color-mix(in srgb,var(--c,var(--cyan)) 78%,#fff);box-shadow:inset 0 0 0 1.5px var(--c,var(--cyan));font:800 15px 'Saira Condensed','DM Sans',sans-serif;letter-spacing:1px;text-transform:uppercase;justify-content:center;position:relative;overflow:hidden;isolation:isolate}
+.btn:hover{background:color-mix(in srgb,var(--c,var(--cyan)) 16%,transparent);text-decoration:none}
+.btn.primary{background:linear-gradient(135deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.34)),var(--pink);color:#000;box-shadow:0 0 26px -6px rgba(255,61,154,.8);min-height:52px}
+.btn.c{background:linear-gradient(135deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.34)),var(--c);color:#000;box-shadow:none}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.herotry,.btns .btn.primary.big{min-height:64px;font-size:19px;padding:0 30px}
+.btn.small{min-height:36px;padding:0 14px;font-size:13px}
+.btn .bwm{position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:2.6em;line-height:1;opacity:.28;pointer-events:none;z-index:-1;filter:saturate(.6)}
+.btn.primary .bwm{opacity:.32;filter:grayscale(1) brightness(3)}
+.btn.has-wm{padding-right:46px}
+.btn.small.has-wm{padding-right:30px}
+.btn.small .bwm{font-size:1.9em}

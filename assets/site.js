@@ -129,3 +129,18 @@
   const tick = () => d.classList.toggle('show', scrollY > 300);   // stays put once you start scrolling (Oct 16: hiding near the demo felt broken)
   addEventListener('scroll', tick, {passive: true}); addEventListener('resize', tick); tick();
 })();
+
+// 🎨 Oct 19: buttons wear their icon behind the words, like the app's keys (a leading emoji or symbol becomes a soft watermark)
+(() => {
+  const RX = /^\s*([\p{Extended_Pictographic}▶→←✦★☀-➿](?:️)?(?:‍\p{Extended_Pictographic}️?)*)\s*/u;
+  const wm = root => (root || document).querySelectorAll('a.btn, button.btn').forEach(b => {
+    if (b.classList.contains('has-wm') || b.classList.contains('no-wm')) return;
+    const t = b.firstChild; if (!t || t.nodeType !== 3) return;
+    const m = t.nodeValue.match(RX); if (!m) return;
+    t.nodeValue = t.nodeValue.slice(m[0].length);
+    const s = document.createElement('span'); s.className = 'bwm'; s.setAttribute('aria-hidden', 'true'); s.textContent = m[1];
+    b.appendChild(s); b.classList.add('has-wm');
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => wm()); else wm();
+  window.GBwm = wm;
+})();
