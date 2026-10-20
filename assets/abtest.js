@@ -14,7 +14,7 @@
         media: vid('sprite-jumprope', 'Jump rope') + vid('sprite-chairs', 'Musical chairs'), demo: '/try/?intro=1', feat: 'sprites-at-play', pro: ['home', 'dj', 'art']},
     B: {k: 'chill', c: '#cc99ff', eb: 'New · Chill pack', h: 'Calm, soft and never boring', p: 'Colour clouds, glow trails and slow ripples that melt into each other. Nothing flashes. The music just nudges them.',
         media: vid('chill-clouds', 'Colour clouds') + vid('chill-trails', 'Glow trails'), demo: '/try/#looks', feat: 'chill-pack', pro: ['home', 'art', 'dj']},
-    C: {k: 'dj', c: '#ff3d9a', eb: 'DJ mode', h: 'Play the lights like a club lighting tech', p: 'Hold to build, let go to drop. Hit pads, strobes and fire bursts on top of a show that already hears every beat.',
+    C: {k: 'dj', c: '#ff3d9a', eb: 'DJ mode', h: 'Play the lights like a club lighting tech', p: 'Charge the drop, let it go. Hit pads, strobes and fire bursts on top of a show that already hears every beat.',
         media: vid('drop', 'The drop') + vid('look-club-rig', 'Club Rig'), demo: '/try/#dj', feat: 'dj-mode', pro: ['dj', 'home', 'art']},
     D: {k: 'sports', c: '#ffb23d', eb: 'Sports', h: 'Every game tonight, on one wall', p: 'Live scores for 44 leagues, Formula 1 in team colours, and a party on the wall every time your team scores.',
         media: vid('score-football', 'Live football') + vid('f1-win', 'F1 race win'), demo: '/try/#score', feat: 'scoreboard', pro: ['home', 'dj', 'art']},

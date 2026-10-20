@@ -240,7 +240,7 @@
   GB.panel('dj', 3, el => {                                    // 🔝 Build & drop sits at the very top of the DJ page
     el.classList.add('box', 'dj-buildbox'); el.style.setProperty('--c', 'var(--pink)');
     el.innerHTML = `<div class="ph"><span>Build &amp; drop</span><span class="r" id="djBuildR">HOLD, THEN LET GO</span></div>
-      <div class="dj-bc"><button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">HOLD TO BUILD</span><span class="bcnt"></span><span class="bbar"></span></button>
+      <div class="dj-bc"><button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">CHARGE THE DROP</span><span class="bcnt"></span><span class="bbar"></span></button>
         <div class="dj-cc"><button class="btn c" id="djCool" style="--c:var(--lav)"><span class="cic">${GB.svg('moon')}</span><span class="clbl">COOL</span><small class="csub">HOLD · TAP TO LATCH</small></button>
           <div class="dj-cst">${COOLS.map(c => `<button class="chip" data-cs="${c[0]}" title="${c[2]}">${c[1]}</button>`).join('')}</div></div></div>
       <div class="dj-cols"><div class="dj-col"><div class="dj-sub"><span>${GB.svg('faders')} BUILD</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div></div>
@@ -263,13 +263,13 @@
       b.style.setProperty('--h', (turns(.15, 1.6) % 1).toFixed(3));
       const hb = turns(55 / 60, 170 / 60) % 1; b.style.setProperty('--b', Math.max(Math.exp(-hb * 9), hb >= .3 ? .75 * Math.exp(-(hb - .3) * 9) : 0).toFixed(3));
       cnt.textContent = el2.toFixed(1) + 's'; GB.hdBuild && GB.hdBuild(p);
-      b.classList.toggle('full', p >= 1); lbl.textContent = p >= 1 ? 'FULL! LET GO TO DROP' : 'BUILDING… LET GO TO DROP';
+      b.classList.toggle('full', p >= 1); lbl.textContent = p >= 1 ? 'FULLY CHARGED! LET GO' : 'CHARGING… LET GO TO DROP';
       raf = requestAnimationFrame(tick);
     };
     const start = e => { e.preventDefault(); if (held) return; held = true; cur = buildStyle(); b.dataset.s = cur; t0 = performance.now();
-      b.classList.add('held'); lbl.textContent = 'BUILDING… LET GO TO DROP'; paint(); tick(); dj({build: true, style: cur}); GB.sfx('nav'); GB.hdBuild && GB.hdBuild(0); };
+      b.classList.add('held'); lbl.textContent = 'CHARGING… LET GO TO DROP'; paint(); tick(); dj({build: true, style: cur}); GB.sfx('nav'); GB.hdBuild && GB.hdBuild(0); };
     const end = (cancel) => { if (!held) return; held = false; cancelAnimationFrame(raf); b.classList.remove('held', 'full'); b.style.setProperty('--p', 0);
-      lbl.textContent = 'HOLD TO BUILD'; cnt.textContent = ''; paint(); dj(cancel ? {build: false, cancel: true} : {build: false, snap: snap(), drop_style: dropStyle()}); if (!cancel) GB.sfx('ok'); if (cancel) GB.hdBuild && GB.hdBuild(null); else GB.hdDrop && GB.hdDrop(); };
+      lbl.textContent = 'CHARGE THE DROP'; cnt.textContent = ''; paint(); dj(cancel ? {build: false, cancel: true} : {build: false, snap: snap(), drop_style: dropStyle()}); if (!cancel) GB.sfx('ok'); if (cancel) GB.hdBuild && GB.hdBuild(null); else GB.hdDrop && GB.hdDrop(); };
     b.addEventListener('pointerdown', start); b.addEventListener('pointerup', () => end(false));
     b.addEventListener('pointerleave', () => end(true)); b.addEventListener('pointercancel', () => end(true));
     b.addEventListener('contextmenu', e => e.preventDefault());
