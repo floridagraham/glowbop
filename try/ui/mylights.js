@@ -31,7 +31,7 @@
     return `<g pointer-events="none">${s}</g>`; };
   GB.myLivePoll = async where => { if (busy[where]) return; busy[where] = true; try { LV[where] = await GB.get('/api/stage/mylive?where=' + where); } catch (e) {} busy[where] = false; return LV[where]; };
   GB.myLights = function (el, where) {
-    let S = null;
+    let S = null, NOTES = [];
     async function load() { try { S = await GB.get('/api/stage/mylights?where=' + where); paint(); } catch (e) {} }
     function paint() {
       if (!S) return; const any = Object.keys(S.assign || {}).length, here = where === 'yard' ? 'yard' : 'stage';
@@ -39,6 +39,7 @@
           <button class="btn ml-go" data-go>${any ? 'Match my lights again' : 'Put my lights here'}</button></div>
         ${any ? `<div class="ml-rows">${S.lights.map(l => `<label>${esc(l.name)} · ${CLS[l.cls] || ''}<select data-l="${esc(l.id)}"><option value="">Not on this ${here}</option>${S.spots.map(s => `<option value="${esc(s.id)}"${S.assign[l.id] === s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>`).join('')}</div>`
           : `<p class="ml-note">One tap: curtains go on the ${where === 'yard' ? 'front of the house' : 'backdrop'}, strings on the ${where === 'yard' ? 'roofline' : 'truss'}, and so on. Swap any of them after.</p>`}
+        ${NOTES.length ? `<ul class="ml-note" style="margin:8px 0 0;padding-left:18px">${NOTES.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
         <div class="ml-saved"><span>Layouts</span>${S.saved.map(x => `<button class="btn${x.name === S.current ? ' on' : ''}" data-u="${esc(x.id)}">${esc(x.name)}</button>`).join('') || '<span style="color:var(--dim);text-transform:none;letter-spacing:0;font-weight:500">Your own layout is kept as "My layout" the first time.</span>'}</div></div>`;
       el.querySelector('[data-go]').onclick = () => send({auto: true});
       el.querySelectorAll('[data-l]').forEach(sel => sel.onchange = () => { const a = Object.assign({}, S.assign); if (sel.value) a[sel.dataset.l] = sel.value; else delete a[sel.dataset.l]; send({assign: a}); });
@@ -48,7 +49,7 @@
       GB.sfx && GB.sfx('tap');
       const r = await GB.post('/api/stage/mylights', Object.assign({where, apply: true}, b));
       if (!r || !r.ok) return GB.toast((r && r.error) || 'Could not put your lights here');
-      GB.toast(r.msg + ' The lights restart for a moment.'); GB.emit('mylights', {where, assign: r.assign}); load();
+      NOTES = r.notes || []; GB.toast(r.msg + ' The lights restart for a moment.'); GB.emit('mylights', {where, assign: r.assign, doc: r.doc, yard: r.yard}); load();
     }
     load();
     return {reload: load, get state() { return S; }};

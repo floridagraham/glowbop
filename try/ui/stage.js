@@ -539,7 +539,7 @@
   }, 80);
   GB.on('page', id => { if (id === 'stage' && TOP) setTimeout(() => { TOP.fit(); FRONT.fit(); }, 60); });
   GB.on('pro', () => { if (D) { paintSum(); paintSide(); paintShow(); } });
-  GB.on('mylights', e => { if (e && e.where === 'stage' && D) { D.mylights = e.assign; paintViews(); } });
+  GB.on('mylights', e => { if (e && e.where === 'stage' && D) { clearTimeout(saveT); if (e.doc) D = e.doc; D.mylights = e.assign; if (TOP) { TOP.fitted = FRONT.fitted = false; } paintAll(); } });
   GB.stage = {get doc() { return D; }, reload: load};
   // ✏️ ARRANGE: STAGE is one wide column (the four ways in, then the builder, the show and the addresses); HOUSE gets the yard as a band
   (function tpl() { if (!GB.layTPL) return setTimeout(tpl, 200);

@@ -222,5 +222,5 @@
     try { const [r] = await Promise.all([GB.get('/api/yard/live'), Y.mylights && Object.keys(Y.mylights).length && GB.myLivePoll ? GB.myLivePoll('yard') : null]); LIVE = r.c || {}; liveAll(); } catch (e) {} busy = false;
   }, 100);
   GB.on('page', id => { if (id === 'house' && PL) setTimeout(() => fitAll(), 60); });
-  GB.on('mylights', e => { if (e && e.where === 'yard' && Y) { Y.mylights = e.assign; drawAll(); } });
+  GB.on('mylights', e => { if (e && e.where === 'yard' && Y) { clearTimeout(saveT); if (e.yard) Y = Object.assign(Y, {items: e.yard.items, lot: e.yard.lot}); Y.mylights = e.assign; drawAll(); } });
 })();
