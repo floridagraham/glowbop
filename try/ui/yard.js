@@ -79,6 +79,7 @@
       <div class="st-bar"><button class="btn st-ib" id="ydUndo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg><span>Undo</span></button>
         <label class="st-note" style="display:flex;gap:6px;align-items:center">Lot width (ft)<input id="ydW" type="number" min="10" style="min-height:48px;width:90px;background:#120f20;color:#fff;border:1px solid var(--line);border-radius:8px;padding:0 8px"></label>
         <label class="st-note" style="display:flex;gap:6px;align-items:center">Lot depth (ft)<input id="ydD" type="number" min="10" style="min-height:48px;width:90px;background:#120f20;color:#fff;border:1px solid var(--line);border-radius:8px;padding:0 8px"></label></div>
+      <div class="st-row" id="ydTpl"><b>Start from a template (then move, size or delete anything: every yard is different)</b></div>
       <div class="yd-main"><div id="ydPlan"></div><div class="st-side"><div class="st-card" id="ydInspect"></div>
         <div class="st-card"><h4 style="color:${C}">Decorations</h4><div class="yd-add">${DECO.map(k => `<button data-ya="${k}" style="--k:${K[k][1]}">${icon(k)}${esc(K[k][0])}</button>`).join('')}</div></div>
         <div class="st-card"><h4 style="color:${C}">Yard and house</h4><div class="yd-add">${PROP.map(k => `<button data-ya="${k}" style="--k:${K[k][1]}">${icon(k)}${esc(K[k][0])}</button>`).join('')}</div></div></div></div>`;
@@ -86,9 +87,16 @@
     $('ydUndo').onclick = () => { if (!HIST.length) return; Y = JSON.parse(HIST.pop()); $('ydUndo').disabled = !HIST.length; changed(); };
     const lot = () => { snapH(); Y.lot.w = Math.max(10, +$('ydW').value || 80); Y.lot.d = Math.max(10, +$('ydD').value || 120); PL.fit(); changed(); };
     $('ydW').onchange = lot; $('ydD').onchange = lot;
-    GB.get('/api/yard').then(r => { Y = r.yard; $('ydW').value = Y.lot.w; $('ydD').value = Y.lot.d; mk(); }).catch(() => {});
+    GB.get('/api/yard').then(r => { Y = r.yard; $('ydW').value = Y.lot.w; $('ydD').value = Y.lot.d; mk(); tpls(r.templates || []); }).catch(() => {});
     GB.get('/api/lights').then(r => { LIGHTS = (r.devices || []).map(d => ({id: d.id, name: d.name})); }).catch(() => {});
   });
+  function tpls(T) {
+    const row = $('ydTpl'); if (!row) return;
+    row.insertAdjacentHTML('beforeend', T.map(t => `<button class="btn${/^xmas/.test(t.key) ? ' c' : ''}" data-yt="${t.key}" title="${esc(t.about)}" style="${/^xmas/.test(t.key) ? '--c:#ff4d6d' : ''}">${esc(t.name)}</button>`).join(''));
+    row.querySelectorAll('[data-yt]').forEach(b => b.onclick = async () => { const r = await GB.post('/api/yard/template', {key: b.dataset.yt}); if (!r || !r.ok) return;
+      snapH(); $('ydUndo').disabled = false; Y = r.yard; SEL = null; if (PL) PL.sel = null; $('ydW').value = Y.lot.w; $('ydD').value = Y.lot.d; PL && PL.fit(); changed();
+      GB.toast('🏡 ' + b.textContent + ': move, size or delete anything to match your yard. Undo brings yours back.'); });
+  }
   function mk() {
     let snapped = false;
     PL = GB.Plan($('ydPlan'), {id: 'yd', caption: 'Yard from above', flipY: true, bounds, paint, live,

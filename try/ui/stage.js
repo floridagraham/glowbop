@@ -155,8 +155,8 @@
   // ------------------------------------------------------------------ drawing
   function stageBounds(front) {
     const W = D.size.w, Dd = D.size.d; let x0 = -W / 2 - 4, x1 = W / 2 + 4, y0 = front ? 0 : -Math.max(10, Dd * .9), y1 = front ? 6 : Dd + 3;
-    for (const i of D.items) { const e = Math.max(i.w, i.d) / 2; x0 = Math.min(x0, i.x - e); x1 = Math.max(x1, i.x + e); if (front) y1 = Math.max(y1, i.z + i.h + 2); else { y0 = Math.min(y0, i.y - e); y1 = Math.max(y1, i.y + e); } }
-    for (const f of D.fixtures) { x0 = Math.min(x0, f.x - 2); x1 = Math.max(x1, f.x + 2); if (front) y1 = Math.max(y1, f.z + 3); else { y0 = Math.min(y0, f.y - 2); y1 = Math.max(y1, f.y + 2); } }
+    for (const i of D.items) { if (front && ['wall', 'set'].includes(i.kind) && i.y < -3) continue; const e = Math.max(i.w, i.d) / 2; x0 = Math.min(x0, i.x - e); x1 = Math.max(x1, i.x + e); if (front) y1 = Math.max(y1, i.z + i.h + 2); else { y0 = Math.min(y0, i.y - e); y1 = Math.max(y1, i.y + e); } }
+    for (const f of D.fixtures) { if (front && f.y < -3 && f.z < 2) continue; x0 = Math.min(x0, f.x - 2); x1 = Math.max(x1, f.x + 2); if (front) y1 = Math.max(y1, f.z + 3); else { y0 = Math.min(y0, f.y - 2); y1 = Math.max(y1, f.y + 2); } }
     return [x0, y0, x1, y1];
   }
   const rect = (i, x, y, w, h, rot, fill, stroke, extra) => `<g data-id="${i}" transform="translate(${x} ${y}) rotate(${rot || 0})"><rect class="pl-o" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="1.5" vector-effect="non-scaling-stroke"/>${extra || ''}</g>`;
@@ -200,7 +200,7 @@
     if (PHOTO && D.photo && D.photo.on !== false) { const p = D.photo, ar = D.photoAR || .56, h = p.w * ar;
       out.push(`<g transform="scale(1 -1)" opacity="${p.op == null ? .5 : p.op}"><image href="${PHOTO}" x="${p.x - p.w / 2}" y="${-(p.z + h)}" width="${p.w}" height="${h}" preserveAspectRatio="none"/></g>`); }
     out.push(`<line x1="${-W * 2}" y1="0" x2="${W * 2}" y2="0" stroke="#ffcc66" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`, P.txt(-W / 2 - 1, -.9, 'FLOOR', 'lb', 10));
-    const its = D.items.slice().sort((a, b) => b.y - a.y);                       // upstage first, downstage on top
+    const its = D.items.filter(i => !(['wall', 'set'].includes(i.kind) && i.y < -3)).sort((a, b) => b.y - a.y);   // upstage first, downstage on top (walls behind the crowd aren't in the picture)
     for (const i of its) {
       const c = KC[i.kind] || '#9b3dff', r = (i.rot || 0) * Math.PI / 180, ww = Math.abs(i.w * Math.cos(r)) + Math.abs(i.d * Math.sin(r));
       const fill = ['deck', 'riser'].includes(i.kind) ? c + '66' : i.kind === 'screen' ? '#0b2a38' : ['wall', 'set'].includes(i.kind) ? 'none' : c + '2a';
@@ -211,8 +211,8 @@
     return out.join('');
   }
   function liveFront(P) {
-    const out = [];
-    for (const f of D.fixtures) {
+    const out = [], behind = f => f.y < -3 && f.z < 2;               // floor lights at the back of the room: behind the crowd, not in the picture
+    for (const f of D.fixtures) { if (behind(f)) continue;
       const L = LIVE[f.id] || {}, col = (L.c && L.c[0]) || '#000000'; if (col === '#000000') continue;
       let tx, tz;
       if (L.t && isMv(f)) { tx = L.t[0]; tz = L.t[2]; }
@@ -220,7 +220,7 @@
       const dx = tx - f.x, dz = tz - f.z, len = Math.hypot(dx, dz) || 1, s = Math.max(.5, len * (isMv(f) ? .1 : .25)), nx = -dz / len * s, nz = dx / len * s;
       out.push(`<polygon points="${f.x},${f.z} ${tx + nx},${tz + nz} ${tx - nx},${tz - nz}" fill="${col}" opacity="${L.s ? .55 : .22}"/>`);
     }
-    for (const f of D.fixtures) {
+    for (const f of D.fixtures) { if (behind(f)) continue;
       const L = LIVE[f.id] || {}, k = kindOf(f), ring = FK[k] || '#ff5fa2';
       if (k === 'bar') { const w = f.w || 3.3, cs = L.c && L.c.length > 1 ? L.c : [(L.c && L.c[0]) || '#000'], n = cs.length;
         out.push(`<g data-id="${f.id}"><rect class="pl-o" x="${f.x - w / 2}" y="${f.z - .25}" width="${w}" height=".5" fill="#000" stroke="${ring}" stroke-width="2" vector-effect="non-scaling-stroke"/>${cs.map((c, j) => `<rect x="${f.x - w / 2 + w * j / n + .05}" y="${f.z - .18}" width="${w / n - .1}" height=".36" fill="${c}"/>`).join('')}</g>`); }
