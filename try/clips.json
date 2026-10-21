@@ -2635,5 +2635,221 @@
   "title": "Waves",
   "group": "Demo effects",
   "desc": "Recorded from the GlowBop engine"
+ },
+ "sprite-jumprope": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Jump rope",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-leapfrog": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Leapfrog",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-chairs": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Musical chairs",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-tug": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Tug of war",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-bubbles": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Bubble pop",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-ring": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Ring around",
+  "group": "Looks",
+  "desc": "Sprite Party"
+ },
+ "sprite-tag": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Tag, you're it",
+  "group": "Looks",
+  "desc": "Toy Box"
+ },
+ "sprite-potato": {
+  "w": 40,
+  "h": 21,
+  "n": 180,
+  "fps": 15,
+  "title": "Hot potato",
+  "group": "Looks",
+  "desc": "Toy Box"
+ },
+ "chill-clouds": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Color clouds",
+  "group": "Looks",
+  "desc": "Chill Lounge"
+ },
+ "chill-trails": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Glow trails",
+  "group": "Looks",
+  "desc": "Chill Lounge"
+ },
+ "chill-velvet": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Velvet melt",
+  "group": "Looks",
+  "desc": "Deep Calm"
+ },
+ "chill-ripples": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Slow ripples",
+  "group": "Looks",
+  "desc": "Deep Calm"
+ },
+ "fractal-dive": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Mandelbrot dive",
+  "group": "Looks",
+  "desc": "Fractal Dreams"
+ },
+ "fractal-julia": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Julia dance",
+  "group": "Looks",
+  "desc": "Fractal Dreams"
+ },
+ "fx-chladni": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Chladni",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-pixelmelt": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "PixelMelt",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-morphogenesis": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Morphogenesis",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-laminarflow": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "LaminarFlow",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-timerift": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "TimeRift",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-particlefield": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "ParticleField",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-lightsweep": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "LightSweep",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-outlineracers": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "OutlineRacers",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-blinds": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Blinds",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-spatialexpansion": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "SpatialExpansion",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
  }
 }

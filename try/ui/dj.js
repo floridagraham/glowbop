@@ -127,19 +127,35 @@
   const BUILDS = [['rise', '⬆️', 'Rise'], ['close', '🔲', 'Close in'], ['burst', '💥', 'Burst out'], ['spin', '🌀', 'Spin'],
                   ['rainbow', '🌈', 'Rainbow'], ['zipper', '↔️', 'Zipper'], ['heartbeat', '💓', 'Heartbeat'], ['star', '⭐', 'Star']];
   // 💥 drop styles: what the wall does when the drop lands (padfx.py DROP_FX; Classic = the plain drop, no extra move)
-  const DROPS = [['classic', '🎆', 'Classic'], ['supernova', '🌟', 'Supernova'], ['starburst', '✴️', 'Star burst'], ['heartpop', '💖', 'Heart pop'],
-                 ['shatter', '🪟', 'Shatter'], ['colorbomb', '🎨', 'Color bomb'], ['rainbowwave', '🌈', 'Rainbow wave'], ['bassslam', '🔊', 'Bass slam']];   // ⚡ Lightning stays a hit pad, not a drop (Oct 17)
+  // 💥 Oct 21 (Graham: "it goes to fireworks a lot, and I want more variety"): 16 more drops in four families (dropfx2.py), picked in tabs
+  const DROPS = [['classic', '🎆', 'Classic', 'bursts'], ['supernova', '🌟', 'Supernova', 'bursts'], ['starburst', '✴️', 'Star burst', 'bursts'], ['heartpop', '💖', 'Heart pop', 'bursts'],
+                 ['shatter', '🪟', 'Shatter', 'bursts'], ['colorbomb', '🎨', 'Color bomb', 'bursts'], ['rainbowwave', '🌈', 'Rainbow wave', 'bursts'], ['bassslam', '🔊', 'Bass slam', 'bursts'],
+                 ['curtain', '↔️', 'Curtain slam', 'sweeps'], ['laserrip', '⚡', 'Laser rip', 'sweeps'], ['waterfall', '🌊', 'Waterfall crash', 'sweeps'], ['zippertear', '🤐', 'Zipper tear', 'sweeps'],
+                 ['whiteout', '⚪', 'White-out', 'slams'], ['colorflip', '🎨', 'Colour flip', 'slams'], ['strobestutter', '📸', 'Strobe stutter', 'slams'], ['basspunch', '🥊', 'Bass punch', 'slams'],
+                 ['vortex', '🌀', 'Vortex', 'shapes'], ['tunnelpunch', '🔲', 'Tunnel punch', 'shapes'], ['checkerflip', '🏁', 'Checker flip', 'shapes'], ['tiledrop', '🧱', 'Tile drop', 'shapes'],
+                 ['glitchtear', '👾', 'Glitch tear', 'glitch'], ['pixelrain', '🌧️', 'Pixel rain', 'glitch'], ['liquidpour', '💧', 'Liquid pour', 'glitch'], ['staticsnap', '📺', 'Static snap', 'glitch']];
+  const DFAM = [['bursts', 'Bursts', 'var(--pink)'], ['sweeps', 'Sweeps', 'var(--cyan)'], ['slams', 'Slams', '#ffc23d'], ['shapes', 'Shapes', 'var(--violet)'], ['glitch', 'Glitch', '#3ce08a']];   // ⚡ Lightning stays a hit pad, not a drop (Oct 17)
   const BUILD_SECS = 8;                                        // the wind-up peaks after 8 seconds (same as the engine)
+  // ⏱️ Oct 21 (Graham: "you should be able to select an amount of time... a song that needs it to go longer"; picked: bars synced to the
+  //   song, 2 / 4 / 8 / 16 / 32 under the key, Pro DJ only). Pro: the build peaks after that many bars at the song's tempo (120 BPM until a
+  //   beat is found). Everyone else keeps the fixed 8 seconds.
+  const BARS = [2, 4, 8, 16, 32];
+  const barsPick = () => { const v = parseInt(GB.store.get('gb_build_bars', '4'), 10); return BARS.includes(v) ? v : 4; };
+  const songBpm = () => { const b = +((GB.status || {}).bpm || 0); return b >= 60 && b <= 200 ? b : 120; };
+  const buildSecs = () => GB.pro === true ? Math.max(2, Math.min(120, barsPick() * 4 * 60 / songBpm())) : BUILD_SECS;
+  let curSecs = BUILD_SECS;
   /* 🎲 one picker for builds and drops: One style | My mix (only the ones you tick) | Full random (default).
      Every build / drop picks again, never the same one twice in a row. */
   // 🎨 real icons for the style chips (the app's own line icons; the old emoji only if an icon is missing)
   const CHIP_IC = {rise: 'up', close: 'center', burst: 'burst', spin: 'refresh', rainbow: 'rainbow', zipper: 'xfade', heartbeat: 'heart', star: 'star',
-    classic: 'sparkle', supernova: 'star', starburst: 'burst', heartpop: 'heart', shatter: 'quake', colorbomb: 'colorbomb', rainbowwave: 'rainbow', bassslam: 'vol', lightning: 'lightning'};
+    classic: 'sparkle', supernova: 'star', starburst: 'burst', heartpop: 'heart', shatter: 'quake', colorbomb: 'colorbomb', rainbowwave: 'rainbow', bassslam: 'vol', lightning: 'lightning',
+    curtain: 'swapH', laserrip: 'bolt', waterfall: 'arrowD', zippertear: 'xfade', whiteout: 'sun', colorflip: 'palette', strobestutter: 'bright', basspunch: 'drum',
+    vortex: 'refresh', tunnelpunch: 'center', checkerflip: 'swapV', tiledrop: 'down', glitchtear: 'bug', pixelrain: 'confetti', liquidpour: 'wind', staticsnap: 'tv'};
   const chipIc = (k, emo) => GB.ICON && GB.ICON[CHIP_IC[k]] ? GB.svg(CHIP_IC[k]) : emo;
   // 🏠 Home users pick from 3 (Oct 16 night, Graham): 🎲 Random (draws from every style, a free taste of Pro) + 2 favorites. Pro gets them all.
-  const HOME_FREE = {build: ['spin', 'rise'], drop: ['classic', 'supernova']};
+  const HOME_FREE = {build: ['spin', 'rise'], drop: ['classic', 'supernova', 'curtain', 'whiteout', 'vortex', 'glitchtear']};   // Oct 21: + one from each new family
   function chooser(key, list, defMode = 'all', defStyle = null) {
-    const S = GB.store, keys = list.map(x => x[0]), dStyle = defStyle || keys[0];
+    const S = GB.store, keys = list.map(x => x[0]), dStyle = defStyle || keys[0], FAM = list[0].length > 3;
     if (key === 'build' && S.get('gb_build_style', '') === 'auto') { S.set('gb_build_mode', 'all'); S.set('gb_build_style', 'rise'); }   // old "Auto"
     const C = {
       mode: () => { const m = S.get('gb_' + key + '_mode', defMode); return ['one', 'mix', 'all'].includes(m) ? m : defMode; },
@@ -147,9 +163,16 @@
       pool: () => { try { const p = JSON.parse(S.get('gb_' + key + '_pool', '') || 'null'); const q = Array.isArray(p) ? p.filter(k => keys.includes(k)) : []; return q.length ? q : keys.slice(); } catch (e) { return keys.slice(); } },
       last: null,
       home: () => { const v = GB.store.get('gb_' + key + '_home', 'random'); return HOME_FREE[key].includes(v) ? v : 'random'; },
+      famPick(ks) {                                            // 💥 Oct 21: spread evenly over the families, so bursts are about 1 in 5
+        const famOf = k => (list.find(x => x[0] === k) || [])[3], lf = famOf(C.last);
+        let fs = [...new Set(ks.map(famOf))]; if (fs.length > 1) fs = fs.filter(f => f !== lf);
+        const f = fs[Math.floor(Math.random() * fs.length)]; let kk = ks.filter(k => famOf(k) === f); if (kk.length > 1) kk = kk.filter(k => k !== C.last);
+        return (C.last = kk[Math.floor(Math.random() * kk.length)]); },
       pick() { if (GB.pro === false) { const h = C.home(); if (h !== 'random') return h;   // Home DJ: their pick, or 🎲 a random style from all of them
+          if (FAM) return C.famPick(keys.filter(k => k !== 'classic'));
           const ks = keys.filter(k => k !== C.last); return (C.last = ks[Math.floor(Math.random() * ks.length)]); }
         const m = C.mode(); if (m === 'one') return C.one();
+        if (FAM && m === 'all') return C.famPick(keys.filter(k => k !== 'classic'));
         let ks = m === 'mix' ? C.pool() : keys.filter(k => k !== 'classic');
         if (ks.length > 1) ks = ks.filter(k => k !== C.last);
         return (C.last = ks[Math.floor(Math.random() * ks.length)]); },
@@ -164,19 +187,31 @@
         [['random', '🎲', 'Random']].concat(list.filter(x => HOME_FREE[key].includes(x[0]))).forEach(([k, ic, name]) => {
           const c = document.createElement('button'); c.className = 'chip'; c.dataset.h = k; c.innerHTML = `<span class="ic">${k === 'random' ? '🎲' : chipIc(k, ic)}</span>${name}`;
           c.onclick = () => { GB.store.set('gb_' + key + '_home', k); hpaint(); GB.sfx('tap'); }; hp.appendChild(c); });
-        list.filter(x => !HOME_FREE[key].includes(x[0])).forEach(([k, ic, name]) => {
+        if (FAM) { const more = list.filter(x => !HOME_FREE[key].includes(x[0])).length;
+          const c = document.createElement('button'); c.className = 'chip dj-lockchip'; c.innerHTML = `<span class="ic">${GB.svg ? GB.svg('sparkle') : '✨'}</span>+${more} more`;
+          c.onclick = () => { GB.proSound ? GB.proSound('tease') : GB.sfx('ok'); GB.toast('✨ ' + more + ' more drops come with GlowBop Pro: sweeps, slams, shapes and glitches. 🎲 Random still shows them off sometimes!'); };
+          hp.appendChild(c); }
+        else list.filter(x => !HOME_FREE[key].includes(x[0])).forEach(([k, ic, name]) => {
           const c = document.createElement('button'); c.className = 'chip dj-lockchip'; c.innerHTML = `<span class="ic">${chipIc(k, ic)}</span>${name}`;
           c.onclick = () => { GB.proSound ? GB.proSound('tease') : GB.sfx('ok'); GB.toast('✨ ' + name + ' comes with GlowBop Pro. 🎲 Random still shows it off sometimes!'); };
           hp.appendChild(c); });
         hpaint(); C.hpaint = hpaint;
         const box = wrap.querySelector('.dj-bstyles');
+        let tab = S.get('gb_' + key + '_tab', '') || ((list.find(x => x[0] === C.one()) || [])[3]) || 'bursts';
+        if (FAM) { const tb = document.createElement('div'); tb.className = 'seg dj-ftabs'; tb.setAttribute('role', 'tablist');
+          tb.innerHTML = DFAM.map(([f, t, c]) => `<button class="btn" type="button" role="tab" data-f="${f}" style="--c:${c}">${t}</button>`).join('');
+          box.parentNode.insertBefore(tb, box);
+          tb.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { tab = b.dataset.f; S.set('gb_' + key + '_tab', tab); paint(); GB.sfx('tap'); }); }
         const paint = () => { const m = C.mode(), p = C.pool();
+          if (FAM) { wrap.querySelectorAll('.dj-ftabs [data-f]').forEach(b => { const on = b.dataset.f === tab; b.classList.toggle('on', on); b.setAttribute('aria-selected', on);
+              const n = list.filter(x => x[3] === b.dataset.f && (m === 'one' ? x[0] === C.one() : m === 'mix' ? p.includes(x[0]) : x[0] !== 'classic')).length; b.dataset.n = n || ''; });
+            box.querySelectorAll('.chip').forEach(c => { c.hidden = c.dataset.f !== tab; }); }
           wrap.querySelectorAll('.dj-cmode .btn').forEach(b => { b.classList.toggle('on', b.dataset.m === m); b.style.setProperty('--c', 'var(--pink)'); });
           box.querySelectorAll('.chip').forEach(c => { const on = m === 'all' ? c.dataset.v !== 'classic' : m === 'one' ? c.dataset.v === C.one() : p.includes(c.dataset.v);
             c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); });
           onChange && onChange(); };
         wrap.querySelectorAll('.dj-cmode .btn').forEach(b => b.onclick = () => { S.set('gb_' + key + '_mode', b.dataset.m); paint(); GB.sfx('tap'); });
-        list.forEach(([k, ic, name]) => { const c = document.createElement('button'); c.className = 'chip'; c.dataset.v = k;
+        list.forEach(([k, ic, name, fam]) => { const c = document.createElement('button'); c.className = 'chip'; c.dataset.v = k; if (fam) c.dataset.f = fam;
           c.innerHTML = `<span class="ic">${chipIc(k, ic)}</span>${name}`;
           c.onclick = () => { const m = C.mode();
             if (m === 'mix') { let p = C.pool(); p = p.includes(k) ? p.filter(x => x !== k) : p.concat(k); if (!p.length) p = [k]; S.set('gb_' + key + '_pool', JSON.stringify(p)); }
@@ -215,6 +250,14 @@
   #djBuild[data-s="heartbeat"] .bfx { background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--c) calc(100% - var(--p) * 100%), #fff) 0 calc(18% + var(--p) * 30% + var(--b) * 12%), transparent calc(30% + var(--p) * 40% + var(--b) * 20%)); opacity:calc(.45 + var(--b) * .55); }
   #djBuild[data-s="star"] .bfx { background:repeating-conic-gradient(from calc(var(--a) * 1turn), color-mix(in srgb, var(--gold) calc(100% - var(--p) * 60%), #ff3d9a) 0 6%, transparent 6% 20%),
     radial-gradient(circle, #fff 0 calc(6% + var(--p) * 10%), transparent calc(18% + var(--p) * 30%)); opacity:calc(.5 + var(--b) * .5); }
+  .dj-ftabs { display:grid !important; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:4px; margin-top:8px; }
+  .dj-ftabs .btn { min-height:48px !important; padding:0 2px; font:800 calc(13px * var(--fs, 1)) var(--cond); letter-spacing:.5px; text-transform:uppercase; position:relative;
+    background:transparent; color:var(--c); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--c) 70%, transparent); }
+  .dj-ftabs .btn.on { background:var(--c); color:#000; box-shadow:0 0 14px -3px var(--c); }
+  .dj-col .dj-ftabs { grid-template-columns:repeat(6, minmax(0, 1fr)); }
+  .dj-col .dj-ftabs .btn { grid-column:span 2; font-size:calc(11.5px * var(--fs, 1)); letter-spacing:0; }
+  .dj-col .dj-ftabs .btn:nth-child(4) { grid-column:2 / span 2; }
+  .dj-bstyles .chip[hidden] { display:none !important; }
   .dj-cmode { margin-top:10px; } .dj-cmode .btn { min-height:34px; font-size:calc(13px * var(--fs, 1)); }
   .dj-sub .ic { width:14px; height:14px; vertical-align:-2px; margin-right:4px; }
   .dj-sub { margin-top:12px; font:700 calc(12px * var(--fs, 1)) var(--mono); letter-spacing:1.5px; opacity:.8; display:flex; justify-content:space-between; }
@@ -240,24 +283,26 @@
   GB.panel('dj', 3, el => {                                    // 🔝 Build & drop sits at the very top of the DJ page
     el.classList.add('box', 'dj-buildbox'); el.style.setProperty('--c', 'var(--pink)');
     el.innerHTML = `<div class="ph"><span>Build &amp; drop</span><span class="r" id="djBuildR">HOLD, THEN LET GO</span></div>
-      <div class="dj-bc"><button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">CHARGE THE DROP</span><span class="bcnt"></span><span class="bbar"></span></button>
+      <div class="dj-bc"><div class="dj-bl"><button class="btn c wide" id="djBuild" style="--c:var(--pink)"><span class="bfx"></span><span class="blbl">CHARGE THE DROP</span><span class="bcnt"></span><span class="bbar"></span></button>
+        <div class="dj-bo" id="djBoRow" hidden><button class="chip" id="djBoSw" type="button" style="--c:var(--peri)">${GB.svg('dark')}<span>Blackout before drop</span></button><small id="djBoNote"></small></div>
+        <div class="dj-bars" id="djBarsRow" hidden><span class="dj-bars-l">⏱ PEAK IN · BARS</span><div class="dj-bars-k">${BARS.map(n => `<button class="chip" type="button" data-bars="${n}" style="--c:var(--cyan)">${n}</button>`).join('')}</div></div></div>
         <div class="dj-cc"><button class="btn c" id="djCool" style="--c:var(--lav)"><span class="cic">${GB.svg('moon')}</span><span class="clbl">COOL</span><small class="csub">HOLD · TAP TO LATCH</small></button>
           <div class="dj-cst">${COOLS.map(c => `<button class="chip" data-cs="${c[0]}" title="${c[2]}">${c[1]}</button>`).join('')}</div></div></div>
       <div class="dj-cols"><div class="dj-col"><div class="dj-sub"><span>${GB.svg('faders')} BUILD</span><span id="djBuildMode"></span></div><div id="djBuildPick"></div></div>
         <div class="dj-col"><div class="dj-sub"><span>${GB.svg('burst')} DROP</span><span id="djDropMode"></span></div><div id="djDropPick"></div></div></div>
       <p class="note dj-bnote">🌙 <b>Cool</b> (the small key): same look, just calmer. Hold it for a breather, or tap once to latch it and tap again to bring the lights back. Pick its style underneath: Chill, Moonlight, Slow-mo or Embers.
-        Hold the big key: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds. Let go: it drops. Slide your finger off the key to cancel.
+        Hold CHARGE THE DROP: the wall winds up, brighter and faster, peaking after ${BUILD_SECS} seconds (Pro: pick 2, 4, 8, 16 or 32 bars under the key and it peaks on the beat). Let go: it drops. Slide your finger off the key to cancel.
         Pick one style, tick your own mix, or go full random: every build and every drop can be different.</p>`;
     const b = $('djBuild'), lbl = b.querySelector('.blbl'), cnt = b.querySelector('.bcnt'); let held = false, t0 = 0, raf = 0, cur = 'rise';
     const paint = () => {
       if (!held) b.dataset.s = BUILD.mode() === 'one' ? BUILD.one() : 'rise';
-      $('djBuildR').textContent = held ? 'BUILDING: ' + BUILDS.find(x => x[0] === cur)[2].toUpperCase() : 'HOLD, THEN LET GO';
+      $('djBuildR').textContent = held ? 'CHARGING: ' + BUILDS.find(x => x[0] === cur)[2].toUpperCase() : 'HOLD, THEN LET GO';
       const bm = $('djBuildMode'), dm = $('djDropMode'); if (bm) bm.textContent = BUILD.label(); if (dm) dm.textContent = DROP.label(); };
     BUILD.mount(el.querySelector('#djBuildPick'), paint); DROP.mount(el.querySelector('#djDropPick'), paint);
     const tick = () => {                                       // the button's own wind-up, in the same style as the wall
       if (!held) return;
-      const el2 = (performance.now() - t0) / 1000, p = Math.min(1, el2 / BUILD_SECS), T = Math.min(el2, BUILD_SECS);
-      const turns = (v0, v1) => v0 * T + (v1 - v0) * T ** 3 / (3 * BUILD_SECS ** 2) + v1 * Math.max(0, el2 - BUILD_SECS);
+      const el2 = (performance.now() - t0) / 1000, p = Math.min(1, el2 / curSecs), T = Math.min(el2, curSecs);
+      const turns = (v0, v1) => v0 * T + (v1 - v0) * T ** 3 / (3 * curSecs ** 2) + v1 * Math.max(0, el2 - curSecs);
       b.style.setProperty('--p', p.toFixed(3)); b.style.setProperty('--t', (el2 % 5).toFixed(2));
       b.style.setProperty('--a', (turns(.35, 2) % 1).toFixed(3)); b.style.setProperty('--arms', [1, 2, 3, 4, 6][Math.min(4, Math.floor(p * 5))]);
       b.style.setProperty('--h', (turns(.15, 1.6) % 1).toFixed(3));
@@ -266,10 +311,35 @@
       b.classList.toggle('full', p >= 1); lbl.textContent = p >= 1 ? 'FULLY CHARGED! LET GO' : 'CHARGING… LET GO TO DROP';
       raf = requestAnimationFrame(tick);
     };
-    const start = e => { e.preventDefault(); if (held) return; held = true; cur = buildStyle(); b.dataset.s = cur; t0 = performance.now();
-      b.classList.add('held'); lbl.textContent = 'CHARGING… LET GO TO DROP'; paint(); tick(); dj({build: true, style: cur}); GB.sfx('nav'); GB.hdBuild && GB.hdBuild(0); };
-    const end = (cancel) => { if (!held) return; held = false; cancelAnimationFrame(raf); b.classList.remove('held', 'full'); b.style.setProperty('--p', 0);
-      lbl.textContent = 'CHARGE THE DROP'; cnt.textContent = ''; paint(); dj(cancel ? {build: false, cancel: true} : {build: false, snap: snap(), drop_style: dropStyle()}); if (!cancel) GB.sfx('ok'); if (cancel) GB.hdBuild && GB.hdBuild(null); else GB.hdDrop && GB.hdDrop(); };
+    // ⬛ Oct 19 (Graham, Pro DJ: "a build-up, then a blackout, then the drop... the dark part is however long their music is, and then it hits";
+    //   picked: the DJ taps the drop, a switch AND the Blackout pad, pitch black). Switch on: let go of the build = every light goes black and
+    //   stays black; the same big key now reads TAP TO DROP and fires the drop the moment you hit it. 30 s at most, then the show comes back.
+    const boOn = () => GB.pro === true && GB.store.get('gb_bo_drop', '') === '1';
+    const boWait = () => { const d = (GB.status || {}).dj || {}; return d.bo_wait != null || (d.blackout && GB.pro === true); };
+    let boTap = false;
+    const boPaint = () => {
+      const row = $('djBoRow'), sw = $('djBoSw'); if (row) row.hidden = GB.pro !== true; if (sw) sw.classList.toggle('on', boOn());
+      const br = $('djBarsRow'); if (br) { br.hidden = GB.pro !== true; br.querySelectorAll('[data-bars]').forEach(k => k.classList.toggle('on', +k.dataset.bars === barsPick())); }
+      const d = (GB.status || {}).dj || {}, w = d.bo_wait != null;
+      const nt = $('djBoNote'); if (nt) nt.textContent = boOn() ? 'Let go = black. Tap again = DROP.' : '';
+      if (held) return;
+      b.classList.toggle('bo', w || (!!d.blackout && GB.pro === true));
+      if (w || (d.blackout && GB.pro === true)) { lbl.textContent = 'BLACKOUT · TAP TO DROP'; cnt.textContent = w ? Math.ceil(d.bo_wait) + 's' : ''; }
+      else if (lbl.textContent.startsWith('BLACKOUT')) { lbl.textContent = 'CHARGE THE DROP'; cnt.textContent = ''; }
+    };
+    el.querySelector('#djBoSw').onclick = () => { GB.store.set('gb_bo_drop', boOn() ? '' : '1'); GB.sfx && GB.sfx('tap'); boPaint();
+      // Oct 20 (Graham: "we don't need to show that every single time"): the how-to toast shows once, the first time it's switched on
+      if (boOn() && GB.store.get('gb_bo_tip', '') !== '1') { GB.store.set('gb_bo_tip', '1'); GB.toast('⬛ Blackout before drop: let go of Charge the drop for black, tap again to drop'); } };
+    GB.on('status', boPaint); GB.on('ready', boPaint);
+    { const bc = el.querySelector('.dj-bc'), br = el.querySelector('#djBarsRow'); if (bc && br) bc.after(br); }   // full width, under the big key and Cool
+    el.querySelectorAll('#djBarsRow [data-bars]').forEach(k => k.onclick = () => { GB.store.set('gb_build_bars', k.dataset.bars); GB.sfx && GB.sfx('tap'); boPaint();
+      GB.toast && GB.toast(`⏱️ Charge the drop peaks after ${k.dataset.bars} bars (about ${Math.round(+k.dataset.bars * 240 / songBpm())} s at ${Math.round(songBpm())} BPM)`); });
+    const start = e => { e.preventDefault(); if (held) return;
+      if (boWait()) { boTap = true; dj({hit: 'drop', drop_style: dropStyle()}); GB.sfx('ok'); GB.hdDrop && GB.hdDrop(); b.classList.remove('bo'); lbl.textContent = 'CHARGE THE DROP'; cnt.textContent = ''; return; }
+      held = true; cur = buildStyle(); b.dataset.s = cur; t0 = performance.now(); curSecs = buildSecs();
+      b.classList.add('held'); lbl.textContent = 'CHARGING… LET GO TO DROP'; paint(); tick(); dj({build: true, style: cur, secs: +curSecs.toFixed(2)}); GB.sfx('nav'); GB.hdBuild && GB.hdBuild(0); };
+    const end = (cancel) => { if (boTap) { boTap = false; return; } if (!held) return; held = false; cancelAnimationFrame(raf); b.classList.remove('held', 'full'); b.style.setProperty('--p', 0);
+      lbl.textContent = 'CHARGE THE DROP'; cnt.textContent = ''; paint(); dj(cancel ? {build: false, cancel: true} : Object.assign({build: false, snap: snap(), drop_style: dropStyle()}, boOn() ? {blackout_drop: true} : {})); if (!cancel) GB.sfx(boOn() ? 'nav' : 'ok'); if (cancel) GB.hdBuild && GB.hdBuild(null); else GB.hdDrop && GB.hdDrop(); };
     b.addEventListener('pointerdown', start); b.addEventListener('pointerup', () => end(false));
     b.addEventListener('pointerleave', () => end(true)); b.addEventListener('pointercancel', () => end(true));
     b.addEventListener('contextmenu', e => e.preventDefault());
@@ -279,7 +349,22 @@
   // ------------------------------------------------------------------ 🌙 cool down (Oct 16): hold for a breather, tap to latch it on
   GB.css(`
   .dj-bc { display:flex; gap:8px; align-items:stretch; flex:1 1 auto; }
-  .dj-bc > #djBuild { flex:3 1 0; min-width:0; }
+  /* ⬛ Oct 20 (Graham: "it's very far away... unnecessarily too big... closer and up a line"): Blackout before drop sits right under
+     the big key, on the same line as the four Cool styles, as a 48 px chip */
+  .dj-bc > .dj-bl { flex:3 1 0; min-width:0; display:flex; flex-direction:column; gap:8px; }
+  .dj-bl > #djBuild { flex:1 1 auto; min-width:0; }
+  .dj-bo { display:flex; align-items:center; gap:10px; flex-wrap:nowrap; min-width:0; }
+  .dj-bo .chip { min-height:48px; flex:none; }
+  .dj-bo small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  .dj-bo small { font:700 calc(12px * var(--fs, 1)) var(--cond); letter-spacing:.5px; color:#b8a6ff; }
+  .dj-bo .chip .ic { width:16px; height:16px; fill:currentColor; }
+  .dj-bars { display:flex; flex-direction:column; gap:5px; min-width:0; margin-top:8px; }
+  .dj-bars-k { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; }
+  .dj-bars .chip { min-height:48px; min-width:0; padding:0 2px; justify-content:center; font:800 calc(17px * var(--fs, 1)) var(--cond); }
+  .dj-bars .chip.on { background:var(--c); color:#000; box-shadow:0 0 14px -2px var(--c); }
+  .dj-bars-l { font:800 calc(11px * var(--fs, 1)) var(--cond); letter-spacing:1.5px; color:var(--cyan); white-space:nowrap; }
+  .dj-bl > #djBuild.bo { background:#000 !important; color:#fff !important; box-shadow:inset 0 0 0 3px var(--pink), 0 0 22px #ff3d9a66 !important; }
+  .dj-bl > #djBuild.bo .bfx, .dj-bl > #djBuild.bo .bbar { opacity:0; }
   .dj-cc { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:5px; }
   .dj-cc > #djCool { flex:1 1 auto; min-height:64px !important; padding:6px 4px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; letter-spacing:2px; font-size:calc(18px * var(--fs, 1)); }
   #djCool .cic svg { width:calc(20px * var(--fs, 1)); height:calc(20px * var(--fs, 1)); fill:currentColor; }
@@ -527,7 +612,7 @@
     [BUILD, DROP].forEach(C => { C.hpaint && C.hpaint(); });
     let line = $('djStyleLock');
     if (locked && !line && $('djDropPick')) { line = document.createElement('div'); line.id = 'djStyleLock'; line.className = 'dj-lockline';
-      line.innerHTML = GB.svg('lock') + '<span><b>Pro</b> unlocks all 8 builds and 9 drops, plus My mix.</span>';
+      line.innerHTML = GB.svg('lock') + '<span><b>Pro</b> unlocks all ' + BUILDS.length + ' builds and ' + DROPS.length + ' drops, the bar timer and My mix.</span>';
       line.onclick = () => GB.go('pro'); ($('djDropPick').closest('.dj-cols') || $('djDropPick')).after(line); }
     if (line) line.hidden = !locked;
   }

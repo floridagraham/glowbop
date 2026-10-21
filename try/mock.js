@@ -45,6 +45,7 @@
   // which recording shows a look / effect
   const LOOK_SET = {'Big Wave': ['wave-bigwave', 'wave-serpent', 'wave-twinwaves', 'wave-oceanswell'],
                     '3D Object': ['shape-spinningglobe', 'shape-barberspin', 'shape-risingrings'],
+                    'VJ Lab': ['fx-chladni', 'fx-timerift', 'fx-pixelmelt', 'fx-lightsweep', 'fx-morphogenesis', 'fx-spatialexpansion', 'fx-outlineracers', 'fx-laminarflow', 'fx-blinds', 'fx-particlefield'],   // 🎛️ Oct 21
                     'Retro Arcade': ['fx-breakout', 'fx-snakegame', 'fx-pongbattle', 'fx-alienparade', 'fx-vectorrocks', 'look-retro-arcade']};
   const FX_ALIAS = {TetrisDrop: 'look-retro-arcade', LightCycles: 'look-neon-grid', GameOfLife: 'look-digital-matrix', Campfire: 'fire-campfire',
     LavaFlow: 'look-lava-lounge', LavaLamp: 'look-lava-lounge', LavaPurple: 'look-molten', LavaRainbow: 'look-psychedelic', Sunrise: 'look-blue-sky',
@@ -198,7 +199,13 @@
     });
   }
   // ======================================================================= 💥 drop styles + ⭐ star / 💓 heartbeat pads (ported from padfx.py, Oct 16)
-  const DROP_FX = ['supernova', 'starburst', 'heartpop', 'shatter', 'colorbomb', 'rainbowwave', 'bassslam'];   // ⚡ not a drop any more (Oct 17)
+  const DROP_FAM = {bursts: ['supernova', 'starburst', 'heartpop', 'shatter', 'colorbomb', 'rainbowwave', 'bassslam'],   // ⚡ not a drop any more (Oct 17)
+    sweeps: ['curtain', 'laserrip', 'waterfall', 'zippertear'], slams: ['whiteout', 'colorflip', 'strobestutter', 'basspunch'],       // 💥 Oct 21: drops wave 2
+    shapes: ['vortex', 'tunnelpunch', 'checkerflip', 'tiledrop'], glitch: ['glitchtear', 'pixelrain', 'liquidpour', 'staticsnap']};
+  const DROP_FX = [].concat(...Object.values(DROP_FAM));
+  const famOf = k => Object.keys(DROP_FAM).find(f => DROP_FAM[f].includes(k));
+  const dropRandom = last => { const lf = famOf(last), fs = Object.keys(DROP_FAM).filter(f => f !== lf), f = pickOne(fs), ks = DROP_FAM[f].filter(k => k !== last); return pickOne(ks.length ? ks : DROP_FAM[f]); };
+  const mul32 = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const NG = (() => { const cx = (W - 1) / 2, cy = (H - 1) / 2, n = W * H, g = {cx, cy, dx: new Float32Array(n), dy: new Float32Array(n), d: new Float32Array(n), ang: new Float32Array(n),
       xx: new Float32Array(n), yy: new Float32Array(n), R: Math.hypot(cx, cy) + 1.5, sq: Math.min(cx, cy) + .5, s: Math.max(1, Math.min(W, H) / 20)};
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const j = y * W + x, dx = x - cx, dy = y - cy; g.dx[j] = dx; g.dy[j] = dy; g.d[j] = Math.hypot(dx, dy); g.ang[j] = Math.atan2(dy, dx); g.xx[j] = x; g.yy[j] = y; }
@@ -234,6 +241,25 @@
     else if (k === 'drop_colorbomb') { P.dur = 1.5; P.col = P.cols[P.ci]; P.drip = Float32Array.from({length: W}, () => .6 + R() * .9); }
     else if (k === 'drop_rainbowwave') { P.dur = 1.2; P.cx = pickOne([0, .5, 1]); }
     else if (k === 'drop_bassslam') { P.dur = .9; P.sx = R() < .5 ? -1 : 1; }
+    // 💥 Oct 21: drops wave 2 (ported from dropfx2.py): sweeps, slams, shapes, glitch
+    else if (k === 'drop_curtain') { P.dur = 1.3; P.shut = clamp(per * .5, .16, .26); }
+    else if (k === 'drop_laserrip') { P.dur = 1.1; P.down = R() < .5; P.tilt = R() * .7 - .35; }
+    else if (k === 'drop_waterfall') { P.dur = 1.5; P.spd = Float32Array.from({length: W}, () => .8 + R() * .55); P.off = Float32Array.from({length: W}, () => R() * .18); }
+    else if (k === 'drop_zippertear') P.dur = 1.35;
+    else if (k === 'drop_whiteout') { P.dur = 1.1; P.col = P.cols[P.ci]; }
+    else if (k === 'drop_colorflip') { P.step = clamp(per / 2, .14, .26); P.dur = P.step * 5 + .5; }
+    else if (k === 'drop_strobestutter') { P.dur = 1.25; P.col = P.cols[P.ci]; }
+    else if (k === 'drop_basspunch') { P.beat = clamp(per, .32, .55); P.dur = P.beat * 3 + .25; }
+    else if (k === 'drop_vortex') { P.dur = 1.4; P.dir = R() < .5 ? -1 : 1; P.arms = pickOne([3, 4, 5]); }
+    else if (k === 'drop_tunnelpunch') P.dur = 1.3;
+    else if (k === 'drop_checkerflip') { P.step = clamp(per / 2, .14, .26); P.dur = P.step * 5 + .45; P.ts = Math.max(2, Math.round(Math.min(H, W) / 5)); }
+    else if (k === 'drop_tiledrop') { P.dur = 1.45; P.ts = Math.max(2, Math.round(Math.min(H, W) / 4)); P.ny = Math.ceil(H / P.ts); P.nx = Math.ceil(W / P.ts);
+      const n = P.ny * P.nx, ord = Array.from({length: n}, (_, i) => i).sort(() => R() - .5); P.delay = new Float32Array(n); ord.forEach((t, i) => { P.delay[t] = i / n * .45; });
+      P.tc = Array.from({length: n}, () => (R() * P.cols.length) | 0); }
+    else if (k === 'drop_glitchtear') { P.dur = 1.0; P.seed = (R() * 1e6) | 0; }
+    else if (k === 'drop_pixelrain') { P.dur = 1.5; P.spd = Float32Array.from({length: W}, () => 1.2 + R() * 1.2); P.off = Float32Array.from({length: W}, R); }
+    else if (k === 'drop_liquidpour') { P.dur = 1.5; P.side = R() < .5 ? -1 : 1; }
+    else if (k === 'drop_staticsnap') { P.dur = 1.15; P.seed = (R() * 1e6) | 0; }
     else P.dur = 1;
     DJ.nfx.push(P); if (DJ.nfx.length > 5) DJ.nfx.shift();
   }
@@ -312,6 +338,99 @@
         for (let j = 0; j < N; j++) { const d = Math.hypot(g.xx[j] - ox, g.dy[j]), band = Math.exp(-(((d - front) / (2 * g.s + 3 * u)) ** 2)), trail = clamp((front - d) / (Rr * .5), 0, 1) * (1 - u) * .35, col = hsv1(d / Rr * 1.5 - el * .8);
           set(j, (r, gg, b) => [r, gg, b].map((x, c) => x * (1 - .3 * (1 - u)) + (band * 1.3 + trail) * col[c])); }
         return out; }
+      // 💥 Oct 21: drops wave 2 (dropfx2.py)
+      case 'drop_curtain': { const k = ss(0, P.shut, el), o = ss(P.shut + .18, P.dur * .9, el), half = .5 * k * (1 - o) + .002, edge = 1.2 / Math.max(4, W);
+        const seamT = el >= P.shut * .9 ? Math.exp(-Math.max(0, el - P.shut) / .12) : 0;
+        for (let j = 0; j < N; j++) { const x = g.xx[j] / Math.max(1, W - 1), cov = clamp(clamp((half - x) / edge + .5, 0, 1) + clamp((x - (1 - half)) / edge + .5, 0, 1), 0, 1);
+          const col = palc(P, g.yy[j] / H * .8 + Math.abs(x - .5) * .6 - el * .4, el), seam = Math.exp(-(((x - .5) * W / 1.6) ** 2)) * seamT;
+          const lips = o > 0 ? (Math.exp(-(((x - half) * W) ** 2)) + Math.exp(-(((x - 1 + half) * W) ** 2))) * (1 - u) : 0, i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - cov) * (.4 + .6 * o) + cov * col[c] * 1.1 + seam * 1.4 + lips * .8; }
+        return out; }
+      case 'drop_laserrip': { const pos = ss(0, .42, el) * (H + 6) - 3, fade = 1 - ss(.55, 1, u), s = g.s;
+        for (let j = 0; j < N; j++) { const y = (P.down ? g.yy[j] : H - 1 - g.yy[j]) + P.tilt * g.dx[j], d = y - pos, line = Math.exp(-((d / (.7 * s)) ** 2)), bh = clamp(-d / (2 * s) + .5, 0, 1);
+          const col = palc(P, g.xx[j] / W + el * .7, el), sp = twk(P, el, Math.exp(-Math.abs(d) / (2.5 * s)) * fade, j, .12), i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (.12 + .88 * bh) * (1 + .6 * fade * bh) + bh * col[c] * .35 * fade + line * (.6 + .6 * col[c]) * (1.5 * fade + .2) + sp; }
+        return out; }
+      case 'drop_waterfall': { const fade = 1 - ss(.6, 1, u);
+        for (let j = 0; j < N; j++) { const x = g.xx[j], y = g.yy[j], t = Math.max(0, el - P.off[x]), head = t * P.spd[x] * H * 2.2, body = clamp((head - y) / 1.5, 0, 1);
+          const foam = Math.exp(-(((y - head) / 1.1) ** 2)), hit = clamp((head - H) / (H * .6), 0, 1), splash = hit > 0 ? Math.exp(-(H - 1 - y) / Math.max(1, H * .18)) * Math.exp(-hit * 3) : 0;
+          const col = palc(P, x / W * .9 - y / H * .3 + el * .3, el), a = body * fade, i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .75 * a) + a * col[c] * 1.05 + (foam * .9 + splash) * fade; }
+        return out; }
+      case 'drop_zippertear': { const zy = ss(.05, .55, el) * (H + 4) - 2, grow = 1 + 3 * ss(.5, 1.05, el), fade = 1 - ss(.75, 1, u);
+        for (let j = 0; j < N; j++) { const y = g.yy[j], ax = Math.abs(g.dx[j]), ow = Math.max(0, (zy - y) * .55) * grow, rev = clamp((ow - ax) / .8 + .5, 0, 1);
+          const teeth = (Math.abs(ax - ow) < .9 && (y | 0) % 2 === 0 && ow > .3) ? fade : 0, head = Math.exp(-(((y - zy) / 1) ** 2) - (g.dx[j] / 1.2) ** 2) * fade * 1.5;
+          const col = palc(P, y / H + el * .5, el), dark = (1 - rev) * fade, i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .92 * dark) * (1 + .5 * rev * fade) + teeth * col[c] * 1.2 + head; }
+        return out; }
+      case 'drop_whiteout': { const w = 1 - ss(.1, .4, el), flood = ss(.1, .35, el) * (1 - ss(.45, 1, u)), show = ss(.35, 1, u);
+        for (let j = 0; j < N; j++) { const vg = 1 - .25 * g.d[j] / g.R, i = j * 3; for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * show + w + flood * vg * P.col[c] * 1.1; }
+        return out; }
+      case 'drop_colorflip': { const k = Math.floor(el / P.step); if (k >= 5) return img;
+        const c0 = P.cols[(P.ci + k) % P.cols.length], f = (el - k * P.step) / P.step, hit = Math.exp(-f * 5) * .35;
+        for (let j = 0; j < N; j++) { const gr = .8 + .2 * (1 - g.yy[j] / H), i = j * 3; for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * .15 + gr * c0[c] + hit; }
+        return out; }
+      case 'drop_strobestutter': { const land = .62;
+        if (el < land) { const on = (el * (7 + 22 * el)) % 1 < .45; for (let i = 0; i < out.length; i++) out[i] = (on ? .95 : 0) + img[i] * .05; return out; }
+        const e = el - land, fl = 1 - ss(0, 1, e / (P.dur - land)), bang = Math.exp(-e / .06) * .8;
+        for (let j = 0; j < N; j++) { const i = j * 3; for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .7 * fl) + fl * P.col[c] * 1.15 + bang; }
+        return out; }
+      case 'drop_basspunch': { const b = P.beat, k = Math.min(2, Math.floor(el / b)); let e = el - k * b; if (el > b * 3) e = el - 2 * b;
+        const z = 1 + (.45 - .1 * k) * Math.exp(-e / .11), fl = Math.exp(-e / .12) * (.95 - .2 * k), tail = 1 - ss(b * 3, P.dur, el), boost = 1 + .6 * Math.exp(-e / .15), rr = g.R * Math.min(1, e / .35), rf = Math.exp(-e / .3);
+        for (let j = 0; j < N; j++) { const sx = clamp(Math.round(g.cx + g.dx[j] / z), 0, W - 1), sy = clamp(Math.round(g.cy + g.dy[j] / z), 0, H - 1), si = (sy * W + sx) * 3, i = j * 3;
+          const col = palc(P, k * .33 + g.d[j] / g.R * .4, el), ring = Math.exp(-(((g.d[j] - rr) / (1.5 * g.s)) ** 2)) * rf;
+          for (let c = 0; c < 3; c++) { const v = img[si + c] * boost + fl * col[c] + ring * col[c]; out[i + c] = img[i + c] * (1 - tail) + v * tail; } }
+        return out; }
+      case 'drop_vortex': { const pull = ss(0, .3, el) * (1 - ss(.65, 1, u)), s = g.s;
+        for (let j = 0; j < N; j++) { const sp = Math.sin(P.arms * g.ang[j] + P.dir * (g.d[j] / (2.2 * s)) - P.dir * el * (10 + 12 * u)), arm = clamp((sp - .25) / .5, 0, 1) * pull;
+          const core = Math.exp(-((g.d[j] / (1.2 + 2.5 * s * (1 - u))) ** 2)) * pull, col = palc(P, g.d[j] / g.R * 1.2 - el * .9 + g.ang[j] / 6.2832, el), i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .7 * pull) + arm * col[c] * 1.15 + core * 1.2; }
+        return out; }
+      case 'drop_tunnelpunch': { const fade = 1 - ss(.6, 1, u), pw = .05 + .6 * ss(0, .25, el), pe = Math.exp(-el / .25);
+        for (let j = 0; j < N; j++) { const ch = Math.max(Math.abs(g.dx[j]) / (g.cx + .5), Math.abs(g.dy[j]) / (g.cy + .5)), depth = Math.log1p(ch * 6) * 2.2, ph = (((depth - el * 5.5) % 1) + 1) % 1;
+          const ring = Math.exp(-(((ph - .5) / .12) ** 2)) * fade, punch = Math.exp(-((ch / pw) ** 2)) * pe * 1.3, col = palc(P, depth * .35 - el * .8, el), i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .6 * fade) + ring * col[c] * 1.2 + punch; }
+        return out; }
+      case 'drop_checkerflip': { const k = Math.floor(el / P.step), f = (el - k * P.step) / P.step, ts = P.ts, fl = 1 - ss(P.step * 5, P.dur, el);
+        const A = P.cols[P.ci % P.cols.length], B0 = P.cols[(P.ci + 1) % P.cols.length], B = P.cols.length < 2 ? A.map(v => 1 - v * .6) : B0, sq = Math.abs(Math.cos(Math.PI * Math.min(1, f * 2.2)));
+        for (let j = 0; j < N; j++) { const x = g.xx[j], y = g.yy[j], side = ((Math.floor(x / ts) + Math.floor(y / ts)) + k) % 2, lx = (x % ts) / Math.max(1, ts - 1) - .5, vis = Math.abs(lx) <= sq * .5 + .18 ? 1 : 0;
+          const cc = side ? B : A, i = j * 3; for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .85 * fl) + fl * cc[c] * vis * 1.05; }
+        return out; }
+      case 'drop_tiledrop': { const ts = P.ts, gone = ss(.75, 1, u);
+        for (let j = 0; j < N; j++) { const x = g.xx[j], y = g.yy[j], ti = Math.floor(y / ts) * P.nx + Math.floor(x / ts), dl = P.delay[ti], f = clamp((el - dl) / .14, 0, 1);
+          const shown = (f > 0 && (y % ts) >= ts * (1 - f) - .01) ? 1 - gone : 0, land = f >= 1 ? Math.exp(-Math.max(0, el - dl - .14) / .08) * .6 * (1 - gone) : 0;
+          const gl = (x % ts === 0 || y % ts === 0) ? .65 : 1, cc = P.cols[P.tc[ti] % P.cols.length], i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .85 * shown) + shown * cc[c] * gl * 1.05 + land; }
+        return out; }
+      case 'drop_glitchtear': { const amt = (1 - ss(.45, .9, u)) * (.6 + .4 * Math.sin(el * 37) ** 2), rnd = mul32(P.seed + Math.floor(el * 24)), fl = Math.exp(-el / .07) * .7;
+        const shift = new Int16Array(H), bright = new Uint8Array(H);
+        if (amt > .05) for (let y = 0; y < H;) { const h = 1 + ((rnd() * 4) | 0), s = rnd() < .7 ? Math.round((rnd() * 2 - 1) * W / 3 * amt) : 0, b = rnd() < .25 * amt ? 1 : 0; for (let k = 0; k < h && y < H; k++, y++) { shift[y] = s; bright[y] = b; } }
+        const sh = amt > .05 ? Math.max(1, Math.round(2 * g.s * amt)) : 0, bc = P.cols[(rnd() * P.cols.length) | 0];
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3, xr = ((x - shift[y] - sh) % W + W) % W, xg = ((x - shift[y]) % W + W) % W, xb = ((x - shift[y] + sh) % W + W) % W, row = y * W * 3;
+          let r = img[row + xr * 3], gg = img[row + xg * 3 + 1], b = img[row + xb * 3 + 2]; if (bright[y]) { r = r * 1.8 + .15; gg = gg * 1.8 + .15; b = b * 1.8 + .15; }
+          if (amt > .05 && rnd() < .1 * amt) { r = bc[0]; gg = bc[1]; b = bc[2]; }
+          const m = 1 + .4 * amt; out[i] = r * m + fl; out[i + 1] = gg * m + fl; out[i + 2] = b * m + fl; }
+        return out; }
+      case 'drop_pixelrain': { const lvl = H * (1 - ss(.1, .75, u)), gone = ss(.78, 1, u), dark = (1 - gone) * ss(0, .1, el);
+        for (let j = 0; j < N; j++) { const x = g.xx[j], y = g.yy[j], pile = y >= lvl, yy = (((y / H + P.off[x] - el * P.spd[x] * 1.6) % .45) + .45) % .45, drop = !pile && yy < 1.2 / Math.max(4, H);
+          const a = ((pile ? .95 : 0) + (drop ? 1.2 : 0)) * (1 - gone), col = palc(P, x / W * 1.3 + y / H * .4, el), i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .9 * dark) + a * col[c]; }
+        return out; }
+      case 'drop_liquidpour': { const s = g.s, lvl = H * ss(.62, 1, u);
+        for (let j = 0; j < N; j++) { const y = g.yy[j], x = P.side > 0 ? g.xx[j] : W - 1 - g.xx[j], front = ss(0, .45, el) * (W * 1.3) + Math.sin(y * .55 / s + el * 9) * 1.6 * s;
+          const fill = clamp((front - x) / 1.2, 0, 1), drain = clamp((y - lvl + Math.sin(g.xx[j] * .5 / s + el * 7) * s) / 1.2, 0, 1), a = fill * drain;
+          const surf = u < .62 ? Math.exp(-(((x - front) / 1) ** 2)) : Math.exp(-(((y - lvl) / 1) ** 2)), col = palc(P, y / H * .7 + x / W * .3 + el * .3, el), i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * (1 - .8 * a) + a * col[c] * 1.05 + surf * .7 * (.5 + .5 * col[c]); }
+        return out; }
+      case 'drop_staticsnap': { const cut = .38;
+        if (el < cut) { const rnd = mul32(P.seed + Math.floor(el * 40)), rollY = (el * 3 % 1) * H, tc = P.cols[P.ci];
+          for (let j = 0; j < N; j++) { const n = rnd() ** 1.6 + Math.exp(-(((g.yy[j] - rollY) / Math.max(1, H * .12)) ** 2)) * .35, tint = rnd() < .05, i = j * 3;
+            out[i] = img[i] * .1 + n * .85 + (tint ? tc[0] : 0); out[i + 1] = img[i + 1] * .1 + n * .9 + (tint ? tc[1] : 0); out[i + 2] = img[i + 2] * .1 + n + (tint ? tc[2] : 0); }
+          return out; }
+        const e = el - cut, h = (H / 2 + 1) * ss(0, .22, e), lf = (1 - ss(.15, .5, e)) * 1.3, boost = 1 + .5 * (1 - ss(.2, 1, e / (P.dur - cut)));
+        for (let j = 0; j < N; j++) { const ay = Math.abs(g.dy[j]), inside = clamp((h - ay) / .8 + .5, 0, 1), line = Math.exp(-(((ay - h) / .7) ** 2)) * lf, i = j * 3;
+          for (let c = 0; c < 3; c++) out[i + c] = img[i + c] * inside * boost + line; }
+        return out; }
       case 'drop_bassslam': { if (el < .07) { for (let i = 0; i < out.length; i++) out[i] = 1; return out; }
         const k = Math.exp(-(el - .07) / .18), sh = Math.round(P.sx * k * 2 * g.s * Math.cos(el * 45)), vs = Math.round(k * 1.5 * g.s * Math.abs(Math.sin(el * 38)));
         for (let j = 0; j < N; j++) { const x = g.xx[j], y = g.yy[j], sx = ((x - sh) % W + W) % W, sy = ((y - vs) % H + H) % H, si = (sy * W + sx) * 3;
@@ -324,10 +443,10 @@
   function djFire(a, beats, cue) {
     const P = DJ.parts;
     if (a === 'drop') {
-      let st = DJ.dstyle || 'random'; if (st === 'random' || !(st === 'classic' || DROP_FX.includes(st))) st = pickOne(DROP_FX.filter(x => x !== DJ.lastDrop));
-      const FIRST_DROPS = ['supernova', 'starburst', 'shatter'];   // 💥 the demo's first three drops are the big, beautiful ones (explosion first), then random
-      DJ.dropN = (DJ.dropN || 0) + 1; if (DJ.dropN <= FIRST_DROPS.length) st = FIRST_DROPS[DJ.dropN - 1]; DJ.lastDrop = st;
-      DJ.black = false;
+      let st = DJ.dstyle || 'random'; if (st === 'random' || !(st === 'classic' || DROP_FX.includes(st))) st = dropRandom(DJ.lastDrop);   // 💥 Oct 21: even over the 5 families
+      const FIRST_DROPS = ['supernova', 'curtain', 'tunnelpunch'];   // 💥 the demo's first three drops show the range (Oct 21: a burst, a sweep, a shape), then random
+      DJ.dropN = (DJ.dropN || 0) + 1; if (DJ.dropN <= FIRST_DROPS.length && !(DJ.dstyle && DJ.dstyle !== 'random')) st = FIRST_DROPS[DJ.dropN - 1];   // (only when nobody picked a style) DJ.lastDrop = st;
+      DJ.black = false; fltOnDrop();
       if (st !== 'classic') { if (st === 'lightning') { padStart('lightning'); DJ.flash = .6; } else nStart('drop_' + st); }
       else { DJ.flash = 1; DJ.rings.push({x: W / 2, y: H / 2, r: 0, c: [255, 255, 255]}); }
       if (st === 'classic') for (let i = 0; i < 70; i++) { const an = R() * 6.283, sp = 8 + R() * 22; P.push({x: W / 2, y: H / 2, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1, g: 0, c: pickOne([[255, 61, 154], [51, 214, 255], [255, 204, 102], [155, 61, 255]])}); }
@@ -344,7 +463,7 @@
       P.push({x: side, y: H - 1, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, l: 1.6, g: 14, c: pickOne([[255, 61, 154], [51, 214, 255], [255, 204, 102], [60, 224, 138], [204, 153, 255], [255, 255, 255]])}); } }
   }
   // 🎚️ build styles (same as dj.py build_frame): each ramps over 8 s, uses the look's colours, tops out white-hot
-  const BUILD_STYLES = ['rise', 'close', 'burst', 'spin', 'rainbow', 'zipper', 'heartbeat', 'star'], BSECS = 8;
+  const BUILD_STYLES = ['rise', 'close', 'burst', 'spin', 'rainbow', 'zipper', 'heartbeat', 'star']; let BSECS = 8;   // ⏱️ Oct 21: Pro DJ picks 2 to 32 bars (sent as secs)
   const BG = (() => { const cx = (W - 1) / 2, cy = (H - 1) / 2, g = {ex: [], ring: [], rad: [], ang: [], dx: [], dy: []};
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = x - cx, dy = y - cy, ex = Math.min(x, W - 1 - x) / cx, ey = Math.min(y, H - 1 - y) / cy;
       g.ex.push(ex); g.ring.push(Math.min(ex, ey)); g.rad.push(Math.hypot(dx / cx, dy / cy) / Math.SQRT2); g.ang.push(((Math.atan2(dy, dx) / 6.283) % 1 + 1) % 1); g.dx.push(dx); g.dy.push(dy); }
@@ -400,7 +519,55 @@
       if (k > .5 && pulse > .85) for (let c = 0; c < 3; c++) buf[i + c] = Math.max(buf[i + c], 127 * k);
     }
   }
+  // ======================================================================= 🎛️ live filters (Oct 21, ported from filters.py): Pro DJ's FILTERS panel
+  const FLT_ORDER = ['mirror', 'fisheye', 'tiles', 'shake', 'freeze', 'rgb', 'halftone', 'duotone', 'radar', 'strobe'];
+  const FLT_DROP = ['rgb', 'tiles', 'fisheye', 'mirror', 'radar', 'strobe', 'halftone', 'duotone'];
+  const FLT = {on: [], auto: true, play: {}, frozen: null, frozenAt: 0, tmp: new Float32Array(N * 3)};
+  const fltInfo = () => ({on: FLT.on.slice(), auto: FLT.auto, playing: Object.keys(FLT.play).filter(k => FLT.play[k] > now()), order: FLT_ORDER});
+  function fltCmd(b) {
+    if (b.clear) { FLT.on = []; FLT.play = {}; }
+    if ('auto' in b) FLT.auto = !!b.auto;
+    if (b.name && FLT_ORDER.includes(b.name)) { const on = 'on' in b ? !!b.on : !FLT.on.includes(b.name); FLT.on = FLT.on.filter(x => x !== b.name); if (on) FLT.on.push(b.name); if (b.name === 'freeze') FLT.frozen = null; }
+    return {ok: true, filters: fltInfo()};
+  }
+  function fltOnDrop() { if (!FLT.auto || R() > .6) return; const per = 60 / (DJ.tap_bpm || BPM || 120); FLT.play = {[pickOne(FLT_DROP)]: now() + 8 * per}; }
+  function fltApply(buf, t) {
+    const act = FLT_ORDER.filter(k => FLT.on.includes(k) || FLT.play[k] > t);
+    if (FLT.auto && DJ.build != null && !act.includes('shake')) act.splice(3, 0, 'shake');      // a little shake while the build winds up
+    if (!act.length) { FLT.frozen = null; return; }
+    const per = 60 / (DJ.tap_bpm || BPM || 120), ph = (t / per) % 1, src = FLT.tmp, cx = (W - 1) / 2, cy = (H - 1) / 2;
+    const cols = lookCols(S.look).map(c => { const m = Math.max(...c, 1); return c.map(v => v / m * 255); });
+    for (const k of act) {
+      src.set(buf);
+      if (k === 'mirror') { for (let y = 0; y < H; y++) for (let x = Math.ceil(W / 2); x < W; x++) { const i = (y * W + x) * 3, s = (y * W + (W - 1 - x)) * 3; buf[i] = src[s]; buf[i + 1] = src[s + 1]; buf[i + 2] = src[s + 2]; } }
+      else if (k === 'fisheye') { const R0 = Math.hypot(cx, cy), amt = .45 + .15 * Math.cos(ph * 6.283);
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy) / R0, f = r > 0 ? Math.pow(r, 1 + amt) / r : 1;
+          const sx = clamp(Math.round(cx + dx * f), 0, W - 1), sy = clamp(Math.round(cy + dy * f), 0, H - 1), i = (y * W + x) * 3, s = (sy * W + sx) * 3; buf[i] = src[s]; buf[i + 1] = src[s + 1]; buf[i + 2] = src[s + 2]; } }
+      else if (k === 'tiles') { const ts = 5, push = 1.5 * Math.exp(-ph * 4); buf.fill(0);
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const tx = Math.floor(x / ts), ty = Math.floor(y / ts), dx = (tx + .5) * ts - cx, dy = (ty + .5) * ts - cy, d = Math.hypot(dx, dy) || 1;
+          const nx = Math.round(x + dx / d * push * 2), ny = Math.round(y + dy / d * push * 2); if (nx < 0 || ny < 0 || nx >= W || ny >= H || x % ts === 0 || y % ts === 0) continue;
+          const i = (ny * W + nx) * 3, s = (y * W + x) * 3; buf[i] = src[s]; buf[i + 1] = src[s + 1]; buf[i + 2] = src[s + 2]; } }
+      else if (k === 'shake') { const a = FLT.on.includes('shake') || FLT.play.shake > t ? 2 : 1 + (DJ.build != null ? Math.min(1, (t - DJ.build) / 6) : 0), ox = Math.round((R() - .5) * 2 * a), oy = Math.round((R() - .5) * a);
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const sx = clamp(x + ox, 0, W - 1), sy = clamp(y + oy, 0, H - 1), i = (y * W + x) * 3, s = (sy * W + sx) * 3; buf[i] = src[s]; buf[i + 1] = src[s + 1]; buf[i + 2] = src[s + 2]; } }
+      else if (k === 'freeze') { if (!FLT.frozen || t - FLT.frozenAt > per * 4) { FLT.frozen = Float32Array.from(src); FLT.frozenAt = t; } buf.set(FLT.frozen); }
+      else if (k === 'rgb') { const sh = 1 + Math.round(1.5 * Math.exp(-ph * 3));
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 3; buf[i] = src[(y * W + clamp(x - sh, 0, W - 1)) * 3]; buf[i + 2] = src[(y * W + clamp(x + sh, 0, W - 1)) * 3 + 2]; } }
+      else if (k === 'halftone') { const cs = 3;
+        for (let ty = 0; ty < H; ty += cs) for (let tx = 0; tx < W; tx += cs) { let r = 0, gg = 0, b = 0, n = 0;
+          for (let y = ty; y < Math.min(H, ty + cs); y++) for (let x = tx; x < Math.min(W, tx + cs); x++) { const s = (y * W + x) * 3; r += src[s]; gg += src[s + 1]; b += src[s + 2]; n++; }
+          r /= n; gg /= n; b /= n; const lum = Math.max(r, gg, b) / 255, rad = lum * cs * .75;
+          for (let y = ty; y < Math.min(H, ty + cs); y++) for (let x = tx; x < Math.min(W, tx + cs); x++) { const d = Math.hypot(x - (tx + 1), y - (ty + 1)), m = clamp(rad - d + .5, 0, 1) * 1.4, i = (y * W + x) * 3; buf[i] = r * m; buf[i + 1] = gg * m; buf[i + 2] = b * m; } } }
+      else if (k === 'duotone') { let A = cols[0] || [255, 61, 154], B = cols[0] || [51, 214, 255], best = -1;
+        for (const a of cols) for (const c of cols) { const d = Math.hypot(a[0] - c[0], a[1] - c[1], a[2] - c[2]); if (d > best) { best = d; A = a; B = c; } }
+        if (best < 60) B = [51, 214, 255];
+        for (let j = 0; j < N; j++) { const i = j * 3, l = clamp(((src[i] * .3 + src[i + 1] * .55 + src[i + 2] * .15) / 255 - .1) * 1.6, 0, 1); for (let c = 0; c < 3; c++) buf[i + c] = A[c] * (1 - l) * .35 + B[c] * l; } }
+      else if (k === 'radar') { const a0 = (t / (per * 4)) % 1 * 6.283;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const a = Math.atan2(y - cy, x - cx), d = ((a0 - a) % 6.283 + 6.283) % 6.283, m = .12 + .88 * Math.exp(-d * 1.6), i = (y * W + x) * 3; buf[i] *= m; buf[i + 1] *= m; buf[i + 2] *= m; } }
+      else if (k === 'strobe') { if ((t / (per / 2)) % 1 > .5) for (let i = 0; i < buf.length; i++) buf[i] *= .08; }
+    }
+  }
   function djApply(buf, t, dt) {
+    fltApply(buf, t);
     const bi = Math.floor(beatPos); if (DJ.queue.length && bi !== DJ._lb) { const q = DJ.queue; DJ.queue = []; q.forEach(djFire); }
     DJ._lb = bi;
     if (DJ.build != null) djBuild(buf, t, t - DJ.build, DJ.bstyle || 'rise');   // 🎚️ the wind-up, in the style picked on the phone
@@ -1767,7 +1934,7 @@
     const lvl = S.power ? clamp(lastLevel * 2.2 * (.65 + .35 * beat) + R() * .08, 0, 1) : 0;
     const fp = Object.assign({}, ENG.fire, FIRE), fd = FD.s, w = Object.values(fd.feeds).filter(f => f.kind === 'watch' && f.enabled).map(f => f.title);
     const sc = S.scene ? {name: S.scene.name, segment: S.scene.i + 1, segments: S.scene.segs.length, effects: [S.scene.effects[S.scene.i]]} : null;
-    return {bpm: Math.round(pdTempoBpm() * 10) / 10, section: si.name, prodj: pdBrief(), midi: ENG.midi.brief, cameos: S.cameos, look: S.look, faders: fadersInfo(), override: ovInfo(), loops: loopsBrief(), show: shInfo(), holiday: S.holiday, mirror: null, part: PARTS[si.name] + ' ' + (1 + (si.k >> 2) % 3),
+    return {filters: fltInfo(), bpm: Math.round(pdTempoBpm() * 10) / 10, section: si.name, prodj: pdBrief(), midi: ENG.midi.brief, cameos: S.cameos, look: S.look, faders: fadersInfo(), override: ovInfo(), loops: loopsBrief(), show: shInfo(), holiday: S.holiday, mirror: null, part: PARTS[si.name] + ' ' + (1 + (si.k >> 2) % 3),
       effect: src.label || S.effect, energy: si.name === 'drop' ? .86 : si.name === 'break' ? .32 : .58, transform: 'none', trail: .4, sparkle: .2,
       brightness: S.brightness, power: S.power, locked: S.locked, blend: S.blend, licensed: true, pro: PRO, scoreboard: !!SB.s.on, fireplace: fp,
       feeds: {mode: fd.mode, title: fd.mode !== 'off' ? fd.feeds[fd.mode].title : '', watching: w, alert: FD.alert ? FD.alert.event : '', flash: '', full_moon: false}, dj: djInfo(),
@@ -1965,11 +2132,13 @@
       .then(j => { if (!Object.keys(ART).length) ART['glowbop-logo-sign'] = Object.assign(j, {name: 'GlowBop Logo Sign', updated: wall()}); }).catch(() => {}));
   }
 
+  let QUIT = false;
   // ======================================================================= the router
   async function handle(method, path, q, b) {
     await ready;
     const ok = (o) => ({json: Object.assign({ok: true}, o || {})});
     const pro = fn => { try { return {json: fn()}; } catch (e) { if (e.bad) return {status: 400, json: {error: e.message}}; throw e; } };
+    if (path === '/helper/status') return {json: {engine: QUIT ? 'off' : 'on'}};
     if (method === 'GET' && path === '/api/lights/stage') return {json: stageInfo()};
     if (method === 'GET' && path === '/api/tonight') return {json: tonightInfo()};
     if (method === 'POST' && path === '/api/tonight') { tonightCmd(b || {}); return ok(); }
@@ -1979,7 +2148,7 @@
     if (method === 'GET') {
       switch (path) {
         case '/api/status': return {json: Object.assign(status(), {lights_health: healthMock()})};
-        case '/api/lights/health': return {json: Object.assign(healthMock(), {test: null, testing: null})};
+        case '/api/lights/health': return {json: Object.assign(healthMock(), {test: null, testing: null, setup: {done: true}})};   // 📶 Oct 21: the network guide never pops up by itself in the demo
         case '/api/schedule': return {json: SCH.info()};
         case '/api/layouts': return {json: {items: {}}};
         case '/api/catalog': return {json: Object.assign({}, CAT, {holiday_cal: holCal()})};
@@ -2099,7 +2268,7 @@
           if (b.hit === 'blackout') DJ.black = 'on' in b ? !!b.on : !DJ.black;
           else if (b.hit && b.snap === false) djFire(b.hit, b.beats);     // ⚡ instant pads fire right now; snapped ones wait for the beat
           else if (b.hit) DJ.queue.push(b.hit);
-          if ('build' in b) { if (b.build && DJ.build == null) { DJ.build = t; let st = String(b.style || 'spin'); if (!DJ.firstBuild) { DJ.firstBuild = true; st = 'star'; }   // ⭐ the first build anyone sees in the demo is the spinning rainbow star
+          if ('build' in b) { if (b.build && DJ.build == null) { DJ.build = t; BSECS = clamp(+b.secs || 8, 2, 120); let st = String(b.style || 'spin'); if (!DJ.firstBuild) { DJ.firstBuild = true; st = 'star'; }   // ⭐ the first build anyone sees in the demo is the spinning rainbow star
              DJ.bstyle = st === 'auto' ? pickOne(BUILD_STYLES.filter(x => x !== DJ.bstyle)) : BUILD_STYLES.includes(st) ? st : 'spin'; } else if (!b.build && DJ.build != null) { const held = t - DJ.build; DJ.build = null; if (held > .4 && !b.cancel) DJ.queue.push('drop'); } }
           if ('cue' in b) DJ.cue = b.cue && CAT.looks[b.cue] ? b.cue : null;
           if (b.tap) { DJ.taps = DJ.taps.filter(x => t - x < 3).concat([t]);
@@ -2121,11 +2290,12 @@
         case '/api/license': return LAPTOP('entering a license key');
         case '/api/keys': return LAPTOP('saving song lookup keys');
         case '/api/support': setTimeout(() => toast('Demo: nothing was sent. Reach us from the Contact page'), 2600); return ok({sent: true, ticket: 'GB-DEMO'});
-        case '/api/quit': return LAPTOP('the Quit key');
+        case '/api/quit': QUIT = true; return ok();                  // ⏻ Oct 21: the demo plays the real shutdown, then starts again
+        case '/api/filters': return {json: fltCmd(b || {})};
         case '/api/music/signin': return LAPTOP('YouTube Music sign-in');
         case '/api/music/host': return ok();
         case '/api/lights/identify': S.flash[b.id] = now() + 1.6; return ok();
-        case '/api/lights/toggle': DEV_ON[b.id] = !!b.enabled; return ok();
+        case '/api/lights/toggle': { DEV_ON[b.id] = !!b.enabled; const d = DEVS.find(x => x.id === b.id), nm = d ? d.name : 'That light'; return ok({msg: nm + (b.enabled ? ' is coming on.' : ' is off.')}); }   // 🔌 Oct 21: instant, like the app
         case '/api/lights/rename': { const d = DEVS.find(x => x.id === b.id); if (d && b.name) d.name = String(b.name).slice(0, 40); return ok(); }
         case '/api/lights/apply': return ok();
         case '/api/lights/scan': return LAPTOP('finding lights on your Wi-Fi');
@@ -2143,10 +2313,10 @@
   // ======================================================================= fetch: every /api/ call goes to the pretend engine
   window.fetch = async function (input, init) {
     const url = typeof input === 'string' ? input : (input && input.url) || String(input);
-    if (!/\/api\//.test(url)) return realFetch(input, init);
+    if (!/\/api\/|\/helper\/status/.test(url)) return realFetch(input, init);
     const u = new URL(url, location.href), method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
     let body = {}; try { body = init && init.body ? JSON.parse(init.body) : {}; } catch (e) { body = {}; }
-    let r; try { r = await handle(method, u.pathname.replace(/^.*?(\/api\/)/, '$1'), u.searchParams, body); }
+    let r; try { r = await handle(method, u.pathname.replace(/^.*?(\/api\/|\/helper\/)/, '$1'), u.searchParams, body); }
     catch (e) { console.error('[demo] engine error', method, u.pathname, e); r = {status: 500, json: {error: 'demo engine error'}}; }
     return new Response(JSON.stringify(r.json == null ? {} : r.json), {status: r.status || 200, headers: {'Content-Type': 'application/json'}});
   };

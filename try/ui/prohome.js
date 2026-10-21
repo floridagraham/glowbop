@@ -149,7 +149,7 @@
   const home = {};
   function borrow(want) {
     BORROW.forEach(([id]) => {
-      const el = $(id); if (!el) return;
+      const el = $(id); if (!el || el.dataset.tool === '1') return;   // 🧰 a tool stays on the tools bar
       if (want) { if (el.parentElement && el.parentElement.id === 'pg-home') return; home[id] = {parent: el.parentElement, next: el.nextSibling}; $('pg-home').appendChild(el); }
       else if (home[id] && el.parentElement && el.parentElement.id === 'pg-home') {
         const h = home[id]; try { h.parent.insertBefore(el, h.next && h.next.parentElement === h.parent ? h.next : null); } catch (e) { h.parent.appendChild(el); }

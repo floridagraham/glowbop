@@ -35,7 +35,7 @@
      light chips right above the board; the picked light's controls open under the board */
   #slAsk:not([hidden]) { display:flex !important; flex-wrap:wrap; align-items:center; gap:6px; padding:6px 10px !important; margin:0 0 6px !important; font-size:calc(13px * var(--fs, 1)); }
   #slAsk span { flex:1 1 220px; min-width:0; } #slAsk .btn { min-height:34px !important; padding:0 12px !important; font-size:13px !important; flex:0 0 auto; }
-  .sl-list.strip { flex:0 0 auto; min-height:46px; flex-direction:row; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap:6px; margin:0 0 6px; padding-bottom:2px; scrollbar-width:none; }
+  .sl-list.strip { flex:0 0 auto; min-height:46px; flex-direction:row; flex-wrap:wrap; overflow:visible; gap:6px; margin:0 0 6px; padding-bottom:2px; }   /* 🧩 Oct 19 (Graham: chips past the edge were hidden, couldn't get back to them): every light chip wraps onto the next line, all visible */
   .sl-list.strip .sl-lt { display:none; }
   .sl-list.strip .sl-li { flex:0 0 auto; } .sl-list.strip .sl-lih { min-height:38px; padding:4px 12px; } .sl-list.strip .sl-lih b { display:none; }
   .sl-list.strip .sl-lib { display:none !important; }
@@ -318,7 +318,7 @@
       .concat(curtains().map((d, i) => [d, CCOL[i % CCOL.length], '▦']));
     if (!rows.length) { list.innerHTML = '<p class="note">Add your lights above, then lay them out here.</p>'; return; }
     list.innerHTML = '<b class="sl-lt">💡 My lights</b>' + rows.map(([d, c, ic]) => `<div class="sl-li${d.id === sel ? ' on' : ''}" style="--c:${c}"><button class="sl-lih" data-li="${esc(d.id)}"><i></i><span>${ic} ${esc(d.name)}</span><small${d.connected === false ? ' class="off"' : ''}>${d.n}${d.connected === false ? ' · offline' : ''}${(GB.lightsTune || []).some(t => t.id === d.id) ? ' · 🐢 ' + GB.lightsTune.find(t => t.id === d.id).fps + ' fps' : ''}</small><b>${d.id === sel ? '▾' : '▸'}</b></button><div class="sl-lib"></div></div>`).join('');
-    list.querySelectorAll('[data-li]').forEach(b => b.onclick = () => { const id = b.dataset.li; sel = sel === id ? '' : id; strand = 0; CH = 0; BULB = false; paintTop(); draw(); paintCurtainCard(); });
+    list.querySelectorAll('[data-li]').forEach(b => b.onclick = () => { const id = b.dataset.li; sel = sel === id ? '' : id; if (sel) GB.post('/api/lights/identify', {id: sel, secs: 1.5}).catch(() => {});  /* 👆 Oct 19: tap a light, the real one flashes */ strand = 0; CH = 0; BULB = false; paintTop(); draw(); paintCurtainCard(); });
     const strip = list.classList.contains('strip'), body = strip ? (sel ? $('slCtl') : null) : list.querySelector('.sl-li.on .sl-lib');
     if (body) ['slCurt', 'slCm', 'slTools'].forEach(i => { const n = $(i); if (n) body.appendChild(n); });
   }
@@ -695,10 +695,10 @@
   const proTease = () => GB.toast('✨ Pulling a light off into its own show comes with Pro. Home DJ plays all your lights together.');
   async function regroup(url, body, back) {
     const r = await GB.post(url, body); if (!r || !r.ok || r.same) return;
-    GB.sfx && GB.sfx('ok'); setTimeout(() => load(true), 9000);
-    undoBar((url.endsWith('join') ? '🧲 ' : '✂️ ') + (r.msg || 'Groups changed') + '. The show restarts for a moment.', async () => {
+    GB.sfx && GB.sfx('ok'); setTimeout(() => load(true), r.live ? 1500 : 9000);
+    undoBar((url.endsWith('join') ? '🧲 ' : '✂️ ') + (r.msg || 'Groups changed') + '.', async () => {
       await GB.post('/api/lights/regroup', {groups: r.prev || []}); if (back) await back();
-      GB.toast('↶ Put back the way it was'); setTimeout(() => load(true), 9000);
+      GB.toast('↶ Put back the way it was'); setTimeout(() => load(true), 1500);
     }, url.endsWith('join') ? body.id : null);
   }
   async function groupCheck(id, back) {            // after a drop: clicked against another show? pulled away from its own?

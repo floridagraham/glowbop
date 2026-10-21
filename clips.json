@@ -2761,5 +2761,95 @@
   "title": "Julia dance",
   "group": "Looks",
   "desc": "Fractal Dreams"
+ },
+ "fx-chladni": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Chladni",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-pixelmelt": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "PixelMelt",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-morphogenesis": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Morphogenesis",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-laminarflow": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "LaminarFlow",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-timerift": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "TimeRift",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-particlefield": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "ParticleField",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-lightsweep": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "LightSweep",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-outlineracers": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "OutlineRacers",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-blinds": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "Blinds",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
+ },
+ "fx-spatialexpansion": {
+  "w": 40,
+  "h": 21,
+  "n": 120,
+  "fps": 15,
+  "title": "SpatialExpansion",
+  "group": "VJ Lab",
+  "desc": "VJ Lab"
  }
 }

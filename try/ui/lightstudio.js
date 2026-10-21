@@ -62,16 +62,14 @@
       <div class="lt-bodies">${TABS.map(([k]) => `<section class="lt-body" data-tb="${k}"></section>`).join('')}</div>`;
     pg.prepend(shell); shell.append(left, insp); left.appendChild(sl);
     const body = k => insp.querySelector(`.lt-body[data-tb="${k}"]`);
-    const take = (el, k) => { if (!el) return; const det = el.closest('details.sl-more'); body(k).appendChild(el); if (det) det.remove(); el.classList.remove('sl-sub'); el.classList.add('box'); el.style.removeProperty('grid-column'); el.style.removeProperty('grid-row'); };
+    // 🧰 Oct 20: tools live on the tools bar, not in a tab
+    const take = (el, k) => { if (!el || el.dataset.tool === '1') return; const det = el.closest('details.sl-more'); body(k).appendChild(el); if (det) det.remove(); el.classList.remove('sl-sub'); el.classList.add('box'); el.style.removeProperty('grid-column'); el.style.removeProperty('grid-row'); };
     // 💡 Lights: add new lights first, then the picked light's layout controls, then every light's flash / off / name / remove
-    const lp = $('lightsPanel'), add = document.createElement('div'); add.className = 'lt-add';
-    const scan = $('suScan'), seg = scan && scan.closest('.seg'), sub = seg && seg.previousElementSibling;
-    if (sub && sub.classList.contains('sub')) add.appendChild(sub);
-    [seg, $('suFound'), $('suAdd')].forEach(n => n && add.appendChild(n));
-    const side = sl.querySelector('.sl-side'); if (side) body('lights').appendChild(side);   // the light you picked: its controls first
+    const lp = $('lightsPanel');
+    take($('addPanel'), 'lights');                               // ➕ Oct 20: Find my lights first, always at the top of the Lights tab
+    const side = sl.querySelector('.sl-side'); if (side) body('lights').appendChild(side);   // the light you picked: its controls
     take($('hlPanel'), 'lights');                                // 📶 Wi-Fi health, live
     take($('ckPanel'), 'lights');                                // 🩺 Check my lights, right under the picked light
-    body('lights').appendChild(add);
     take(lp, 'lights');
     take($('grpPanel'), 'groups');
     take($('layoutPanel'), 'shape'); take($('lineupPanel'), 'shape');
@@ -79,6 +77,7 @@
     take($('xlPanel'), 'xl');
     // anything else left on the page (future panels) goes under the board's tabs instead of stacking below
     [...pg.children].filter(c => c !== shell && c.classList && c.classList.contains('box')).forEach(c => body('lights').appendChild(c));
+    insp.querySelectorAll('.lt-tabs button').forEach(b => { const bd = body(b.dataset.tb); b.hidden = !bd.querySelector('.panel, .sl-side'); });   // 🧰 a tab with nothing left (all tools) hides
     insp.querySelectorAll('.lt-tabs button').forEach(b => b.onclick = () => { show(b.dataset.tb); GB.sfx && GB.sfx('tap'); });
     // picking a light on the board or in the light row brings its controls up
     document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#slList, #slSvg')) show('lights'); }, true);

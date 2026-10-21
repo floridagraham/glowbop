@@ -26,6 +26,23 @@
   .su-tx { flex:1; min-width:0; }
   .su-tx b { display:block; font:700 calc(16px * var(--fs, 1))/1.15 var(--cond); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .su-tx small { display:block; color:var(--dim); font-size:calc(12px * var(--fs, 1)); line-height:1.35; overflow-wrap:anywhere; }
+  .su-fx .su-fxrow { display:flex; gap:8px; align-items:center; }
+  .su-fx .su-fxrow .btn { min-height:48px; min-width:48px; }
+  .su-fx .su-fxrow .n { min-width:84px; text-align:center; font:700 18px var(--cond); color:var(--gold); }
+  .su-fx [data-fx="fav"].on { background:var(--gold); color:#000; }
+  .su-fx .favs { display:block; margin-top:6px; color:var(--gold); }
+  #spPanel .sp-seg { display:grid; grid-template-columns:repeat(2, 1fr); gap:6px; }
+  #spPanel .sp-seg .btn { min-height:48px; }
+  #spPanel .su-fxrow { flex-wrap:wrap; }
+  #spPanel .su-fxrow .n { min-width:72px; }
+  #spPanel [data-fx="fav"] { flex:1 1 auto; }
+  #spPanel .sp-tip { display:block; color:var(--dim); margin-top:4px; }
+  .su-mb .seg { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; }
+  .su-mb .seg .btn { min-height:48px; }
+  .su-tools { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 8px; }
+  .su-tools .chip { min-height:48px; color:var(--c); }
+  .su-tools .chip .ic { width:18px; height:18px; fill:currentColor; }
+  .su-twmap { margin-top:6px; width:100%; min-height:48px; background:transparent !important; color:var(--cyan) !important; box-shadow:inset 0 0 0 2px var(--cyan) !important; }
   .su-acts { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:4px; }
   .su-acts .btn { padding:0 4px; font-size:calc(13px * var(--fs, 1)); gap:4px; border-radius:6px; min-height:44px; }
   .su-acts .btn:first-child { border-radius:22px 6px 6px 22px; } .su-acts .btn:last-child { border-radius:6px 22px 22px 6px; }
@@ -121,6 +138,7 @@
   };
 
   // =================================================================== 1. LIGHTS page (was the top of SETUP)
+  const fxNow = {};
   let LS = null, lsDirty = false, GE = null, renaming = null, camStream = null;
 
   const applyRow = first => `<div class="row su-apply"${first ? ' id="suApply"' : ''} hidden><button class="btn c lg wide"${first ? ' id="suApplyBtn"' : ''} data-suapply style="--c:var(--amber)">${lbl('power', 'Apply & restart lights')}</button></div>`;
@@ -130,25 +148,110 @@
     if (await GB.post('/api/lights/apply', {})) { GB.toast('🔄 Restarting the lights with your new setup…'); lsDirty = false; showApply(); setTimeout(loadLights, 9000); }
   });
 
+  // 🧠 / 👆 / 🕘 Oct 19 (Graham: "let's start doing day one stuff right now"): the first three ideas from the layout research.
+  //   Use the map a Twinkly already has · Identify all (each light flashes in turn, its name pops up) · Layout history (the last 5, one tap back).
+  async function twMap(d) {
+    GB.toast('🧠 Reading the map ' + d.name + ' already has…');
+    const r = await GB.post('/api/lights/twmap', {id: d.id}); if (!r) return;
+    if (!r.ok) return GB.notice({tone: 'warn', icon: '🗺', title: d.name + ': no map to use', body: r.why || r.error || 'This light has no saved map.', tip: 'Map it once in the Twinkly app (Layout, Map lights), then tap this again. Or lay it out here on Lay out your lights.'});
+    const kind = r.source === '3d' ? '3D' : r.source === '2d' ? '2D' : r.source;
+    GB.sheet('Use the ' + kind + ' map ' + d.name + ' already has?', [
+      {label: 'Yes, use it', ic: 'check', sub: r.n + ' bulbs' + (r.cols * r.rows <= r.n * 1.1 ? ' · ' + r.cols + ' across × ' + r.rows + ' tall' : ''), onclick: async () => {
+        const a = await GB.post('/api/lights/twmap', {id: d.id, apply: true});
+        if (a && a.ok) { GB.sfx && GB.sfx('ok'); GB.toast('🧠 ' + d.name + ' now uses its Twinkly app map. The lights restart for a moment.'); lsDirty = false; setTimeout(loadLights, 9000); }
+        else if (a) GB.toast('⚠️ ' + (a.why || a.error || 'Could not use it')); }},
+      {label: 'Keep my GlowBop layout', ic: 'close', onclick: () => {}}]);
+  }
+  async function identifyAll() {
+    const r = await GB.post('/api/lights/identify', {all: true}); if (!r || !r.order) return;
+    const slot = (r.slot || 1.6) * 1000;
+    r.order.forEach((x, i) => setTimeout(() => GB.toast('👀 ' + (i + 1) + ' of ' + r.order.length + ': ' + x.name, slot - 150), i * slot));
+  }
+  async function layoutHistory() {
+    let h = null; try { h = await GB.get('/api/lights/history'); } catch (e) {}
+    const L = (h && h.history) || [];
+    if (!L.length) return GB.toast('🕘 No earlier layouts yet. GlowBop keeps one each time you change where your lights sit.');
+    const ago = t => { const m = Math.round((Date.now() / 1000 - t) / 60); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' days ago'; };
+    GB.sheet('Put an earlier layout back', L.map(x => ({label: x.label, sub: ago(x.t), ic: 'back', onclick: async () => {
+      const a = await GB.post('/api/lights/history', {restore: x.i});
+      if (a && a.ok) { GB.sfx && GB.sfx('ok'); GB.toast('🕘 Layout from ' + ago(x.t) + ' is back. Today\'s is saved in the history too.'); setTimeout(loadLights, 9000); } }})));
+  }
+
+  // 🤖 Oct 19 (Graham: "make it way easier ... they're just going to want to run it on the show"): the curtain's own controls,
+  //   shown at the TOP when its chip is picked on the live wall (under its health card). Autopilot is the default.
+  const SPM = [['autopilot', 'Autopilot'], ['shapes', 'Shapes'], ['pixels', 'Colours'], ['beat', 'Beat bars']];
+  const SPT = {autopilot: 'Autopilot: its own built-in effects, picked by the music. Shapes on builds and drops.', shapes: 'Shapes: the show\'s main shape in its main colour, smooth and fast', pixels: 'Colours: up to 8 colours, one after another (can flicker)', beat: 'Beat bars: its own bars, driven by GlowBop\'s music analysis'};
+  function curtainCtl(d) {
+    const w = document.createElement('div'); w.className = 'sp-ctl';
+    const mode = d.mode === 'auto' ? 'autopilot' : (d.mode || 'autopilot');
+    const favs = new Set(d.fxfav || []); let n = fxNow[d.id] || (d.fxfav && d.fxfav[0]) || 5;
+    w.innerHTML = `<div class="su-opt"><span>Follow the show</span><div class="seg sp-seg">${SPM.map(([k, t]) => `<button class="btn${mode === k ? ' on' : ''}" data-susm="${k}" style="--c:var(--peri)">${t}</button>`).join('')}</div></div>
+      <div class="su-opt su-fx"><span>Built-in effects</span><div class="su-fxrow"><button class="btn" data-fx="-" aria-label="Previous effect" style="--c:var(--gold)">${GB.svg('back')}</button><b class="n"></b><button class="btn" data-fx="+" aria-label="Next effect" style="--c:var(--gold)"><span style="display:inline-block;transform:scaleX(-1)">${GB.svg('back')}</span></button><button class="btn" data-fx="fav" style="--c:var(--gold)"><span>Star it</span></button></div>
+      <small class="favs"></small><small class="sp-tip">Tap ◀ ▶ to try one on the curtain (20 seconds). Autopilot plays your starred ones.</small></div>`;
+    const paint = () => { w.querySelector('.n').textContent = 'Effect ' + n; const st = w.querySelector('[data-fx="fav"]'); st.classList.toggle('on', favs.has(n)); st.querySelector('span').textContent = favs.has(n) ? 'Starred' : 'Star it'; w.querySelector('.favs').textContent = favs.size ? '⭐ ' + [...favs].sort((a, b) => a - b).join(', ') : '⭐ No stars yet: Autopilot uses 1, 5 and 8'; };
+    const play = async () => { fxNow[d.id] = n; paint(); await GB.post('/api/lights/surplife', {id: d.id, fx: {p: n, s: 80, b: 80}}); };
+    w.querySelector('[data-fx="-"]').onclick = () => { n = Math.max(0, n - 1); play(); };
+    w.querySelector('[data-fx="+"]').onclick = () => { n = Math.min(255, n + 1); play(); };
+    w.querySelector('[data-fx="fav"]').onclick = async () => { favs.has(n) ? favs.delete(n) : favs.add(n); d.fxfav = [...favs]; paint(); await GB.post('/api/lights/surplife', {id: d.id, fxfav: [...favs]}); };
+    w.querySelectorAll('[data-susm]').forEach(b => b.onclick = async () => {
+      if (await GB.post('/api/lights/surplife', {id: d.id, mode: b.dataset.susm})) { d.mode = b.dataset.susm; w.querySelectorAll('[data-susm]').forEach(x => x.classList.toggle('on', x === b)); GB.toast(SPT[b.dataset.susm]); } });
+    paint(); return w;
+  }
+  GB.panel('lights', 5, el => {
+    el.id = 'spPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--gold)'); el.hidden = true;
+    el.innerHTML = `<div class="ph"><span id="spT">Curtain</span></div><div id="spBody"></div>`;
+  });
+  function paintSp() {
+    const el = $('spPanel'); if (!el || !LS) return;
+    const c = document.querySelector('#slList .sl-li.on [data-li]') || document.querySelector('#slTop .chip.on[data-sl]');
+    const id = c ? (c.dataset.li || c.dataset.sl) : '', d = id && (LS.devices || []).find(x => x.id === id && x.type === 'surplife');
+    if (!d) { el.hidden = true; return; }
+    const home = $('slCtl') && $('slCtl').offsetParent ? $('slCtl') : document.querySelector('#slList .sl-li.on .sl-lib');
+    const hl = $('hlPanel');
+    if (home) { if (hl && hl.parentElement === home) { if (hl.nextSibling !== el) hl.after(el); } else if (el.parentElement !== home || home.firstChild !== el) home.prepend(el); }
+    el.hidden = false; $('spT').textContent = d.name + ' · how it follows the show';
+    if (el.dataset.id !== d.id) { el.dataset.id = d.id; const b = $('spBody'); b.innerHTML = ''; b.appendChild(curtainCtl(d)); }
+  }
+  setInterval(paintSp, 700);
+  // ➕ Oct 20 (Graham: "you can't just push connect to my lights up at the top... It's way down at the bottom"): Find my lights
+  //   is the first thing on LIGHTS now, big, and it opens the full-screen scan (ui/scanner.js).
+  GB.panel('lights', 2, el => {
+    el.id = 'addPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
+    el.innerHTML = `<div class="su-findrow"><button class="btn c" id="suScan" style="--c:var(--cyan)">${lbl('search', 'Find my lights')}</button>
+      <button class="btn" id="suAddBtn">${lbl('add', 'Add by brand')}</button></div><div id="suFound" class="list"></div>`;
+  });
+  GB.css(`#addPanel .su-findrow { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 1fr); gap:8px; }
+    #addPanel .su-findrow .btn { min-height:64px !important; font-size:calc(18px * var(--fs, 1)) !important; }
+    #addPanel #suAdd { margin-top:8px; }`);
+  GB.lightsReload = () => { lsDirty = true; loadLights(); };
+  const findFirst = () => { const sl = $('slPanel');                       // 📱 narrow screens (boxes you can arrange): Find my lights at the top
+    if (!sl || GB.ltShell || $('slFind')) return;                            //   of the layout board's box, so it's the first thing on LIGHTS
+    const r = document.createElement('div'); r.id = 'slFind'; r.className = 'su-findrow';
+    r.innerHTML = `<button class="btn c" style="--c:var(--cyan)">${lbl('search', 'Find my lights')}</button><button class="btn">${lbl('add', 'Add by brand')}</button>`;
+    r.children[0].onclick = () => GB.findLights ? GB.findLights() : scan();
+    r.children[1].onclick = () => { const a = $('suAdd'); if (a && a.hidden) $('suAddBtn').click(); ($('addPanel') || a).scrollIntoView({behavior: 'smooth', block: 'center'}); };
+    const ph = sl.querySelector('.ph'); if (ph) ph.after(r); else sl.prepend(r); };
+  GB.css(`#slFind { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 1fr); gap:8px; margin:6px 0 10px; } #slFind .btn { min-height:64px; font-size:calc(17px * var(--fs, 1)); }`);
+  GB.on('page', id => { if (id === 'lights') setTimeout(findFirst, 60); }); setTimeout(findFirst, 1500);
   // 💡 1a. your lights: the list + find / add
   GB.panel('lights', 85, el => {                                 // Oct 17: lower on the page, the layout editor leads LIGHTS now
     el.id = 'lightsPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--peri)');
     el.innerHTML = `
       <div class="ph"><span>Your lights</span><span class="r" id="suCount"></span></div>
       <p class="note">Find and add Twinkly, WLED and Govee lights, plus Surplife curtains and DayBetter strips over Bluetooth.</p>
+      <div class="su-tools"><button class="chip" id="suIdAll" style="--c:var(--gold)">${GB.svg('eye')}<span>Identify all</span></button><button class="chip" id="suHist" style="--c:var(--lav)">${GB.svg('back')}<span>Layout history</span></button></div>
       <div class="list" id="suList"><p class="note">Loading…</p></div>
       ${applyRow(true)}
 
-      <div class="sub">Add lights</div>
-      <div class="seg"><button class="btn c" id="suScan" style="--c:var(--cyan)">${lbl('search', 'Find my lights')}</button><button class="btn" id="suAddBtn">${lbl('add', 'Add by brand')}</button></div>
-      <div id="suFound" class="list"></div>
       <div id="suAdd" class="su-inset" hidden>
         <select id="suBrand" aria-label="Brand"><optgroup label="⭐ Full show"><option value="twinkly">Twinkly</option><option value="wled">WLED</option><option value="surplife">Surplife curtain (Bluetooth)</option><option value="nanoleaf">Nanoleaf string lights (Wi-Fi)</option><option value="lifx">LIFX (String, Neon, Beam, Tile, bulbs)</option></optgroup><optgroup label="Basic sync (one color)"><option value="govee">Govee</option><option value="daybetter">DayBetter (Bluetooth)</option><option value="blecheap">Bluetooth LED strip</option></optgroup></select>
         <div class="su-addrow"><input type="search" id="suIp" placeholder="IP address, e.g. 192.168.0.50" aria-label="IP address" autocapitalize="off" spellcheck="false"><button class="btn c" id="suAddGo" style="--c:var(--cyan)">Add</button></div>
         <p class="note" id="suHelp"></p>
       </div>
       <p class="note">Lights a beat behind a Bluetooth speaker? Set <a href="#music" id="suSyncGo"><b>Sync delay</b></a> on the MUSIC page while a song plays. It is saved per speaker.</p>`;
-    $('suScan').onclick = scan;
+    $('suIdAll').onclick = identifyAll; $('suHist').onclick = layoutHistory;
+    const ap = $('addPanel'); if (ap) ap.appendChild($('suAdd'));      // ➕ Add by brand opens right under the Find / Add buttons
+    $('suScan').onclick = () => GB.findLights ? GB.findLights() : scan();
     $('suAddBtn').onclick = () => { const a = $('suAdd'); a.hidden = !a.hidden; $('suAddBtn').classList.toggle('on', !a.hidden); $('suHelp').textContent = tierNote($('suBrand').value) + HELP[$('suBrand').value]; };
     $('suBrand').onchange = () => $('suHelp').textContent = tierNote($('suBrand').value) + HELP[$('suBrand').value];
     $('suAddGo').onclick = async () => {
@@ -176,7 +279,7 @@
     const custom = () => { const g = (LS && LS.groups) || []; return g.length > 1 && g.some(x => x.devices.length > 1); };
     const twice = (k, msg, go) => { if (custom() && armed !== k) { armed = k; clearTimeout(armT); armT = setTimeout(() => armed = '', 4000); GB.toast(msg); return; } armed = ''; go(); };
     $('suAll').onclick = () => { if (!LS) return; twice('all', '🧩 Tap again to put every light in one show (this replaces your groups)', () => { GE = {}; LS.devices.forEach(d => GE[d.id] = {g: 1}); saveGroups(); }); };
-    $('suEach').onclick = () => { if (!LS) return; twice('each', '🧩 Tap again to give every light its own show (this splits your groups apart)', () => { GE = {}; LS.devices.slice(0, 4).forEach((d, i) => { GE[d.id] = {g: i + 1}; GE['_n' + (i + 1)] = d.name; }); LS.devices.slice(4).forEach(d => GE[d.id] = {g: 4}); saveGroups(); }); };
+    $('suEach').onclick = () => { if (!LS) return; twice('each', '🧩 Tap again to give every light its own show (this splits your groups apart)', () => { GE = {}; LS.devices.forEach((d, i) => { GE[d.id] = {g: i + 1}; GE['_n' + (i + 1)] = d.name; }); saveGroups(); }); };
   });
 
   // 🗺️ 1c. layout + shape (flat wall, or wrapped round a cylinder / box / globe)
@@ -269,12 +372,34 @@
       }
       const acts = document.createElement('div'); acts.className = 'su-acts';
       acts.appendChild(btn('', lbl('eye', 'Flash'), async () => { await GB.post('/api/lights/identify', {id: d.id}); GB.toast('👀 Flashing ' + d.name); }, {title: 'Flash it'}));
-      acts.appendChild(btn(d.enabled ? '' : 'c', lbl(d.enabled ? 'power' : 'play', d.enabled ? 'Off' : 'On'), async () => { if (await GB.post('/api/lights/toggle', {id: d.id, enabled: !d.enabled})) { lsDirty = true; loadLights(); } }, {title: d.enabled ? 'Turn off' : 'Turn on'}));
+      acts.appendChild(btn(d.enabled ? '' : 'c', lbl(d.enabled ? 'power' : 'play', d.enabled ? 'Off' : 'On'), async () => { const r = await GB.post('/api/lights/toggle', {id: d.id, enabled: !d.enabled}); if (r) { if (r.restart) lsDirty = true; GB.sfx && GB.sfx(d.enabled ? 'off' : 'on'); GB.toast((d.enabled ? '🌑 ' : '💡 ') + (r.msg || d.name)); loadLights(); if (!d.enabled) setTimeout(loadLights, 4000); } }, {title: d.enabled ? 'Turn off' : 'Turn on'}));
       if (!d.enabled) acts.lastChild.style.setProperty('--c', 'var(--green)');
       acts.appendChild(btn('', lbl('edit', 'Name'), () => { renaming = renaming === d.id ? null : d.id; loadLights(); }, {title: 'Rename'}));
       const rm = btn('danger', lbl('trash', 'Remove'), null, {title: 'Remove'}); const rmHTML = rm.innerHTML;
       twice(rm, 'Sure?', rmHTML, async () => { if (await GB.post('/api/lights/remove', {id: d.id})) { lsDirty = true; GB.toast('Removed ' + d.name); loadLights(); } });
       acts.appendChild(rm); r.appendChild(acts);
+      {                                                            // 🔆 Oct 19 (topic 2, #1): cap this light's brightness (a curtain right by the couch, a too-bright string)
+        const mb = document.createElement('div'); mb.className = 'su-opt su-mb'; const cur = Math.round((d.maxbri == null ? 1 : d.maxbri) * 100);
+        mb.innerHTML = `<span>Max brightness</span><div class="seg">${[25, 50, 75, 100].map(v => `<button class="btn${Math.abs(cur - v) < 13 ? ' on' : ''}" data-mb="${v}" style="--c:var(--gold)">${v}%</button>`).join('')}</div>`;
+        mb.querySelectorAll('[data-mb]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/maxbri', {id: d.id, v: +b.dataset.mb / 100})) { d.maxbri = +b.dataset.mb / 100; mb.querySelectorAll('[data-mb]').forEach(x => x.classList.toggle('on', x === b)); GB.toast('🔆 ' + d.name + ': never brighter than ' + b.dataset.mb + '%'); } });
+        r.appendChild(mb);
+      }
+      if (d.drive) {                                               // 🎞️ Oct 19 20:20: Nanoleaf string: smooth loops (easy on its Wi-Fi) or live pixels
+        const nd = document.createElement('div'); nd.className = 'su-opt su-mb';
+        nd.innerHTML = `<span>Show on it</span><div class="seg" style="grid-template-columns:1fr 1fr">${[['loops', 'Smooth loops'], ['stream', 'Live pixels']].map(([k, t]) => `<button class="btn${d.drive === k ? ' on' : ''}" data-nd="${k}" style="--c:var(--cyan)">${t}</button>`).join('')}</div>`;
+        nd.querySelectorAll('[data-nd]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/nldrive', {id: d.id, drive: b.dataset.nd})) { d.drive = b.dataset.nd; nd.querySelectorAll('[data-nd]').forEach(x => x.classList.toggle('on', x === b)); GB.toast(b.dataset.nd === 'loops' ? '🎞️ ' + d.name + ' plays smooth loops in the show\'s colours, a new one every part of the song, with a flash on each drop' : '🎨 ' + d.name + ' gets every frame live again (heavier on its Wi-Fi)'); } });
+        r.appendChild(nd);
+      }
+      if (d.own) {                                                 // 🤖 Oct 19 (topic 2, #3): GlowBop's show, or the light's own built-in effects picked by the music
+        const fo = document.createElement('div'); fo.className = 'su-opt su-mb'; const own = d.follow === 'own';
+        fo.innerHTML = `<span>Follow</span><div class="seg" style="grid-template-columns:1fr 1fr">${[['stream', 'GlowBop show'], ['own', 'Its own effects']].map(([k, t]) => `<button class="btn${(own ? 'own' : 'stream') === k ? ' on' : ''}" data-fo="${k}" style="--c:var(--lav)">${t}</button>`).join('')}</div>`;
+        fo.querySelectorAll('[data-fo]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/follow', {id: d.id, follow: b.dataset.fo})) { d.follow = b.dataset.fo; fo.querySelectorAll('[data-fo]').forEach(x => x.classList.toggle('on', x === b)); GB.toast(b.dataset.fo === 'own' ? '🤖 ' + d.name + ' plays its own built-in effects, a new one every part of the song. Easy on the Wi-Fi.' : '🎨 ' + d.name + ' follows the GlowBop show again'); } });
+        r.appendChild(fo);
+      }
+      if (d.type === 'twinkly') {                                  // 🧠 Oct 19 (day 1): use the map this Twinkly already has (made in its own app)
+        const tm = btn('c sm su-twmap', lbl('map', d.twmap ? 'Using its Twinkly app map' : 'Use its Twinkly app map'), () => twMap(d), {title: 'Use the map this light already has', style: '--c:var(--cyan)'});
+        r.appendChild(tm);
+      }
 
       const grids = LS.devices.filter(x => x.is_grid && x.enabled && x.id !== d.id);
       if (d.is_grid && d.enabled && grids.length) {                   // 🔀 overlap this curtain on another one
@@ -284,10 +409,9 @@
         r.appendChild(o);
         if (d.overlap_on) ovRows(r, d, d.overlap_on);
       }
-      if (d.type === 'surplife') {                                  // Bluetooth curtains: how they follow the show
+      if (d.type === 'surplife') {                                  // 🤖 Oct 19: its controls moved to the top (tap its chip on the live wall)
         const m = document.createElement('div'); m.className = 'su-opt';
-        m.innerHTML = `<span>Follow</span><div class="seg">${[['auto', 'Auto'], ['pixels', 'Picture'], ['beat', 'Beat bars']].map(([k, t]) => `<button class="btn${(d.mode || 'auto') === k ? ' on' : ''}" data-susm="${k}" style="--c:var(--peri)">${t}</button>`).join('')}</div>`;
-        m.querySelectorAll('[data-susm]').forEach(b => b.onclick = async () => { if (await GB.post('/api/lights/surplife', {id: d.id, mode: b.dataset.susm})) { GB.toast({auto: 'Auto: picture for text/logos/holidays, beat bars for music', pixels: 'Shows the GlowBop picture (1-4 updates a second)', beat: 'Fast beat bars driven by GlowBop\'s music analysis'}[b.dataset.susm]); loadLights(); } });
+        m.innerHTML = `<span>Curtain</span><small style="color:var(--gold)">${{autopilot: 'Autopilot', shapes: 'Shapes', pixels: 'Colours', beat: 'Beat bars', auto: 'Auto'}[d.mode || 'autopilot'] || 'Autopilot'} · tap its chip on the live wall for its controls</small>`;
         r.appendChild(m);
       }
       box.appendChild(r);
@@ -418,7 +542,7 @@
     if (!GE) { GE = {}; (LS.groups || []).forEach((g, gi) => g.devices.forEach(id => GE[id] = {g: gi + 1, name: g.name})); }
     const used = [...new Set(LS.devices.map(d => (GE[d.id] || {g: 1}).g))].sort();
     box.innerHTML = '<div class="list">' + LS.devices.map(d => `<div class="su-grp"><b>${esc(d.name)}</b>
-       <select data-sugd="${esc(d.id)}" aria-label="Group for ${esc(d.name)}">${[1, 2, 3, 4].map(n => `<option value="${n}" ${((GE[d.id] || {g: 1}).g === n) ? 'selected' : ''}>Group ${n}</option>`).join('')}</select></div>`).join('') + '</div>' +
+       <select data-sugd="${esc(d.id)}" aria-label="Group for ${esc(d.name)}">${Array.from({length: Math.max(4, LS.devices.length)}, (_, i) => i + 1).map(n => `<option value="${n}" ${((GE[d.id] || {g: 1}).g === n) ? 'selected' : ''}>Group ${n}</option>`).join('')}</select></div>`).join('') + '</div>' +
       (used.length > 1 ? `<p class="note">Group names:</p>` + used.map(n => { const nm = (LS.groups || [])[n - 1] ? LS.groups[n - 1].name : (n === 1 ? 'Main' : 'Group ' + n);
         return `<label class="su-gname">Group ${n}<input type="text" data-sugn="${n}" value="${esc(GE['_n' + n] || nm)}" maxlength="30"></label>`; }).join('') : '') +
       `<button class="btn c wide" id="suGrpSave" style="--c:var(--peri)">${lbl('save', 'Save groups')}</button>`;
@@ -683,15 +807,13 @@
     };
   });
 
-  // =================================================================== 6. QUIT
-  GB.panel('setup', 60, el => {
-    el.innerHTML = `<button class="btn danger lg wide" id="suQuit">${lbl('eject', 'Quit GlowBop')}</button><p class="note" style="text-align:center">Tap twice. Your curtains go back to normal.</p>`;
-    let quitArm = 0;
-    $('suQuit').onclick = async () => {
-      if (Date.now() - quitArm > 3000) { quitArm = Date.now(); return GB.toast('Tap again to quit GlowBop'); }
-      if (await GB.post('/api/quit', {})) { GB.toast('👋 GlowBop stopped'); setTimeout(() => { try { window.close(); } catch (e) {} }, 1200); }
-    };
-  });
+  // 🚪 Oct 20 (Graham: closing the window should shut GlowBop down, and ask about the lights each time). The window's X calls this:
+  //   the same question and shutdown sequence as the SHUTDOWN key (powerscreen.js); Cancel keeps GlowBop open.
+  GB.closeAsk = () => {
+    const s = GB.shutdownAsk && GB.shutdownAsk(); if (!s) return;
+    const g = s.querySelector('.btn.ghost'); if (g) g.addEventListener('click', () => window.pywebview && window.pywebview.api.stay && window.pywebview.api.stay());
+  };
+  // (Oct 20: the QUIT panel moved to the SHUTDOWN key at the bottom of the rail, so it isn't here twice)
 })();
 
 /* 🔓 "You've set your lights free!" (Oct 16, Graham): the first time GlowBop finds someone's lights, a celebration card shows them
@@ -720,7 +842,7 @@
       <h2>You've set your lights <b>free!</b></h2>
       <p class="lead">No more stuck with the app in the box. <b>You</b> are in control now:</p>
       <ul><li><i>🎵</i><span><b>You</b> play any song, and your lights hear every beat, build-up and drop.</span></li>
-        <li><i>🎛️</i><span><b>You're</b> the DJ: hold to build, let go to drop, hit the pads.</span></li>
+        <li><i>🎛️</i><span><b>You're</b> the DJ: hold Charge the drop, let go to drop, hit the pads.</span></li>
         <li><i>📱</i><span><b>You</b> run the whole show from your phone or iPad, anywhere in the house.</span></li>
         <li><i>🎃</i><span><b>You</b> pick the vibe: holidays, games, your team's score, fire, your own words.</span></li></ul>
       <div class="row"><button class="btn c" id="gbFrGo" style="--c:#ff3d9a">🎵 Start the show</button><button class="btn" id="gbFrStay">Keep setting up</button></div></div>`;

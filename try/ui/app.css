@@ -549,5 +549,5 @@ html body #main .chip.on, html body #main .chip.sel { background-color:var(--c, 
 html body #main .chip:disabled { opacity:.45; }
 html body #main .dj-cst .chip, html body #main .chip:not(.gb-wm):empty { padding:0 !important; min-width:0; }   /* icon-only mood keys under COOL stay inside their column */
 /* 23:21 Oct 18 (Graham: "build to hold and cool down need to be a different size, 66 33"): HOLD TO BUILD two thirds, COOL one third */
-html body #main .dj-bc > #djBuild { flex:2 1 0 !important; min-width:0; }
+html body #main .dj-bc > .dj-bl { flex:2 1 0 !important; min-width:0; }
 html body #main .dj-bc > .dj-cc { flex:1 1 0 !important; min-width:0; }
