@@ -17,7 +17,7 @@
   // 🧠 smart start: the boxes you set once and forget start as tools; the ones you play with stay open
   const START = {
     setup: ['miPanel', 'helpPanel', 'tl-screen', 'tl-console-sounds', 'tl-intro-screen', 'tl-text-size', 'tl-song-lookup', 'suLicPanel', 'suStats'],
-    lights: ['ckPanel', 'offPanel', 'grpPanel', 'xlPanel', 'tl-straight-curtains', 'camPanel', 'lineupPanel'],
+    lights: ['ckPanel', 'offPanel', 'grpPanel', 'tl-straight-curtains', 'camPanel', 'lineupPanel'],   // (xLights moved to HOUSE, Oct 21)
     dj: ['tl-cue-the-next-look', 'tl-crowd-lines', 'djMidiCard'],
     music: ['tl-levels'],
     text: ['tl-logo'],

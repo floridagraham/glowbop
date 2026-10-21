@@ -42,7 +42,11 @@
   #slCtl { display:flex; flex-direction:column; gap:8px; } #slCtl:empty { display:none; }
   .sl-fab { position:absolute; top:6px; right:6px; z-index:3; display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; max-width:calc(100% - 12px); pointer-events:none; }
   .sl-fab .btn { pointer-events:auto; min-height:38px !important; min-width:40px; padding:0 9px !important; font-size:15px !important; background:#0d0b18e6; border-radius:10px; }
-  .sl-fab .btn.on { background:var(--cyan); color:#000; } .sl-fab .btn:disabled { opacity:.35; }
+  .sl-fab .btn.sl-ib { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; min-width:48px; min-height:48px !important; padding:3px 5px !important; color:#e9f6ff; border:1px solid #33d6ff66; }
+  .sl-fab .btn.sl-ib svg { position:static !important; inset:auto !important; transform:none !important; opacity:1 !important; width:20px !important; height:20px !important; fill:currentColor; flex:none; }
+  .sl-fab .btn.sl-ib i { font:700 10px/1 var(--cond, sans-serif); letter-spacing:.5px; text-transform:uppercase; font-style:normal; color:#bfeaff; }
+  .sl-fab .btn.sl-ib.on i { color:#000; }
+  .sl-fab .btn.on { background:var(--cyan); color:#000; } .sl-fab .btn:disabled { opacity:.55; }
   .sl-fab .sep { width:6px; }
   .sl-view { position:absolute; top:50px; right:6px; z-index:4; width:min(300px, calc(100% - 12px)); background:#0d0b18f4; border:2px solid #ffc23d; border-radius:0 14px 0 14px; padding:10px; box-shadow:0 10px 30px #000b; }
   .sl-view[hidden] { display:none; }
@@ -897,11 +901,23 @@
       const sn = document.createElement('button'); sn.className = 'btn'; sn.id = 'slSnapT'; sn.title = 'Snap to grid'; sn.textContent = '🧲';
       sn.onclick = () => { SNAP = !SNAP; try { localStorage.setItem('gb_sl_snap', SNAP ? '1' : '0'); } catch (x) {} GB.toast(SNAP ? '🧲 Snap on: everything clicks onto bulb spots' : '✋ Snap off: place freely'); draw(); };
       const u = el.querySelector('#slUndo'), r = el.querySelector('#slRedo'), zo = el.querySelector('#slZo'), fi = el.querySelector('#slFit'), zi = el.querySelector('#slZi'), big = el.querySelector('#slBig');
-      u.textContent = '↶'; u.title = 'Undo'; r.textContent = '↷'; r.title = 'Redo'; fi.textContent = '⤢'; fi.title = 'Fit everything'; big.textContent = '⛶'; big.title = 'Full screen'; big.className = 'btn';
+      // Oct 21 (Graham: "you can't see any of the controls... extremely hard to read"): the old symbols didn't draw in every font,
+      //   so every map button is now a drawn icon with its name under it
+      const P = {undo: 'M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z',
+        redo: 'M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z',
+        snap: 'M5 3h4.5v9a2.5 2.5 0 005 0V3H19v9a7 7 0 01-14 0zm0 0v3h4.5V3zm9.5 0v3H19V3z',
+        turn: 'M13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93zM7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03z',
+        zout: 'M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM6.5 8.7h6v1.6h-6z',
+        zin: 'M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM6.5 8.7h2.2V6.5h1.6v2.2h2.2v1.6h-2.2v2.2H8.7v-2.2H6.5z',
+        fit: 'M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2zM9 9h6v6H9z',
+        big: 'M7 14H5v5h5v-2H7zm-2-4h2V7h3V5H5zm12 7h-3v2h5v-5h-2zM14 5v2h3v3h2V5z'};
+      const lab = (b, k, t) => { b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${P[k]}"/></svg><i>${t}</i>`; b.title = t; b.setAttribute('aria-label', t); b.classList.add('sl-ib'); };
+      lab(u, 'undo', 'Undo'); lab(r, 'redo', 'Redo'); lab(fi, 'fit', 'Fit'); lab(zo, 'zout', 'Zoom out'); lab(zi, 'zin', 'Zoom in'); lab(sn, 'snap', 'Snap'); big.className = 'btn'; lab(big, 'big', 'Big screen');
+      zo.querySelector('i').textContent = 'Out'; zi.querySelector('i').textContent = 'In';
       const gap = () => { const g = document.createElement('span'); g.className = 'sep'; return g; };
       // 🎬 Oct 18 (Graham: "twist the light show"; "turn the show was malfunctioning before, make sure that button is better"):
       //   the lights stay where they hang, the whole picture turns / mirrors / zooms / slides. Each tap is saved and live at once.
-      const tv = document.createElement('button'); tv.className = 'btn'; tv.id = 'slViewBtn'; tv.title = 'Turn the show'; tv.textContent = '🎬';
+      const tv = document.createElement('button'); tv.className = 'btn'; tv.id = 'slViewBtn'; tv.title = 'Turn the show'; lab(tv, 'turn', 'Turn');
       const vp = document.createElement('div'); vp.className = 'sl-view'; vp.id = 'slView'; vp.hidden = true;
       vp.innerHTML = `<b>🎬 Turn the show</b><div class="g"><button class="btn" data-vo="ccw">↺ 90°</button><button class="btn" data-vo="cw">↻ 90°</button><button class="btn" data-vo="fx">⇋ Mirror</button><button class="btn" data-vo="fy">⇅ Flip</button></div>
         <div class="g"><button class="btn" data-vo="left">←</button><button class="btn" data-vo="up">↑</button><button class="btn" data-vo="down">↓</button><button class="btn" data-vo="right">→</button></div>
@@ -1066,7 +1082,7 @@
   // 🧩 Oct 17 (Graham: "combine all these little boxes into one"): the other layout tools fold into this panel
   function foldIn() {
     const host = $('slPanel'); if (!host || host.dataset.folded) return; host.dataset.folded = '1';
-    [['layoutPanel', '🗺️ Canvas & shape'], ['lineupPanel', '🧭 Line up my curtains'], ['drawPanel', '🏠 Draw on a photo (house, stage)'], ['camPanel', '📷 Map with camera']].forEach(([id, t]) => {
+    [['layoutPanel', '🗺️ Canvas & shape'], ['lineupPanel', '🧭 Line up my curtains'], ['camPanel', '📷 Map with camera']].forEach(([id, t]) => {
       const p = $(id); if (!p) return;
       const det = document.createElement('details'); det.className = 'sl-more'; det.style.setProperty('--c', getComputedStyle(p).getPropertyValue('--c') || 'var(--cyan)');
       det.innerHTML = `<summary>${t}</summary>`; p.classList.remove('box'); p.classList.add('sl-sub'); det.appendChild(p); host.appendChild(det);

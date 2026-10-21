@@ -24,13 +24,21 @@
   .xl-fpp b { color:var(--amber); }
   .xl-live { font:calc(13px * var(--fs, 1)) var(--mono); color:var(--cyan); overflow-wrap:anywhere; }
   .xl-sum[hidden], .xl-help[hidden] { display:none; }
+  /* 👀 Oct 21: watch the house on screen */
+  .xl-watch { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .xl-watch .chip { min-height:48px; padding:0 14px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .xl-watch .chip.on { background:var(--c); color:#000; }
+  .xl-wnote { color:var(--dim); font-size:calc(13px * var(--fs, 1)); margin:4px 0 0; }
   .xl-help ol { margin:4px 0; padding-left:20px; line-height:1.5; color:var(--dim); font-size:calc(14px * var(--fs, 1)); }
   `);
 
   let S = null, ST = null, testing = false, busy = false;
+  // 👀 Oct 21 (Graham: "download the house into GlowBop... see what that looks like inside the system"): play GlowBop's show, or the
+  //   house's own finished xLights show (.fseq), on the house's dots. Screen only: GET /api/xl/watch (xlwatch.py).
+  let W = {src: null, name: '', t0: 0, busy: false, raf: 0, list: null, last: 0};
   const COL = GB.DEVCOL || ['#ff3d9a', '#33d6ff', '#3ce08a', '#ffc04d', '#c58bff', '#ff7a3d'];
 
-  GB.panel('lights', 33, el => {
+  GB.panel('house', 40, el => {                                    // 🏠 Oct 21: on the HOUSE page now (was LIGHTS)
     el.id = 'xlPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--green)');
     el.innerHTML = `<div class="ph"><span>Import from xLights</span><span class="r" id="xlState"></span></div>
       <p class="note">Already run a holiday show with xLights? Point GlowBop at your show folder. It finds your props and controllers and plays its music show on your house, through the controllers you already own.</p>
@@ -43,6 +51,9 @@
       <div class="xl-sum" id="xlSum" hidden>
         <div class="reads" id="xlReads"></div>
         <canvas class="xl-prev" id="xlPrev" width="1000" height="500" aria-label="Your house from xLights, as dots"></canvas>
+        <div class="sub">Watch on screen</div>
+        <div class="xl-watch" id="xlWatch"></div>
+        <p class="xl-wnote" id="xlWNote">Only on this screen: nothing is sent to any light, and your own lights and layout stay as they are.</p>
         <div id="xlWarn"></div>
         <div id="xlFpp"></div>
         <div class="sub">Controllers</div>
@@ -117,6 +128,9 @@
   async function dirScan(fs) {
     const want = ['xlights_networks.xml', 'xlights_rgbeffects.xml'], files = {};
     for (const f of fs) { const n = f.name.toLowerCase(); if (want.includes(n) && f.webkitRelativePath.split('/').length <= 2) files[n] = await f.text(); }
+    const shows = fs.filter(f => /\.fseq$/i.test(f.name) && !/\/backup\//i.test(f.webkitRelativePath) && f.size < 150 * 1024 * 1024).slice(0, 4);   // 👀 their finished shows, to watch
+    for (const f of shows) files[f.name] = 'b64:' + b64(await f.arrayBuffer());
+    fs.filter(f => /\.xsq$/i.test(f.name) && !/\/backup\//i.test(f.webkitRelativePath)).forEach(f => { files[f.name] = ''; });
     if (!files['xlights_rgbeffects.xml']) return GB.toast('No xlights_rgbeffects.xml in that folder. Pick your xLights show folder.');
     scan({files});
   }
@@ -136,15 +150,50 @@
     $('xlCtl').innerHTML = sm.ctl.map((c, i) => `<div class="xl-ctl"><i style="background:${COL[i % COL.length]}"></i><div class="tx"><b>${esc(c.name)}</b>
       <small>${esc(c.proto)} · ${esc(c.ip || 'no IP')}${c.universes ? ` · universes ${c.universes[0]}-${c.universes[1]}` : ''} · ${c.pixels} pixels${c.active ? '' : ' · inactive'}</small></div></div>`).join('');
     drawPrev(pv);
+    watchList();
   }
-  function drawPrev(pv) {
+  async function watchList() {
+    watchStop(); let r = null; try { r = await GB.get('/api/xl/watch/list'); } catch (e) {}
+    W.list = r; const box = $('xlWatch'); if (!box) return;
+    const shows = (r && r.shows) || [];
+    box.innerHTML = `<button class="chip" data-w="glowbop" style="--c:var(--pink)">${GB.svg('play')}<span>GlowBop's show</span></button>` +
+      shows.map((s, i) => `<button class="chip" data-w="show" data-i="${i}" style="--c:var(--green)" ${s.error ? 'disabled' : ''}>${GB.svg('movie')}<span>Their show: ${esc(s.name)}${s.secs ? ' · ' + Math.round(s.secs) + ' s' : ''}</span></button>`).join('');
+    box.querySelectorAll('[data-w]').forEach(b => b.onclick = () => {
+      const src = b.dataset.w, name = src === 'show' ? shows[+b.dataset.i].name : '';
+      if (W.src === src && W.name === name) { watchStop(); paintWatch(); return; }
+      W.src = src; W.name = name; W.t0 = performance.now(); paintWatch(); GB.sfx && GB.sfx('tap'); watchLoop(); });
+    const xo = (r && r.xsq_only) || [], err = shows.filter(s => s.error).map(s => s.error);
+    $('xlWNote').textContent = 'Only on this screen: nothing is sent to any light, and your own lights and layout stay as they are.' +
+      (xo.length ? ` ${xo.length} song${xo.length > 1 ? 's' : ''} came as xLights projects only (.xsq): render them in xLights to get a .fseq, then scan again.` : '') +
+      (err.length ? ' ' + err[0] : '');
+  }
+  function paintWatch() { document.querySelectorAll('#xlWatch [data-w]').forEach(b => b.classList.toggle('on', b.dataset.w === W.src && (b.dataset.w !== 'show' || (W.list.shows[+b.dataset.i] || {}).name === W.name))); }
+  function watchStop() { W.src = null; cancelAnimationFrame(W.raf); if (S) drawPrev(S.preview); }
+  function watchLoop() {
+    cancelAnimationFrame(W.raf);
+    const step = async now => {
+      if (!W.src) return;
+      const cv = $('xlPrev'); if (!cv || !cv.offsetParent) { W.raf = requestAnimationFrame(step); return; }
+      if (!W.busy && now - W.last > 66) { W.busy = true; W.last = now;
+        try { const t = ((performance.now() - W.t0) / 1000).toFixed(2);
+          const r = await GB.get('/api/xl/watch?src=' + W.src + '&t=' + t + (W.src === 'show' ? '&name=' + encodeURIComponent(W.name) : ''));
+          if (r && r.rgb && W.src) drawPrev(S.preview, r.rgb); } catch (e) {}
+        W.busy = false; }
+      W.raf = requestAnimationFrame(step);
+    };
+    W.raf = requestAnimationFrame(step);
+  }
+  function drawPrev(pv, hex) {
     const cv = $('xlPrev'), W = pv.stage[0], H = pv.stage[1];
     cv.width = 1000; cv.height = Math.max(120, Math.round(1000 * H / W)); cv.style.setProperty('--xlh', cv.height);
     const cx = cv.getContext('2d'), k = 1000 / W; cx.fillStyle = '#06050c'; cx.fillRect(0, 0, cv.width, cv.height);
     const r = Math.max(1.2, Math.min(3.2, 1.6 * Math.sqrt(6000 / Math.max(1, S.summary.pixels))));
+    let j = 0;
     pv.props.forEach(p => {
-      cx.fillStyle = p.ctl >= 0 ? COL[p.ctl % COL.length] : '#666';
-      p.pts.forEach(q => { cx.beginPath(); cx.arc(q[0] * k, q[1] * k, r, 0, 6.2832); cx.fill(); });
+      if (!hex) cx.fillStyle = p.ctl >= 0 ? COL[p.ctl % COL.length] : '#666';
+      p.pts.forEach(q => {
+        if (hex) { const c = hex.substr(j * 6, 6); j++; cx.fillStyle = c && c !== '000000' ? '#' + c : '#1c1828'; }
+        cx.beginPath(); cx.arc(q[0] * k, q[1] * k, r, 0, 6.2832); cx.fill(); });
     });
   }
 

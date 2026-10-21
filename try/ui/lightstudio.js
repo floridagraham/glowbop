@@ -73,8 +73,7 @@
     take(lp, 'lights');
     take($('grpPanel'), 'groups');
     take($('layoutPanel'), 'shape'); take($('lineupPanel'), 'shape');
-    take($('drawPanel'), 'map'); take($('camPanel'), 'map'); take(boxOf(null, 'Straight curtains'), 'map');
-    take($('xlPanel'), 'xl');
+    take($('camPanel'), 'map');                                  // (drawing + xLights moved to the HOUSE page, Oct 21) take(boxOf(null, 'Straight curtains'), 'map');
     // anything else left on the page (future panels) goes under the board's tabs instead of stacking below
     [...pg.children].filter(c => c !== shell && c.classList && c.classList.contains('box')).forEach(c => body('lights').appendChild(c));
     insp.querySelectorAll('.lt-tabs button').forEach(b => { const bd = body(b.dataset.tb); b.hidden = !bd.querySelector('.panel, .sl-side'); });   // 🧰 a tab with nothing left (all tools) hides

@@ -60,6 +60,12 @@
   .lm-cdev { display:flex; align-items:center; gap:10px; border-bottom:1px solid #2a1210; padding:8px 2px; min-width:0; }
   .lm-cdev .tx { flex:1; min-width:0; } .lm-cdev b { display:block; font:700 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; color:#ff8a7a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .lm-cdev small { color:#b06a60; font-size:calc(12px * var(--fs, 1)); }
+  .lm-grow { display:grid; grid-template-columns:minmax(0, 1fr) auto 44px 44px; gap:6px; align-items:center; padding:4px 6px; border-radius:10px; border:1px solid var(--line); cursor:pointer; }
+  .lm-grow.on { border-color:#ffc04d; box-shadow:inset 0 0 0 1px #ffc04d; }
+  .lm-grow b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:700 calc(14px * var(--fs, 1)) var(--cond); letter-spacing:.5px; }
+  .lm-grow small { color:var(--dim); font:600 calc(12px * var(--fs, 1)) var(--mono); }
+  .lm-grow .btn { min-height:44px; width:44px; padding:0; }
+  #lmHouse { min-height:48px; }
   .lm-rate { height:8px; border-radius:4px; background:#2a1210; overflow:hidden; margin-top:4px; } .lm-rate i { display:block; height:100%; background:#ff5a4a; }
   `);
 
@@ -79,16 +85,18 @@
   const KIND_NAME = {line: 'Line', poly: 'Path', arc: 'Arc', ring: 'Ring', rect: 'Box outline', matrix: 'Pixel grid', points: 'Camera map', tpl: 'Template'};
 
   let D = null, DEVS = [], ZONES = [], sel = null, tool = 'sel', act = '', view = {x: 0, y: 0, s: 1}, snap = true, dirty = false, testing = false;
-  let undo = [], redo = [], draft = null, photoT = 0, LIGHTS = null;
+  let undo = [], redo = [], draft = null, photoT = 0, LIGHTS = null, selG = null;
   const W = () => D.stage[0], H = () => D.stage[1];
   const devById = id => DEVS.find(d => d.id === id);
   const devCol = id => DEVCOL[Math.max(0, DEVS.findIndex(d => d.id === id)) % DEVCOL.length];
   const itemById = id => D.items.find(i => i.id === id);
   const uid = () => 'i' + Math.random().toString(36).slice(2, 8);
-  const snapshot = () => { undo.push(JSON.stringify(D.items)); if (undo.length > 80) undo.shift(); redo = []; dirty = true; };
+  const snapState = () => JSON.stringify({items: D.items, guides: D.guides || [], scale: D.scale || 0, stage: D.stage, photo: !!D.photo, house: D.house || null});
+  const restState = s => { const o = JSON.parse(s); if (Array.isArray(o)) { D.items = o; return; } D.items = o.items; D.guides = o.guides; D.scale = o.scale || 0; D.stage = o.stage; D.photo = o.photo; D.house = o.house; };
+  const snapshot = () => { undo.push(snapState()); if (undo.length > 80) undo.shift(); redo = []; dirty = true; };
 
   // =================================================================== panel on the LIGHTS page
-  GB.panel('lights', 35, el => {
+  GB.panel('house', 30, el => {                                    // 🏠 Oct 21: on the HOUSE page now (was LIGHTS)
     el.id = 'drawPanel'; el.classList.add('box'); el.style.setProperty('--c', 'var(--cyan)');
     el.innerHTML = `<div class="ph"><span>Draw your layout</span><span class="r" id="lmCount"></span></div>
       <p class="note">Lights on a house, a stage or an odd shape? Take a photo, then draw where each string runs: rooflines, windows, arches, trees, truss, panels. Every effect then follows your real shape.</p>
@@ -159,6 +167,8 @@
           <div class="lm-zoom"><button class="btn" id="lmZin" aria-label="Zoom in">${GB.svg('add')}</button><button class="btn" id="lmZout" aria-label="Zoom out"><svg class="ic" viewBox="0 0 24 24"><path d="M5 11h14v2H5z"/></svg></button><button class="btn" id="lmFit" aria-label="Fit to screen">${GB.svg('full')}</button></div>
         </div>
         <div class="lm-side" id="lmSide">
+          <button class="btn c wide" id="lmHouse" style="--c:var(--gold)">${GB.svg('home')}<span>House Builder</span></button>
+          <div id="lmGuides"></div>
           <div class="lm-tools" id="lmTools">${TOOLS.map(([k, t]) => `<button class="btn" data-lmt="${k}" aria-label="${t}">${ti(k)}<span>${t}</span></button>`).join('')}</div>
           <label class="lm-f">Drawing for<select id="lmDev" aria-label="Which light you are drawing"></select></label>
           <div id="lmTray"></div>
@@ -172,8 +182,8 @@
       </div>`;
     document.body.appendChild(ov);
     $('lmClose').onclick = closeEditor;
-    $('lmUndo').onclick = () => { if (!undo.length) return; redo.push(JSON.stringify(D.items)); D.items = JSON.parse(undo.pop()); if (sel && !itemById(sel)) sel = null; dirty = true; refresh(); };
-    $('lmRedo').onclick = () => { if (!redo.length) return; undo.push(JSON.stringify(D.items)); D.items = JSON.parse(redo.pop()); dirty = true; refresh(); };
+    $('lmUndo').onclick = () => { if (!undo.length) return; redo.push(snapState()); restState(undo.pop()); if (sel && !itemById(sel)) sel = null; dirty = true; refresh(); };
+    $('lmRedo').onclick = () => { if (!redo.length) return; undo.push(snapState()); restState(redo.pop()); dirty = true; refresh(); };
     $('lmSave').onclick = save;
     $('lmTest').onclick = () => test(null);
     $('lmZin').onclick = () => zoomAt(1.35); $('lmZout').onclick = () => zoomAt(1 / 1.35); $('lmFit').onclick = () => { fit(); draw(); };
@@ -184,6 +194,7 @@
     $('lmBlank').onclick = blank;
     $('lmSnap').onclick = () => { snap = !snap; GB.store.set('lm_snap', snap ? '1' : '0'); paintTools(); };
     $('lmCam').onclick = () => camOpen();
+    $('lmHouse').onclick = () => GB.houseBuilder && GB.houseBuilder.open();
     snap = GB.store.get('lm_snap', '1') === '1';
     wire($('lmSvg'));
     window.addEventListener('resize', () => { if (!ov.hidden) draw(); });
@@ -271,6 +282,10 @@
     if (D.photo) o += `<image href="/api/layout/photo?t=${photoT}" x="0" y="0" width="${W()}" height="${H()}" preserveAspectRatio="none" opacity=".8"/>`;
     else { const g = D.grid || 50; let p = ''; for (let x = 0; x <= W(); x += g) p += `M${x} 0V${H()}`; for (let y = 0; y <= H(); y += g) p += `M0 ${y}H${W()}`; o += `<path d="${p}" stroke="#2a2640" stroke-width="${px}" fill="none"/>`; }
     o += `<rect x="0" y="0" width="${W()}" height="${H()}" fill="none" stroke="#3a3458" stroke-width="${2 * px}"/>`;
+    (D.guides || []).forEach(g => { if (g.pts.length < 2) return;                 // 🏠 the house's lines (House Builder): a drawing to put lights on
+      const on = g.id === selG;
+      o += `<path d="M${g.pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L')}${g.closed ? 'Z' : ''}" fill="none" stroke="${on ? '#ffc04d' : '#e9e6ff'}" stroke-opacity="${on ? 0.95 : 0.55}" stroke-width="${(on ? 4 : 2.2) * px}" stroke-linejoin="round" stroke-dasharray="${on ? '' : 10 * px + ' ' + 6 * px}"/>`; });
+    if (GB.lm.overlay) o += GB.lm.overlay(px);
     const list = draft ? D.items.concat([draft]) : D.items;
     list.forEach(it => { o += itemSvg(it, it.id === sel || it === draft, px); });
     const it = itemById(sel); if (it && !draft) o += handlesSvg(it, px);
@@ -497,7 +512,20 @@
     del.onclick = () => { if (del.dataset.sure !== '1') { del.dataset.sure = '1'; del.innerHTML = '<span>Sure?</span>'; setTimeout(() => { del.dataset.sure = ''; del.innerHTML = dh; }, 4000); return; }
       snapshot(); D.items = D.items.filter(x => x.id !== it.id); sel = null; refresh(); };
   }
-  function refresh() { if (!$('lmOv') || $('lmOv').hidden) return; paintTools(); paintDevs(); paintProps(); draw(); }
+  function refresh() { if (!$('lmOv') || $('lmOv').hidden) return; paintTools(); paintDevs(); paintProps(); paintGuides(); draw(); }
+  // 🏠 Oct 21: the house's lines, each with "put lights on it"
+  function paintGuides() {
+    const box = $('lmGuides'); if (!box) return; const gs = D.guides || [];
+    if (!gs.length) { box.innerHTML = ''; return; }
+    box.innerHTML = `<div class="sub">House lines <small>${D.scale ? 'tap one to light it' : 'set the real size to count bulbs'}</small></div>` +
+      gs.map(g => `<div class="lm-grow${g.id === selG ? ' on' : ''}" data-g="${esc(g.id)}"><b>${esc(g.name || 'Line')}</b><small>${D.scale ? G_len(g) : ''}</small>
+        <button class="btn" data-gl="${esc(g.id)}" aria-label="Put lights on ${esc(g.name || 'this line')}">${GB.svg('bulb')}</button><button class="btn" data-gx="${esc(g.id)}" aria-label="Remove this line">${GB.svg('close')}</button></div>`).join('');
+    box.querySelectorAll('[data-g]').forEach(r => r.onclick = e => { if (e.target.closest('button')) return; selG = selG === r.dataset.g ? null : r.dataset.g; paintGuides(); draw(); });
+    box.querySelectorAll('[data-gl]').forEach(b => b.onclick = () => GB.houseBuilder && GB.houseBuilder.fill(b.dataset.gl));
+    box.querySelectorAll('[data-gx]').forEach(b => b.onclick = () => { snapshot(); D.guides = gs.filter(g => g.id !== b.dataset.gx); if (selG === b.dataset.gx) selG = null; refresh(); });
+  }
+  const G_len = g => { const L = gLen(g); const ft = L / D.scale; return ft >= 1 ? Math.round(ft) + ' ft' : Math.round(ft * 12) + ' in'; };
+  function gLen(g) { const q = g.closed ? g.pts.concat([g.pts[0]]) : g.pts; let L = 0; for (let i = 1; i < q.length; i++) L += Math.hypot(q[i][0] - q[i - 1][0], q[i][1] - q[i - 1][1]); return L; }
 
   // ------------------------------------------------------------- background photo / blank grid
   async function usePhoto(f) {
@@ -521,7 +549,8 @@
   }
 
   // ------------------------------------------------------------- save, test
-  const cleanDoc = () => ({v: 1, stage: D.stage, photo: !!D.photo, grid: D.grid || 50, items: D.items});
+  const cleanDoc = () => Object.assign({v: 1, stage: D.stage, photo: !!D.photo, grid: D.grid || 50, items: D.items},
+    D.scale ? {scale: D.scale} : {}, (D.guides || []).length ? {guides: D.guides} : {}, D.house ? {house: D.house} : {});
   async function save() {
     finishDraft();
     const r = await GB.post('/api/layout/save', {doc: cleanDoc(), apply: true}); if (!r) return;
@@ -535,6 +564,14 @@
     testing = true; paintTools();
     hint(`Testing ${r.steps} string${r.steps > 1 ? 's' : ''}: the FIRST bulb blinks green, the LAST blinks red, then a white light runs from first to last.`, [['Stop test', () => test(null, true), 'var(--amber)']]);
   }
+
+  // 🏠 Oct 21: a small door into the editor for the House Builder (housebuild.js)
+  GB.lm = {
+    doc: () => D, devs: () => DEVS, act: () => act, setAct: id => { act = id; }, snapshot, newItem, refresh, draw, fit, photoT: () => photoT,
+    nextFree, defaultCount, viewCenter, toStage, devCol, usePhoto: f => usePhoto(f), isOpen: () => !!($('lmOv') && !$('lmOv').hidden),
+    open: () => openEditor(), selGuide: id => { selG = id; refresh(); }, overlay: null, svg: () => $('lmSvg'), view: () => view,
+    setPhotoT: t => { photoT = t; }, gLen,
+  };
 
   // =================================================================== outdoor camera mapping, one light at a time
   let cam = null;              // {stream, track, res: {devId: result}, frame: {k, ox, oy} (camera -> stage), moved}

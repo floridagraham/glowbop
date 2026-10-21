@@ -189,6 +189,7 @@
 
   // ------------------------------------------------------------- icons (24x24 paths)
   const ICON = GB.ICON = {
+    stage: 'M7 2h10v3H7zM5 6h14v6a7 7 0 01-14 0zm2 15h10l1 2H6zM11 19h2v2h-2z',
     rocket: '!M12 1.5c3.4 2.7 5 6.5 5 11V16H7v-3.5c0-4.5 1.6-8.3 5-11zm0 5.3a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM7 11.8l-3.2 4V20L7 17.6zm10 0l3.2 4V20L17 17.6zM9.4 17h5.2L12 23z',
     plane: 'M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z',
     quake: 'M1 11h4.4l2.2-5.6 3.5 11.9 3.2-14.6 3.4 11.6 1.3-3.3H23v2h-2.6l-2.6 6.4-2.9-9.9-3.3 15.1-3.7-12.8L6.8 13H1z',
@@ -535,11 +536,13 @@
     {id: 'scenes', label: 'SCENES', c: '#3ce08a', g: 'visuals'},            // 🔥 the fireplace lives here now
     {id: 'games', label: 'GAMES', c: '#a8f23a', g: 'visuals'},
     {id: 'lights', label: 'LIGHTS', c: '#6fa8ff', g: 'system'},
+    {id: 'house', label: 'HOUSE', c: '#8f9cff', g: 'system', ic: 'home'},   // 🏠 Oct 21 (Graham: "I can't find this anywhere... it should be its own tab in the rail"): House Builder, drawing, xLights
+    {id: 'stage', label: 'STAGE', c: '#ff5fa2', g: 'system', ic: 'stage'},   // 🎭 Oct 21 (Graham: "a stage and venue maker"): stage plan, DMX stage lights, moving heads
     {id: 'setup', label: 'SETUP', c: '#c79bff', g: 'system'},
   ];
   const GROUPS = GB.RAIL_GROUPS = {perform: 'PERFORM', visuals: 'VISUALS', pro: 'PRO', system: 'SYSTEM'};
   // old or friendly links (#help, #sports, #fire ...) land on the right page; values are [page, anchor]
-  const PAGE_ALIAS = {artboard: ['art'], help: ['setup', 'helpPanel'], light: ['lights'], devices: ['lights'], map: ['lights'], groups: ['lights', 'grpPanel'],
+  const PAGE_ALIAS = {artboard: ['art'], help: ['setup', 'helpPanel'], light: ['lights'], devices: ['lights'], map: ['house'], housebuilder: ['house'], draw: ['house', 'drawPanel'], xlights: ['house', 'xlPanel'], venue: ['stage'], yard: ['house', 'yardPanel'], groups: ['lights', 'grpPanel'],
     sports: ['score'], live: ['feeds'], override: ['ops'], license: ['setup', 'suLicKeyBox'],
     fire: ['scenes', 'firePanel'], fireplace: ['scenes', 'firePanel'], mirror: ['scenes', 'mirrorPanel'],
     golf: ['score'], nascar: ['score'], racing: ['score'], tennis: ['score'], ufc: ['score'],   // boards open from SPORTS > Live Fan
