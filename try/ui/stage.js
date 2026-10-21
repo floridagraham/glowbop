@@ -11,12 +11,14 @@
   const {$} = GB, esc = GB.esc;
   const C = '#ff5fa2';
   GB.css(`
-  #stHero .st-start { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; }
-  #stHero .st-start button { min-height:120px; border-radius:0 18px 0 18px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 12%, #0b0814); color:#fff; cursor:pointer;
-    display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-end; gap:4px; padding:14px; text-align:left; position:relative; }
-  #stHero .st-start button svg { width:34px; height:34px; fill:var(--c); margin-bottom:auto; }
-  #stHero .st-start b { font:800 calc(18px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; color:var(--c); }
-  #stHero .st-start span { color:var(--dim); font-size:calc(13px * var(--fs, 1)); }
+  #stHero .st-start { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:8px; }
+  #stHero .st-start button { min-height:56px; border-radius:0 12px 0 12px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 12%, #0b0814); color:#fff; cursor:pointer;
+    display:flex; flex-direction:row; align-items:center; gap:10px; padding:6px 12px; text-align:left; position:relative; }
+  #stHero .st-start button svg { width:24px; height:24px; fill:var(--c); flex:none; }
+  #stHero .st-start b { font:800 calc(15px * var(--fs, 1)) var(--cond); letter-spacing:1px; text-transform:uppercase; color:var(--c); }
+  #stHero .st-start span { display:none; }
+  #stHero .st-pro { position:static; margin-left:auto; }
+  #stHero .note { margin:4px 0 8px; }
   .st-pro { position:absolute; top:8px; right:8px; font:800 11px var(--cond); letter-spacing:1px; padding:3px 7px; border-radius:6px; background:var(--amber); color:#000; }
   .st-sum { display:flex; flex-wrap:wrap; gap:6px 14px; font:700 14px var(--cond); letter-spacing:1px; color:var(--dim); margin:10px 0 0; }
   .st-sum b { color:#fff; }
@@ -106,9 +108,9 @@
   const sv = (k, fill) => `<svg viewBox="0 0 24 24" aria-hidden="true"${fill ? ` fill="${fill}"` : ''}><path d="${I[k]}"/></svg>`;
   const ibtn = (k, t, attrs) => `<button type="button" class="btn st-ib" ${attrs || ''}>${sv(k)}<span>${esc(t)}</span></button>`;
   // what each kind of thing looks like on the plan
-  const KC = {deck: '#4a3c8f', riser: '#6a4fc7', truss: '#c9d3ff', pipe: '#9fb0ff', screen: '#33d6ff', speaker: '#7a5cff', dj: '#ff5fa2', band: '#ffb23d', wall: '#5f5590', set: '#9b3dff', totem: '#c9d3ff'};
+  const KC = {deck: '#4a3c8f', riser: '#6a4fc7', truss: '#c9d3ff', pipe: '#9fb0ff', screen: '#33d6ff', speaker: '#7a5cff', dj: '#ff5fa2', band: '#ffb23d', wall: '#5f5590', set: '#9b3dff', totem: '#c9d3ff', string: '#3ce08a', sign: '#ffcc66'};
   const FK = {par: '#ff5fa2', bar: '#33d6ff', wash: '#3ce08a', spot: '#ffcc66', beam: '#e45cff'};
-  const SCENERY = [['deck', 'Stage deck', 16, 8, 2, 0], ['riser', 'Riser', 8, 4, 1, 0], ['truss', 'Truss', 20, 1, 1, 14], ['pipe', 'Pipe', 16, .3, .3, 12], ['screen', 'Screen', 12, .4, 7, 4],
+  const SCENERY = [['deck', 'Stage deck', 16, 8, 2, 0], ['riser', 'Riser', 8, 4, 1, 0], ['truss', 'Truss', 20, 1, 1, 14], ['pipe', 'Pipe', 16, .3, .3, 12], ['screen', 'LED screen', 12, .4, 7, 4], ['sign', 'LED sign', 8, .5, 3, 10], ['string', 'Light string', 20, .3, .3, 10],
     ['speaker', 'Speakers', 2.5, 2.5, 6, 0], ['dj', 'DJ booth', 7, 3, 3.6, 0], ['band', 'Band area', 10, 6, 6, 0], ['totem', 'Totem', 1, 1, 7, 0], ['wall', 'Wall', 20, .5, 12, 0]];
   const LIGHTS = [['par_rgb', 'RGB par'], ['par_drgbs', 'Par 5ch'], ['par_7', 'Par 7ch'], ['par_rgbw', 'RGBW par'], ['uplight', 'Uplight'], ['bar_8', 'LED bar 8'],
     ['bar_12', 'LED bar 12'], ['wash', 'Wash mover'], ['spot', 'Spot mover'], ['beam', 'Beam mover']];
@@ -119,7 +121,7 @@
   const scIcon = k => `<svg viewBox="0 0 24 24"><rect x="2" y="${k === 'truss' || k === 'pipe' ? 10 : 6}" width="20" height="${k === 'truss' || k === 'pipe' ? 4 : 12}" rx="1" fill="none" stroke="${KC[k]}" stroke-width="2"/>${k === 'truss' ? '<path d="M3 14l3-4 3 4 3-4 3 4 3-4 3 4" fill="none" stroke="#c9d3ff" stroke-width="1.5"/>' : ''}</svg>`;
 
   // ------------------------------------------------------------------ state
-  let D = null, TY = {}, TPL = [], SEL = null, HIST = [], FUT = [], LIVE = {}, HOW = '', OUT = {}, saveT = null, VIEW = 'both', TOP = null, FRONT = null, PHOTO = null, CL = [];
+  let MINE = null, D = null, TY = {}, TPL = [], SEL = null, HIST = [], FUT = [], LIVE = {}, HOW = '', OUT = {}, saveT = null, VIEW = 'both', TOP = null, FRONT = null, PHOTO = null, CL = [];
   try { VIEW = localStorage.getItem('gb_st_view') || 'both'; } catch (e) {}
   const pro = () => GB.pro !== false;
   const prof = t => TY[t] || (D && D.profiles && D.profiles[t]) || {name: t, kind: 'par', ch: 3};
@@ -140,7 +142,7 @@
     clearTimeout(saveT); saveT = setTimeout(save, 500);
   }
   async function save() {
-    try { const r = await GB.post('/api/stage/save', {doc: D}); if (r && r.ok) { CL = r.clashes || []; D.output = r.doc.output; D.motion = r.doc.motion; paintPatch(); paintSum(); } else if (r && r.error) GB.toast(r.error); }
+    try { const r = await GB.post('/api/stage/save', {doc: D}); if (r && r.ok) { CL = r.clashes || []; D.output = r.doc.output; D.motion = r.doc.motion; paintPatch(); paintSum(); MINE && MINE.reload(); } else if (r && r.error) GB.toast(r.error); }
     catch (e) { GB.toast('Could not save the stage'); }
   }
   async function load() {
@@ -160,6 +162,16 @@
     return [x0, y0, x1, y1];
   }
   const rect = (i, x, y, w, h, rot, fill, stroke, extra) => `<g data-id="${i}" transform="translate(${x} ${y}) rotate(${rot || 0})"><rect class="pl-o" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="1.5" vector-effect="non-scaling-stroke"/>${extra || ''}</g>`;
+  const mineOf = id => { const st = MINE && MINE.state; if (!st || !D.mylights) return ''; return Object.keys(D.mylights).filter(l => D.mylights[l] === id).map(l => (st.lights.find(x => x.id === l) || {}).name || l).join(' + '); };
+  function mineMarks(P, front) {
+    const out = [];
+    for (const i of D.items) { const nm = mineOf(i.id); if (!nm) continue;
+      if (front) { if (['wall', 'set'].includes(i.kind) && i.y < -3) continue; const r = (i.rot || 0) * Math.PI / 180, ww = Math.abs(i.w * Math.cos(r)) + Math.abs(i.d * Math.sin(r));
+        out.push(`<rect x="${i.x - ww / 2 - .3}" y="${i.z - .3}" width="${ww + .6}" height="${i.h + .6}" fill="none" stroke="#33d6ff" stroke-width="3" stroke-dasharray="8 5" vector-effect="non-scaling-stroke"/>`, P.txt(i.x, i.z + i.h + .9, '💡 ' + nm, '', 12)); }
+      else out.push(`<rect x="${i.x - i.w / 2 - .3}" y="${i.y - i.d / 2 - .3}" width="${i.w + .6}" height="${i.d + .6}" fill="none" stroke="#33d6ff" stroke-width="3" stroke-dasharray="8 5" vector-effect="non-scaling-stroke"/>`, P.txt(i.x, i.y - i.d / 2 - 1.2, '💡 ' + nm, '', 12)); }
+    for (const f of D.fixtures) { const nm = mineOf(f.id); if (!nm) continue; out.push(P.txt(f.x, (front ? f.z : f.y) + 1.4, '💡 ' + nm, '', 11)); }
+    return out.join('');
+  }
   function paintTop(P) {
     const W = D.size.w, Dd = D.size.d, out = [];
     out.push(`<rect x="${-Math.max(W, 16) * .6}" y="${-Math.max(8, Dd) * 1.25}" width="${Math.max(W, 16) * 1.2}" height="${Math.max(8, Dd) * 1.2 - 1}" fill="#ff5fa20d" stroke="#ff5fa255" stroke-dasharray="6 6" stroke-width="1" vector-effect="non-scaling-stroke"/>`);
@@ -172,6 +184,7 @@
       out.push(rect(i.id, i.x, i.y, i.w, i.d, -(i.rot || 0), fill, ['wall', 'set'].includes(i.kind) ? c + '99' : c, tr));
       if (i.w * P.k > 70 && D.items.length < 120) out.push(P.txt(i.x, i.y, i.name || i.kind, 'lb', 10));
     }
+    out.push(mineMarks(P, false));
     for (const p of D.focus) out.push(`<g data-id="${p.id}" transform="translate(${p.x} ${p.y})"><circle class="pl-o" r="${9 / P.k}" fill="#ffcc6633" stroke="#ffcc66" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M${-14 / P.k} 0H${14 / P.k}M0 ${-14 / P.k}V${14 / P.k}" stroke="#ffcc66" stroke-width="1.5" vector-effect="non-scaling-stroke"/></g>`, P.txt(p.x, p.y - 20 / P.k, p.name, '', 10));
     return out.join('');
   }
@@ -205,9 +218,12 @@
       const c = KC[i.kind] || '#9b3dff', r = (i.rot || 0) * Math.PI / 180, ww = Math.abs(i.w * Math.cos(r)) + Math.abs(i.d * Math.sin(r));
       const fill = ['deck', 'riser'].includes(i.kind) ? c + '66' : i.kind === 'screen' ? '#0b2a38' : ['wall', 'set'].includes(i.kind) ? 'none' : c + '2a';
       const tr = i.kind === 'truss' ? `<path d="${trussZig(ww, i.h)}" fill="none" stroke="#c9d3ff" stroke-width="1" vector-effect="non-scaling-stroke"/>` : '';
-      out.push(rect(i.id, i.x, i.z + i.h / 2, ww, i.h, 0, fill, ['wall', 'set'].includes(i.kind) ? c + '99' : c, tr));
+      if (i.kind === 'string') { out.push(`<g data-id="${i.id}"><line class="pl-o" x1="${i.x - ww / 2}" y1="${i.z}" x2="${i.x + ww / 2}" y2="${i.z}" stroke="${c}" stroke-width="5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/><rect x="${i.x - ww / 2}" y="${i.z - .6}" width="${ww}" height="1.2" fill="#0000"/></g>`); continue; }
+      out.push(rect(i.id, i.x, i.z + i.h / 2, ww, i.h, 0, i.kind === 'sign' ? '#2a2210' : fill, ['wall', 'set'].includes(i.kind) ? c + '99' : c, tr));
+      if (i.kind === 'sign') out.push(P.txt(i.x, i.z + i.h / 2, i.name || 'SIGN', '', 12));
       if (ww * P.k > 70 && D.items.length < 120 && i.h * P.k > 16) out.push(P.txt(i.x, i.z + i.h / 2, i.name || i.kind, 'lb', 10));
     }
+    out.push(mineMarks(P, true));
     return out.join('');
   }
   function liveFront(P) {
@@ -345,6 +361,7 @@
   GB.panel('stage', 20, el => {
     el.id = 'stEdit'; el.classList.add('box'); el.style.setProperty('--c', C);
     el.innerHTML = `<div class="ph"><span>Build it</span><span class="r">feet · drag to move</span></div>
+      <div id="stMine"></div>
       <div class="st-bar">${ibtn('undo', 'Undo', 'id="stUndo" disabled')}${ibtn('redo', 'Redo', 'id="stRedo" disabled')}
         <span class="st-seg" id="stViewSeg">${ibtn('top', 'Top', 'data-v="top"')}${ibtn('front', 'Front', 'data-v="front"')}${ibtn('both', 'Both', 'data-v="both"')}</span></div>
       <div class="st-main"><div class="st-views" id="stViews"></div><div class="st-side" id="stSide"></div></div>
@@ -354,6 +371,7 @@
         <label class="st-note" style="flex:1;min-width:160px">Slide sideways<input class="st-range" type="range" id="stPhX" min="-100" max="100" step=".25"></label>
         <label class="st-note" style="flex:1;min-width:160px">Raise<input class="st-range" type="range" id="stPhZ" min="-20" max="40" step=".25"></label>
         ${ibtn('trash', 'Remove photo', 'id="stPhDel"')}</div>`;
+    MINE = GB.myLights ? GB.myLights($('stMine'), 'stage') : null;
     $('stUndo').onclick = undo; $('stRedo').onclick = redo;
     el.querySelectorAll('#stViewSeg [data-v]').forEach(b => b.onclick = () => { VIEW = b.dataset.v; try { localStorage.setItem('gb_st_view', VIEW); } catch (e) {} paintViewMode(); });
     const ph = (id, k) => $(id).oninput = () => { if (!D.photo) return; D.photo[k] = +$(id).value; FRONT && FRONT.draw(); clearTimeout(saveT); saveT = setTimeout(save, 600); };
@@ -521,6 +539,7 @@
   }, 80);
   GB.on('page', id => { if (id === 'stage' && TOP) setTimeout(() => { TOP.fit(); FRONT.fit(); }, 60); });
   GB.on('pro', () => { if (D) { paintSum(); paintSide(); paintShow(); } });
+  GB.on('mylights', e => { if (e && e.where === 'stage' && D) { D.mylights = e.assign; paintViews(); } });
   GB.stage = {get doc() { return D; }, reload: load};
   // ✏️ ARRANGE: STAGE is one wide column (the four ways in, then the builder, the show and the addresses); HOUSE gets the yard as a band
   (function tpl() { if (!GB.layTPL) return setTimeout(tpl, 200);

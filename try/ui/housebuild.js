@@ -478,5 +478,10 @@
       </div>`;
     el.querySelectorAll('[data-hbs]').forEach(b => b.onclick = () => { GB.sfx && GB.sfx('tap'); GB.houseBuilder.start(b.dataset.hbs); });
   });
-  GB.css(`#hbPanel .hb-start button { min-height:132px; }`);
+  // Oct 21 (Graham: "those buttons are just as huge... can we reduce the size"): a slim row of four keys on the HOUSE page
+  GB.css(`#hbPanel .hb-start { grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:8px; }
+  #hbPanel .hb-start button { min-height:56px; flex-direction:row; align-items:center; justify-content:flex-start; gap:10px; padding:6px 12px; border-radius:0 12px 0 12px; }
+  #hbPanel .hb-start button svg { width:24px; height:24px; margin:0; flex:none; }
+  #hbPanel .hb-start button b { font-size:calc(15px * var(--fs, 1)); }
+  #hbPanel .hb-start button span { display:none; }`);
 })();

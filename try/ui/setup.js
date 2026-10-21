@@ -150,6 +150,17 @@
 
   // 🧠 / 👆 / 🕘 Oct 19 (Graham: "let's start doing day one stuff right now"): the first three ideas from the layout research.
   //   Use the map a Twinkly already has · Identify all (each light flashes in turn, its name pops up) · Layout history (the last 5, one tap back).
+  async function straighten(d) {
+    GB.toast('📏 Reading ' + d.name + "'s map…");
+    const r = await GB.post('/api/lights/straighten', {id: d.id}); if (!r) return;
+    if (!r.ok) return GB.notice({tone: 'warn', icon: '📏', title: d.name + ": can't straighten this one", body: r.why || r.error || 'No map to work from.', tip: 'Map it with your phone (MAP WITH CAMERA), or in the Twinkly app, then tap Straighten again.'});
+    GB.sheet('Straighten ' + d.name + '?', [
+      {label: 'Yes, straighten it', ic: 'check', sub: r.msg + '. It becomes a clean ' + r.cols + ' × ' + r.rows + ' grid.', onclick: async () => {
+        const a = await GB.post('/api/lights/straighten', {id: d.id, apply: true});
+        if (a && a.ok) { GB.sfx && GB.sfx('ok'); GB.toast('📏 ' + d.name + ' is straight: ' + a.msg + '. Layout history can undo it.'); lsDirty = false; setTimeout(loadLights, 6000); }
+        else GB.toast((a && (a.why || a.error)) || 'Could not straighten it'); }},
+      {label: 'Not now', ic: 'back', onclick: () => {}}]);
+  }
   async function twMap(d) {
     GB.toast('🧠 Reading the map ' + d.name + ' already has…');
     const r = await GB.post('/api/lights/twmap', {id: d.id}); if (!r) return;
@@ -399,6 +410,10 @@
       if (d.type === 'twinkly') {                                  // 🧠 Oct 19 (day 1): use the map this Twinkly already has (made in its own app)
         const tm = btn('c sm su-twmap', lbl('map', d.twmap ? 'Using its Twinkly app map' : 'Use its Twinkly app map'), () => twMap(d), {title: 'Use the map this light already has', style: '--c:var(--cyan)'});
         r.appendChild(tm);
+      }
+      if (d.type === 'twinkly' || d.mapped || (d.is_grid && d.gw > 2 && d.gh > 2)) {   // 📏 Oct 21 (Graham: "the map is from the curtain that's hanging all crazy and crooked and sways in the wind")
+        const sb = btn('c sm su-twmap', lbl('ruler', d.straight ? 'Straightened: straighten again' : 'Straighten it (crooked or swaying map)'), () => straighten(d), {title: 'Keep the wiring, drop the tilt and sway', style: '--c:var(--green)'});
+        sb.style.setProperty('--cyan', 'var(--green)'); r.appendChild(sb);
       }
 
       const grids = LS.devices.filter(x => x.is_grid && x.enabled && x.id !== d.id);
