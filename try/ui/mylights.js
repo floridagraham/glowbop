@@ -23,6 +23,13 @@
   .ml-note { color:#bfeaff; font-size:13px; margin:6px 0 0; }
   `);
   const CLS = {curtain: 'curtain', line: 'string', panel: 'panels', bulb: 'bulb'};
+  // 👀 your real lights' bulbs on the plan, in the colours they show right now: GB.myLive(where) -> latest {on, lights:[{x, z, c}]}
+  const LV = {stage: null, yard: null}, busy = {};
+  GB.myLive = where => LV[where];
+  GB.myLiveSvg = (where, r) => { const L = LV[where]; if (!L || !L.on) return ''; let s = ''; r = L.r || r;
+    for (const l of L.lights) { const c = l.c; for (let i = 0; i < l.x.length; i++) { const h = c.substr(i * 6, 6); if (h === '000000') continue; s += `<circle cx="${l.x[i]}" cy="${l.z[i]}" r="${r}" fill="#${h}"/>`; } }
+    return `<g pointer-events="none">${s}</g>`; };
+  GB.myLivePoll = async where => { if (busy[where]) return; busy[where] = true; try { LV[where] = await GB.get('/api/stage/mylive?where=' + where); } catch (e) {} busy[where] = false; return LV[where]; };
   GB.myLights = function (el, where) {
     let S = null;
     async function load() { try { S = await GB.get('/api/stage/mylights?where=' + where); paint(); } catch (e) {} }

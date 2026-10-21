@@ -227,7 +227,7 @@
     return out.join('');
   }
   function liveFront(P) {
-    const out = [], behind = f => f.y < -3 && f.z < 2;               // floor lights at the back of the room: behind the crowd, not in the picture
+    const out = [GB.myLiveSvg ? GB.myLiveSvg('stage', .32) : ''], behind = f => f.y < -3 && f.z < 2;               // floor lights at the back of the room: behind the crowd, not in the picture
     for (const f of D.fixtures) { if (behind(f)) continue;
       const L = LIVE[f.id] || {}, col = (L.c && L.c[0]) || '#000000'; if (col === '#000000') continue;
       let tx, tz;
@@ -531,7 +531,7 @@
   setInterval(async () => {
     if (busy || GB.page !== 'stage' || document.hidden || !D || !TOP) return; busy = true;
     try {
-      const r = await GB.get('/api/stage/live'); LIVE = {}; (r.f || []).forEach(f => LIVE[f.id] = f); HOW = r.how || '';
+      const [r] = await Promise.all([GB.get('/api/stage/live'), D.mylights && Object.keys(D.mylights).length && GB.myLivePoll ? GB.myLivePoll('stage') : null]); LIVE = {}; (r.f || []).forEach(f => LIVE[f.id] = f); HOW = r.how || '';
       TOP.drawLive(); FRONT.drawLive();
       const h = $('stHow'); if (h) h.textContent = (r.bpm ? r.bpm + ' BPM · ' : '') + ({slam: '💥 DROP SLAM', follow: 'following the picture', focus: 'on a focus point', still: 'holding still'}[HOW] || (HOW ? 'sweep: ' + ({fig8: 'figure 8'}[HOW] || HOW) : ''));
       if (++tick % 15 === 0) { paintPatch(); const on = r.out && r.out.on; if (on && r.out.err) $('stOutNote').textContent = '⚠ ' + r.out.err; }

@@ -31,7 +31,7 @@
     candy: ['Candy cane', '#ff4d6d', 1, 1, 1], tree_light: ['Tree wrap', '#b6ff3d', 18, 18, 1], sign: ['Sign', '#ffcc66', 6, .5, 1], screen: ['LED screen', '#33d6ff', 10, .5, 1]};
   const PROP = ['house', 'garage', 'drive', 'walk', 'bed', 'lawn', 'pool', 'fence', 'tree', 'palm', 'bush'];
   const DECO = ['minitree', 'stake', 'arch', 'inflatable', 'spot', 'string', 'star', 'deer', 'candy', 'tree_light', 'sign', 'screen'];
-  let VIEW = 'both', ST = null, MINE = null, Y = null, SEL = null, PL = null, LIVE = {}, LIGHTS = [], HIST = [], saveT = null;
+  let VIEW = 'both', ST = null, MINE = null, Y = null, SEL = null, PL = null, LIVE = {}, LIGHTS = [], HIST = [], FUT = [], saveT = null;
   const nid = () => 'y' + Math.random().toString(36).slice(2, 10);
   const snap = v => Math.round(v * 2) / 2;
   const icon = k => { const c = K[k][1];
@@ -79,13 +79,14 @@
   function bounds() { const L = Y.lot; return [-L.w / 2 - 6, -16, L.w / 2 + 6, L.d + 6]; }
   async function save() { try { const r = await GB.post('/api/yard/save', {yard: Y}); if (r && r.ok) { Y.mylights = r.yard.mylights; MINE && MINE.reload(); } } catch (e) {} }
   function changed() { drawAll(); side(); clearTimeout(saveT); saveT = setTimeout(save, 500); }
-  const snapH = () => { HIST.push(JSON.stringify(Y)); if (HIST.length > 60) HIST.shift(); };
+  const paintUR = () => { const u = $('ydUndo'), r = $('ydRedo'); if (u) u.disabled = !HIST.length; if (r) r.disabled = !FUT.length; };
+  const snapH = () => { HIST.push(JSON.stringify(Y)); if (HIST.length > 60) HIST.shift(); FUT = []; setTimeout(paintUR, 0); };
 
   GB.panel('house', 20, el => {
     el.id = 'yardPanel'; el.classList.add('box'); el.style.setProperty('--c', C);
     el.innerHTML = `<div class="ph"><span>Yard plan</span><span class="r">from above · street at the bottom</span></div>
       <p class="note">Lay out the yard: the lot, house, driveway, trees, then your decorations. Tie a decoration to one of your lights and watch the show move across the yard.</p>
-      <div class="st-bar"><button class="btn st-ib" id="ydUndo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg><span>Undo</span></button>
+      <div class="st-bar"><button class="btn st-ib" id="ydUndo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg><span>Undo</span></button><button class="btn st-ib" id="ydRedo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg><span>Redo</span></button>
         <label class="st-note" style="display:flex;gap:6px;align-items:center">Lot width (ft)<input id="ydW" type="number" min="10" style="min-height:48px;width:90px;background:#120f20;color:#fff;border:1px solid var(--line);border-radius:8px;padding:0 8px"></label>
         <label class="st-note" style="display:flex;gap:6px;align-items:center">Lot depth (ft)<input id="ydD" type="number" min="10" style="min-height:48px;width:90px;background:#120f20;color:#fff;border:1px solid var(--line);border-radius:8px;padding:0 8px"></label></div>
       <div id="ydMine"></div>
@@ -98,7 +99,8 @@
     MINE = GB.myLights ? GB.myLights($('ydMine'), 'yard') : null;
     try { VIEW = localStorage.getItem('gb_yd_view') || 'both'; } catch (e) {}
     el.querySelectorAll('[data-yv]').forEach(b => b.onclick = () => { VIEW = b.dataset.yv; try { localStorage.setItem('gb_yd_view', VIEW); } catch (e) {} viewMode(); });
-    $('ydUndo').onclick = () => { if (!HIST.length) return; Y = JSON.parse(HIST.pop()); $('ydUndo').disabled = !HIST.length; changed(); };
+    $('ydUndo').onclick = () => { if (!HIST.length) return; FUT.push(JSON.stringify(Y)); Y = JSON.parse(HIST.pop()); paintUR(); SEL = null; setSel(null); changed(); };
+    $('ydRedo').onclick = () => { if (!FUT.length) return; HIST.push(JSON.stringify(Y)); Y = JSON.parse(FUT.pop()); paintUR(); SEL = null; setSel(null); changed(); };
     const lot = () => { snapH(); Y.lot.w = Math.max(10, +$('ydW').value || 80); Y.lot.d = Math.max(10, +$('ydD').value || 120); fitAll(); changed(); };
     $('ydW').onchange = lot; $('ydD').onchange = lot;
     GB.get('/api/yard').then(r => { Y = r.yard; $('ydW').value = Y.lot.w; $('ydD').value = Y.lot.d; mk(); tpls(r.templates || []); }).catch(() => {});
@@ -165,7 +167,7 @@
       else g = `<rect class="pl-o" x="${x - w / 2}" y="${z}" width="${w}" height="${h}" rx="${Math.min(w, h) / 3}" fill="${f}" stroke="${c}" stroke-width="2" ${vs}/>`;
       out.push(`<g data-id="${it.id}">${g}</g>`);
     }
-    return out.join('') + sMarks(P);
+    return out.join('') + (GB.myLiveSvg ? GB.myLiveSvg('yard', .35) : '') + sMarks(P);
   }
   function sMarks(P) {
     const st = MINE && MINE.state; if (!st || !Y.mylights) return '';
@@ -216,8 +218,8 @@
   }
   let busy = false;
   setInterval(async () => {
-    if (busy || GB.page !== 'house' || document.hidden || !PL || !Y || !Y.items.some(i => DECO.includes(i.kind))) return; busy = true;
-    try { const r = await GB.get('/api/yard/live'); LIVE = r.c || {}; liveAll(); } catch (e) {} busy = false;
+    if (busy || GB.page !== 'house' || document.hidden || !PL || !Y) return; busy = true;
+    try { const [r] = await Promise.all([GB.get('/api/yard/live'), Y.mylights && Object.keys(Y.mylights).length && GB.myLivePoll ? GB.myLivePoll('yard') : null]); LIVE = r.c || {}; liveAll(); } catch (e) {} busy = false;
   }, 100);
   GB.on('page', id => { if (id === 'house' && PL) setTimeout(() => fitAll(), 60); });
   GB.on('mylights', e => { if (e && e.where === 'yard' && Y) { Y.mylights = e.assign; drawAll(); } });
