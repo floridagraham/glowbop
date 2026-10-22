@@ -53,7 +53,7 @@
     if (tr && (page === '/' || /\/index$/.test(page))) {
       const s = document.createElement('section'); s.className = 'tight ab-spot'; s.id = 'spotlight';
       s.innerHTML = `<div class="wrap"><div class="feat ab-feat" style="--c:${X.c}"><div><span class="eyebrow" style="--c:${X.c}">${X.eb}</span><h2>${X.h}</h2><p class="lead">${X.p}</p>
-        <div class="btns"><a class="btn primary" data-ab="1" href="${X.demo}">▶ Try it in the live demo</a> <a class="btn" href="/features.html#${X.feat}">See how it works →</a></div></div>
+        <div class="btns"><a class="btn primary" data-ab="1" href="${X.demo}">▶ Play it in the live demo</a> <a class="btn" href="/features.html#${X.feat}">See how it works →</a></div></div>
         <div class="media">${X.one || /^<figure class="dev/.test(X.media) ? X.media : '<div class="grid g2 mini">' + X.media + '</div>'}</div></div></div>`;
       tr.parentNode.insertBefore(s, tr.nextSibling);              // 🎄 Oct 22 (Graham: short and seasonal): the tree leads, the test feature follows the demo
     }

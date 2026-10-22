@@ -63,7 +63,7 @@
   });
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(es => es.forEach(e => { const v = e.target; v._vis = e.isIntersecting;
-      if (v._vis) { if (v.preload === 'none') v.preload = 'auto'; play(v); } else if (!v.paused) v.pause(); }), {rootMargin: '120px 0px'});
+      if (v._vis) { if (v.dataset.poster && !v.getAttribute('poster')) v.poster = v.dataset.poster; if (v.preload === 'none') v.preload = 'auto'; play(v); } else if (!v.paused) v.pause(); }), {rootMargin: '120px 0px'});
     vids.forEach(v => io.observe(v));
   } else vids.forEach(v => { v._vis = true; play(v); });
   // iPhone Low Power Mode blocks autoplay until the first touch: start whatever is on screen then

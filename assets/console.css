@@ -33,7 +33,7 @@ h3{font-size:23px;letter-spacing:1px;font-weight:700}
 .con-r .who .v i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 8px var(--green)}
 @keyframes conblink{50%{opacity:.3}}
 .nav.con-hd ul{display:flex;gap:6px;list-style:none;margin:0;padding:0}
-.nav.con-hd ul a{display:flex;align-items:flex-end;justify-content:flex-end;min-width:84px;height:42px;padding:0 10px 6px 18px;border-radius:0;background:var(--c);color:#000;font:700 15px/1 var(--cond);letter-spacing:1.5px;text-transform:uppercase;opacity:.86;transition:opacity .15s,filter .15s}
+.nav.con-hd ul a{display:flex;align-items:flex-end;justify-content:flex-end;min-width:84px;height:44px;padding:0 10px 6px 18px;border-radius:0;background:var(--c);color:#000;font:700 15px/1 var(--cond);letter-spacing:1.5px;text-transform:uppercase;opacity:.86;transition:opacity .15s,filter .15s}
 .nav.con-hd ul a:hover{opacity:1;background:var(--c);color:#000;filter:brightness(1.12)}
 .nav.con-hd ul a.on{opacity:1;box-shadow:inset 0 -5px 0 #fff;background:var(--c);color:#000}
 .nav.con-hd ul li:first-child a{border-radius:21px 0 0 21px}
@@ -310,7 +310,7 @@ table.cmp tr.grp span{font-size:14px;color:var(--lav)}
    (pink → violet → cyan → amber), and the button's glow pulses through the same colors as it passes */
 @keyframes gbwash{0%,58%{transform:translateX(-120%)}86%,100%{transform:translateX(120%)}}
 @keyframes gbwashglow{0%,56%{box-shadow:0 0 26px -6px rgba(255,61,154,.8)}64%{box-shadow:0 0 34px 0 rgba(155,61,255,.95)}72%{box-shadow:0 0 38px 2px rgba(51,214,255,.95)}80%{box-shadow:0 0 34px 0 rgba(255,178,61,.9)}90%,100%{box-shadow:0 0 26px -6px rgba(255,61,154,.8)}}
-.btn.primary,.btn.chase{position:relative;overflow:hidden;isolation:isolate;animation:gbwashglow 6.5s ease-in-out infinite}
+.btn.primary,.btn.chase{position:relative;overflow:hidden;isolation:isolate}
 .btn.primary::after,.btn.chase::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(90deg,transparent 0%,var(--pink) 18%,var(--violet) 36%,var(--cyan) 54%,var(--amber) 72%,transparent 90%);
   -webkit-mask-image:radial-gradient(circle,#000 1.6px,transparent 2.1px);mask-image:radial-gradient(circle,#000 1.6px,transparent 2.1px);
@@ -416,7 +416,7 @@ html,body{overflow-x:clip}
 @media(max-width:390px){.nav.con-hd .demo-m{padding:0 10px;font-size:14px;letter-spacing:.5px;gap:4px}.nav.con-hd .cta{padding-left:10px;padding-right:10px;font-size:12px;letter-spacing:.5px}.nav.con-hd .demo-m + .cta{margin-left:6px}.nav.con-hd .burger{margin-left:6px;padding:0 9px}}
 /* 📱 calmer demo bar: dark with a cyan outline, no white flashing (iPhone Safari tints its own bottom bar to match whatever is at the bottom of the screen) */
 @media(max-width:820px){
-  .demo-dock{background:rgba(7,5,13,.92);color:var(--cyan);box-shadow:inset 0 0 0 2px var(--cyan),0 10px 30px -6px #000;animation:dockPulse 3.2s ease-in-out infinite;bottom:calc(22px + env(safe-area-inset-bottom));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .demo-dock{background:rgba(7,5,13,.92);color:var(--cyan);box-shadow:inset 0 0 0 2px var(--cyan),0 10px 30px -6px #000;bottom:calc(22px + env(safe-area-inset-bottom));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
   .demo-dock:hover{color:var(--cyan)}
 }
 @keyframes dockPulse{0%,100%{box-shadow:inset 0 0 0 2px var(--cyan),0 10px 30px -6px #000}50%{box-shadow:inset 0 0 0 2px var(--cyan),0 0 18px -4px var(--cyan),0 10px 30px -6px #000}}
@@ -437,8 +437,8 @@ html,body{overflow-x:clip}
   .hero{padding-top:9svh}
   .hero .herotext{display:contents}
   .hero .herologo{order:1}.hero .pill{order:2;justify-self:start}.hero h1{order:3}.hero .herotext>.lead:not(.lead2){order:4}
-  .hero .hero-shot{order:5;margin:4px 0 6px}
-  .hero .btns{order:6;margin-top:6px}
+  .hero .btns{order:5;margin-top:6px}
+  .hero .hero-shot{order:6;margin:4px 0 6px}
   .hero .lead2{order:7;margin-top:6px!important}.hero .works,.hero .works1{order:8}.hero .stats{order:9}
   .hero .wrap{gap:14px}
 }
@@ -467,8 +467,8 @@ html,body{overflow-x:clip}
 .btn.primary:hover{filter:brightness(1.08)}
 .btn.herotry,.btns .btn.primary.big{min-height:64px;font-size:19px;padding:0 30px}
 .btn.small{min-height:36px;padding:0 14px;font-size:13px}
-.btn .bwm{position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:2.6em;line-height:1;opacity:.28;pointer-events:none;z-index:-1;filter:saturate(.6)}
-.btn.primary .bwm{opacity:.32;filter:grayscale(1) brightness(3)}
+.btn .bwm{position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:2.6em;line-height:1;opacity:.28;pointer-events:none;z-index:-1}
+.btn.primary .bwm{opacity:.3;filter:brightness(1.5)}
 .btn.has-wm{padding-right:46px}
 .btn.small.has-wm{padding-right:30px}
 .btn.small .bwm{font-size:1.9em}
@@ -492,4 +492,15 @@ footer .fth{margin:0 0 6px}
 .hero h1 .grad{text-shadow:none}
 @media(min-width:901px){.hero-bg::after{background:linear-gradient(180deg,rgba(5,4,10,0) 90%,#05040a 100%)}}
 /* 🎄 Oct 22 (Graham: "on phones and iPads hide the pool party photo in the Christmas version so the tree shows") */
-@media(max-width:900px){html[data-hero=christmas] .hero .hero-shot{display:none}}
+
+/* Oct 22 (Impeccable re-run, Graham: "everything"): the light sweep runs faint behind the words, never over them; reduced motion stops it.
+   The guide sidebar's picked item is dark text on its colour. Every key and link is at least 44 px tall. */
+.btn.primary::after,.btn.chase::after{z-index:-1;opacity:.35}
+@media(prefers-reduced-motion:reduce){.btn.primary::after,.btn.chase::after{animation:none;opacity:0}}
+.side a.on,.side a.on *{color:#05040a!important}
+.btn.small{min-height:44px}footer .fine a{display:inline-flex;align-items:center;min-height:44px}
+.hero h1{text-wrap:balance}
+:where(img[width][height]){height:auto}
+.mainnav{display:contents}
+.toc a{min-height:44px;display:inline-flex;align-items:center}
+.btn.herotry{min-height:56px;padding:0 28px}
