@@ -2218,6 +2218,17 @@
   }
   async function handle(method, path, q, b) {
     if (path.startsWith('/api/stage') || path.startsWith('/api/yard')) { const r = stageRoute(method, path, b); if (r) return {json: r}; }
+    // 🎄 Oct 21: Christmas tree card + ↩️ Reset (both need the real lights; the demo shows the card and the preview)
+    if (path === '/api/tree') {
+      if (method === 'GET') return {json: {ok: true, wraps: ['spiral_up', 'spiral_down', 'drops', 'zigzag'], shapes: {full: 'Full tree', skinny: 'Skinny tree', mega: 'Mega tree', wall: 'Wall tree'},
+        lights: [{id: 'demo-string', name: 'String lights', type: 'wled', n: 200, kind: 'string', why: 'a string of 200', tree: null, cols: null, has_map: false, twinkly: false, has_scan: false, pv: null},
+                 {id: 'demo-curtain', name: 'Twinkly curtain', type: 'twinkly', n: 210, kind: 'curtain', why: 'a curtain, 10 across x 21 down', tree: null, cols: 10, has_map: false, twinkly: true, has_scan: false, pv: null}]}};
+      LAPTOP('turning your lights into a Christmas tree'); return {json: {ok: false, error: 'In the demo, the tree needs your lights and the GlowBop laptop app. The preview shows how it will wrap.'}};
+    }
+    if (path === '/api/lights/reset') {
+      if (method === 'GET') return {json: {undo: null}};
+      LAPTOP('resetting your lights'); return {json: {ok: false, error: 'In the demo, Reset needs your lights and the GlowBop laptop app'}};
+    }
     await ready;
     const ok = (o) => ({json: Object.assign({ok: true}, o || {})});
     const pro = fn => { try { return {json: fn()}; } catch (e) { if (e.bad) return {status: 400, json: {error: e.message}}; throw e; } };
