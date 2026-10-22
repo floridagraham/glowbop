@@ -491,3 +491,5 @@ footer .fth{margin:0 0 6px}
 @media(min-width:901px){.hero-bg{display:block;position:absolute;inset:0;z-index:0;overflow:hidden;background:#05040a;pointer-events:none}.hero-bg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,4,10,0) 72%,#05040a 100%)}.hero .wrap{position:relative;z-index:1}.hero::before{display:none}.hero h1{text-shadow:0 2px 18px rgba(5,4,10,.9),0 1px 3px rgba(5,4,10,.8)}.hero h1 .grad{filter:drop-shadow(0 2px 12px rgba(5,4,10,.9))}.hero .herotext>.lead,.hero .lead2,.hero .pill,.hero .works1{text-shadow:0 1px 10px rgba(5,4,10,.95)}}
 .hero h1 .grad{text-shadow:none}
 @media(min-width:901px){.hero-bg::after{background:linear-gradient(180deg,rgba(5,4,10,0) 90%,#05040a 100%)}}
+/* 🎄 Oct 22 (Graham: "on phones and iPads hide the pool party photo in the Christmas version so the tree shows") */
+@media(max-width:900px){html[data-hero=christmas] .hero .hero-shot{display:none}}
