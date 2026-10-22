@@ -37,7 +37,7 @@
   function send(event, props, beacon) {
     if (!KEY || /localhost|127\.0\.0\.1/.test(location.hostname)) return;
     const body = JSON.stringify({api_key: KEY, batch: [{event, timestamp: new Date().toISOString(), properties: Object.assign({distinct_id: id, $lib: 'glowbop-site',
-      variant: v, feature: X.k, page, shape: innerWidth < 700 ? 'phone' : innerWidth < 1024 ? 'tablet' : 'desktop', $process_person_profile: false, $geoip_disable: true, $ip: null}, props || {})}]});
+      variant: v, feature: X.k, page, hero: document.documentElement.dataset.hero || 'dance', hero_test: document.documentElement.dataset.heroTest || 'off', shape: innerWidth < 700 ? 'phone' : innerWidth < 1024 ? 'tablet' : 'desktop', $process_person_profile: false, $geoip_disable: true, $ip: null}, props || {})}]});
     try { if (beacon && navigator.sendBeacon) navigator.sendBeacon(HOST + '/batch/', new Blob([body], {type: 'text/plain'}));
           else fetch(HOST + '/batch/', {method: 'POST', headers: {'Content-Type': 'application/json'}, body, keepalive: true}).catch(() => {}); } catch (e) {}
   }

@@ -54,7 +54,7 @@
   const vids = [...document.querySelectorAll('video.gbv')];
   // 📱 phones and iPads: the whole first screen is a glowing LED wall behind the headline
   const bg = document.querySelector('.hero-bg video');
-  if (bg && matchMedia('(max-width: 900px)').matches) { bg.poster = bg.dataset.poster; bg.src = bg.dataset.src; vids.unshift(bg); }
+  if (bg && bg.dataset.src) { bg.poster = bg.dataset.poster; bg.src = bg.dataset.src; vids.unshift(bg); }   // 🎄 Oct 22: every screen, the season's video (index.html picks it)
   const play = v => { if (!v.paused) return; v.muted = true; try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
   vids.forEach(v => {
     v.muted = true; v.defaultMuted = true; v.playsInline = true; v.loop = true;

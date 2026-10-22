@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=5">
-<link rel="stylesheet" href="/assets/console.css?v=40">
+<link rel="stylesheet" href="/assets/console.css?v=43">
 <link rel="stylesheet" href="/assets/ledcards.css?v=1">
 </head>
 <body>
@@ -34,17 +34,42 @@
 </div></header>
 <main id="main">
 
-<header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg.mp4?v=2" data-poster="/video/hero-bg.jpg" muted loop playsinline webkit-playsinline autoplay preload="metadata" disableremoteplayback></video></div><div class="wrap">
+<header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg-dance.mp4?v=1" data-poster="/video/hero-bg-dance.jpg?v=1" muted loop playsinline webkit-playsinline autoplay preload="metadata" disableremoteplayback></video></div><div class="wrap">
   <div class="herotext">
-    <span class="pill">🎃 <span><b>On sale now</b> · Public beta Oct 31 · Windows 10 and 11</span></span>
-    <h1>Set your lights<br><span class="grad">free.</span></h1>
-    <p class="lead">Ditch the app that came in the box. GlowBop gives you <b>total control</b> of the LED lights you already own: a live light show that hears every beat, build-up and drop.</p>
-    <div class="btns"><a class="btn primary herotry" href="/try/?intro=1">🎛️ Play the live demo</a><a class="btn" href="/pricing.html">🛒 Try free for 7 days</a></div>
+    <span class="pill" id="heroPill">🎃 <span><b>On sale now</b> · Public beta Oct 31 · Windows 10 and 11</span></span>
+    <h1 id="heroH1">Set your lights<br><span class="grad">free.</span></h1>
+    <p class="lead" id="heroLead">Ditch the app that came in the box. GlowBop gives you <b>total control</b> of the LED lights you already own: a live light show that hears every beat, build-up and drop.</p>
+    <div class="btns"><a class="btn primary herotry" href="/try/?intro=1">🎛️ Play the live demo</a><a class="btn" id="heroTry" href="/pricing.html">🛒 Try free for 7 days</a></div>
     <p class="lead lead2"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install on them.</p>
     <p class="works1">Works great with <a href="/lights.html">Twinkly curtains</a>, plus Nanoleaf and LIFX string lights. <a href="/lights.html#soon">More lights on the way →</a></p>
   </div>
   <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><video class="gbv herov" src="/video/hero.mp4?v=3" muted loop playsinline webkit-playsinline autoplay preload="auto" disableremoteplayback aria-hidden="true"></video><span class="concept">Concept photo · real GlowBop patterns</span></figure>
 </div></header>
+<script>
+/* 🎄 Oct 22 (Graham: "a basic one, and a holiday one... the rest of the year we're selling the dancing, but right now they take control"):
+   the hero follows the season. In a holiday season half the visitors see the dancing (A) and half see the holiday, "take control" (B);
+   each device keeps its version. The rest of the year everyone sees the dancing. Preview: ?hero=dance or ?hero=christmas */
+(function () {
+  var d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate();
+  var season = (md >= 1015 && md <= 1226) ? 'christmas' : '';     // Thanksgiving (Nov 1-27) and New Year's (Dec 27-Jan 6) join when their videos are made
+  var q = (new URLSearchParams(location.search).get('hero') || '').toLowerCase(), arm = null;
+  if (q === 'dance' || q === 'christmas') { arm = q === 'dance' ? 'dance' : 'control'; season = q === 'christmas' ? 'christmas' : season; }
+  else if (season) { try { arm = localStorage.getItem('gb_hero_' + season); } catch (e) {}
+    if (arm !== 'dance' && arm !== 'control') { arm = Math.random() < .5 ? 'dance' : 'control'; try { localStorage.setItem('gb_hero_' + season, arm); } catch (e) {} } }
+  var kind = arm === 'control' && season ? season : 'dance';
+  document.documentElement.dataset.hero = kind; document.documentElement.dataset.heroTest = season ? season + ':' + (arm || 'dance') : 'off';
+  var wide = matchMedia('(min-width: 901px)').matches, v = document.querySelector('.hero-bg video');
+  if (v) { v.dataset.src = '/video/hero-' + (wide ? 'wide' : 'bg') + '-' + kind + '.mp4?v=3'; v.dataset.poster = '/video/hero-' + (wide ? 'wide' : 'bg') + '-' + kind + '.jpg?v=3'; }
+  if (kind === 'christmas') {
+    var days = Math.ceil((new Date(d.getFullYear(), 11, 25) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+    var $ = function (id) { return document.getElementById(id); };
+    $('heroPill').innerHTML = '🎄 <span><b>' + (days > 1 ? days + ' days to Christmas' : days === 1 ? 'Christmas is tomorrow' : 'Merry Christmas') + '</b> · Windows 10 and 11</span>';
+    $('heroH1').innerHTML = 'Take control of your<br><span class="grad">Christmas lights.</span>';
+    $('heroLead').innerHTML = 'Your tree, your curtains, one light show to the music. GlowBop gives you <b>total control</b> of the LED lights you already own.';
+    $('heroTry').textContent = '🛒 Take control free for 7 days';
+  }
+})();
+</script>
 <section class="tight" id="tree"><div class="wrap"><div class="feat treespot reveal">
 <div><span class="eyebrow" style="--c:var(--green)">🎄 New for Christmas</span><h2>Your tree joins the light show</h2>
 <p class="lead">Wrap any string of lights round your Christmas tree and GlowBop turns it into a light show to the music. Stand it next to your curtains and it dances with them at its real height, or give it a show of its own.</p>
@@ -183,8 +208,8 @@
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <a class="demo-dock" href="/try/?intro=1" aria-label="Play the live demo"><b>▶</b><span>Play the live demo</span></a>
-<script src="/assets/site.js?v=18"></script>
-<script src="/assets/abtest.js?v=2" defer></script>
+<script src="/assets/site.js?v=19"></script>
+<script src="/assets/abtest.js?v=3" defer></script>
 <script src="/assets/ledcards.js?v=1" defer></script>
 </body>
 </html>
