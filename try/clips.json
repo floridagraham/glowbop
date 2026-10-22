@@ -292,7 +292,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "StarRoll",
+  "title": "Star roll",
   "group": "New effects",
   "desc": "Synthwave"
  },
@@ -301,7 +301,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "WireTorus",
+  "title": "Wire torus",
   "group": "New effects",
   "desc": "3D Depth"
  },
@@ -310,7 +310,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "CrystalGem",
+  "title": "Crystal gem",
   "group": "New effects",
   "desc": "Hyperspace"
  },
@@ -319,7 +319,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "CubeField",
+  "title": "Cube field",
   "group": "New effects",
   "desc": "Hyperspace"
  },
@@ -328,7 +328,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "AtomOrbit",
+  "title": "Atom orbit",
   "group": "New effects",
   "desc": "Deep Space"
  },
@@ -346,7 +346,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "LaserWeb",
+  "title": "Laser web",
   "group": "New effects",
   "desc": "Warehouse Rave"
  },
@@ -355,7 +355,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "EQCity",
+  "title": "EQ city",
   "group": "New effects",
   "desc": "Mainstage"
  },
@@ -364,7 +364,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "LaunchPad",
+  "title": "Launch pad",
   "group": "New effects",
   "desc": "Neon Party"
  },
@@ -373,7 +373,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "SoundRibbon",
+  "title": "Sound ribbon",
   "group": "New effects",
   "desc": "Mainstage"
  },
@@ -382,7 +382,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "PaintSplash",
+  "title": "Paint splash",
   "group": "New effects",
   "desc": "Neon Party"
  },
@@ -391,7 +391,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "CrowdSurf",
+  "title": "Crowd surf",
   "group": "New effects",
   "desc": "Warehouse Rave"
  },
@@ -400,7 +400,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "RainOnGlass",
+  "title": "Rain on glass",
   "group": "New effects",
   "desc": "Storm & Sea"
  },
@@ -436,7 +436,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "SolarFlare",
+  "title": "Solar flare",
   "group": "New effects",
   "desc": "Lava Lounge"
  },
@@ -445,7 +445,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "AlienParade",
+  "title": "Alien parade",
   "group": "New effects",
   "desc": "Retro Arcade"
  },
@@ -463,7 +463,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "SnakeGame",
+  "title": "Snake",
   "group": "New effects",
   "desc": "Retro Arcade"
  },
@@ -472,7 +472,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "PongBattle",
+  "title": "Pong",
   "group": "New effects",
   "desc": "Retro Arcade"
  },
@@ -481,7 +481,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "PixelFireworks",
+  "title": "Pixel fireworks",
   "group": "New effects",
   "desc": "Retro Arcade"
  },
@@ -490,7 +490,7 @@
   "h": 21,
   "n": 90,
   "fps": 15,
-  "title": "VectorRocks",
+  "title": "Space rocks",
   "group": "New effects",
   "desc": "Synthwave"
  },
