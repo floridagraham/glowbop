@@ -55,11 +55,12 @@
       s.innerHTML = `<div class="wrap"><div class="feat ab-feat" style="--c:${X.c}"><div><span class="eyebrow" style="--c:${X.c}">${X.eb}</span><h2>${X.h}</h2><p class="lead">${X.p}</p>
         <div class="btns"><a class="btn primary" data-ab="1" href="${X.demo}">▶ Try it in the live demo</a> <a class="btn" href="/features.html#${X.feat}">See how it works →</a></div></div>
         <div class="media">${X.one || /^<figure class="dev/.test(X.media) ? X.media : '<div class="grid g2 mini">' + X.media + '</div>'}</div></div></div>`;
-      tr.parentNode.insertBefore(s, tr);
+      tr.parentNode.insertBefore(s, tr.nextSibling);              // 🎄 Oct 22 (Graham: short and seasonal): the tree leads, the test feature follows the demo
     }
     // ✨ features: this version's section goes first
     const f = document.getElementById(X.feat), first = document.querySelector('.feat[data-cat]');
     if (f && first && f !== first) first.parentNode.insertBefore(f, first);
+    const tree = document.getElementById('christmas-tree'), top = document.querySelector('.feat[data-cat]'); if (tree && top && tree !== top) top.parentNode.insertBefore(tree, top);
     // ⭐ Pro cards: this version's Pro door first
     const door = c => /pro-dj|pro\.html/.test(c.getAttribute('href') || '') && !/art|home/.test(c.getAttribute('href')) ? 'dj' : /home/.test(c.getAttribute('href') || '') ? 'home' : /art/.test(c.getAttribute('href') || '') ? 'art' : 'x';
     document.querySelectorAll('#go-pro .lc-grid').forEach(g => { const cs = [...g.children]; X.pro.slice().reverse().forEach(k => { const c = cs.find(x => door(x) === k); if (c) g.prepend(c); }); });
