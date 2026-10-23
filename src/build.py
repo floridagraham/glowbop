@@ -1117,7 +1117,7 @@ guide('scoreboard', f'''
 {pic('soccer-scoreboard', 'LED curtain used as a scoreboard at a youth soccer game')}
 <h2 id="gameday">Game Day: keep score yourself</h2>
 {clip('score-soccer', 'a goal at the soccer game, real celebration')}
-<ol><li>Choose a <b>Sport</b> from the dropdown: {SPORTS}.</li>
+<ol><li>Choose a <b>Sport</b> from the dropdown: {SPORTS}. Every sport has its own icon in the app, so a busy Live now list is easy to scan.</li>
 <li>Open <b>⚙️ Game setup</b> to set minutes per period, number of periods, and <span class="k">⏳ Count down</span> or <span class="k">⏱️ Count up</span>. Tap <span class="k">Set up the game</span>.</li>
 <li>Tap <span class="k">▶ Start</span> to run the clock. Nudge it with <span class="k">−1 min</span> <span class="k">−10 s</span> <span class="k">+10 s</span> <span class="k">+1 min</span>.</li>
 <li>Add points with the score buttons, or type the score straight into the box. <span class="k">−1</span> fixes a mistake.</li></ol>
