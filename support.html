@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css?v=6">
-<link rel="stylesheet" href="/assets/console.css?v=49">
+<link rel="stylesheet" href="/assets/style.css?v=7">
+<link rel="stylesheet" href="/assets/console.css?v=50">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -32,10 +32,10 @@
   </div>
 </div></header>
 <main id="main">
-<header class="pagehead"><div class="wrap center"><span class="eyebrow">Support</span><h1>How can we <span class="grad">help</span>?</h1>
+<header class="pagehead"><div class="wrap center"><h1>How can we <span class="grad">help</span>?</h1>
 <p class="lead">Found a bug or dreaming up a new feature? Tell us here. You'll get an email with your ticket number, and we read every message.</p></div></header>
 <section style="padding-top:10px"><div class="wrap" style="max-width:720px">
-<div class="sup-tabs" role="tablist"><button type="button" class="on" data-k="bug">🐞 Report a bug</button><button type="button" data-k="request">💡 Request a feature</button></div>
+<div class="sup-tabs" role="tablist"><button type="button" role="tab" aria-selected="true" class="on" data-k="bug">Report a bug</button><button type="button" role="tab" aria-selected="false" data-k="request">Request a feature</button></div>
 <form id="supForm" class="sup card" novalidate>
 <p class="dim" id="supHint" style="margin:0 0 6px">What happened, and what did you expect? Steps to make it happen again help a lot.</p>
 <label>Your email<input type="email" name="email" required autocomplete="email" placeholder="you@example.com"></label>
@@ -48,7 +48,7 @@
 </div>
 <input type="text" name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
 <button class="btn primary" type="submit" id="supSend">Send</button>
-<p class="dim" style="font-size:14px;margin:12px 0 0">Tip: reporting from inside the GlowBop app (💬 Help &amp; feedback) can attach tech info so we fix it faster.</p>
+<p class="dim" style="font-size:14px;margin:12px 0 0">Tip: reporting from inside the GlowBop app (Help &amp; feedback) can attach tech info so we fix it faster.</p>
 <p id="supMsg" class="sup-msg" role="status"></p>
 </form>
 <div id="supDone" class="card center sup-done" hidden></div>
@@ -59,7 +59,7 @@
 var URL="https://script.google.com/macros/s/AKfycby2Py7-pEba6GIS3kHMitV2W6vivS7HNYZO3U_ytUAPFfX8KGGF_Ld4fnSbcnwAUfij/exec",kind=location.hash==='#request'?'request':'bug',f=document.getElementById('supForm');
 var H={bug:'What happened, and what did you expect? Steps to make it happen again help a lot.',request:'What would you love GlowBop to do? Tell us how you would use it.'};
 var P={bug:'Example: When I tap Next effect, the right curtain freezes for a few seconds.',request:'Example: A New Year’s Eve countdown that ends in fireworks.'};
-function set(k){kind=k;document.querySelectorAll('.sup-tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.k===k)});
+function set(k){kind=k;document.querySelectorAll('.sup-tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.k===k);b.setAttribute('aria-selected',b.dataset.k===k)});
 document.getElementById('supHint').textContent=H[k];f.message.placeholder=P[k];document.querySelector('.sup-bug').style.display=k==='bug'?'':'none';
 document.getElementById('supForm').hidden=false;document.getElementById('supDone').hidden=true;}
 document.querySelectorAll('.sup-tabs button').forEach(function(b){b.onclick=function(){set(b.dataset.k);history.replaceState(null,'',b.dataset.k==='request'?'#request':'#bug')}});
@@ -81,7 +81,7 @@ return r.text().then(function(t){try{return JSON.parse(t)}catch(x){return r.ok?{
 btn.disabled=false;btn.textContent='Send';
 if(!j.ok){msg.textContent=j.error||'Could not send. Please try again.';return}
 var box=document.getElementById('supDone');box.innerHTML='';
-var h=document.createElement('h2');h.textContent=(kind==='bug'?'🐞 ':'💡 ')+'Thanks! We got it.';
+var h=document.createElement('h2');h.textContent='Thanks! We got it.';
 var t=document.createElement('p');t.className='sup-ticket grad';t.textContent=j.ticket||'';
 var p=document.createElement('p');p.textContent='A confirmation is on its way to '+d.email+'. Reply to it any time to add photos or videos.';
 box.append(h,t,p);f.reset();f.hidden=true;box.hidden=false;box.scrollIntoView({behavior:'smooth',block:'center'});
@@ -95,7 +95,7 @@ box.append(h,t,p);f.reset();f.hidden=true;box.hidden=false;box.scrollIntoView({b
   <div class="cols">
     <div><a class="ftlogo" href="/"><img src="/img/brand/glowbop-logo.webp" alt="GlowBop" width="880" height="233" loading="lazy"></a>
       <p class="dim" style="margin-top:12px;font-size:15px;max-width:34ch">Set your lights free. The controller app for the LED lights you already own: curtains, strings and your Christmas tree. Made in Fort Myers, Florida.</p>
-      <a class="btn small" href="/pricing.html">🛒 Try free for 7 days</a></div>
+      <a class="btn small" href="/pricing.html">Try free for 7 days</a></div>
     <div><h2 class="fth">Product</h2><ul><li><a href="/features.html">Features</a></li><li><a href="/music-detection.html">Music detection</a></li><li><a href="/gallery.html">Gallery</a></li><li><a href="/lights.html">Supported lights</a></li><li><a href="/compare.html">Compare</a></li><li><a href="/pro.html">Pro DJ</a></li><li><a href="/pricing.html">Pricing</a></li></ul></div>
     <div><h2 class="fth">Guide</h2><ul><li><a href="/guide/getting-started.html">Getting started</a></li><li><a href="/guide/music.html">Music show</a></li><li><a href="/guide/pro-dj.html">Pro DJ tools</a></li><li><a href="/guide/scoreboard.html">Scoreboard</a></li><li><a href="/guide/troubleshooting.html">Troubleshooting</a></li></ul></div>
     <div><h2 class="fth">Help</h2><ul><li><a href="/download.html">Download</a></li><li><a href="/faq.html">FAQ</a></li><li><a href="/support.html">Report a bug</a></li><li><a href="/support.html#request">Request a feature</a></li><li><a href="mailto:hello@glowbop.com">hello@glowbop.com</a></li></ul></div>

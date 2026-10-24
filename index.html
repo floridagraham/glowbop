@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css?v=6">
-<link rel="stylesheet" href="/assets/console.css?v=49">
+<link rel="stylesheet" href="/assets/style.css?v=7">
+<link rel="stylesheet" href="/assets/console.css?v=50">
 <link rel="stylesheet" href="/assets/ledcards.css?v=1">
 </head>
 <body>
@@ -36,11 +36,11 @@
 
 <header class="hero"><div class="hero-bg" aria-hidden="true"><video data-src="/video/hero-bg-dance.mp4?v=1" data-poster="/video/hero-bg-dance.jpg?v=1" muted loop playsinline webkit-playsinline autoplay preload="metadata" disableremoteplayback></video></div><div class="wrap">
   <div class="herotext">
-    <span class="pill" id="heroPill">✨ <span><b>On sale now</b> · Public beta Oct 31 · Windows 10 and 11</span></span>
+    <span class="pill" id="heroPill"><span><b>On sale now</b> · Public beta Oct 31 · Windows 10 and 11</span></span>
     <h1 id="heroH1">Set your lights<br><span class="grad">free.</span></h1>
     <p class="lead" id="heroLead">Ditch the app that came in the box. GlowBop gives you <b>total control</b> of the LED lights you already own: a live light show that hears every beat, build-up and drop.</p>
-    <div class="btns"><a class="btn primary herotry" href="/try/?intro=1">🎛️ Play the live demo</a><a class="btn" id="heroTry" href="/pricing.html">🛒 Try free for 7 days</a></div>
-    <p class="lead lead2"><b>📱 Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install on them.</p>
+    <div class="btns"><a class="btn primary herotry" href="/try/?intro=1">Play the live demo</a><a class="btn" id="heroTry" href="/pricing.html">Try free for 7 days</a></div>
+    <p class="lead lead2"><b>Run the whole show from your phone, iPad or laptop.</b> Scan a QR code, nothing to install on them.</p>
     <p class="works1">Works great with <a href="/lights.html">Twinkly curtains</a>, plus Nanoleaf and LIFX string lights. <a href="/lights.html#soon">More lights on the way →</a></p>
   </div>
   <figure class="shot hero-shot livehero"><img src="/img/pool-party.jpg" alt="Two LED curtains playing a GlowBop light show behind a pool party at night" width="1344" height="752"><video class="gbv herov" data-src="/video/hero.mp4?v=4" muted loop playsinline webkit-playsinline autoplay preload="none" disableremoteplayback aria-hidden="true"></video><span class="concept">Concept photo · real GlowBop patterns</span></figure>
@@ -74,25 +74,25 @@
     $('heroLead').innerHTML = 'Put on a song and every light you own dances to it: the curtain in the window, the tree, the string on the porch. You run it all from your phone.';
   }
   if (kind === 'christmas') {
-    $('heroPill').innerHTML = '🎄 <span><b>' + countdown + '</b> · Windows 10 and 11</span>';
+    $('heroPill').innerHTML = '<span><b>' + countdown + '</b> · Windows 10 and 11</span>';
     $('heroH1').innerHTML = 'Take control of<br>your <span class="grad">Christmas lights.</span>';
     var sh = document.querySelector('.hero-shot'), im = sh && sh.querySelector('img'), cap = sh && sh.querySelector('.concept');
     if (im) { im.src = '/video/hero-tree.jpg?v=1'; im.alt = 'Two LED curtains and a Christmas tree beside them, playing one GlowBop light show'; }
     if (cap) cap.textContent = 'GlowBop render · your tree beside your curtains';
     $('heroLead').innerHTML = 'Your tree, your curtains, one light show to the music. GlowBop gives you <b>total control</b> of the LED lights you already own.';
-    $('heroTry').textContent = '🛒 Take control free for 7 days';
+    $('heroTry').textContent = 'Take control free for 7 days';
   }
 })();
 </script>
 <section class="tight" id="tree"><div class="wrap"><div class="feat treespot reveal">
-<div><span class="eyebrow" style="--c:var(--green)">🎄 New for Christmas</span><h2>Your tree joins the light show</h2>
+<div><h2>New for Christmas: your tree joins the light show</h2>
 <p class="lead">Wrap any string of lights round your Christmas tree and GlowBop turns it into a light show to the music. Stand it next to your curtains and it dances with them at its real height, or give it a show of its own.</p>
 <ul class="ticks" style="--c:var(--green)"><li><b>22 tree animations:</b> spirals, snow, candy canes, a blazing star, Santa's sleigh and fireworks on the drop.</li><li><b>Make it yours:</b> your colours, your star, your message written round the tree.</li><li><b>One switch:</b> on the wall with your curtains, or its own show.</li></ul>
-<div class="btns"><a class="btn primary" href="/try/#holiday">▶ Play the tree in the demo</a><a class="btn" href="/features.html#christmas-tree">How it works →</a></div></div>
-<div class="media"><figure class="led real" style="aspect-ratio:6/7;max-width:360px;margin:auto"><video class="gbv" src="/video/christmas-tree-v2.mp4" poster="/video/christmas-tree-v2.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-label="GlowBop tree animations on a string wrapped round a tree"></video><figcaption>🔴 Recorded from GlowBop · Tree animations</figcaption></figure></div>
+<div class="btns"><a class="btn primary" href="/try/#holiday">Play the tree in the demo</a><a class="btn" href="/features.html#christmas-tree">How it works →</a></div></div>
+<div class="media"><figure class="led real" style="aspect-ratio:6/7;max-width:360px;margin:auto"><video class="gbv" src="/video/christmas-tree-v2.mp4" poster="/video/christmas-tree-v2.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-label="GlowBop tree animations on a string wrapped round a tree"></video><figcaption>Recorded from GlowBop · Tree animations</figcaption></figure></div>
 </div></div></section>
 <section class="tight" id="try"><div class="wrap">
-  <div class="center reveal"><span class="eyebrow" style="--c:var(--green)">Try it right here</span><h2>You drive the light show</h2>
+  <div class="center reveal"><h2>You drive the light show</h2>
   <p class="lead">Tap the picture to open the full GlowBop player on a pretend light wall. Every page, every control, every sound: charge the drop, let go, hit the pads, ride the faders.</p></div>
   <figure class="tryframe reveal" id="tryPic" aria-label="Open the real GlowBop console">
   <div class="tf-scr">
@@ -106,14 +106,14 @@
 </div></section>
 <style>@media (max-width:699px){#mirror figure figcaption,#spotlight figure[style*="1280"] figcaption{display:none}}</style>
 <section class="alt" id="reel"><div class="wrap">
-  <div class="center reveal"><span class="eyebrow" style="--c:var(--pink)">🔴 Showreel</span><h2>This is really GlowBop</h2>
+  <div class="center reveal"><h2>This is really GlowBop</h2>
   <p class="lead">Not a mock-up: every frame below was recorded straight from the GlowBop engine on a two-curtain wall.</p></div>
   <figure class="led real reel reveal" style="aspect-ratio:40/21;margin-top:26px"><video class="gbv" src="/video/reel-main.mp4" poster="/video/reel-main.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-label="GlowBop showreel" data-cues="[[0.0,&quot;Psychedelic&quot;],[3.8,&quot;Rainbow \u00b7 Cozy&quot;],[7.6,&quot;Hypnotic&quot;],[11.4,&quot;Rainbow Riot&quot;],[15.2,&quot;3D Depth&quot;],[19.0,&quot;Barber Spin&quot;],[22.8,&quot;Warehouse Rave&quot;],[26.6,&quot;PixelFireworks&quot;],[30.4,&quot;Dance Crew&quot;],[34.2,&quot;Retro Arcade&quot;],[38.0,&quot;Neon Party&quot;],[41.8,&quot;Wild Elements&quot;],[45.6,&quot;Chaos&quot;],[49.4,&quot;Hyperspace&quot;],[53.2,&quot;Toxic Rave&quot;],[57.0,&quot;Tesseract&quot;],[60.8,&quot;Live Fan \u00b7 Baseball&quot;],[64.6,&quot;NASCAR&quot;],[68.4,&quot;Live Fan \u00b7 Football&quot;],[72.2,&quot;Golf&quot;],[76.0,&quot;F1: new leader&quot;],[79.8,&quot;F1: chequered flag&quot;],[83.6,&quot;Midnight Galaxy&quot;],[87.4,&quot;Liquid Dreams&quot;],[91.2,&quot;Lava Lounge&quot;],[95.0,&quot;Serpent&quot;],[98.8,&quot;Royal Gold&quot;],[102.6,&quot;Wild Card&quot;],[106.4,&quot;Synthwave&quot;],[110.2,&quot;LaserWeb&quot;],[114.0,&quot;Spinning Globe&quot;],[117.8,&quot;Club Rig&quot;],[121.6,&quot;Big Wave&quot;],[125.4,&quot;Classic \u00b7 Roaring&quot;],[129.2,&quot;Volcano&quot;],[133.0,&quot;Studio 54&quot;]]" data-label="reelName"></video>
-  <figcaption>🔴 Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
+  <figcaption>Recorded from GlowBop · <b id="reelName">Psychedelic</b></figcaption></figure>
   <p class="center" style="margin-top:18px"><a class="btn" href="/gallery.html">See every pattern in the gallery →</a></p>
 </div></section>
 <section><div class="wrap">
-  <div class="center reveal"><span class="eyebrow">How it works</span><h2>From the box to your light show in 5 minutes</h2>
+  <div class="center reveal"><h2>From the box to your light show in 5 minutes</h2>
   <p class="lead">No DMX, no light programming, no extra music gadgets. If music plays on your computer, GlowBop can see it.</p></div>
   <div class="grid g3 steps" style="margin-top:36px">
     <div class="card reveal"><h3>Hang your lights</h3><p>Hang your curtains and connect them with the maker's app, like you normally would.</p></div>
@@ -198,14 +198,14 @@
 })();
 </script>
 <section><div class="wrap">
-  <div class="center reveal"><span class="eyebrow">Pricing</span><h2>A whole light show crew for $5.99 a month</h2>
-  <p class="lead"><b>Home DJ</b>: $5.99 a month, $59 a year, or $379 once. <a href="/pro.html"><b>Pro DJ</b></a> for gigs and venues from $8.99 a month. 🎃 <b>Founder launch deal: lifetime for $129</b> during launch week or for the first 100 buyers. Monthly and yearly plans start with a 7-day free trial.</p>
+  <div class="center reveal"><h2>A whole light show crew for $5.99 a month</h2>
+  <p class="lead"><b>Home DJ</b>: $5.99 a month, $59 a year, or $379 once. <a href="/pro.html"><b>Pro DJ</b></a> for gigs and venues from $8.99 a month. <b>Founder launch deal: lifetime for $129</b> during launch week or for the first 100 buyers. Monthly and yearly plans start with a 7-day free trial.</p>
   <p class="dim">Public beta from Oct 31 · runs on a Windows 10 or 11 PC · control it from any phone, iPad or laptop.</p>
   <div class="btns" style="justify-content:center"><a class="btn primary" href="/pricing.html">See plans</a></div></div>
 </div></section>
 <section class="tight"><div class="wrap"><div class="band reveal">
 <h2>Ready to set your lights free?</h2><p class="lead">Start your 7-day free trial today, or grab the $129 Founder lifetime deal while it lasts.</p>
-<div class="btns" style="justify-content:center"><a class="btn primary" href="/pricing.html">🛒 Try free for 7 days</a><a class="btn" href="/guide/">Read the guide</a></div>
+<div class="btns" style="justify-content:center"><a class="btn primary" href="/pricing.html">Try free for 7 days</a><a class="btn" href="/guide/">Read the guide</a></div>
 </div></div></section>
 
 </main>
@@ -214,7 +214,7 @@
   <div class="cols">
     <div><a class="ftlogo" href="/"><img src="/img/brand/glowbop-logo.webp" alt="GlowBop" width="880" height="233" loading="lazy"></a>
       <p class="dim" style="margin-top:12px;font-size:15px;max-width:34ch">Set your lights free. The controller app for the LED lights you already own: curtains, strings and your Christmas tree. Made in Fort Myers, Florida.</p>
-      <a class="btn small" href="/pricing.html">🛒 Try free for 7 days</a></div>
+      <a class="btn small" href="/pricing.html">Try free for 7 days</a></div>
     <div><h2 class="fth">Product</h2><ul><li><a href="/features.html">Features</a></li><li><a href="/music-detection.html">Music detection</a></li><li><a href="/gallery.html">Gallery</a></li><li><a href="/lights.html">Supported lights</a></li><li><a href="/compare.html">Compare</a></li><li><a href="/pro.html">Pro DJ</a></li><li><a href="/pricing.html">Pricing</a></li></ul></div>
     <div><h2 class="fth">Guide</h2><ul><li><a href="/guide/getting-started.html">Getting started</a></li><li><a href="/guide/music.html">Music show</a></li><li><a href="/guide/pro-dj.html">Pro DJ tools</a></li><li><a href="/guide/scoreboard.html">Scoreboard</a></li><li><a href="/guide/troubleshooting.html">Troubleshooting</a></li></ul></div>
     <div><h2 class="fth">Help</h2><ul><li><a href="/download.html">Download</a></li><li><a href="/faq.html">FAQ</a></li><li><a href="/support.html">Report a bug</a></li><li><a href="/support.html#request">Request a feature</a></li><li><a href="mailto:hello@glowbop.com">hello@glowbop.com</a></li></ul></div>

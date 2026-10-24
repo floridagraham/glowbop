@@ -9,7 +9,7 @@ h1,h2,h3,h4{font-family:var(--cond);letter-spacing:.5px;text-transform:uppercase
 h1{font-size:clamp(40px,6.4vw,76px);line-height:.98;letter-spacing:1px}
 h2{font-size:clamp(32px,4.2vw,50px);line-height:1}
 h3{font-size:23px;letter-spacing:1px;font-weight:700}
-.grad{background:linear-gradient(90deg,var(--pink),var(--violet) 50%,var(--cyan));-webkit-background-clip:text;background-clip:text}
+.grad{background:none;color:var(--pink)}
 .eyebrow{font:15px/1 var(--mono);letter-spacing:2px;color:var(--c,var(--amber));display:inline-flex;align-items:center;gap:10px}
 .eyebrow::before{content:"";width:26px;height:12px;border-radius:0 6px 0 6px;background:currentColor;display:inline-block}
 .center .eyebrow{justify-content:center}
@@ -467,11 +467,6 @@ html,body{overflow-x:clip}
 .btn.primary:hover{filter:brightness(1.08)}
 .btn.herotry,.btns .btn.primary.big{min-height:64px;font-size:19px;padding:0 30px}
 .btn.small{min-height:36px;padding:0 14px;font-size:13px}
-.btn .bwm{position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:2.6em;line-height:1;opacity:.28;pointer-events:none;z-index:-1}
-.btn.primary .bwm{opacity:.3;filter:brightness(1.5)}
-.btn.has-wm{padding-right:46px}
-.btn.small.has-wm{padding-right:30px}
-.btn.small .bwm{font-size:1.9em}
 
 /* Oct 22 (Impeccable audit, Graham: "all issues"): squared keys like the app (12 main, 8 chips), no pulsing glows, readable pink keys */
 .nav.con-hd .burger,.nav.con-hd .cta,.nav.con-hd .demo-m{min-height:44px;height:44px}

@@ -11,7 +11,7 @@ h2{font-size:clamp(28px,3.6vw,42px);font-weight:800}
 h3{font-size:21px;font-weight:700}
 p{margin:0 0 1em}
 .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
-.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad{color:var(--pink)}   /* Oct 24 design audit fix 4: solid pink, no gradient text */
 .dim{color:var(--dim)}
 .eyebrow{display:inline-block;font:700 13px/1 'DM Sans';letter-spacing:1.6px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px}
 .lead{font-size:20px;color:var(--dim);max-width:60ch}
