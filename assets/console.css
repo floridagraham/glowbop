@@ -89,7 +89,6 @@ a.card:hover{border-color:var(--line);border-left-color:var(--c,var(--violet));f
 .grid>.card:nth-child(8n+6){--c:var(--green)}
 .grid>.card:nth-child(8n+7){--c:var(--gold)}
 .grid>.card:nth-child(8n+8){--c:var(--peri)}
-.steps .card::before{background:var(--c);border-radius:0 10px 0 10px;font:800 17px/30px var(--cond);color:#000}
 .pill{font:14px var(--mono);letter-spacing:1px;background:#0a0812;border:1px solid var(--line);border-left:8px solid var(--amber);border-radius:0 14px 0 14px;text-transform:uppercase}
 .pill b{color:var(--amber)}
 .stats{gap:10px}
@@ -522,3 +521,14 @@ html[data-hero=living] .hero .works1{color:#e4d6c4}
 /* Oct 24 design audit fix 5: Reduce Motion visitors start the recorded clips themselves */
 .vplay{position:absolute;top:10px;right:10px;z-index:3;min-width:72px;min-height:44px;padding:0 14px;border:0;border-radius:0 10px 0 10px;background:rgba(7,5,13,.88);color:var(--cyan);box-shadow:inset 0 0 0 2px var(--cyan);font:800 15px/1 var(--cond);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer}
 .shot .vplay{top:auto;bottom:10px}
+/* Oct 24 design audit fix 8: favourite features as recorded clips in mixed sizes (4+2, 2+4, 3+3); the wide tile sets the row height */
+.ftiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 18px;margin-top:30px}
+.ftile{grid-column:span 2;display:flex;flex-direction:column;color:var(--text)}
+.ftile.w4{grid-column:span 4}.ftile.w3{grid-column:span 3}
+.ftile .led{flex:1;min-height:170px;aspect-ratio:auto;border-color:var(--line);transition:border-color .2s}
+.ftile.w4 .led,.ftile.w3 .led{flex:none;aspect-ratio:40/21}
+.ftile .led video{position:absolute;inset:0}
+.ftile:hover{text-decoration:none}.ftile:hover .led{border-color:var(--c)}
+.ftile h3{margin:14px 0 4px;color:var(--c)}
+.ftile p{margin:0;color:var(--dim);font-size:16px}
+@media(max-width:700px){.ftile,.ftile.w4,.ftile.w3{grid-column:1/-1}.ftile .led{flex:none;aspect-ratio:40/21;min-height:0}}

@@ -66,9 +66,6 @@ a.card:hover{text-decoration:none;border-color:#3d3d52;transform:translateY(-2px
 .card p{color:var(--dim);font-size:15.5px;margin:0}
 .card .em{font-size:30px;line-height:1;margin-bottom:12px}
 .card .more{display:inline-block;margin-top:12px;font-weight:700;font-size:14px;color:var(--cyan)}
-.steps{counter-reset:s}
-.steps .card{position:relative;padding-top:58px}
-.steps .card::before{counter-increment:s;content:counter(s);position:absolute;top:18px;left:22px;width:30px;height:30px;border-radius:50%;background:var(--grad);color:#0b0b12;font:800 15px/30px 'Saira Condensed';text-align:center}
 
 /* feature rows */
 .feat{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:56px 0;border-bottom:1px solid var(--line)}

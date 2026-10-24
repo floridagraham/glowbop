@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css?v=7">
-<link rel="stylesheet" href="/assets/console.css?v=52">
+<link rel="stylesheet" href="/assets/style.css?v=8">
+<link rel="stylesheet" href="/assets/console.css?v=53">
 <link rel="stylesheet" href="/assets/ledcards.css?v=1">
 </head>
 <body>
@@ -121,7 +121,7 @@
 <section><div class="wrap">
   <div class="center reveal"><h2>From the box to your light show in 5 minutes</h2>
   <p class="lead">No DMX, no light programming, no extra music gadgets. If music plays on your computer, GlowBop can see it.</p></div>
-  <div class="grid g3 steps" style="margin-top:36px">
+  <div class="grid g3" style="margin-top:36px">
     <div class="card reveal"><h3>Hang your lights</h3><p>Hang your curtains and connect them with the maker's app, like you normally would.</p></div>
     <div class="card reveal"><h3>Open GlowBop</h3><p>It finds your lights on Wi-Fi and Bluetooth, then a quick line-up wizard tells it which way is up and which hangs where.</p></div>
     <div class="card reveal"><h3>Press play</h3><p>Play any song from Spotify, YouTube, Apple Music or a DJ app. The wall starts dancing. Grab the console on your phone.</p></div>
@@ -130,7 +130,15 @@
 <section class="alt"><div class="wrap">
   <div class="center reveal"><h2>One app, every party you throw</h2>
   <p class="lead">Pool party, DJ gig, game night or the holidays. Six favourites here, dozens more on the Features page.</p></div>
-  <div class="grid g3" style="margin-top:30px"><a class="card reveal" href="/features.html#dj-mode"><div class="em">🎚️</div><h3>DJ mode</h3><p>Charge the drop, let it go, hit the pads. You play the lights like a club lighting tech.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#screen-mirror"><div class="em">🖥️</div><h3>Screen mirror</h3><p>Movies, concerts and games on your laptop play across your whole light wall.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#scoreboard"><div class="em">🏟️</div><h3>Live scores</h3><p>Your teams in their colours, and a party on the wall every time they score.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#holidays"><div class="em">🎃</div><h3>Holidays</h3><p>Mini-movies for Halloween, Thanksgiving, Christmas and New Year's, on the right dates for your country.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#games"><div class="em">👾</div><h3>Arcade games</h3><p>Games that play themselves on your lights, right to the beat.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#3d-shapes"><div class="em">🧊</div><h3>3D shapes</h3><p>Wrap your curtains round a cylinder, a box or a globe and the show wraps all the way round.</p><span class="more">How it works →</span></a></div>
+  <!-- Oct 24 design audit fix 8: the six favourites as real engine clips at mixed sizes, not emoji boxes -->
+  <div class="ftiles">
+    <a class="ftile w4 reveal" href="/features.html#dj-mode" style="--c:var(--pink)"><figure class="led real"><video class="gbv" src="/video/drop.mp4" data-poster="/video/drop.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-hidden="true"></video><figcaption>Recorded from GlowBop · The drop</figcaption></figure><h3>DJ mode</h3><p>Charge the drop, let it go, hit the pads. You play the lights like a club lighting tech.</p></a>
+    <a class="ftile reveal" href="/features.html#screen-mirror" style="--c:var(--cyan)"><figure class="led real"><video class="gbv" src="/video/mirror-screen.mp4" data-poster="/video/mirror-screen.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-hidden="true"></video><figcaption>Recorded from GlowBop · Screen mirror</figcaption></figure><h3>Screen mirror</h3><p>Movies, concerts and games on your laptop play across your whole light wall.</p></a>
+    <a class="ftile reveal" href="/features.html#scoreboard" style="--c:var(--green)"><figure class="led real"><video class="gbv" src="/video/score-football.mp4" data-poster="/video/score-football.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-hidden="true"></video><figcaption>Recorded from GlowBop · Football</figcaption></figure><h3>Live scores</h3><p>Your teams in their colours, and a party on the wall every time they score.</p></a>
+    <a class="ftile w4 reveal" href="/features.html#holidays" style="--c:var(--amber)"><figure class="led real"><video class="gbv" src="/video/movie-halloweennight.mp4" data-poster="/video/movie-halloweennight.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-hidden="true"></video><figcaption>Recorded from GlowBop · Halloween night</figcaption></figure><h3>Holidays</h3><p>Mini-movies for Halloween, Thanksgiving, Christmas and New Year’s, on the right dates.</p></a>
+    <a class="ftile w3 reveal" href="/features.html#games" style="--c:var(--lav)"><figure class="led real"><video class="gbv" src="/video/fx-breakout.mp4" data-poster="/video/fx-breakout.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-hidden="true"></video><figcaption>Recorded from GlowBop · Breakout</figcaption></figure><h3>Arcade games</h3><p>Games that play themselves on your lights, right to the beat.</p></a>
+    <a class="ftile w3 reveal" href="/features.html#3d-shapes" style="--c:var(--orange)"><figure class="led real"><video class="gbv" src="/video/shape-spinningglobe.mp4" data-poster="/video/shape-spinningglobe.jpg" muted loop playsinline webkit-playsinline preload="none" disableremoteplayback aria-hidden="true"></video><figcaption>Recorded from GlowBop · Spinning globe</figcaption></figure><h3>3D shapes</h3><p>Wrap your curtains round a cylinder, a box or a globe and the show wraps all the way round.</p></a>
+  </div>
   <div class="btns" style="justify-content:center;margin-top:24px"><a class="btn primary" href="/features.html">See every feature →</a><a class="btn" href="/compare.html">Compare light apps</a></div>
 </div></section>
 <section class="tight"><div class="wrap"><a class="holban reveal" id="holban" href="/pricing.html">
@@ -229,7 +237,7 @@
   <span>Tempo data by <a href="https://getsongbpm.com" rel="noopener">GetSongBPM</a> · Genre data by <a href="https://www.last.fm" rel="noopener">Last.fm</a></span></div>
 </div></footer>
 <a class="demo-dock" href="/try/?intro=1" aria-label="Play the live demo"><b>▶</b><span>Play the live demo</span></a>
-<script src="/assets/site.js?v=21"></script>
+<script src="/assets/site.js?v=22"></script>
 <script src="/assets/abtest.js?v=4" defer></script>
 <script src="/assets/ledcards.js?v=1" defer></script>
 </body>

@@ -59,7 +59,7 @@
     if (bg) { bg.autoplay = false; if (bg.dataset.poster) bg.poster = bg.dataset.poster; }
     vids.forEach(v => {
       v.autoplay = false; v.pause(); if (v.dataset.poster && !v.getAttribute('poster')) v.poster = v.dataset.poster;
-      const box = v.closest('figure'); if (!box) return;
+      const box = v.closest('figure'); if (!box || v.closest('a')) return;   // clips inside a link just show their still
       const b = document.createElement('button'); b.type = 'button'; b.className = 'vplay'; b.textContent = 'Play';
       b.addEventListener('click', () => { if (v.paused) { v.muted = true; v.preload = 'auto'; v.play().catch(() => {}); b.textContent = 'Pause'; } else { v.pause(); b.textContent = 'Play'; } });
       v.addEventListener('playing', () => v.classList.add('on'));
