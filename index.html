@@ -127,7 +127,7 @@
   <div class="grid g3" style="margin-top:30px"><a class="card reveal" href="/features.html#dj-mode"><div class="em">🎚️</div><h3>DJ mode</h3><p>Charge the drop, let it go, hit the pads. You play the lights like a club lighting tech.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#screen-mirror"><div class="em">🖥️</div><h3>Screen mirror</h3><p>Movies, concerts and games on your laptop play across your whole light wall.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#scoreboard"><div class="em">🏟️</div><h3>Live scores</h3><p>Your teams in their colours, and a party on the wall every time they score.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#holidays"><div class="em">🎃</div><h3>Holidays</h3><p>Mini-movies for Halloween, Thanksgiving, Christmas and New Year's, on the right dates for your country.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#games"><div class="em">👾</div><h3>Arcade games</h3><p>Games that play themselves on your lights, right to the beat.</p><span class="more">How it works →</span></a><a class="card reveal" href="/features.html#3d-shapes"><div class="em">🧊</div><h3>3D shapes</h3><p>Wrap your curtains round a cylinder, a box or a globe and the show wraps all the way round.</p><span class="more">How it works →</span></a></div>
   <div class="btns" style="justify-content:center;margin-top:24px"><a class="btn primary" href="/features.html">See every feature →</a><a class="btn" href="/compare.html">Compare light apps</a></div>
 </div></section>
-<section class="tight"><div class="wrap"><a class="holban reveal" id="holban" href="/pricing.html" aria-label="GlowBop, the controller for the LED lights you already own. Light up every holiday. Take control free for 7 days.">
+<section class="tight"><div class="wrap"><a class="holban reveal" id="holban" href="/pricing.html">
 <div class="hb-bg"><img data-k="halloween" class="on" src="/img/hol-halloween.jpg" srcset="/img/hol-halloween-s.jpg 900w, /img/hol-halloween.jpg 1600w" sizes="(max-width:900px) 100vw, 1200px" alt="" loading="lazy">
 <img data-k="thanksgiving" data-src="/img/hol-thanksgiving.jpg" data-srcset="/img/hol-thanksgiving-s.jpg 900w, /img/hol-thanksgiving.jpg 1600w" sizes="(max-width:900px) 100vw, 1200px" alt="">
 <img data-k="christmas" data-src="/img/hol-christmas.jpg" data-srcset="/img/hol-christmas-s.jpg 900w, /img/hol-christmas.jpg 1600w" sizes="(max-width:900px) 100vw, 1200px" alt="">
@@ -149,7 +149,7 @@
 .holban.big .hb-mosaic{opacity:1}
 .holban.big .hb-mosaic i{animation:hbPop .7s cubic-bezier(.2,1.4,.4,1) var(--d) forwards}
 @keyframes hbPop{to{transform:none;opacity:1}}
-.hb-flash{position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(circle at 30% 50%,#fff,rgba(255,255,255,0) 70%);opacity:0}
+.hb-flash{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(circle at 30% 50%,#fff,rgba(255,255,255,0) 70%);opacity:0}
 .holban.big .hb-flash{animation:hbFlash 1.1s ease}
 @keyframes hbFlash{12%{opacity:.85}100%{opacity:0}}
 .hb-txt{position:absolute;z-index:3;left:5.5%;top:50%;transform:translateY(-50%);width:min(60%,640px)}
@@ -191,8 +191,9 @@
     B.classList.toggle('big', s.k==='big'); if(s.k==='big'){ void B.offsetWidth; }
     imgs.forEach(function(im){ var on=im.dataset.k===(s.k==='big'?'home':s.k); if(on) load(im); im.classList.toggle('on',on && s.k!=='big'); });
     morph(s.w); }
-  function tick(){ if(!vis||document.hidden){t=setTimeout(tick,800);return;} i=(i+1)%S.length; show(i); t=setTimeout(tick, S[i].k==='big'?5200:3600); }
-  show(i); t=setTimeout(tick,3600);
+  // Oct 24 design audit fix 3: one round only, resting on "the holidays."; reduced motion shows the coming holiday and never cycles
+  function tick(){ if(!vis||document.hidden){t=setTimeout(tick,800);return;} i=(i+1)%S.length; show(i); if(S[i].k!=='big') t=setTimeout(tick,3600); }
+  show(i); if(!calm) t=setTimeout(tick,3600);
   if('IntersectionObserver' in window) new IntersectionObserver(function(e){vis=e[0].isIntersecting;}).observe(B);
 })();
 </script>
