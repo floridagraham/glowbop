@@ -2,13 +2,13 @@
 (() => {
   const nav = document.querySelector('.nav'), bt = document.querySelector('.burger');
 
-  // 🌈 browser-tab icon slowly cycles colours too (browsers without canvas filters keep the still icon)
+  // 🌈 browser-tab icon slowly cycles colours too (browsers without canvas filters keep the still icon); Oct 24 audit fix 10: every 4 s, not 0.4 s
   (() => {
     const link = document.querySelector('link[rel=icon]'); if (!link || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const img = new Image(), c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
     if (!('filter' in g)) return;
-    img.onload = () => { let deg = 0; setInterval(() => { if (document.hidden) return; deg = (deg + 15) % 360;
-      g.clearRect(0, 0, 64, 64); g.filter = `hue-rotate(${deg}deg)`; g.drawImage(img, 0, 0, 64, 64); link.href = c.toDataURL('image/png'); }, 420); };
+    img.onload = () => { let deg = 0; setInterval(() => { if (document.hidden) return; deg = (deg + 40) % 360;
+      g.clearRect(0, 0, 64, 64); g.filter = `hue-rotate(${deg}deg)`; g.drawImage(img, 0, 0, 64, 64); link.href = c.toDataURL('image/png'); }, 4000); };
     img.src = '/icon.png';
   })();
   // ☰ phone menu: the key reads CLOSE while open; tapping a link, outside the menu, or Escape closes it
