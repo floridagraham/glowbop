@@ -121,12 +121,13 @@
   }
 })();
 
-// 📱 the ▶ Play the live demo bar slides up once you start scrolling and stays there
+// 📱 the ▶ Play the live demo bar: only when no other demo button is on screen (Oct 24 design audit fix 2: it covered text on
+// phones and made three demo buttons at once). It hides while the hero buttons, the top-bar Demo key, the demo section or the footer show.
 (function () {
   const d = document.querySelector('.demo-dock'); if (!d) return;
-  const tl = document.getElementById('tryLive'), away = [tl && (tl.closest('section') || tl)].filter(Boolean), ft = document.querySelector('footer');
-  const near = el => { const r = el.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; };
-  const tick = () => d.classList.toggle('show', scrollY > 300);   // stays put once you start scrolling (Oct 16: hiding near the demo felt broken)
+  const away = ['.hero .btns', '.nav .demo-m', '#try', '#tryPic', '#tryLive', 'footer'].map(q => document.querySelector(q)).filter(Boolean);
+  const near = el => { if (!el.getClientRects().length) return false; const r = el.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; };
+  const tick = () => d.classList.toggle('show', scrollY > 300 && !away.some(near));
   addEventListener('scroll', tick, {passive: true}); addEventListener('resize', tick); tick();
 })();
 
