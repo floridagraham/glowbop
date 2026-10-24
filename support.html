@@ -56,7 +56,7 @@
 </div></section>
 <script>
 (function(){
-var URL="",kind=location.hash==='#request'?'request':'bug',f=document.getElementById('supForm');
+var URL="https://script.google.com/macros/s/AKfycby2Py7-pEba6GIS3kHMitV2W6vivS7HNYZO3U_ytUAPFfX8KGGF_Ld4fnSbcnwAUfij/exec",kind=location.hash==='#request'?'request':'bug',f=document.getElementById('supForm');
 var H={bug:'What happened, and what did you expect? Steps to make it happen again help a lot.',request:'What would you love GlowBop to do? Tell us how you would use it.'};
 var P={bug:'Example: When I tap Next effect, the right curtain freezes for a few seconds.',request:'Example: A New Year’s Eve countdown that ends in fireworks.'};
 function set(k){kind=k;document.querySelectorAll('.sup-tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.k===k)});
@@ -73,7 +73,11 @@ if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)){msg.textContent='Please enter
 if(d.message.length<5){msg.textContent='Please tell us a bit more.';f.message.focus();return}
 if(!URL){msg.innerHTML='Our support inbox is getting set up. Please email <a href="mailto:hello@glowbop.com">hello@glowbop.com</a> for now.';return}
 var btn=document.getElementById('supSend');btn.disabled=true;btn.textContent='Sending…';
-fetch(URL,{method:'POST',body:JSON.stringify(d)}).then(function(r){return r.json()}).then(function(j){
+/* Same Google Apps Script inbox the app uses. A text/plain body keeps it a simple request (no CORS preflight); Apps Script
+   answers through a redirect. If the answer can't be read (opaque), the POST still went through, so treat it as sent. */
+fetch(URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d),redirect:'follow'}).then(function(r){
+if(r.type==='opaque'||r.type==='opaqueredirect')return{ok:true};
+return r.text().then(function(t){try{return JSON.parse(t)}catch(x){return r.ok?{ok:true}:{ok:false}}});}).then(function(j){
 btn.disabled=false;btn.textContent='Send';
 if(!j.ok){msg.textContent=j.error||'Could not send. Please try again.';return}
 var box=document.getElementById('supDone');box.innerHTML='';
