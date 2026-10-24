@@ -48,12 +48,25 @@
 })();
 
 // 🎬 Real GlowBop recordings, as plain looping videos (video/*.mp4, rendered by tools/render_videos.py from the
-// engine's recordings). Muted + playsinline, so they play like any video on iPhone and iPad, Reduce Motion included
-// (they are decorative: no sound, no controls). Each one plays while it is on screen and pauses when it scrolls away.
+// engine's recordings). Muted + playsinline, so they play like any video on iPhone and iPad (no sound).
+// Each one plays while it is on screen and pauses when it scrolls away.
 (() => {
   const vids = [...document.querySelectorAll('video.gbv')];
   // 📱 phones and iPads: the whole first screen is a glowing LED wall behind the headline
   const bg = document.querySelector('.hero-bg video');
+  // Oct 24 design audit fix 5: Reduce Motion shows the still poster and nothing autoplays; recorded clips get a Play key instead
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (bg) { bg.autoplay = false; if (bg.dataset.poster) bg.poster = bg.dataset.poster; }
+    vids.forEach(v => {
+      v.autoplay = false; v.pause(); if (v.dataset.poster && !v.getAttribute('poster')) v.poster = v.dataset.poster;
+      const box = v.closest('figure'); if (!box) return;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'vplay'; b.textContent = 'Play';
+      b.addEventListener('click', () => { if (v.paused) { v.muted = true; v.preload = 'auto'; v.play().catch(() => {}); b.textContent = 'Pause'; } else { v.pause(); b.textContent = 'Play'; } });
+      v.addEventListener('playing', () => v.classList.add('on'));
+      box.appendChild(b);
+    });
+    return;
+  }
   if (bg && bg.dataset.src) { bg.poster = bg.dataset.poster; bg.src = bg.dataset.src; vids.unshift(bg); }   // 🎄 Oct 22: every screen, the season's video (index.html picks it)
   const play = v => { if (!v.paused) return; v.muted = true; try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
   vids.forEach(v => {
@@ -84,6 +97,7 @@
 // ✨ sparkle logo: random LEDs of the SVG Curtain Burst glint white (same as the app).
 // Sets the SVG attributes directly (fill + a slightly bigger dot): works the same in Safari on iPhone / iPad.
 (() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   document.querySelectorAll('.gbsvg').forEach(host => {
     const lit = [...host.querySelectorAll('circle[data-l]')]; if (!lit.length) return;
     const glint = el => { if (el._on) return; el._on = 1; const f = el.getAttribute('fill');

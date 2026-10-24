@@ -517,3 +517,6 @@ html[data-hero=living] .hero .works1{color:#e4d6c4}
   html[data-hero=living] .hero h1{font-size:clamp(40px,11vw,60px)}
 }
 @media(min-width:701px) and (max-width:900px){html[data-hero=living] .hero{padding-top:74vw}html[data-hero=living] .hero::after{background:linear-gradient(0deg,#05040a 26%,rgba(11,6,18,.55) 44%,rgba(11,6,18,0) 60%)}}
+/* Oct 24 design audit fix 5: Reduce Motion visitors start the recorded clips themselves */
+.vplay{position:absolute;top:10px;right:10px;z-index:3;min-width:72px;min-height:44px;padding:0 14px;border:0;border-radius:0 10px 0 10px;background:rgba(7,5,13,.88);color:var(--cyan);box-shadow:inset 0 0 0 2px var(--cyan);font:800 15px/1 var(--cond);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer}
+.shot .vplay{top:auto;bottom:10px}
