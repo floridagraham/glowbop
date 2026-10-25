@@ -97,6 +97,17 @@ h1 span{color:var(--pink)}
 .sync{font-size:12.5px;color:var(--soft);margin-top:8px}
 .notify{display:inline-flex;margin-top:10px}
 .notify[aria-pressed="true"]{background:var(--lime);color:var(--night);border-color:var(--lime)}
+.intro{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,4,24,.82);backdrop-filter:blur(6px)}
+.intro[hidden]{display:none!important}
+.intro-card{max-width:380px;width:100%;background:linear-gradient(160deg,#2a1a66,#1c1250);border:1.5px solid var(--line);border-radius:20px;padding:24px 22px;box-shadow:0 20px 60px -20px rgba(0,0,0,.9)}
+.intro-emoji{font-size:30px;margin-bottom:4px}
+.intro-card h2{font-family:var(--display);font-size:22px;margin:0 0 14px}
+.intro-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.intro-ico{font-size:17px;flex:none;width:36px;text-align:center;letter-spacing:-1px}
+.intro-row p{margin:0;font-size:14.5px;color:var(--soft);line-height:1.45}
+.intro-row b{color:var(--ink)}
+.intro-go{width:100%;margin-top:4px;background:var(--grad);color:var(--night);border:0;font-weight:800}
+.intro-help{flex:none;width:34px;min-height:34px;border-radius:50%;border:1.5px solid var(--line);background:rgba(18,10,46,.6);color:var(--soft);font-size:14px;cursor:pointer;align-self:center}
 footer{margin-top:28px;font-size:13px;color:var(--soft);max-width:70ch}
 footer a{color:var(--cyan)}
 @media (max-width:420px){.grid{grid-template-columns:1fr}}
@@ -269,7 +280,16 @@ h1{font-size:clamp(26px,6.4vw,50px);margin:10px 0 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<nav class="tabs" aria-label="Sections"><a href="#lineup" data-v="lineup" aria-current="page"><span>🎧</span>Lineup</a><a href="#travel" data-v="travel"><span>🚌</span>Getting there</a><a href="#map" data-v="map"><span>🗺️</span>Map</a></nav>
+<div class="intro" id="intro" role="dialog" aria-modal="true" aria-label="Quick start" hidden>
+  <div class="intro-card">
+    <div class="intro-emoji">⚡</div>
+    <h2>Quick start</h2>
+    <div class="intro-row"><span class="intro-ico" aria-hidden="true">✅🤔❌</span><p>Tap <b>Going</b>, <b>Maybe</b> or <b>Skip</b> on any card to build your list. Tap the same one again to clear it.</p></div>
+    <div class="intro-row"><span class="intro-ico" aria-hidden="true">🔔</span><p>Tap <b>Remind me before my picks</b> up top and allow notifications to get a nudge 10 minutes before each "Going" act plays — only while this app is open.</p></div>
+    <button class="btn intro-go" id="introGo">Got it, let's go</button>
+  </div>
+</div>
+<nav class="tabs" aria-label="Sections"><a href="#lineup" data-v="lineup" aria-current="page"><span>🎧</span>Lineup</a><a href="#travel" data-v="travel"><span>🚌</span>Getting there</a><a href="#map" data-v="map"><span>🗺️</span>Map</a><button id="introHelp" class="intro-help" aria-label="How it works">ℹ️</button></nav>
 <div class="wrap">
 <div class="view" id="v-lineup">
 <header>
@@ -702,6 +722,15 @@ notifyBtn.onclick=async()=>{
   notifyLabel(); scheduleReminders();
   track("edc_notify_toggle",{on:notifyOn});
 };
+
+// quick-start intro, shown once
+const introEl=document.getElementById("intro");
+function openIntro(){introEl.hidden=false;track("edc_intro_shown");}
+function closeIntro(){introEl.hidden=true;try{localStorage.setItem("edc-intro-seen","1")}catch(e){}track("edc_intro_dismissed");}
+let introSeen=false; try{introSeen=localStorage.getItem("edc-intro-seen")==="1"}catch(e){}
+if(!introSeen) openIntro();
+document.getElementById("introGo").onclick=closeIntro;
+document.getElementById("introHelp").onclick=openIntro;
 
 // day + time-of-day tabs
 function setDay(d){
