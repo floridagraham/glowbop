@@ -10,6 +10,14 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}</script>
+<script>
+  // Anonymous usage stats (same PostHog project as the GlowBop app/site, tagged app:'edc-orlando'
+  // so it's easy to filter out of GlowBop's own metrics). No names, no search text, no cookies.
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_myUuNqFeyhyrqPepkxKEWLnc8trVeurMsgwC9sWGA876',{api_host:'https://us.i.posthog.com',persistence:'localStorage',autocapture:false,capture_pageview:false});
+  window.track=function(name,props){try{posthog.capture(name,Object.assign({app:"edc-orlando"},props||{}));}catch(e){}};
+  track("edc_page_view",{standalone:window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches});
+</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: night-sky header with genre mix bar, sticky filter strip, then a responsive grid of artist cards ordered by billing */
@@ -524,11 +532,12 @@ const genreSel=document.getElementById("genreSel");
 genreSel.innerHTML=`<option value="all">All genres</option>`+order.filter(k=>k!=="tbc").map(k=>`<option value="${k}" style="color:${G[k].hex}">${G[k].label}</option>`).join("");
 const gemB=mk("gems","💎 Discovery only");
 const pf={yes:mk("p-yes","✅ Going"),maybe:mk("p-maybe","🤔 Maybe"),none:mk("p-none","Not rated yet")};
-Object.entries(pf).forEach(([k,b])=>b.onclick=()=>{pickF=pickF===k?"all":k;Object.entries(pf).forEach(([kk,bb])=>bb.setAttribute("aria-pressed",kk===pickF));render();});
-function setGenre(k){genre=k;genreSel.value=k;render();}
+Object.entries(pf).forEach(([k,b])=>b.onclick=()=>{pickF=pickF===k?"all":k;Object.entries(pf).forEach(([kk,bb])=>bb.setAttribute("aria-pressed",kk===pickF));render();track("edc_filter",{type:"pick",value:pickF});});
+function setGenre(k){genre=k;genreSel.value=k;render();track("edc_filter",{type:"genre",value:k});}
 genreSel.onchange=()=>setGenre(genreSel.value);
-gemB.onclick=()=>{gemsOnly=!gemsOnly;gemB.setAttribute("aria-pressed",gemsOnly);render();};
-qEl.oninput=e=>{q=e.target.value.toLowerCase().trim();render();};
+gemB.onclick=()=>{gemsOnly=!gemsOnly;gemB.setAttribute("aria-pressed",gemsOnly);render();track("edc_filter",{type:"discovery_only",value:gemsOnly});};
+let searchTracked=false;
+qEl.oninput=e=>{q=e.target.value.toLowerCase().trim();render();if(q&&!searchTracked){searchTracked=true;track("edc_search_used");}};
 
 // afternoon / evening: real set time if known, else a billing-based estimate
 // Estimate: 5 stages x ~3 slots before 5 PM, so the 15 lowest-billed non-sunset acts are "afternoon"; sunset sets land around sunset (~5:35 PM).
@@ -583,7 +592,7 @@ const STAGE_NAMES={kinetic:"kineticFIELD",circuit:"circuitGROUNDS",neon:"neonGAR
 const STAGE_COL={kinetic:"#ff4fb4",circuit:"#a874ff",neon:"#ff7a59",stereo:"#3fe0ff",bacardi:"#ffb627"};
 const stageRow=document.getElementById("stagerow");
 stageRow.innerHTML=`<button data-s="all" aria-pressed="true" style="--sc:#f6f1ff"><i></i>All stages</button>`+Object.keys(STAGE_NAMES).map(k=>`<button data-s="${k}" aria-pressed="false" style="--sc:${STAGE_COL[k]}"><i></i>${STAGE_NAMES[k]}</button>`).join("");
-function setStage(k){stageF=k;stageRow.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===k));render();}
+function setStage(k){stageF=k;stageRow.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===k));render();track("edc_filter",{type:"stage",value:k});}
 stageRow.querySelectorAll("button").forEach(b=>b.onclick=()=>setStage(stageF===b.dataset.s?"all":b.dataset.s));
 
 const grid=document.getElementById("grid"), count=document.getElementById("count");
@@ -608,7 +617,7 @@ function render(){
     const parts=a[0].split(" B2B ");
     const links=a[4].map((t,i)=>{const who=a[4].length>1?(parts[i]||t)+" — ":"";return `<a class="yt" href="${url(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on YouTube">${ytIcon}</a><a class="sp" href="${spUrl(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on Spotify">${spIcon}</a>`;}).join("");
     const id=slug(a[0]), v=picks[id]||"";
-    const vote=`<div class="vote" role="group" aria-label="Rate ${a[0]}">${[["yes","✅","Going"],["maybe","🤔","Maybe"],["no","❌","Skip"]].map(([k,e,l])=>`<button data-id="${id}" data-v="${k}" aria-pressed="${v===k}" aria-label="${l}">${e}</button>`).join("")}</div>`;
+    const vote=`<div class="vote" role="group" aria-label="Rate ${a[0]}">${[["yes","✅","Going"],["maybe","🤔","Maybe"],["no","❌","Skip"]].map(([k,e,l])=>`<button data-id="${id}" data-v="${k}" data-label="${a[0]}" aria-pressed="${v===k}" aria-label="${l}">${e}</button>`).join("")}</div>`;
     return `<article class="card${v?" is-"+v:""}" style="--g:${g.hex}"><div class="top"><div class="name">${a[0]}</div><div class="rank">#${n}</div></div><div class="tags">${tags}</div><p class="vibe">${a[3]}</p><div class="actions">${vote}<div class="links">${links}</div></div></article>`;
   }).join(""):'<div class="empty">No acts match. Clear the search or pick another filter.</div>';
 }
@@ -642,7 +651,7 @@ const PARTIES={
 };
 function partyCard(pt){
   const v=picks[pt.id]||"";
-  const vote=`<div class="vote" role="group" aria-label="Rate ${pt.name}">${[["yes","✅ Going"],["maybe","🤔 Maybe"],["no","❌ Skip"]].map(([k,l])=>`<button data-id="${pt.id}" data-v="${k}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
+  const vote=`<div class="vote" role="group" aria-label="Rate ${pt.name}">${[["yes","✅ Going"],["maybe","🤔 Maybe"],["no","❌ Skip"]].map(([k,l])=>`<button data-id="${pt.id}" data-v="${k}" data-label="${pt.name}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
   const onMain=n=>A.some(a=>a[0].toLowerCase().includes(n.toLowerCase()));
   const acts=pt.acts.map(n=>`<a class="${onMain(n)?"main":""}" href="${url(n)}" target="_blank" rel="noopener">${n}</a>`).join("")+(pt.more?'<a href="'+pt.tix+'" target="_blank" rel="noopener">+ more</a>':"");
   return `<article class="pcard${v?" is-"+v:""}" style="--pc:${pt.col}"><div class="pt"><h3>${pt.name}</h3><span class="badge${pt.official?"":" unoff"}">${pt.official?"Official":"Not official"}</span></div>
@@ -691,6 +700,7 @@ notifyBtn.onclick=async()=>{
   }
   notifyOn=!notifyOn; try{localStorage.setItem("edc-notify",notifyOn?"1":"0")}catch(e){}
   notifyLabel(); scheduleReminders();
+  track("edc_notify_toggle",{on:notifyOn});
 };
 
 // day + time-of-day tabs
@@ -704,9 +714,10 @@ function setDay(d){
   document.getElementById("mixh").textContent=DAYS[d].name+"'s sound";
   try{localStorage.setItem("edc-day",d)}catch(e){}
   drawMix(); render(); scheduleReminders();
+  track("edc_day_tab",{day:d});
 }
 document.querySelectorAll("#days button").forEach(b=>b.onclick=()=>setDay(b.dataset.d));
-document.querySelectorAll("#times button").forEach(b=>b.onclick=()=>{tod=b.dataset.t;document.querySelectorAll("#times button").forEach(x=>x.setAttribute("aria-pressed",x===b));render();});
+document.querySelectorAll("#times button").forEach(b=>b.onclick=()=>{tod=b.dataset.t;document.querySelectorAll("#times button").forEach(x=>x.setAttribute("aria-pressed",x===b));render();track("edc_filter",{type:"time",value:tod});});
 let saved="sat"; try{saved=localStorage.getItem("edc-day")||"sat"}catch(e){}
 setDay(DAYS[saved]?saved:"sat");
 
@@ -753,13 +764,13 @@ function mapSVG(uid){
 document.querySelectorAll(".gmap").forEach((box,i)=>{
   box.querySelector(".svgwrap").innerHTML=mapSVG(i);
   const info=box.querySelector(".ginfo");
-  const pick=id=>{const t=STG.find(x=>x.id===id);box.querySelectorAll(".stg").forEach(g=>g.classList.toggle("on",g.dataset.s===id));info.style.setProperty("--sc",t.color);const acts=A.map(a=>[a,when(a)]).filter(([,w])=>w.st.stage===id).sort((x,y)=>x[1].st.start.localeCompare(y[1].st.start));const real=acts.some(([,w])=>w.real);info.innerHTML=`<b>${t.name}</b><br>${t.d}<br><span style="color:var(--amber)">${DAYS[day].name}, ${real?"official":"best-guess"} lineup here:</span><br>`+acts.map(([a,w])=>`${w.k==="aft"?"☀️":"🌙"} ${fmt(w.st.start)} · ${a[0]}${({yes:" ✅",maybe:" 🤔",no:" ❌"})[picks[slug(a[0])]]||""}`).join("<br>");};
+  const pick=id=>{const t=STG.find(x=>x.id===id);box.querySelectorAll(".stg").forEach(g=>g.classList.toggle("on",g.dataset.s===id));info.style.setProperty("--sc",t.color);const acts=A.map(a=>[a,when(a)]).filter(([,w])=>w.st.stage===id).sort((x,y)=>x[1].st.start.localeCompare(y[1].st.start));const real=acts.some(([,w])=>w.real);info.innerHTML=`<b>${t.name}</b><br>${t.d}<br><span style="color:var(--amber)">${DAYS[day].name}, ${real?"official":"best-guess"} lineup here:</span><br>`+acts.map(([a,w])=>`${w.k==="aft"?"☀️":"🌙"} ${fmt(w.st.start)} · ${a[0]}${({yes:" ✅",maybe:" 🤔",no:" ❌"})[picks[slug(a[0])]]||""}`).join("<br>");track("edc_map_stage_click",{stage:id});};
   box.querySelectorAll(".stg").forEach(g=>{g.addEventListener("click",()=>pick(g.dataset.s));g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(g.dataset.s);}});});
 });
 
 // tabs
 const views=["lineup","travel","map"];
-function show(v){if(!views.includes(v))v="lineup";views.forEach(x=>{document.getElementById("v-"+x).hidden=x!==v;});document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});window.scrollTo(0,0);}
+function show(v){if(!views.includes(v))v="lineup";views.forEach(x=>{document.getElementById("v-"+x).hidden=x!==v;});document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});window.scrollTo(0,0);track("edc_section_tab",{section:v});}
 document.querySelectorAll(".tabs a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();show(a.dataset.v);try{history.replaceState(null,"","#"+a.dataset.v)}catch(_){}}));
 show((location.hash||"").slice(1));
 
@@ -769,10 +780,12 @@ function local(){try{return JSON.parse(localStorage.getItem("edc-picks")||"{}")}
 function saveLocal(){try{localStorage.setItem("edc-picks",JSON.stringify(picks))}catch(e){}}
 const syncEl=document.getElementById("sync");
 grid.addEventListener("click",async e=>{
+  const link=e.target.closest(".yt,.sp"); if(link) track("edc_listen_click",{platform:link.classList.contains("yt")?"youtube":"spotify"});
   const b=e.target.closest(".vote button"); if(!b) return;
   const id=b.dataset.id, v=picks[id]===b.dataset.v?"":b.dataset.v;
   if(v) picks[id]=v; else delete picks[id];
   render(); scheduleReminders();
+  track("edc_vote",{act:b.dataset.label||id,vote:v||"cleared",day});
   if(!col){saveLocal();return;}
   if(busy[id]) await busy[id];
   busy[id]=(v?col.doc(id).set({v}):col.doc(id).delete()).catch(err=>{syncEl.textContent="Couldn't save that pick ("+(err&&err.code||"error")+"). It's saved on this device only.";saveLocal();}).finally(()=>{busy[id]=null;});
