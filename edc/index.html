@@ -236,7 +236,9 @@ h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text
 /* vote + listen links share one row; the links group wraps below only when it won't fit (B2B cards) */
 .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;align-items:flex-start}
 .actions .vote{flex:none;display:flex}
-.actions .vote button{width:44px;height:44px;min-height:44px;padding:0;font-size:18px}
+.actions .vote button{width:58px;height:44px;min-height:44px;padding:2px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.actions .vote button .vk-i{font-size:16px;line-height:1}
+.actions .vote button .vk-l{font-size:9px;font-weight:800;letter-spacing:.02em;line-height:1}
 .actions .links{flex:none}
 .yt svg,.sp svg{width:20px;height:20px}
 /* travel + map */
@@ -637,7 +639,7 @@ function render(){
     const parts=a[0].split(" B2B ");
     const links=a[4].map((t,i)=>{const who=a[4].length>1?(parts[i]||t)+" — ":"";return `<a class="yt" href="${url(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on YouTube">${ytIcon}</a><a class="sp" href="${spUrl(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on Spotify">${spIcon}</a>`;}).join("");
     const id=slug(a[0]), v=picks[id]||"";
-    const vote=`<div class="vote" role="group" aria-label="Rate ${a[0]}">${[["yes","✅","Going"],["maybe","🤔","Maybe"],["no","❌","Skip"]].map(([k,e,l])=>`<button data-id="${id}" data-v="${k}" data-label="${a[0]}" aria-pressed="${v===k}" aria-label="${l}">${e}</button>`).join("")}</div>`;
+    const vote=`<div class="vote" role="group" aria-label="Rate ${a[0]}">${[["yes","✅","Going"],["maybe","🤔","Maybe"],["no","❌","Skip"]].map(([k,e,l])=>`<button data-id="${id}" data-v="${k}" data-label="${a[0]}" aria-pressed="${v===k}"><span class="vk-i" aria-hidden="true">${e}</span><span class="vk-l">${l}</span></button>`).join("")}</div>`;
     return `<article class="card${v?" is-"+v:""}" style="--g:${g.hex}"><div class="top"><div class="name">${a[0]}</div><div class="rank">#${n}</div></div><div class="tags">${tags}</div><p class="vibe">${a[3]}</p><div class="actions">${vote}<div class="links">${links}</div></div></article>`;
   }).join(""):'<div class="empty">No acts match. Clear the search or pick another filter.</div>';
 }
