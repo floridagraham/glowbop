@@ -1,0 +1,793 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unofficial EDC Orlando App</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#120a2e">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EDC Orlando">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: night-sky header with genre mix bar, sticky filter strip, then a responsive grid of artist cards ordered by billing */
+:root{
+  --night:#120a2e; --night2:#1d1145; --card:#24165a; --ink:#f6f1ff; --soft:#c9b8ff;
+  --pink:#ff4fb4; --amber:#ffb627; --cyan:#3fe0ff; --violet:#a874ff; --lime:#7dff9b; --coral:#ff7a59;
+  --display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+a,button,.chip,.seg button,.stg-row button,.vote button,.tabs a{touch-action:manipulation}
+body{background:var(--night);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-block:0 48px;
+  background-image:radial-gradient(circle at 15% -10%, #3a1a7a 0, transparent 45%),radial-gradient(circle at 95% 5%, #5a1150 0, transparent 40%);}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+.wrap{max-width:1100px;margin:0 auto}
+header{padding-block:32px 20px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,52px);line-height:1.05;margin:8px 0 10px;text-wrap:balance}
+h1 span{color:var(--pink)}
+.lede{color:var(--soft);max-width:62ch;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.fact{background:var(--night2);border:1px solid #3b2a7a;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600}
+.fact b{color:var(--cyan)}
+.notice{margin-top:16px;background:#2a1650;border-left:4px solid var(--amber);padding:10px 14px;border-radius:6px;font-size:14px;max-width:70ch}
+.maplink{display:inline-block;color:var(--cyan);font-weight:700;text-decoration:none;margin-top:4px}
+.mix{margin-top:22px}
+.stages{margin-top:24px}
+.stages h2{font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--soft)}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.stage{background:var(--night2);border-radius:10px;padding:10px 12px;border-left:4px solid var(--s);min-width:0}
+.stage b{display:block;font-family:var(--display);font-size:14px;font-weight:700}
+.stage span{font-size:13px;color:var(--soft)}
+.maplinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.maplinks a{color:var(--night);background:var(--cyan);font-weight:700;font-size:13.5px;text-decoration:none;padding:8px 12px;border-radius:8px}
+.mapnote{font-size:13px;color:var(--soft);margin-top:8px}
+.mix h2{font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--soft)}
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden}
+.bar div{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:13px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--night);padding-block:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #2e1f66}
+.chip{font:600 13px var(--body);color:var(--ink);background:var(--night2);border:1.5px solid #4a3594;border-radius:999px;padding:7px 13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--night);border-color:var(--ink)}
+.chip:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+#q{flex:1 1 160px;min-width:0;font:500 14px var(--body);color:var(--ink);background:var(--night2);border:1.5px solid #4a3594;border-radius:999px;padding:7px 14px}
+#q::placeholder{color:#9d88e0}
+.count{font-size:13px;color:var(--soft);margin:14px 0 10px;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--card);border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:8px;border-top:4px solid var(--g);min-width:0}
+.top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.name{font-family:var(--display);font-weight:700;font-size:17px;line-height:1.2;text-wrap:balance;min-width:0;overflow-wrap:anywhere}
+.rank{font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11.5px;font-weight:700;letter-spacing:.03em;padding:3px 8px;border-radius:5px;background:var(--g);color:var(--night)}
+.tag.sun{background:var(--amber)}
+.tag.gem{background:transparent;color:var(--lime);border:1.5px solid var(--lime)}
+.tag.guess{background:transparent;color:var(--soft);border:1.5px dashed var(--soft)}
+.vibe{margin:0;color:var(--soft);font-size:14px}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.yt{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);font-weight:700;font-size:13.5px;background:#ff2d55;padding:8px 12px;border-radius:8px}
+.yt:hover{background:#ff5577}
+.yt svg{width:15px;height:15px;flex:none}
+.empty{color:var(--soft);padding:24px 0}
+.vote{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.vote button{font:700 13px var(--body);color:var(--ink);background:var(--night2);border:1.5px solid #4a3594;border-radius:8px;padding:8px 4px;cursor:pointer}
+.vote button[aria-pressed="true"][data-v="yes"]{background:var(--lime);border-color:var(--lime);color:var(--night)}
+.vote button[aria-pressed="true"][data-v="maybe"]{background:var(--amber);border-color:var(--amber);color:var(--night)}
+.vote button[aria-pressed="true"][data-v="no"]{background:var(--coral);border-color:var(--coral);color:var(--night)}
+.card.is-no{opacity:.55}
+.card.is-yes{box-shadow:0 0 0 2px var(--lime)}
+.tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tally span{font-weight:700;font-size:13px;padding:6px 12px;border-radius:999px;font-variant-numeric:tabular-nums;background:var(--night2)}
+.tally .y{color:var(--lime)}.tally .m{color:var(--amber)}.tally .n{color:var(--coral)}.tally .u{color:var(--soft)}
+.sync{font-size:12.5px;color:var(--soft);margin-top:8px}
+.notify{display:inline-flex;margin-top:10px}
+.notify[aria-pressed="true"]{background:var(--lime);color:var(--night);border-color:var(--lime)}
+footer{margin-top:28px;font-size:13px;color:var(--soft);max-width:70ch}
+footer a{color:var(--cyan)}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.view[hidden]{display:none!important}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(3,1fr);background:#1a0f40;border-top:2px solid var(--pink);padding:6px max(10px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px, env(safe-area-inset-left,0px))}
+.tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--soft);font:700 12.5px var(--body);padding:6px 4px;border-radius:10px;min-height:48px;justify-content:center}
+.tabs a span{font-size:20px;line-height:1}
+.tabs a[aria-current="page"]{color:var(--night);background:var(--ink)}
+.vote button{min-height:44px;font-size:14px}
+.links a{flex:1 1 0;justify-content:center;min-height:42px}
+.sp{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:#06140b;font-weight:700;font-size:13.5px;background:#1ed760;padding:8px 12px;border-radius:8px}
+.sp svg{width:15px;height:15px;flex:none}
+.sec{padding-block:8px}
+.sec h2{font-family:var(--display);font-size:clamp(22px,5vw,30px);font-weight:700;margin:22px 0 6px}
+.sec h3{font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:24px 0 8px;color:var(--soft)}
+.sec p{margin:0 0 8px;max-width:65ch}
+.lines{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.line{background:var(--card);border-radius:12px;padding:14px;border-left:6px solid var(--lc);display:flex;flex-direction:column;gap:6px;min-width:0}
+.line.ours{box-shadow:0 0 0 2px var(--lc);background:#22206a}
+.line .ln{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:16px}
+.line .ln em{font-style:normal;font-family:var(--body);font-size:11.5px;background:var(--lc);color:var(--night);padding:2px 8px;border-radius:5px}
+.line .stop{font-weight:700}
+.addr{color:var(--soft);font-size:14px;user-select:all}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;color:var(--night);background:var(--cyan);flex:1 1 140px;text-align:center}
+.btn.alt{background:var(--night2);color:var(--ink);border:1.5px solid #4a3594}
+.btn.uber{background:var(--ink);color:var(--night)}
+.btn.lyft{background:var(--pink);color:var(--night)}
+details{font-size:14px;color:var(--soft)}
+details summary{cursor:pointer;font-weight:600;color:var(--ink);min-height:32px;display:flex;align-items:center}
+details ul{margin:4px 0 0;padding-left:18px}
+.times{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.time{background:var(--night2);border-radius:10px;padding:10px 12px}
+.time b{display:block;color:var(--amber);font-family:var(--display);font-size:15px}
+
+.gmap{margin-top:18px;background:var(--night2);border-radius:14px;padding:12px;border:1.5px solid #3b2a7a}
+.gmap h2{font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;color:var(--soft)}
+.gmap .cap{font-size:12.5px;color:var(--soft);margin:0 0 8px}
+.gmap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+.gmap .stg{cursor:pointer}
+.gmap .stg:focus-visible circle{stroke:var(--ink);stroke-width:4}
+.gmap .stg.on circle.ring{stroke:var(--ink);stroke-width:3.5}
+.ginfo{margin-top:8px;background:var(--card);border-radius:10px;padding:10px 12px;font-size:14px;border-left:5px solid var(--sc,var(--pink));min-height:52px}
+.ginfo b{font-family:var(--display);font-size:15px}
+.gkey{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12.5px;color:var(--soft)}
+.gkey span{display:inline-flex;align-items:center;gap:5px}
+.gkey i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.seg{display:grid;gap:6px;margin-top:14px}
+.seg.days,.seg.times3{grid-template-columns:repeat(3,1fr)}
+.seg button{font:700 14px var(--body);color:var(--ink);background:var(--night2);border:1.5px solid #4a3594;border-radius:12px;padding:10px 6px;min-height:52px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.seg button small{font-weight:600;font-size:11.5px;color:var(--soft)}
+.seg button[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:var(--night)}
+.seg button[aria-pressed="true"] small{color:var(--night)}
+.seg.times3 button[aria-pressed="true"]{background:var(--amber);border-color:var(--amber)}
+.stg-row{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.stg-row::-webkit-scrollbar{display:none}
+.stg-row button{flex:none;font:700 13px var(--body);color:var(--ink);background:var(--night2);border:1.5px solid #4a3594;border-radius:999px;padding:8px 13px;min-height:42px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.stg-row button i{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--sc)}
+.stg-row button[aria-pressed="true"]{background:var(--sc);border-color:var(--sc);color:var(--night)}
+.stg-row button[aria-pressed="true"] i{background:var(--night)}
+.rowlbl{font:700 11.5px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin:12px 0 0}
+.tag.where{background:transparent;color:var(--ink);border:1.5px solid var(--sc)}
+.estnote{font-size:12.5px;color:var(--amber);margin:6px 0 0}
+.tag.when{background:transparent;color:var(--amber);border:1.5px solid var(--amber)}
+.tag.when.real{background:var(--amber);color:var(--night)}
+.tip{background:#2a1650;border-left:4px solid var(--lime);padding:10px 14px;border-radius:6px;font-size:14px;margin-top:10px;max-width:70ch}
+@media (max-width:600px){
+  header{padding-block:20px 12px}
+  .lede{font-size:14px}
+  .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * max(16px, env(safe-area-inset-left,0px)));padding-inline:max(16px, env(safe-area-inset-left,0px))}
+  .filters::-webkit-scrollbar{display:none}
+  .chip{flex:none;min-height:40px}
+  #q{flex:0 0 170px;min-height:40px}
+  .card{padding:16px}
+  .name{font-size:18px}
+}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-2px)}}
+/* ===== v2 restyle: electric-sky glass, sharper buttons ===== */
+:root{--line:#4a3594;--glass:rgba(36,22,90,.72);--grad:linear-gradient(100deg,#ff4fb4,#a874ff 55%,#3fe0ff)}
+body{background-color:var(--night);background-image:radial-gradient(1200px 500px at 10% -10%,#3b1a86 0,transparent 60%),radial-gradient(900px 500px at 100% 0,#5c1257 0,transparent 55%),radial-gradient(900px 700px at 50% 120%,#0f2a6b 0,transparent 60%);background-attachment:fixed}
+h1{letter-spacing:-.01em}
+h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{color:var(--cyan)}
+.brand{display:inline-block;font:800 11.5px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--night);background:var(--grad);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+.fact{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px)}
+.notice,.tip{border-radius:12px;background:var(--glass)}
+.rowlbl{display:flex;align-items:center;gap:8px}
+.rowlbl::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+/* segmented day + time */
+.seg{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:5px;gap:5px}
+.seg button{background:transparent;border:0;border-radius:12px;min-height:54px;transition:background .15s,color .15s}
+.seg button:hover{background:rgba(255,255,255,.06)}
+.seg button[aria-pressed="true"]{background:var(--grad);color:var(--night);box-shadow:0 6px 18px -6px rgba(255,79,180,.7)}
+.seg.times3 button[aria-pressed="true"]{background:linear-gradient(100deg,#ffb627,#ff7a59);box-shadow:0 6px 18px -6px rgba(255,182,39,.6)}
+/* chips */
+.chip,.stg-row button{background:var(--glass);border:1.5px solid var(--line);border-radius:12px;min-height:40px;padding:8px 14px;transition:border-color .15s,background .15s}
+.chip:hover,.stg-row button:hover{border-color:#7d6cd9}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--night);border-color:var(--ink)}
+#q{border-radius:12px;background:var(--glass);border-color:var(--line);min-height:40px}
+.dd{font:600 13px var(--body);color:var(--ink);background-color:var(--night2);border:1.5px solid var(--line);border-radius:12px;padding:8px 30px 8px 14px;min-height:40px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--soft) 50%),linear-gradient(135deg,var(--soft) 50%,transparent 50%);background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.dd:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.dd option{background-color:var(--night2);color:var(--ink)}
+.filters{background:linear-gradient(var(--night),rgba(18,10,46,.92));backdrop-filter:blur(10px)}
+/* cards: gradient edge glass, background tinted and left stripe colored by genre */
+.card{border:1.5px solid transparent;border-top:1.5px solid transparent;border-radius:18px;padding:16px;gap:10px;background:linear-gradient(160deg,color-mix(in srgb,var(--g) 22%,#2a1a66),color-mix(in srgb,var(--g) 10%,#1c1250)) padding-box,linear-gradient(140deg,var(--g),rgba(74,53,148,.6) 45%,rgba(74,53,148,.25)) border-box;box-shadow:0 10px 30px -18px rgba(0,0,0,.9),inset 4px 0 0 var(--g)}
+.card.is-yes{background:linear-gradient(160deg,color-mix(in srgb,var(--g) 18%,#1f3a4a),#1c1250) padding-box,linear-gradient(140deg,var(--lime),var(--g)) border-box;box-shadow:0 10px 30px -14px rgba(125,255,155,.45)}
+.card.is-maybe{background:linear-gradient(160deg,color-mix(in srgb,var(--g) 18%,#2a1a66),#1c1250) padding-box,linear-gradient(140deg,var(--amber),rgba(74,53,148,.5)) border-box}
+.card.is-no{opacity:.5}
+.name{font-size:18px}
+.rank{background:rgba(255,255,255,.07);border-radius:999px;padding:2px 8px;color:var(--soft)}
+.tag{border-radius:999px;padding:3px 9px;font-size:11.5px}
+/* vote: joined segmented control, icon-only so it can share a row with the listen links */
+.vote{gap:0;background:rgba(18,10,46,.6);border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+.vote button{border:0;border-radius:0;background:transparent;min-height:44px;font-size:13.5px}
+.vote button+button{border-left:1.5px solid var(--line)}
+.vote button:hover{background:rgba(255,255,255,.06)}
+/* listen buttons: icon-only squares */
+.links{gap:8px}
+.yt,.sp{border-radius:12px;background:transparent;color:var(--ink);border:1.5px solid;transition:background .15s,color .15s}
+.yt{border-color:#ff2d55}
+.yt:hover{background:#ff2d55}
+.sp{border-color:#1ed760}
+.sp:hover{background:#1ed760;color:#06140b}
+.links a{flex:0 0 44px;width:44px;height:44px;padding:0;justify-content:center;min-height:44px}
+/* vote + listen links share one row; the links group wraps below only when it won't fit (B2B cards) */
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;align-items:flex-start}
+.actions .vote{flex:none;display:flex}
+.actions .vote button{width:44px;height:44px;min-height:44px;padding:0;font-size:18px}
+.actions .links{flex:none}
+.yt svg,.sp svg{width:20px;height:20px}
+/* travel + map */
+.btn{border-radius:12px;box-shadow:0 6px 16px -10px rgba(63,224,255,.8)}
+.btn.alt{background:var(--glass);box-shadow:none}
+.line,.time,.stage{border-radius:16px;background:var(--glass);backdrop-filter:blur(8px)}
+.gmap{background:var(--glass);border-radius:20px;border-color:var(--line)}
+.ginfo{border-radius:12px;background:rgba(18,10,46,.7);line-height:1.6}
+/* bottom nav: glass bar */
+.tabs{background:rgba(22,12,58,.86);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+.tabs a{border-radius:14px}
+.tabs a[aria-current="page"]{background:var(--grad);color:var(--night)}
+/* top menu */
+body{padding-bottom:48px}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);bottom:auto;left:auto;right:auto;z-index:20;display:flex;justify-content:center;gap:6px;margin-inline:calc(-1 * max(16px, env(safe-area-inset-left,0px)));padding:8px max(16px, env(safe-area-inset-right,0px)) 8px max(16px, env(safe-area-inset-left,0px));border-top:0;border-bottom:1px solid var(--line);background:rgba(18,10,46,.88);backdrop-filter:blur(14px)}
+.tabs a{flex:0 1 auto;flex-direction:row;gap:6px;min-height:38px;padding:6px 14px;font-size:13px;border:1.5px solid var(--line)}
+.tabs a span{font-size:15px}
+.tabs a[aria-current="page"]{border-color:transparent}
+.filters{top:calc(env(safe-area-inset-top,0px) + 55px)}
+header{padding-block:18px 14px}
+.brand{font-size:13px;padding:6px 13px}
+h1{font-size:clamp(26px,6.4vw,50px);margin:10px 0 6px}
+.seg.times3{grid-template-columns:repeat(4,1fr)}
+.seg.times3 button{font-size:13px;padding:8px 2px}
+.seg.times3 button[data-t="party"][aria-pressed="true"]{background:linear-gradient(100deg,#a874ff,#3fe0ff);box-shadow:0 6px 18px -6px rgba(63,224,255,.6)}
+.pcard{border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:9px;min-width:0;border:1.5px solid transparent;background:linear-gradient(160deg,#241a70,#141045) padding-box,linear-gradient(140deg,var(--pc),rgba(74,53,148,.35)) border-box}
+.pcard .pt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.pcard h3{font-family:var(--display);font-size:17px;margin:0;line-height:1.2;overflow-wrap:anywhere}
+.pcard .meta{font-size:14px;color:var(--soft);display:grid;gap:2px}
+.pcard .meta b{color:var(--ink)}
+.badge{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--pc);color:var(--night)}
+.badge.unoff{background:transparent;color:var(--soft);border:1.5px dashed var(--soft)}
+.lineup{display:flex;flex-wrap:wrap;gap:6px}
+.lineup a{font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--line)}
+.lineup a.main{border-color:var(--pc)}
+.pcard.is-yes{background:linear-gradient(160deg,#1f3a4a,#141045) padding-box,linear-gradient(140deg,var(--lime),var(--pc)) border-box}
+.pcard.is-no{opacity:.5}
+.pnote{font-size:13px;color:var(--soft);margin:0}
+.thu{grid-column:1/-1;font:700 12px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-top:6px}
+@media (max-width:600px){.tabs a{padding:6px 10px;font-size:12.5px}.seg.times3 button small{font-size:10.5px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<nav class="tabs" aria-label="Sections"><a href="#lineup" data-v="lineup" aria-current="page"><span>🎧</span>Lineup</a><a href="#travel" data-v="travel"><span>🚌</span>Getting there</a><a href="#map" data-v="map"><span>🗺️</span>Map</a></nav>
+<div class="wrap">
+<div class="view" id="v-lineup">
+<header>
+  <div class="brand">⚡ <span id="dayname">Saturday</span> · <span id="daydate">Nov 7</span></div>
+  <h1>The Unofficial <span>EDC Orlando</span> App</h1>
+  <div class="eyebrow" id="eyebrow">Tinker Field · Orlando · Sat Nov 7, 2026</div>
+  <div class="seg days" id="days" role="group" aria-label="Day"><button data-d="fri" aria-pressed="false">Friday<small>Nov 6</small></button><button data-d="sat" aria-pressed="true">Saturday<small>Nov 7</small></button><button data-d="sun" aria-pressed="false">Sunday<small>Nov 8</small></button></div>
+  <p class="lede">Every act, every stage, one-tap YouTube &amp; Spotify. 💎 marks discovery picks. Tap Going/Maybe/Skip — picks sync between your phones.</p>
+  <div class="facts">
+    <span class="fact">Gates <b>1 PM</b> · Ends <b>12 AM</b></span>
+    <span class="fact"><b id="nacts">36</b> acts · <b>5</b> stages</span>
+  </div>
+  <div class="tally" id="tally"></div>
+  <div class="sync" id="sync">Loading your shared picks…</div>
+  <button id="notifyBtn" class="chip notify" aria-pressed="false">🔔 Remind me before my picks</button>
+  <div class="notice">⏰ Set times &amp; stages aren't out yet (expected Fri Oct 30). <a class="maplink" href="#map" onclick="show('map');try{history.replaceState(null,'','#map')}catch(_){}">🗺️ See the grounds map →</a></div>
+  <div class="mix">
+    <h2 id="mixh">Saturday's sound</h2>
+    <div class="bar" id="bar"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+</header>
+
+<p class="rowlbl">⏰ Time</p>
+<div class="seg times3" id="times" style="margin-top:6px" role="group" aria-label="Time of day"><button data-t="all" aria-pressed="true">🎪 All day<small>1 PM to 12</small></button><button data-t="aft" aria-pressed="false">☀️ Afternoon<small>before 5 PM</small></button><button data-t="eve" aria-pressed="false">🌙 Evening<small>5 PM on</small></button><button data-t="party" aria-pressed="false">🪩 After&shy;parties<small>after midnight</small></button></div>
+<div id="actfilters">
+<p class="rowlbl">📍 Stage</p>
+<div class="stg-row" id="stagerow" role="group" aria-label="Stage"></div>
+<p class="estnote" id="estnote">🕐 Times and stages are best guesses until the official set times drop (around Oct 30), then they switch to the real ones automatically.</p>
+<p class="rowlbl">🎛️ Genre &amp; picks</p>
+<div class="filters" id="filters">
+  <select id="genreSel" class="dd" aria-label="Genre"></select>
+  <input id="q" type="search" placeholder="Search artists" aria-label="Search artists">
+</div>
+</div>
+<div class="count" id="count"></div>
+<div class="grid" id="grid"></div>
+
+</div>
+
+<div class="view" id="v-travel" hidden><section class="sec">
+<h2>🚌 Getting there</h2>
+<p>Official EDC shuttles with every pickup stop, plus Uber and Lyft. A shuttle pass works only on the line you bought, at any stop on that line.</p>
+<h3>Shuttle times</h3>
+<div class="times">
+<div class="time"><b>12 PM to 8 PM</b>Shuttles leave every stop continuously</div>
+<div class="time"><b>9 PM to close</b>Returns run until 1 hour after Kinetic Field ends</div>
+<div class="time"><b>About 15 min walk</b>From the shuttle drop-off to the main entrance</div>
+</div>
+<h3>Shuttle lines &amp; pickup stops</h3>
+<div class="lines">
+<div class="line ours" style="--lc:#3f8cff"><div class="ln">Blue Line <em>Our line</em></div><div class="stop">Embassy Suites by Hilton Orlando International Drive ICON Park</div><div class="addr">8250 Jamaican Ct, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8250%20Jamaican%20Ct%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (2)</summary><ul><li>Avanti International Resort, 8738 International Dr (0.4 mi)</li><li>Hampton Inn Orlando Convention Center, 8900 Universal Blvd (0.4 mi)</li></ul></details></div>
+<div class="line" style="--lc:#ff8a2a"><div class="ln">Orange Line</div><div class="stop">Fairfield Inn &amp; Suites Orlando Near Universal</div><div class="addr">5614 Vineland Rd, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=5614%20Vineland%20Rd%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (3)</summary><ul><li>Holiday Inn Express &amp; Suites Nearest Universal, 5605 Major Blvd (0.2 mi)</li><li>Comfort Suites Near Universal, 5617 Major Blvd (0.3 mi)</li><li>Clarion Inn &amp; Suites Across From Universal, 5829 Grand National Dr (0.5 mi)</li></ul></details></div>
+<div class="line" style="--lc:#4fe08a"><div class="ln">Green Line</div><div class="stop">Four Points by Sheraton Orlando International Drive</div><div class="addr">5905 International Dr, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=5905%20International%20Dr%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (5)</summary><ul><li>Home2 Suites Orlando Near Universal, 5910 American Way</li><li>Wyndham Garden Orlando Universal / I-Drive, 5855 American Way</li><li>Hilton Garden Inn Orlando I-Drive North, 5877 American Way</li><li>Homewood Suites Orlando Nearest Universal, 5893 American Way</li><li>Orlando International Drive North Hotel, 5859 American Way</li></ul></details></div>
+<div class="line" style="--lc:#ffd23f"><div class="ln">Yellow Line</div><div class="stop">Comfort Inn &amp; Suites Near Universal Orlando Resort</div><div class="addr">7495 Canada Ave, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=7495%20Canada%20Ave%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (1)</summary><ul><li>CoCo Key Hotel and Water Resort, 7400 International Dr (0.5 mi)</li></ul></details></div>
+<div class="line" style="--lc:#d9e4ff"><div class="ln">Silver Line</div><div class="stop">Courtyard Orlando Lake Buena Vista at Vista Centre</div><div class="addr">8501 Palm Pkwy, Orlando, FL 32836</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8501%20Palm%20Pkwy%2C%20Orlando%2C%20FL%2032836" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (2)</summary><ul><li>Crowne Plaza Orlando Lake Buena Vista, 8686 Palm Pkwy (0.1 mi)</li><li>Candlewood Suites Lake Buena Vista, 12341 Winter Garden Vineland Rd (0.4 mi)</li></ul></details></div>
+<div class="line" style="--lc:#ff4fb4"><div class="ln">Hotel EDC Shuttle</div><div class="stop">Margaritaville Resort Orlando</div><div class="addr">8000 Fins Up Circle, Kissimmee, FL 34747</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8000%20Fins%20Up%20Circle%2C%20Kissimmee%2C%20FL%2034747" target="_blank" rel="noopener">📍 Directions to this stop</a></div><p style='font-size:13.5px;color:var(--soft);margin:0'>For Hotel EDC guests and afterparty runs.</p></div>
+</div>
+<h3>Uber &amp; Lyft</h3>
+<p>The 2026 rideshare zones aren't posted yet. In 2025 the Lyft rideshare zone and the official shuttle exit were on the south side of the grounds by W Anderson St, and the main entrance was on the north side off W Church St (see the Map tab).</p>
+<div class="btns" style="max-width:640px">
+<a class="btn uber" href="https://m.uber.com/ul/?action=setPickup&amp;pickup=my_location&amp;dropoff%5Bformatted_address%5D=287%20S%20Tampa%20Ave%2C%20Orlando%2C%20FL%2032805&amp;dropoff%5Blatitude%5D=28.5391&amp;dropoff%5Blongitude%5D=-81.4047&amp;dropoff%5Bnickname%5D=EDC%20Orlando" target="_blank" rel="noopener">🚗 Uber to Tinker Field</a>
+<a class="btn lyft" href="https://ride.lyft.com/ridetype?destination=28.5391%2C-81.4047" target="_blank" rel="noopener">🚗 Lyft to Tinker Field</a>
+<a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=287%20S%20Tampa%20Ave%2C%20Orlando%2C%20FL%2032805" target="_blank" rel="noopener">📍 Google Maps to venue</a>
+</div>
+<p class="addr" style="margin-top:8px">Venue: 287 S Tampa Ave, Orlando, FL 32805</p>
+<div class="tip">💡 Leaving at midnight means surge pricing and big crowds. Drop a meetup pin a few blocks from the gates before you go in, or ride the Blue Line back.</div>
+<h3>Parking</h3>
+<div class="times">
+<div class="time"><b>Premier Lot 1: sold out</b>NE corner of W Church St &amp; Rio Grande Ave, entrance off W Central Blvd. Opens 10 AM.</div>
+<div class="time"><b>General parking</b>Extremely limited. Cars left after 2 AM get towed (Johnson's Wrecker: 407-293-2540).</div>
+</div>
+<div class="btns" style="max-width:640px;margin-top:10px">
+<a class="btn alt" href="https://orlando.edc.com/travel/shuttles/" target="_blank" rel="noopener">Official shuttle page</a>
+<a class="btn alt" href="https://orlando.edc.com/travel/parking/" target="_blank" rel="noopener">Official parking page</a>
+</div>
+</section></div>
+
+<div class="view" id="v-map" hidden><section class="sec">
+<h2>🗺️ Grounds map</h2>
+<p>The 2026 map isn't out yet; it usually comes with set times. The drawing below follows last year's Tinker Field layout; tap the button for the original 2025 map.</p>
+<div class="btns" style="max-width:640px">
+<a class="btn" href="https://edmidentity.com/wp-content/uploads/2025/10/573605773_18365913373086386_7771633280838532760_n-819x1024.jpg" target="_blank" rel="noopener">🗺️ Open the 2025 grounds map</a>
+<a class="btn alt" href="https://maps.app.goo.gl/jfpz4iM5n8wNEw4v8" target="_blank" rel="noopener">📍 Tinker Field in Google Maps</a>
+</div>
+<div class="gmap" id="gmap2"><h2>🗺️ Where the stages are</h2><p class="cap">Drawn from the 2025 Tinker Field map. The 2026 layout may shift a bit. Tap a stage.</p><div class="svgwrap"></div><div class="ginfo" aria-live="polite">Tap a stage dot to see what plays there.</div><div class="gkey"><span><i style="background:var(--pink)"></i>Stage</span><span>🚪 Entrance</span><span>🚌 Shuttle exit</span><span>🚗 Rideshare (Lyft)</span><span>🚻 Restrooms</span><span>💧 Water</span><span>➕ First aid</span></div></div>
+  <div class="stages">
+    <h2>The 5 stages</h2>
+    <div class="sgrid">
+      <div class="stage" style="--s:var(--pink)"><b>kineticFIELD</b><span>Main stage, the giant headliner sets</span></div>
+      <div class="stage" style="--s:var(--violet)"><b>circuitGROUNDS</b><span>Big melodic and festival anthems</span></div>
+      <div class="stage" style="--s:var(--coral)"><b>neonGARDEN</b><span>Deep techno and house</span></div>
+      <div class="stage" style="--s:var(--cyan)"><b>stereoBLOOM</b><span>House, bass and trance (Insomniac Records &amp; Dreamstate)</span></div>
+      <div class="stage" style="--s:var(--amber)"><b>CASA BACARDÍ</b><span>Daily DJ sets with a cocktail bar</span></div>
+    </div>
+  </div>
+</section></div>
+
+<footer>
+  Fan-made planner, not affiliated with Insomniac or EDC. Lineup from the official <a href="https://orlando.edc.com/lineup/" target="_blank" rel="noopener">EDC Orlando lineup page</a> (By Day tab). Order follows poster billing, biggest first. Genres marked "best guess" are lesser-known acts with little public info; give them a listen to judge. Music links open a search for that artist.
+</footer>
+</div>
+
+
+<script>
+const G = {
+  house:{label:"House & Tech House", color:"var(--cyan)", hex:"#3fe0ff"},
+  bass:{label:"Bass & Dubstep", color:"var(--pink)", hex:"#ff4fb4"},
+  melodic:{label:"Melodic & Big Room", color:"var(--violet)", hex:"#a874ff"},
+  techno:{label:"Techno", color:"var(--coral)", hex:"#ff7a59"},
+  dnb:{label:"Drum & Bass", color:"var(--amber)", hex:"#ffb627"},
+  tbc:{label:"TBC", color:"var(--lime)", hex:"#7dff9b"}
+};
+// [name, groupKey, genre text, vibe, links(search terms), flags]
+const SAT = [
+ ["Alan Walker","melodic","Melodic EDM / progressive house","Huge emotional sing-along anthems like \"Faded\". Golden-hour set.",["Alan Walker"],"sun"],
+ ["Steve Aoki","melodic","Big room / electro house","Maximum-energy party set, crowd surfing and cake throwing.",["Steve Aoki"],""],
+ ["Kaskade","melodic","Progressive / deep house","Euphoric vocal house, a reliable feel-good peak of the night.",["Kaskade"],""],
+ ["Disco Lines","house","Disco house","Bouncy edits of pop and throwback hits, very sing-along.",["Disco Lines"],""],
+ ["Alison Wonderland","bass","Future bass / trap","Emotional melodies that crash into heavy drops.",["Alison Wonderland"],""],
+ ["Nico Moreno","techno","Hard techno","Fast, pounding warehouse techno with no letup.",["Nico Moreno"],""],
+ ["Aaron Hibell","melodic","Melodic house & techno","Cinematic, orchestral builds with deep grooves.",["Aaron Hibell"],""],
+ ["Franky Rizardo","house","House / tech house","Rolling Dutch house grooves, polished and danceable.",["Franky Rizardo"],""],
+ ["ACRAZE B2B CID","house","Tech house","Two tech house hitmakers trading tracks (ACRAZE made \"Do It To It\").",["ACRAZE","CID DJ"],""],
+ ["Skull Machine","bass","Heavy dubstep / metal bass","Black Tiger Sex Machine x Kai Wachi: helmets, lasers and very heavy bass.",["Black Tiger Sex Machine Kai Wachi Skull Machine"],""],
+ ["Ray Volpe","bass","Dubstep / riddim","Goofy, wild, and gut-punching drops. A bass-stage favorite.",["Ray Volpe"],""],
+ ["AYYBO","house","Tech house","Bouncy, playful tech house built for a big crowd.",["AYYBO"],""],
+ ["Dennis Cruz","house","Tech house","Latin-flavored percussion and deep, rolling grooves.",["Dennis Cruz"],""],
+ ["ALLEYCVT","bass","Dubstep / experimental bass","Fast-rising bass producer with weird, inventive sound design.",["ALLEYCVT"],""],
+ ["Twinsick","house","House / bass house","Duo that plays club nights across the US. Sample before you go.",["Twinsick"],"gem guess"],
+ ["Max Dean B2B Luke Dean","house","House","UK brothers trading underground house cuts.",["Max Dean","Luke Dean"],""],
+ ["Jkyl & Hyde","bass","Dubstep","Dark, heavy dubstep from a long-running duo.",["Jkyl & Hyde"],""],
+ ["Devault","melodic","Melodic electronic / future house","Lush, uplifting melodies. Golden-hour set.",["Devault"],"sun"],
+ ["me n ü","house","House","Newer house act. Good pick for discovering something fresh.",["me n ü"],"gem"],
+ ["Rossi.","house","House / minimal tech","Groovy UK underground house. Golden-hour set.",["Rossi. DJ"],"sun"],
+ ["Subsonic","dnb","Drum & bass","Fast, rolling drum & bass for the high-BPM crowd.",["Subsonic drum and bass"],"gem"],
+ ["AVELLO","bass","Melodic bass","Melodic drops with emotional builds, Illenium-style vibe.",["AVELLO"],"gem"],
+ ["LAYZ","bass","Dubstep / riddim","Gritty, headbanger bass from Australia.",["LAYZ"],""],
+ ["Discip","house","Tech house","Up-and-coming tech house producer.",["Discip"],"gem"],
+ ["Roddy Lima","house","Tech house","Groove-heavy tech house with bassy hooks.",["Roddy Lima"],"gem"],
+ ["Miguelle & Tons","house","House / tech house","Duo with Ibiza bookings. Sample before you go.",["Miguelle & Tons"],"gem guess"],
+ ["Gabss","house","Tech house","Newer tech house name. Good discovery pick.",["Gabss"],"gem"],
+ ["ChaseWest","house","Tech house","Bass-forward tech house with festival energy.",["ChaseWest"],"gem"],
+ ["Fallon","house","House","Smaller-stage house DJ. Sample before you go.",["Fallon DJ"],"gem guess"],
+ ["KinAhau","house","Tech house","Rising tech house producer.",["KinAhau"],"gem"],
+ ["Greg 99","house","Tech house","Newer tech house name. Good discovery pick.",["Greg 99"],"gem"],
+ ["Alves","house","Tech house","Newer tech house name. Good discovery pick.",["Alves DJ"],"gem"],
+ ["Monoky","house","Tech house","Newer tech house name. Good discovery pick.",["Monoky"],"gem"],
+ ["Mai Iachetti","house","House / tech house","Smaller-stage DJ with club bookings. Sample before you go.",["Mai Iachetti"],"gem guess"],
+ ["Fury with MC Dino","dnb","Drum & bass + MC","Drum & bass DJ with a live hype MC.",["Fury MC Dino"],""],
+ ["MADVKTM","tbc","Genre not listed yet","Very little public info. Pure discovery pick.",["MADVKTM"],"gem"]
+];
+
+const FRI = [
+ ["David Guetta","melodic","Big room / dance pop","Global hitmaker; a wall-to-wall singalong of his biggest dance hits.",["David Guetta"],""],
+ ["Afrojack","melodic","Big room / electro house","Dutch festival heavyweight with huge, punchy drops.",["Afrojack"],""],
+ ["Alesso","melodic","Progressive house","Euphoric anthems like \"Heroes\". Golden-hour set.",["Alesso"],"sun"],
+ ["Whethan","melodic","Future bass / electro pop","Bright, poppy bass with indie-dance crossover.",["Whethan"],""],
+ ["KREAM","house","Melodic house / tech house","Norwegian brothers with driving, melodic club tracks.",["KREAM"],""],
+ ["Mau P","house","Tech house","Viral tech house (\"Drugs From Amsterdam\"), pure peak-time energy.",["Mau P"],""],
+ ["Prospa B2B Josh Baker","house","House / UK rave","UK rave-inspired house trading tracks with Josh Baker's tech house.",["Prospa","Josh Baker"],""],
+ ["Adventure Club","bass","Melodic dubstep","Emotional melodic bass with big drops. Golden-hour set.",["Adventure Club"],"sun"],
+ ["Chris Lorenzo","house","Bass house","Bouncy, gritty UK bass house.",["Chris Lorenzo"],""],
+ ["Wooli","bass","Dubstep","Massive, cinematic dubstep drops.",["Wooli"],""],
+ ["Bou B2B Kanine","dnb","Drum & bass","Two UK drum & bass heavyweights back to back.",["Bou","Kanine"],""],
+ ["Levity","bass","Dubstep / bass","Rising trio with playful, heavy bass.",["Levity"],""],
+ ["Josh Baker","house","Tech house","Groovy, rolling UK tech house.",["Josh Baker"],""],
+ ["Interplanetary Criminal","house","UK garage / house","Bouncy UK garage and house, a breakout name.",["Interplanetary Criminal"],""],
+ ["HAYLA","melodic","Vocal dance / melodic house","Big-voiced singer-producer with emotional dance tracks.",["HAYLA"],""],
+ ["MPH","house","UK garage / speed garage","Bassy, skippy UK garage grooves.",["MPH"],"gem"],
+ ["Omar+","house","House / UK garage","Feel-good house and garage.",["Omar+"],"gem"],
+ ["Kompany","bass","Dubstep","Heavy, aggressive dubstep.",["Kompany"],""],
+ ["Bullet Tooth B2B Sidney Charles","house","Tech house","Groove-heavy tech house back to back.",["Bullet Tooth","Sidney Charles"],""],
+ ["Level Up","bass","Dubstep / riddim","Hard-hitting bass from a fan favorite.",["Level Up dubstep"],""],
+ ["Pegassi","techno","Techno","Hard, driving techno.",["Pegassi"],"gem"],
+ ["Joshwa","house","Tech house","Bouncy UK tech house.",["Joshwa"],"gem"],
+ ["Brunello","house","House","Laid-back house grooves. Golden-hour set.",["Brunello"],"sun gem"],
+ ["MALUGI","house","House","Groovy house. Golden-hour set.",["MALUGI"],"sun gem guess"],
+ ["Azzecca","house","Tech house","Up-and-coming tech house name.",["Azzecca"],"gem"],
+ ["Benda B2B Vastive","bass","Dubstep","Two bass producers back to back.",["Benda","Vastive"],"gem"],
+ ["Big Florida","bass","Riddim / dubstep","Very heavy bass from a Florida name.",["Big Florida"],"gem"],
+ ["IDEMI","house","Tech house","Newer tech house name. Good discovery pick.",["IDEMI"],"gem"],
+ ["Zack Martino","melodic","Progressive / big room","Melodic festival bangers.",["Zack Martino"],"gem"],
+ ["RAJE","tbc","Genre not listed yet","Little public info. Pure discovery pick.",["RAJE DJ"],"gem"],
+ ["AAT","house","House","Smaller-stage house act. Sample before you go.",["AAT"],"gem"],
+ ["Sloth","bass","Riddim","Grimy riddim for the bass heads.",["Sloth riddim"],"gem"],
+ ["Inbal","tbc","Genre not listed yet","Little public info. Pure discovery pick.",["Inbal DJ"],"gem"],
+ ["JOA","tbc","Genre not listed yet","Little public info. Pure discovery pick.",["JOA DJ"],"gem"],
+ ["Matthias","tbc","Genre not listed yet","Little public info. Pure discovery pick.",["Matthias DJ"],"gem"]
+];
+const SUN = [
+ ["Martin Garrix","melodic","Big room / progressive house","One of the biggest names in EDM, huge anthems and fireworks energy.",["Martin Garrix"],""],
+ ["Alok","house","Brazilian bass / house","Brazilian superstar with bouncy, bassy house.",["Alok"],""],
+ ["Hardwell","melodic","Big room / hard techno","Big room legend who now plays it harder and faster.",["Hardwell"],""],
+ ["Deorro B2B DJ Diesel","bass","Melbourne bounce / dubstep","Deorro's bounce meets Shaquille O'Neal's bass sets. Pure chaos.",["Deorro","DJ Diesel"],""],
+ ["MEDUZA","house","Melodic house","Italian trio behind \"Piece Of Your Heart\", smooth and driving.",["MEDUZA"],""],
+ ["Holy Priest","techno","Hard techno","Fast, dark, hard-hitting techno.",["Holy Priest"],""],
+ ["SLANDER","bass","Melodic dubstep","Emotional singalongs into heavy drops. Golden-hour set.",["SLANDER"],"sun"],
+ ["San Holo (Wholesome Riddim)","bass","Riddim","San Holo's playful riddim alter ego.",["San Holo Wholesome Riddim"],""],
+ ["Ian Asher","house","House","Bouncy, feel-good house.",["Ian Asher"],""],
+ ["Boys Noize B2B Brutalismus 3000","techno","Techno / electro","Berlin electro legend with a punk-techno duo. Wild.",["Boys Noize","Brutalismus 3000"],""],
+ ["TroyBoi","bass","Trap / bass","Slick, hard-hitting trap with global flavor.",["TroyBoi"],""],
+ ["Maddix","techno","Hard techno","Dutch hard techno at full speed.",["Maddix"],""],
+ ["Marlon Hoffstadt","house","House","Cheeky, high-energy house (\"Daddy\"). Golden-hour set.",["Marlon Hoffstadt"],"sun"],
+ ["I Hate Models","techno","Industrial techno","Dark, emotional, industrial techno.",["I Hate Models"],""],
+ ["Klangkuenstler","techno","Hard techno","German hard techno, relentless.",["Klangkuenstler"],""],
+ ["ATLiens","bass","Riddim / bass","Masked duo with weird, heavy bass.",["ATLiens"],""],
+ ["KI/KI","techno","Techno","Euphoric, fast techno from Amsterdam.",["KI/KI"],""],
+ ["Of The Trees","bass","Psychedelic bass","Deep, trippy bass music. Golden-hour set.",["Of The Trees"],"sun"],
+ ["Boogie T","bass","Dubstep","Funky, goofy, heavy dubstep.",["Boogie T"],""],
+ ["Kaivon","bass","Melodic bass","Emotional melodic bass.",["Kaivon"],""],
+ ["Know Good","bass","Bass","Experimental bass, wobbly and deep.",["Know Good"],"gem"],
+ ["Taiki Nulight","house","Bass house / UK garage","UK bass house with garage swing.",["Taiki Nulight"],""],
+ ["Jessica Audiffred","bass","Dubstep","Heavy dubstep from one of bass music's rising women.",["Jessica Audiffred"],""],
+ ["Adrián Mills","tbc","Genre not listed yet","Little public info. Pure discovery pick.",["Adrián Mills"],"gem"],
+ ["A Little Sound","dnb","Drum & bass","Fast, rolling drum & bass.",["A Little Sound"],"gem"],
+ ["AR/CO","house","House / UK garage","Duo with soulful vocals over house and garage.",["AR/CO"],"gem"],
+ ["SIPPY","bass","Dubstep","Dark, heavy dubstep.",["SIPPY"],""],
+ ["Ravenscoon","bass","Bass","Wonky, experimental bass.",["Ravenscoon"],"gem"],
+ ["phrva","bass","Bass","Newer bass name. Good discovery pick.",["phrva"],"gem"],
+ ["Chef Boyarbeatz","bass","Dubstep","Goofy, heavy dubstep.",["Chef Boyarbeatz"],"gem"],
+ ["ESSE","house","Tech house","Newer tech house name. Good discovery pick.",["ESSE DJ"],"gem"],
+ ["SHDW","techno","Techno","Dark techno.",["SHDW techno"],"gem"],
+ ["M81!","bass","Melodic bass","Newer melodic bass name.",["M81!"],"gem"],
+ ["CØNTRA","tbc","Genre not listed yet","Little public info. Pure discovery pick.",["CØNTRA"],"gem"],
+ ["Discovery Project","house","Emerging artist showcase","Insomniac's slot for brand-new talent. Who knows who you'll find.",["Insomniac Discovery Project"],"gem"],
+ ["Ultrathem","tbc","Genre not listed yet","Little public info. Pure discovery pick.",["Ultrathem"],"gem"]
+];
+const DAYS={fri:{name:"Friday",date:"Fri Nov 6, 2026",list:FRI},sat:{name:"Saturday",date:"Sat Nov 7, 2026",list:SAT},sun:{name:"Sunday",date:"Sun Nov 8, 2026",list:SUN}};
+// Real set times go here when released: SET["sat:alan-walker"]={start:"17:15",end:"18:30",stage:"kinetic"}. 24h clock.
+const SET={};
+const CUTOFF="17:00";
+let day="sat", A=SAT, tod="all";
+
+const ytIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#fff"/><path d="M10 8l6 4-6 4z" fill="#ff2d55"/></svg>';
+const spIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#06140b"/><path d="M7 9.5c3.5-1 7-.6 10 1M7.5 12.5c3-.8 5.8-.4 8.3.9M8 15.3c2.4-.6 4.6-.3 6.6.7" stroke="#1ed760" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
+const spUrl = t => "https://open.spotify.com/search/" + encodeURIComponent(t);
+const url = t => "https://music.youtube.com/search?q=" + encodeURIComponent(t);
+
+// genre mix bar
+const order = ["house","bass","melodic","dnb","techno","tbc"];
+const bar = document.getElementById("bar"), legend = document.getElementById("legend");
+let counts={};
+function drawMix(){
+  counts={}; A.forEach(a => counts[a[1]] = (counts[a[1]]||0)+1);
+  bar.innerHTML=""; legend.innerHTML="";
+  order.forEach(k => { if(!counts[k]) return;
+    const d=document.createElement("div"); d.style.width=(counts[k]/A.length*100)+"%"; d.style.background=G[k].color; d.title=G[k].label+": "+counts[k]; bar.appendChild(d);
+    legend.insertAdjacentHTML("beforeend", `<span><i style="background:${G[k].color}"></i>${G[k].label} <b>${counts[k]}</b></span>`);
+  });
+}
+
+// filters
+let genre="all", gemsOnly=false, q="", pickF="all";
+const picks={};
+const slug=n=>n.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const filters=document.getElementById("filters"), qEl=document.getElementById("q");
+const mk=(id,label)=>{const b=document.createElement("button");b.className="chip";b.id="f-"+id;b.textContent=label;b.setAttribute("aria-pressed","false");filters.insertBefore(b,qEl);return b;};
+const genreSel=document.getElementById("genreSel");
+genreSel.innerHTML=`<option value="all">All genres</option>`+order.filter(k=>k!=="tbc").map(k=>`<option value="${k}" style="color:${G[k].hex}">${G[k].label}</option>`).join("");
+const gemB=mk("gems","💎 Discovery only");
+const pf={yes:mk("p-yes","✅ Going"),maybe:mk("p-maybe","🤔 Maybe"),none:mk("p-none","Not rated yet")};
+Object.entries(pf).forEach(([k,b])=>b.onclick=()=>{pickF=pickF===k?"all":k;Object.entries(pf).forEach(([kk,bb])=>bb.setAttribute("aria-pressed",kk===pickF));render();});
+function setGenre(k){genre=k;genreSel.value=k;render();}
+genreSel.onchange=()=>setGenre(genreSel.value);
+gemB.onclick=()=>{gemsOnly=!gemsOnly;gemB.setAttribute("aria-pressed",gemsOnly);render();};
+qEl.oninput=e=>{q=e.target.value.toLowerCase().trim();render();};
+
+// afternoon / evening: real set time if known, else a billing-based estimate
+// Estimate: 5 stages x ~3 slots before 5 PM, so the 15 lowest-billed non-sunset acts are "afternoon"; sunset sets land around sunset (~5:35 PM).
+function hasReal(){return A.some(a=>SET[day+":"+slug(a[0])]);}
+// Best-guess stage for each act (by genre and billing), used until real set times exist.
+const GUESS={
+ fri:{kinetic:["David Guetta","Afrojack","Alesso","Whethan","HAYLA","Zack Martino","KREAM"],
+      circuit:["Wooli","Levity","Adventure Club","Kompany","Level Up","Big Florida","Sloth","Benda B2B Vastive"],
+      neon:["Interplanetary Criminal","Pegassi","Bou B2B Kanine","MPH","Omar+","Inbal","JOA"],
+      stereo:["Mau P","Prospa B2B Josh Baker","Chris Lorenzo","Josh Baker","Bullet Tooth B2B Sidney Charles","Joshwa","Matthias"],
+      bacardi:["Brunello","MALUGI","Azzecca","IDEMI","RAJE","AAT"]},
+ sat:{kinetic:["Alan Walker","Steve Aoki","Kaskade","Alison Wonderland","ACRAZE B2B CID","Devault","AVELLO"],
+      circuit:["Skull Machine","Ray Volpe","ALLEYCVT","Jkyl & Hyde","LAYZ","Subsonic","Fury with MC Dino"],
+      neon:["Nico Moreno","Aaron Hibell","Dennis Cruz","Max Dean B2B Luke Dean","Rossi.","Mai Iachetti","MADVKTM"],
+      stereo:["Disco Lines","Franky Rizardo","AYYBO","Twinsick","me n ü","Roddy Lima","ChaseWest","Miguelle & Tons"],
+      bacardi:["Discip","Gabss","Fallon","KinAhau","Greg 99","Alves","Monoky"]},
+ sun:{kinetic:["Martin Garrix","Alok","Hardwell","MEDUZA","Deorro B2B DJ Diesel","SLANDER","Kaivon"],
+      circuit:["San Holo (Wholesome Riddim)","TroyBoi","ATLiens","Of The Trees","Boogie T","SIPPY","Jessica Audiffred","Chef Boyarbeatz"],
+      neon:["Holy Priest","Boys Noize B2B Brutalismus 3000","I Hate Models","Klangkuenstler","Maddix","KI/KI","SHDW"],
+      stereo:["Ian Asher","Marlon Hoffstadt","Taiki Nulight","A Little Sound","AR/CO","Know Good","Ravenscoon"],
+      bacardi:["Adrián Mills","phrva","ESSE","M81!","CØNTRA","Discovery Project","Ultrathem"]}
+};
+// Estimated slots: each stage runs 1 PM to midnight in even slots; lowest-billed play first,
+// headliner last, and any sunset set is placed in the slot nearest sunset (~5:35 PM).
+const EST={};
+(function(){
+  const toHM=m=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(Math.round(m%60)).padStart(2,"0");
+  for(const d in GUESS){
+    const L=DAYS[d].list, rank=n=>L.findIndex(a=>a[0]===n);
+    for(const stg in GUESS[d]){
+      const names=GUESS[d][stg].filter(n=>rank(n)>=0).sort((a,b)=>rank(b)-rank(a));
+      const sun=names.filter(n=>L[rank(n)][5].includes("sun")), rest=names.filter(n=>!sun.includes(n));
+      const n=names.length, len=660/n, slots=[...Array(n).keys()].map(i=>780+i*len);
+      const sunIdx=slots.map((m,i)=>[Math.abs(m+len/2-1055),i]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+      const order=new Array(n).fill(null);
+      sun.forEach((nm,j)=>{order[sunIdx[j]]=nm;});
+      let k=0; for(let i=0;i<n;i++){ if(!order[i]) order[i]=rest[k++]; }
+      order.forEach((nm,i)=>{EST[d+":"+slug(nm)]={start:toHM(slots[i]),end:toHM(slots[i]+len),stage:stg};});
+    }
+  }
+})();
+function when(a){
+  const key=day+":"+slug(a[0]);
+  const st=SET[key];
+  if(st) return {k:st.start<CUTOFF?"aft":"eve",real:true,st};
+  const e=EST[key]||{start:"18:00",stage:""};
+  return {k:e.start<CUTOFF?"aft":"eve",real:false,st:e};
+}
+let stageF="all";
+const fmt=t=>{let [h,m]=t.split(":").map(Number);const ap=h>=12&&h<24?"PM":"AM";h=h%12||12;return h+":"+String(m).padStart(2,"0")+" "+ap;};
+const STAGE_NAMES={kinetic:"kineticFIELD",circuit:"circuitGROUNDS",neon:"neonGARDEN",stereo:"stereoBLOOM",bacardi:"CASA BACARDÍ"};
+const STAGE_COL={kinetic:"#ff4fb4",circuit:"#a874ff",neon:"#ff7a59",stereo:"#3fe0ff",bacardi:"#ffb627"};
+const stageRow=document.getElementById("stagerow");
+stageRow.innerHTML=`<button data-s="all" aria-pressed="true" style="--sc:#f6f1ff"><i></i>All stages</button>`+Object.keys(STAGE_NAMES).map(k=>`<button data-s="${k}" aria-pressed="false" style="--sc:${STAGE_COL[k]}"><i></i>${STAGE_NAMES[k]}</button>`).join("");
+function setStage(k){stageF=k;stageRow.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===k));render();}
+stageRow.querySelectorAll("button").forEach(b=>b.onclick=()=>setStage(stageF===b.dataset.s?"all":b.dataset.s));
+
+const grid=document.getElementById("grid"), count=document.getElementById("count");
+function render(){
+  const pm=tod==="party";
+  document.getElementById("actfilters").hidden=pm;
+  if(pm){const t={yes:0,maybe:0,no:0}; A.forEach(a=>{const v=picks[slug(a[0])]; if(v) t[v]++;});document.getElementById("tally").innerHTML=`<span class="y">✅ Going ${t.yes}</span><span class="m">🤔 Maybe ${t.maybe}</span><span class="n">❌ Skip ${t.no}</span><span class="u">Not rated ${A.length-t.yes-t.maybe-t.no}</span>`;renderParties();return;}
+  const real=hasReal();
+  document.getElementById("estnote").hidden=real;
+  let list=A.map((a,i)=>[a,i+1,when(a)]).filter(([a,,w])=>
+    (tod==="all"||w.k===tod)&&(stageF==="all"||w.st.stage===stageF)&&(genre==="all"||a[1]===genre)&&(!gemsOnly||a[5].includes("gem"))&&(!q||(a[0]+" "+a[2]).toLowerCase().includes(q))
+    &&(pickF==="all"||(pickF==="none"?!picks[slug(a[0])]:picks[slug(a[0])]===pickF)));
+  if(tod!=="all"||stageF!=="all") list.sort((x,y)=>(x[2].st.start||"99").localeCompare(y[2].st.start||"99"));
+  const t={yes:0,maybe:0,no:0}; A.forEach(a=>{const v=picks[slug(a[0])]; if(v) t[v]++;});
+  document.getElementById("tally").innerHTML=`<span class="y">✅ Going ${t.yes}</span><span class="m">🤔 Maybe ${t.maybe}</span><span class="n">❌ Skip ${t.no}</span><span class="u">Not rated ${A.length-t.yes-t.maybe-t.no}</span>`;
+  count.textContent=`${DAYS[day].name}${stageF!=="all"?" · "+STAGE_NAMES[stageF]:""}: showing ${list.length} of ${A.length} acts`+(tod!=="all"||stageF!=="all"?", in time order":"");
+  grid.innerHTML=list.length?list.map(([a,n,w])=>{
+    const g=G[a[1]], f=a[5];
+    const sc=STAGE_COL[w.st.stage]||"#c9b8ff", est=w.real?"":"Est. ";
+    const whenTag=`<span class="tag when${w.real?" real":""}">${w.k==="aft"?"☀️":"🌙"} ${est}${w.real?fmt(w.st.start)+(w.st.end?" to "+fmt(w.st.end):""):"~"+fmt(w.st.start)}</span>`+(w.st.stage?`<span class="tag where" style="--sc:${sc}">📍 ${est}${STAGE_NAMES[w.st.stage]||w.st.stage}</span>`:"");
+    const tags=`<span class="tag">${a[2]}</span>`+whenTag+(f.includes("sun")?'<span class="tag sun">🌅 Sunset set</span>':"")+(f.includes("gem")?'<span class="tag gem">💎 Discovery</span>':"")+(f.includes("guess")?'<span class="tag guess">Genre best guess</span>':"");
+    const parts=a[0].split(" B2B ");
+    const links=a[4].map((t,i)=>{const who=a[4].length>1?(parts[i]||t)+" — ":"";return `<a class="yt" href="${url(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on YouTube">${ytIcon}</a><a class="sp" href="${spUrl(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on Spotify">${spIcon}</a>`;}).join("");
+    const id=slug(a[0]), v=picks[id]||"";
+    const vote=`<div class="vote" role="group" aria-label="Rate ${a[0]}">${[["yes","✅","Going"],["maybe","🤔","Maybe"],["no","❌","Skip"]].map(([k,e,l])=>`<button data-id="${id}" data-v="${k}" aria-pressed="${v===k}" aria-label="${l}">${e}</button>`).join("")}</div>`;
+    return `<article class="card${v?" is-"+v:""}" style="--g:${g.hex}"><div class="top"><div class="name">${a[0]}</div><div class="rank">#${n}</div></div><div class="tags">${tags}</div><p class="vibe">${a[3]}</p><div class="actions">${vote}<div class="links">${links}</div></div></article>`;
+  }).join(""):'<div class="empty">No acts match. Clear the search or pick another filter.</div>';
+}
+
+// Afterparties (researched Oct 25, 2026). Official = Insomniac-run.
+const PGM=a=>"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(a);
+const HOTEL={venue:"Hotel EDC · Margaritaville Resort Orlando",addr:"8000 Fins Up Circle, Kissimmee, FL 34747",age:"18+",tix:"https://edcorlando.frontgatetickets.com/event/wlox3zhgdzrvk2jl",col:"#ff4fb4"};
+const VAN={venue:"The Vanguard",addr:"578 N Orange Ave, Orlando, FL 32801",age:"18+",col:"#a874ff"};
+const ANT={venue:"Anthem",addr:"100 N Orange Ave, Orlando, FL 32801",age:"21+",tix:"https://anthemorlando.com/edc-orlando-2026-afterparties-anthem/",col:"#3fe0ff"};
+const PARTIES={
+ thu:[
+  {...HOTEL,id:"p-thu-hotel",name:"Hotel EDC Pre-Party",time:"10 PM to 4 AM",official:true,price:"GA $35 · VIP $57",acts:["SVDDEN DEATH","DRINKURWATER","The Masquerade","Vicky B","OZZTIN","Celo"]},
+  {...VAN,id:"p-thu-van",name:"EDCO Pre-Party ft. Afrojack",time:"9 PM to 2:30 AM",official:true,price:"Up to $69.99",tix:"https://www.eventbrite.com/e/edco-pre-party-ft-afrojack-tickets-2003366452990",acts:["Afrojack"]},
+  {...ANT,id:"p-thu-ant",name:"Anthem EDM Weekend",time:"9 PM to 2:30 AM",official:false,price:"$10",acts:["DJ Dickerman","KZilla"]}
+ ],
+ fri:[
+  {...HOTEL,id:"p-fri-hotel",name:"Hotel EDC Afterparty",time:"11 PM to 6 AM",official:true,price:"GA $35 · VIP $57",acts:["ALLEYCVT","Costa","Jon Casey","Shosh"],more:true},
+  {...VAN,id:"p-fri-van",name:"EDCO After-Party ft. Mau P",time:"10 PM to 2:30 AM",official:true,price:"Up to $79.99",tix:"https://www.eventbrite.com/e/edco-after-party-ft-mau-p-tickets-2003368577344",acts:["Mau P"]},
+  {...ANT,id:"p-fri-ant",name:"Anthem EDM Weekend",time:"9 PM to 2:30 AM",official:false,price:"$10 · 4-night pass $30",acts:["DJ Atabey","DJ Qwest"]}
+ ],
+ sat:[
+  {...HOTEL,id:"p-sat-hotel",name:"Hotel EDC Afterparty",time:"11 PM to 6 AM",official:true,price:"GA $35 · VIP $67",acts:["Kai Wachi","LAYZ","YDG"],more:true},
+  {...VAN,id:"p-sat-van",name:"EDCO After-Party ft. Franky Rizardo & Dennis Cruz",time:"10 PM to 2:30 AM",official:true,price:"Up to $59.99",tix:"https://www.eventbrite.com/e/edco-after-party-ft-franky-rizardo-dennis-cruz-tickets-2003371078826",acts:["Franky Rizardo","Dennis Cruz","KinAhau","Matthias"]},
+  {...ANT,id:"p-sat-ant",name:"Anthem EDM Weekend",time:"9 PM to 2:30 AM",official:false,price:"$10 · 4-night pass $30",acts:["DJ J Warren","Franco Maior"]}
+ ],
+ sun:[
+  {...HOTEL,id:"p-sun-hotel",name:"Hotel EDC Closing Party",time:"11 PM to 6 AM",official:true,price:"GA $30 · VIP $47",acts:["Boys Noize","Damaged Goods","Flash Gea","Maddix","SHDW"]},
+  {...VAN,id:"p-sun-van",name:"EDCO After-Party ft. SLANDER",time:"10 PM to 2:30 AM",official:true,price:"Up to $69.99",tix:"https://www.eventbrite.com/e/edco-after-party-ft-slander-tickets-2003362628551",acts:["SLANDER"]},
+  {...ANT,id:"p-sun-ant",name:"Anthem EDM Weekend",time:"9 PM to 2:30 AM",official:false,price:"$10 · 4-night pass $30",acts:["DJ GSP","Erik Armiliato"]}
+ ]
+};
+function partyCard(pt){
+  const v=picks[pt.id]||"";
+  const vote=`<div class="vote" role="group" aria-label="Rate ${pt.name}">${[["yes","✅ Going"],["maybe","🤔 Maybe"],["no","❌ Skip"]].map(([k,l])=>`<button data-id="${pt.id}" data-v="${k}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
+  const onMain=n=>A.some(a=>a[0].toLowerCase().includes(n.toLowerCase()));
+  const acts=pt.acts.map(n=>`<a class="${onMain(n)?"main":""}" href="${url(n)}" target="_blank" rel="noopener">${n}</a>`).join("")+(pt.more?'<a href="'+pt.tix+'" target="_blank" rel="noopener">+ more</a>':"");
+  return `<article class="pcard${v?" is-"+v:""}" style="--pc:${pt.col}"><div class="pt"><h3>${pt.name}</h3><span class="badge${pt.official?"":" unoff"}">${pt.official?"Official":"Not official"}</span></div>
+  <div class="meta"><span>🕐 <b>${pt.time}</b></span><span>📍 <b>${pt.venue}</b></span><span class="addr">${pt.addr}</span><span>🎟️ ${pt.price} · ${pt.age}</span></div>
+  <div class="lineup">${acts}</div>${vote}
+  <div class="btns"><a class="btn" href="${pt.tix}" target="_blank" rel="noopener">🎟️ Tickets</a><a class="btn alt" href="${PGM(pt.addr)}" target="_blank" rel="noopener">📍 Directions</a></div></article>`;
+}
+function renderParties(){
+  const list=PARTIES[day]||[];
+  count.textContent=`${DAYS[day].name} night: ${list.length} afterparties. Outlined artists also play the festival. Tap a name to listen.`;
+  let html=list.map(partyCard).join("");
+  if(day==="fri") html+='<div class="thu">Thursday Nov 5 · Pre-parties</div>'+PARTIES.thu.map(partyCard).join("");
+  html+='<p class="pnote" style="grid-column:1/-1">Hotel EDC passes cover the Hotel EDC parties only; afterparty shuttles are sold separately on the <a href="https://orlando.edc.com/tickets/afterparties/" target="_blank" rel="noopener" style="color:var(--cyan)">official afterparties page</a>. Anthem is an independent party, not run by EDC.</p>';
+  grid.innerHTML=html;
+}
+
+// set-time reminders — local only: fires while this tab/installed app is open, there's no
+// server here so it can't be a true push notification that wakes a closed app.
+const DAY_YMD={fri:[2026,10,6],sat:[2026,10,7],sun:[2026,10,8]};
+let notifyOn=false; try{notifyOn=localStorage.getItem("edc-notify")==="1"}catch(e){}
+const notifyBtn=document.getElementById("notifyBtn");
+function notifyLabel(){notifyBtn.textContent=notifyOn?"🔔 Reminders on":"🔔 Remind me before my picks";notifyBtn.setAttribute("aria-pressed",String(notifyOn));}
+notifyLabel();
+let remindTimers=[];
+function scheduleReminders(){
+  remindTimers.forEach(clearTimeout); remindTimers=[];
+  if(!notifyOn || !("Notification" in window) || Notification.permission!=="granted") return;
+  const [y,m,d]=DAY_YMD[day];
+  A.forEach(a=>{
+    if(picks[slug(a[0])]!=="yes") return;
+    const w=when(a); if(!w.st.start) return;
+    const [hh,mm]=w.st.start.split(":").map(Number);
+    const delay=new Date(y,m,d,hh,mm).getTime()-10*60000-Date.now();
+    if(delay>0 && delay<20*24*3600*1000){
+      remindTimers.push(setTimeout(()=>{
+        try{new Notification(a[0]+" in 10 minutes",{body:(w.st.stage?STAGE_NAMES[w.st.stage]+" · ":"")+fmt(w.st.start)+(w.real?"":" (estimated)"),tag:slug(a[0])});}catch(e){}
+      },delay));
+    }
+  });
+}
+notifyBtn.onclick=async()=>{
+  if(!("Notification" in window)){notifyBtn.textContent="🔔 Not supported on this browser";return;}
+  if(!notifyOn){
+    if(Notification.permission==="denied"){notifyBtn.textContent="🔕 Blocked — enable in Settings";return;}
+    if(Notification.permission!=="granted"){const p=await Notification.requestPermission(); if(p!=="granted") return;}
+  }
+  notifyOn=!notifyOn; try{localStorage.setItem("edc-notify",notifyOn?"1":"0")}catch(e){}
+  notifyLabel(); scheduleReminders();
+};
+
+// day + time-of-day tabs
+function setDay(d){
+  day=d; A=DAYS[d].list;
+  document.querySelectorAll("#days button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.d===d));
+  document.getElementById("dayname").textContent=DAYS[d].name;
+  document.getElementById("daydate").textContent=DAYS[d].date.split(", ")[0].replace(/^\w+ /,"");
+  document.getElementById("eyebrow").textContent="Tinker Field · Orlando · "+DAYS[d].date;
+  document.getElementById("nacts").textContent=A.length;
+  document.getElementById("mixh").textContent=DAYS[d].name+"'s sound";
+  try{localStorage.setItem("edc-day",d)}catch(e){}
+  drawMix(); render(); scheduleReminders();
+}
+document.querySelectorAll("#days button").forEach(b=>b.onclick=()=>setDay(b.dataset.d));
+document.querySelectorAll("#times button").forEach(b=>b.onclick=()=>{tod=b.dataset.t;document.querySelectorAll("#times button").forEach(x=>x.setAttribute("aria-pressed",x===b));render();});
+let saved="sat"; try{saved=localStorage.getItem("edc-day")||"sat"}catch(e){}
+setDay(DAYS[saved]?saved:"sat");
+
+
+// grounds map (schematic of 2025 layout)
+const STG=[
+ {id:"kinetic",name:"kineticFIELD",color:"#ff4fb4",x:405,y:285,lx:355,ly:250,d:"Main stage, where each night's headliners play."},
+ {id:"circuit",name:"circuitGROUNDS",color:"#a874ff",x:90,y:72,lx:92,ly:118,d:"Second-biggest stage, big melodic and festival anthems."},
+ {id:"neon",name:"neonGARDEN",color:"#ff7a59",x:468,y:168,lx:452,ly:172,a:"end",d:"Deep techno and house."},
+ {id:"stereo",name:"stereoBLOOM",color:"#3fe0ff",x:80,y:262,lx:80,ly:298,d:"House, bass and trance from Insomniac Records & Dreamstate."},
+ {id:"bacardi",name:"CASA BACARDÍ",color:"#ffb627",x:238,y:345,lx:238,ly:322,d:"Smaller stage with DJ sets all day and a cocktail bar. Great spot for discovery picks."}
+];
+function mapSVG(uid){
+  const st=STG.map(t=>`<g class="stg" data-s="${t.id}" tabindex="0" role="button" aria-label="${t.name}"><circle class="ring" cx="${t.x}" cy="${t.y}" r="17" fill="${t.color}" fill-opacity=".25" stroke="${t.color}" stroke-width="2"/><circle cx="${t.x}" cy="${t.y}" r="9" fill="${t.color}"/><text x="${t.lx}" y="${t.ly}" text-anchor="${t.a||"middle"}" font-family="Unbounded, Arial Black, sans-serif" font-weight="700" font-size="13" fill="#f6f1ff" stroke="#120a2e" stroke-width="3" paint-order="stroke">${t.name}</text></g>`).join("");
+  const lbl=(x,y,t,o="")=>`<text x="${x}" y="${y}" font-family="Figtree, sans-serif" font-weight="700" font-size="11" fill="#c9b8ff" ${o}>${t}</text>`;
+  const ico=(x,y,e,t)=>`<g><circle cx="${x}" cy="${y}" r="11" fill="#120a2e" stroke="#c9b8ff" stroke-width="1.2"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="12">${e}</text>${t?`<text x="${x}" y="${y+24}" text-anchor="middle" font-family="Figtree, sans-serif" font-weight="700" font-size="10" fill="#f6f1ff">${t}</text>`:""}</g>`;
+  return `<svg viewBox="0 0 545 420" role="img" aria-label="Schematic map of EDC Orlando grounds at Tinker Field">
+  <defs><linearGradient id="gf${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a1d78"/><stop offset="1" stop-color="#1c3f73"/></linearGradient></defs>
+  <polygon points="15,50 290,50 290,130 525,130 525,197 480,197 480,325 300,325 300,400 260,390 190,375 120,345 60,315 20,285" fill="url(#gf${uid})" stroke="#ff4fb4" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="290" y="13" width="70" height="37" rx="6" fill="#2a1d78" stroke="#ff4fb4" stroke-width="2"/>
+  ${lbl(298,36,"Box office")}
+  <rect x="165" y="65" width="95" height="115" rx="10" fill="#3a2a8a" stroke="#7d6cd9" stroke-width="1.5"/>
+  ${lbl(214,84,"Grandstand",'text-anchor="middle"')}
+  <path d="M300 192 L440 192" stroke="#ffb627" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+  ${lbl(305,186,"Rainbow Road")}
+  <path d="M165 215 L235 320" stroke="#ff7a59" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+  ${lbl(150,232,"Daisy Lane",'transform="rotate(56 150 232)"')}
+  ${lbl(298,150,"Rainbow Bazaar · Ferris wheel")}
+  ${lbl(88,205,"Pixel Forest",'text-anchor="middle"')}
+  ${lbl(265,205,"Kandi Casino",'text-anchor="middle"')}
+  ${lbl(292,298,"Daisy Fields",'text-anchor="middle"')}
+  ${lbl(150,40,"W Church St",'text-anchor="middle"')}
+  ${lbl(8,180,"S Tampa Ave",'transform="rotate(-90 8 180)" text-anchor="middle"')}
+  ${lbl(400,350,"W Anderson St")}
+  ${lbl(498,265,"S Nashville Ave",'transform="rotate(-90 498 265)" text-anchor="middle"')}
+  ${lbl(150,385,"State Road 408",'transform="rotate(24 150 385)" text-anchor="middle"')}
+  <path d="M445 70 L445 122" stroke="#ffb627" stroke-width="10" stroke-linecap="round"/><path d="M432 108 L445 124 L458 108" stroke="#ffb627" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <text x="445" y="60" text-anchor="middle" font-family="Unbounded, Arial Black, sans-serif" font-weight="800" font-size="13" fill="#ffb627">🚪 ENTRANCE</text>
+  ${ico(272,345,"🚗","Lyft")}${ico(312,340,"🚌","Shuttle")}${ico(352,334,"✨","SkyDeck")}
+  ${ico(205,375,"💧","")}${["299,37","175,107","164,153","237,145","447,217","354,316"].map(c=>{const [x,y]=c.split(",").map(Number);return ico(x,y,"🚻","");}).join("")}${ico(60,175,"➕","")}${ico(500,145,"➕","")}${ico(140,90,"💧","")}
+  <g transform="translate(515 395)"><circle r="14" fill="#120a2e" stroke="#ff4fb4" stroke-width="2"/><text y="5" text-anchor="middle" font-family="Unbounded, sans-serif" font-weight="800" font-size="13" fill="#f6f1ff">N</text></g>
+  ${st}</svg>`;
+}
+document.querySelectorAll(".gmap").forEach((box,i)=>{
+  box.querySelector(".svgwrap").innerHTML=mapSVG(i);
+  const info=box.querySelector(".ginfo");
+  const pick=id=>{const t=STG.find(x=>x.id===id);box.querySelectorAll(".stg").forEach(g=>g.classList.toggle("on",g.dataset.s===id));info.style.setProperty("--sc",t.color);const acts=A.map(a=>[a,when(a)]).filter(([,w])=>w.st.stage===id).sort((x,y)=>x[1].st.start.localeCompare(y[1].st.start));const real=acts.some(([,w])=>w.real);info.innerHTML=`<b>${t.name}</b><br>${t.d}<br><span style="color:var(--amber)">${DAYS[day].name}, ${real?"official":"best-guess"} lineup here:</span><br>`+acts.map(([a,w])=>`${w.k==="aft"?"☀️":"🌙"} ${fmt(w.st.start)} · ${a[0]}${({yes:" ✅",maybe:" 🤔",no:" ❌"})[picks[slug(a[0])]]||""}`).join("<br>");};
+  box.querySelectorAll(".stg").forEach(g=>{g.addEventListener("click",()=>pick(g.dataset.s));g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(g.dataset.s);}});});
+});
+
+// tabs
+const views=["lineup","travel","map"];
+function show(v){if(!views.includes(v))v="lineup";views.forEach(x=>{document.getElementById("v-"+x).hidden=x!==v;});document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.v===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});window.scrollTo(0,0);}
+document.querySelectorAll(".tabs a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();show(a.dataset.v);try{history.replaceState(null,"","#"+a.dataset.v)}catch(_){}}));
+show((location.hash||"").slice(1));
+
+// shared picks via db, with on-device fallback
+let col=null; const busy={};
+function local(){try{return JSON.parse(localStorage.getItem("edc-picks")||"{}")}catch(e){return {}}}
+function saveLocal(){try{localStorage.setItem("edc-picks",JSON.stringify(picks))}catch(e){}}
+const syncEl=document.getElementById("sync");
+grid.addEventListener("click",async e=>{
+  const b=e.target.closest(".vote button"); if(!b) return;
+  const id=b.dataset.id, v=picks[id]===b.dataset.v?"":b.dataset.v;
+  if(v) picks[id]=v; else delete picks[id];
+  render(); scheduleReminders();
+  if(!col){saveLocal();return;}
+  if(busy[id]) await busy[id];
+  busy[id]=(v?col.doc(id).set({v}):col.doc(id).delete()).catch(err=>{syncEl.textContent="Couldn't save that pick ("+(err&&err.code||"error")+"). It's saved on this device only.";saveLocal();}).finally(()=>{busy[id]=null;});
+});
+(async()=>{
+  let db=null; try{db=window.claude&&await window.claude.use("db");}catch(e){}
+  if(!db){Object.assign(picks,local());syncEl.textContent="Picks are saved on this device only.";render();scheduleReminders();return;}
+  col=db.collection("picks");
+  col.onSnapshot(snap=>{
+    for(const k in picks) delete picks[k];
+    snap.docs.forEach(d=>{const x=d.data(); if(x&&["yes","maybe","no"].includes(x.v)) picks[d.id]=x.v;});
+    syncEl.textContent="🔄 Shared picks: changes show up live on both your phones.";
+    render(); scheduleReminders();
+  },err=>{syncEl.textContent="Live sync paused. Reload the page to reconnect.";});
+})();
+</script>
+
+</body></html>
