@@ -35,7 +35,10 @@ body{background:var(--night);color:var(--ink);font-family:var(--body);font-size:
   background-image:radial-gradient(circle at 15% -10%, #3a1a7a 0, transparent 45%),radial-gradient(circle at 95% 5%, #5a1150 0, transparent 40%);}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
 .wrap{max-width:1100px;margin:0 auto}
-header{padding-block:32px 20px}
+header{padding-block:32px 20px;position:relative}
+header::before{content:"";position:absolute;top:-60px;right:-80px;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%, rgba(185,255,210,.9), rgba(63,224,255,.55) 35%, rgba(94,58,219,.35) 60%, transparent 72%);
+  filter:blur(6px);pointer-events:none;z-index:-1}
 .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,52px);line-height:1.05;margin:8px 0 10px;text-wrap:balance}
 h1 span{color:var(--pink)}
@@ -188,11 +191,27 @@ details ul{margin:4px 0 0;padding-left:18px}
 @media (prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translateY(-2px)}}
 /* ===== v2 restyle: electric-sky glass, sharper buttons ===== */
 :root{--line:#4a3594;--glass:rgba(36,22,90,.72);--grad:linear-gradient(100deg,#ff4fb4,#a874ff 55%,#3fe0ff)}
-body{background-color:var(--night);background-image:radial-gradient(1200px 500px at 10% -10%,#3b1a86 0,transparent 60%),radial-gradient(900px 500px at 100% 0,#5c1257 0,transparent 55%),radial-gradient(900px 700px at 50% 120%,#0f2a6b 0,transparent 60%);background-attachment:fixed}
+body{background-color:var(--night);
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 22%, rgba(255,255,255,.9) 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 68% 8%, rgba(255,255,255,.75) 50%, transparent 52%),
+    radial-gradient(1.6px 1.6px at 85% 48%, rgba(255,255,255,.8) 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 35% 72%, rgba(255,255,255,.65) 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 6% 60%, rgba(255,255,255,.7) 50%, transparent 52%),
+    radial-gradient(1.6px 1.6px at 94% 85%, rgba(255,255,255,.6) 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 52% 38%, rgba(255,255,255,.55) 50%, transparent 52%),
+    radial-gradient(1.6px 1.6px at 22% 90%, rgba(255,255,255,.7) 50%, transparent 52%),
+    radial-gradient(1200px 500px at 10% -10%,#3b1a86 0,transparent 60%),
+    radial-gradient(900px 500px at 100% 0,#5c1257 0,transparent 55%),
+    radial-gradient(900px 700px at 50% 120%,#0f2a6b 0,transparent 60%),
+    radial-gradient(700px 500px at 100% 100%,#0a3a3a 0,transparent 55%);
+  background-size:280px 280px,340px 340px,310px 310px,260px 260px,300px 300px,330px 330px,250px 250px,290px 290px,auto,auto,auto,auto;
+  background-repeat:repeat,repeat,repeat,repeat,repeat,repeat,repeat,repeat,no-repeat,no-repeat,no-repeat,no-repeat;
+  background-attachment:fixed}
 h1{letter-spacing:-.01em}
-h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(168,116,255,.55))}
 .eyebrow{color:var(--cyan)}
-.brand{display:inline-block;font:800 11.5px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--night);background:var(--grad);padding:5px 11px;border-radius:999px;margin-bottom:10px}
+.brand{display:inline-block;font:800 11.5px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--night);background:var(--grad);padding:5px 11px;border-radius:999px;margin-bottom:10px;box-shadow:0 0 24px -4px rgba(255,79,180,.65)}
 .fact{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px)}
 .notice,.tip{border-radius:12px;background:var(--glass)}
 .rowlbl{display:flex;align-items:center;gap:8px}
@@ -238,7 +257,7 @@ h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text
 .actions .vote{flex:none;display:flex}
 .actions .vote button{width:58px;height:44px;min-height:44px;padding:2px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
 .actions .vote button .vk-i{font-size:16px;line-height:1}
-.actions .vote button .vk-l{font-size:9px;font-weight:800;letter-spacing:.02em;line-height:1}
+.actions .vote button .vk-l{font-size:10.5px;font-weight:800;letter-spacing:.01em;line-height:1}
 .actions .links{flex:none}
 .yt svg,.sp svg{width:20px;height:20px}
 /* travel + map */
