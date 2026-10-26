@@ -572,7 +572,7 @@ const mk=(id,label)=>{const b=document.createElement("button");b.className="chip
 const genreSel=document.getElementById("genreSel");
 genreSel.innerHTML=`<option value="all">All genres</option>`+order.filter(k=>k!=="tbc").map(k=>`<option value="${k}" style="color:${G[k].hex}">${G[k].label}</option>`).join("");
 const gemB=mk("gems","💎 Discovery only");
-const pf={yes:mk("p-yes","✅ Going"),maybe:mk("p-maybe","🤔 Maybe"),none:mk("p-none","Not rated yet")};
+const pf={yes:mk("p-yes","✅ Going"),maybe:mk("p-maybe","🤔 Maybe"),no:mk("p-no","❌ Skip"),none:mk("p-none","Not rated yet")};
 Object.entries(pf).forEach(([k,b])=>b.onclick=()=>{pickF=pickF===k?"all":k;Object.entries(pf).forEach(([kk,bb])=>bb.setAttribute("aria-pressed",kk===pickF));render();track("edc_filter",{type:"pick",value:pickF});});
 function setGenre(k){genre=k;genreSel.value=k;render();track("edc_filter",{type:"genre",value:k});}
 genreSel.onchange=()=>setGenre(genreSel.value);
