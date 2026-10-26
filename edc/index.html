@@ -24,12 +24,15 @@
 :root{
   --night:#120a2e; --night2:#1d1145; --card:#24165a; --ink:#f6f1ff; --soft:#c9b8ff;
   --pink:#ff4fb4; --amber:#ffb627; --cyan:#3fe0ff; --violet:#a874ff; --lime:#7dff9b; --coral:#ff7a59;
+  --gold:#ffcc66; --lav:#cc99ff; --orange:#ff7a3d; --peri:#6677ff; --red:#ff4d6d;
   --display:"Unbounded", "Arial Black", system-ui, sans-serif;
   --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 a,button,.chip,.seg button,.stg-row button,.vote button,.tabs a{touch-action:manipulation}
+.ic{width:1em;height:1em;vertical-align:-.15em;flex:none;display:inline-block}
+.ic-lg{width:1.3em;height:1.3em;vertical-align:-.22em}
 body{background:var(--night);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
   padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-block:0 48px;
   background-image:radial-gradient(circle at 15% -10%, #3a1a7a 0, transparent 45%),radial-gradient(circle at 95% 5%, #5a1150 0, transparent 40%);}
@@ -91,12 +94,12 @@ h1 span{color:var(--pink)}
 .vote button{font:700 13px var(--body);color:var(--ink);background:var(--night2);border:1.5px solid #4a3594;border-radius:8px;padding:8px 4px;cursor:pointer}
 .vote button[aria-pressed="true"][data-v="yes"]{background:var(--lime);border-color:var(--lime);color:var(--night)}
 .vote button[aria-pressed="true"][data-v="maybe"]{background:var(--amber);border-color:var(--amber);color:var(--night)}
-.vote button[aria-pressed="true"][data-v="no"]{background:var(--coral);border-color:var(--coral);color:var(--night)}
+.vote button[aria-pressed="true"][data-v="no"]{background:var(--red);border-color:var(--red);color:var(--night)}
 .card.is-no{opacity:.55}
 .card.is-yes{box-shadow:0 0 0 2px var(--lime)}
 .tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .tally span{font-weight:700;font-size:13px;padding:6px 12px;border-radius:999px;font-variant-numeric:tabular-nums;background:var(--night2)}
-.tally .y{color:var(--lime)}.tally .m{color:var(--amber)}.tally .n{color:var(--coral)}.tally .u{color:var(--soft)}
+.tally .y{color:var(--lime)}.tally .m{color:var(--amber)}.tally .n{color:var(--red)}.tally .u{color:var(--soft)}
 .sync{font-size:12.5px;color:var(--soft);margin-top:8px}
 .notify{display:inline-flex;margin-top:10px}
 .notify[aria-pressed="true"]{background:var(--lime);color:var(--night);border-color:var(--lime)}
@@ -204,9 +207,10 @@ body{background-color:var(--night);
     radial-gradient(1200px 500px at 10% -10%,#3b1a86 0,transparent 60%),
     radial-gradient(900px 500px at 100% 0,#5c1257 0,transparent 55%),
     radial-gradient(900px 700px at 50% 120%,#0f2a6b 0,transparent 60%),
-    radial-gradient(700px 500px at 100% 100%,#0a3a3a 0,transparent 55%);
-  background-size:280px 280px,340px 340px,310px 310px,260px 260px,300px 300px,330px 330px,250px 250px,290px 290px,auto,auto,auto,auto;
-  background-repeat:repeat,repeat,repeat,repeat,repeat,repeat,repeat,repeat,no-repeat,no-repeat,no-repeat,no-repeat;
+    radial-gradient(700px 500px at 100% 100%,#0a3a3a 0,transparent 55%),
+    radial-gradient(650px 450px at 0% 40%,#3a1a5c 0,transparent 55%);
+  background-size:280px 280px,340px 340px,310px 310px,260px 260px,300px 300px,330px 330px,250px 250px,290px 290px,auto,auto,auto,auto,auto;
+  background-repeat:repeat,repeat,repeat,repeat,repeat,repeat,repeat,repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat;
   background-attachment:fixed}
 h1{letter-spacing:-.01em}
 h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(168,116,255,.55))}
@@ -303,30 +307,29 @@ h1{font-size:clamp(26px,6.4vw,50px);margin:10px 0 6px}
 
 <div class="intro" id="intro" role="dialog" aria-modal="true" aria-label="Quick start" hidden>
   <div class="intro-card">
-    <div class="intro-emoji">⚡</div>
     <h2>Quick start</h2>
-    <div class="intro-row"><span class="intro-ico" aria-hidden="true">✅🤔❌</span><p>Tap <b>Going</b>, <b>Maybe</b> or <b>Skip</b> on any card to build your list. Tap the same one again to clear it.</p></div>
-    <div class="intro-row"><span class="intro-ico" aria-hidden="true">🔔</span><p>Tap <b>Remind me before my picks</b> up top and allow notifications to get a nudge 10 minutes before each "Going" act plays — only while this app is open.</p></div>
+    <div class="intro-row"><span class="intro-ico" aria-hidden="true"><svg class="ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><p>Tap <b>Going</b>, <b>Maybe</b> or <b>Skip</b> on any card to build your list. Tap the same one again to clear it.</p></div>
+    <div class="intro-row"><span class="intro-ico" aria-hidden="true"><svg class="ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span><p>Tap <b>Remind me before my picks</b> up top and allow notifications to get a nudge 10 minutes before each "Going" act plays — only while this app is open.</p></div>
     <button class="btn intro-go" id="introGo">Got it, let's go</button>
   </div>
 </div>
-<nav class="tabs" aria-label="Sections"><a href="#lineup" data-v="lineup" aria-current="page"><span>🎧</span>Lineup</a><a href="#travel" data-v="travel"><span>🚌</span>Getting there</a><a href="#map" data-v="map"><span>🗺️</span>Map</a><button id="introHelp" class="intro-help" aria-label="How it works">ℹ️</button></nav>
+<nav class="tabs" aria-label="Sections"><a href="#lineup" data-v="lineup" aria-current="page"><span><svg class="ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2" y="14" width="5" height="7" rx="2"/><rect x="17" y="14" width="5" height="7" rx="2"/></svg></span>Lineup</a><a href="#travel" data-v="travel"><span><svg class="ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/></svg></span>Getting there</a><a href="#map" data-v="map"><span><svg class="ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16M15 5v16"/></svg></span>Map</a><button id="introHelp" class="intro-help" aria-label="How it works"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".9" fill="currentColor" stroke="none"/></svg></button></nav>
 <div class="wrap">
 <div class="view" id="v-lineup">
 <header>
-  <div class="brand">⚡ <span id="dayname">Saturday</span> · <span id="daydate">Nov 7</span></div>
+  <div class="brand"><span id="dayname">Saturday</span> · <span id="daydate">Nov 7</span></div>
   <h1>The Unofficial <span>EDC Orlando</span> App</h1>
   <div class="eyebrow" id="eyebrow">Tinker Field · Orlando · Sat Nov 7, 2026</div>
   <div class="seg days" id="days" role="group" aria-label="Day"><button data-d="fri" aria-pressed="false">Friday<small>Nov 6</small></button><button data-d="sat" aria-pressed="true">Saturday<small>Nov 7</small></button><button data-d="sun" aria-pressed="false">Sunday<small>Nov 8</small></button></div>
-  <p class="lede">Every act, every stage, one-tap YouTube &amp; Spotify. 💎 marks discovery picks. Tap Going/Maybe/Skip — picks sync between your phones.</p>
+  <p class="lede">Every act, every stage, one-tap YouTube &amp; Spotify. <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l3 6-9 12L3 9Z"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12"/></svg> marks discovery picks. Tap Going/Maybe/Skip — picks sync between your phones.</p>
   <div class="facts">
     <span class="fact">Gates <b>1 PM</b> · Ends <b>12 AM</b></span>
     <span class="fact"><b id="nacts">36</b> acts · <b>5</b> stages</span>
   </div>
   <div class="tally" id="tally"></div>
   <div class="sync" id="sync">Loading your shared picks…</div>
-  <button id="notifyBtn" class="chip notify" aria-pressed="false">🔔 Remind me before my picks</button>
-  <div class="notice">⏰ Set times &amp; stages aren't out yet (expected Fri Oct 30). <a class="maplink" href="#map" onclick="show('map');try{history.replaceState(null,'','#map')}catch(_){}">🗺️ See the grounds map →</a></div>
+  <button id="notifyBtn" class="chip notify" aria-pressed="false"><span id="notifyIco" class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg></span> <span id="notifyTxt">Remind me before my picks</span></button>
+  <div class="notice"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> Set times &amp; stages aren't out yet (expected Fri Oct 30). <a class="maplink" href="#map" onclick="show('map');try{history.replaceState(null,'','#map')}catch(_){}"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16M15 5v16"/></svg> See the grounds map →</a></div>
   <div class="mix">
     <h2 id="mixh">Saturday's sound</h2>
     <div class="bar" id="bar"></div>
@@ -334,13 +337,13 @@ h1{font-size:clamp(26px,6.4vw,50px);margin:10px 0 6px}
   </div>
 </header>
 
-<p class="rowlbl">⏰ Time</p>
-<div class="seg times3" id="times" style="margin-top:6px" role="group" aria-label="Time of day"><button data-t="all" aria-pressed="true">🎪 All day<small>1 PM to 12</small></button><button data-t="aft" aria-pressed="false">☀️ Afternoon<small>before 5 PM</small></button><button data-t="eve" aria-pressed="false">🌙 Evening<small>5 PM on</small></button><button data-t="party" aria-pressed="false">🪩 After&shy;parties<small>after midnight</small></button></div>
+<p class="rowlbl"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> Time</p>
+<div class="seg times3" id="times" style="margin-top:6px" role="group" aria-label="Time of day"><button data-t="all" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18M5 18a7 7 0 0 1 14 0"/><path d="M12 7v4M8 6l1.5 2M16 6l-1.5 2"/></svg> All day<small>1 PM to 12</small></button><button data-t="aft" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg> Afternoon<small>before 5 PM</small></button><button data-t="eve" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg> Evening<small>5 PM on</small></button><button data-t="party" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="11" r="7"/><path d="M5 11h14M12 4v14M7.5 6.5l9 9M16.5 6.5l-9 9"/><path d="M12 18v4"/></svg> After&shy;parties<small>after midnight</small></button></div>
 <div id="actfilters">
-<p class="rowlbl">📍 Stage</p>
+<p class="rowlbl"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Stage</p>
 <div class="stg-row" id="stagerow" role="group" aria-label="Stage"></div>
-<p class="estnote" id="estnote">🕐 Times and stages are best guesses until the official set times drop (around Oct 30), then they switch to the real ones automatically.</p>
-<p class="rowlbl">🎛️ Genre &amp; picks</p>
+<p class="estnote" id="estnote"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> Times and stages are best guesses until the official set times drop (around Oct 30), then they switch to the real ones automatically.</p>
+<p class="rowlbl"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/></svg> Genre &amp; picks</p>
 <div class="filters" id="filters">
   <select id="genreSel" class="dd" aria-label="Genre"></select>
   <input id="q" type="search" placeholder="Search artists" aria-label="Search artists">
@@ -352,7 +355,7 @@ h1{font-size:clamp(26px,6.4vw,50px);margin:10px 0 6px}
 </div>
 
 <div class="view" id="v-travel" hidden><section class="sec">
-<h2>🚌 Getting there</h2>
+<h2><svg class="ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/></svg> Getting there</h2>
 <p>Official EDC shuttles with every pickup stop, plus Uber and Lyft. A shuttle pass works only on the line you bought, at any stop on that line.</p>
 <h3>Shuttle times</h3>
 <div class="times">
@@ -362,22 +365,22 @@ h1{font-size:clamp(26px,6.4vw,50px);margin:10px 0 6px}
 </div>
 <h3>Shuttle lines &amp; pickup stops</h3>
 <div class="lines">
-<div class="line ours" style="--lc:#3f8cff"><div class="ln">Blue Line <em>Our line</em></div><div class="stop">Embassy Suites by Hilton Orlando International Drive ICON Park</div><div class="addr">8250 Jamaican Ct, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8250%20Jamaican%20Ct%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (2)</summary><ul><li>Avanti International Resort, 8738 International Dr (0.4 mi)</li><li>Hampton Inn Orlando Convention Center, 8900 Universal Blvd (0.4 mi)</li></ul></details></div>
-<div class="line" style="--lc:#ff8a2a"><div class="ln">Orange Line</div><div class="stop">Fairfield Inn &amp; Suites Orlando Near Universal</div><div class="addr">5614 Vineland Rd, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=5614%20Vineland%20Rd%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (3)</summary><ul><li>Holiday Inn Express &amp; Suites Nearest Universal, 5605 Major Blvd (0.2 mi)</li><li>Comfort Suites Near Universal, 5617 Major Blvd (0.3 mi)</li><li>Clarion Inn &amp; Suites Across From Universal, 5829 Grand National Dr (0.5 mi)</li></ul></details></div>
-<div class="line" style="--lc:#4fe08a"><div class="ln">Green Line</div><div class="stop">Four Points by Sheraton Orlando International Drive</div><div class="addr">5905 International Dr, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=5905%20International%20Dr%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (5)</summary><ul><li>Home2 Suites Orlando Near Universal, 5910 American Way</li><li>Wyndham Garden Orlando Universal / I-Drive, 5855 American Way</li><li>Hilton Garden Inn Orlando I-Drive North, 5877 American Way</li><li>Homewood Suites Orlando Nearest Universal, 5893 American Way</li><li>Orlando International Drive North Hotel, 5859 American Way</li></ul></details></div>
-<div class="line" style="--lc:#ffd23f"><div class="ln">Yellow Line</div><div class="stop">Comfort Inn &amp; Suites Near Universal Orlando Resort</div><div class="addr">7495 Canada Ave, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=7495%20Canada%20Ave%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (1)</summary><ul><li>CoCo Key Hotel and Water Resort, 7400 International Dr (0.5 mi)</li></ul></details></div>
-<div class="line" style="--lc:#d9e4ff"><div class="ln">Silver Line</div><div class="stop">Courtyard Orlando Lake Buena Vista at Vista Centre</div><div class="addr">8501 Palm Pkwy, Orlando, FL 32836</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8501%20Palm%20Pkwy%2C%20Orlando%2C%20FL%2032836" target="_blank" rel="noopener">📍 Directions to this stop</a></div><details><summary>Nearby hotels (2)</summary><ul><li>Crowne Plaza Orlando Lake Buena Vista, 8686 Palm Pkwy (0.1 mi)</li><li>Candlewood Suites Lake Buena Vista, 12341 Winter Garden Vineland Rd (0.4 mi)</li></ul></details></div>
-<div class="line" style="--lc:#ff4fb4"><div class="ln">Hotel EDC Shuttle</div><div class="stop">Margaritaville Resort Orlando</div><div class="addr">8000 Fins Up Circle, Kissimmee, FL 34747</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8000%20Fins%20Up%20Circle%2C%20Kissimmee%2C%20FL%2034747" target="_blank" rel="noopener">📍 Directions to this stop</a></div><p style='font-size:13.5px;color:var(--soft);margin:0'>For Hotel EDC guests and afterparty runs.</p></div>
+<div class="line ours" style="--lc:#3f8cff"><div class="ln">Blue Line <em>Our line</em></div><div class="stop">Embassy Suites by Hilton Orlando International Drive ICON Park</div><div class="addr">8250 Jamaican Ct, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8250%20Jamaican%20Ct%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Directions to this stop</a></div><details><summary>Nearby hotels (2)</summary><ul><li>Avanti International Resort, 8738 International Dr (0.4 mi)</li><li>Hampton Inn Orlando Convention Center, 8900 Universal Blvd (0.4 mi)</li></ul></details></div>
+<div class="line" style="--lc:#ff8a2a"><div class="ln">Orange Line</div><div class="stop">Fairfield Inn &amp; Suites Orlando Near Universal</div><div class="addr">5614 Vineland Rd, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=5614%20Vineland%20Rd%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Directions to this stop</a></div><details><summary>Nearby hotels (3)</summary><ul><li>Holiday Inn Express &amp; Suites Nearest Universal, 5605 Major Blvd (0.2 mi)</li><li>Comfort Suites Near Universal, 5617 Major Blvd (0.3 mi)</li><li>Clarion Inn &amp; Suites Across From Universal, 5829 Grand National Dr (0.5 mi)</li></ul></details></div>
+<div class="line" style="--lc:#4fe08a"><div class="ln">Green Line</div><div class="stop">Four Points by Sheraton Orlando International Drive</div><div class="addr">5905 International Dr, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=5905%20International%20Dr%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Directions to this stop</a></div><details><summary>Nearby hotels (5)</summary><ul><li>Home2 Suites Orlando Near Universal, 5910 American Way</li><li>Wyndham Garden Orlando Universal / I-Drive, 5855 American Way</li><li>Hilton Garden Inn Orlando I-Drive North, 5877 American Way</li><li>Homewood Suites Orlando Nearest Universal, 5893 American Way</li><li>Orlando International Drive North Hotel, 5859 American Way</li></ul></details></div>
+<div class="line" style="--lc:#ffd23f"><div class="ln">Yellow Line</div><div class="stop">Comfort Inn &amp; Suites Near Universal Orlando Resort</div><div class="addr">7495 Canada Ave, Orlando, FL 32819</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=7495%20Canada%20Ave%2C%20Orlando%2C%20FL%2032819" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Directions to this stop</a></div><details><summary>Nearby hotels (1)</summary><ul><li>CoCo Key Hotel and Water Resort, 7400 International Dr (0.5 mi)</li></ul></details></div>
+<div class="line" style="--lc:#d9e4ff"><div class="ln">Silver Line</div><div class="stop">Courtyard Orlando Lake Buena Vista at Vista Centre</div><div class="addr">8501 Palm Pkwy, Orlando, FL 32836</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8501%20Palm%20Pkwy%2C%20Orlando%2C%20FL%2032836" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Directions to this stop</a></div><details><summary>Nearby hotels (2)</summary><ul><li>Crowne Plaza Orlando Lake Buena Vista, 8686 Palm Pkwy (0.1 mi)</li><li>Candlewood Suites Lake Buena Vista, 12341 Winter Garden Vineland Rd (0.4 mi)</li></ul></details></div>
+<div class="line" style="--lc:#ff4fb4"><div class="ln">Hotel EDC Shuttle</div><div class="stop">Margaritaville Resort Orlando</div><div class="addr">8000 Fins Up Circle, Kissimmee, FL 34747</div><div class="btns"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=8000%20Fins%20Up%20Circle%2C%20Kissimmee%2C%20FL%2034747" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Directions to this stop</a></div><p style='font-size:13.5px;color:var(--soft);margin:0'>For Hotel EDC guests and afterparty runs.</p></div>
 </div>
 <h3>Uber &amp; Lyft</h3>
 <p>The 2026 rideshare zones aren't posted yet. In 2025 the Lyft rideshare zone and the official shuttle exit were on the south side of the grounds by W Anderson St, and the main entrance was on the north side off W Church St (see the Map tab).</p>
 <div class="btns" style="max-width:640px">
-<a class="btn uber" href="https://m.uber.com/ul/?action=setPickup&amp;pickup=my_location&amp;dropoff%5Bformatted_address%5D=287%20S%20Tampa%20Ave%2C%20Orlando%2C%20FL%2032805&amp;dropoff%5Blatitude%5D=28.5391&amp;dropoff%5Blongitude%5D=-81.4047&amp;dropoff%5Bnickname%5D=EDC%20Orlando" target="_blank" rel="noopener">🚗 Uber to Tinker Field</a>
-<a class="btn lyft" href="https://ride.lyft.com/ridetype?destination=28.5391%2C-81.4047" target="_blank" rel="noopener">🚗 Lyft to Tinker Field</a>
-<a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=287%20S%20Tampa%20Ave%2C%20Orlando%2C%20FL%2032805" target="_blank" rel="noopener">📍 Google Maps to venue</a>
+<a class="btn uber" href="https://m.uber.com/ul/?action=setPickup&amp;pickup=my_location&amp;dropoff%5Bformatted_address%5D=287%20S%20Tampa%20Ave%2C%20Orlando%2C%20FL%2032805&amp;dropoff%5Blatitude%5D=28.5391&amp;dropoff%5Blongitude%5D=-81.4047&amp;dropoff%5Bnickname%5D=EDC%20Orlando" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16M7 16v2M17 16v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/></svg> Uber to Tinker Field</a>
+<a class="btn lyft" href="https://ride.lyft.com/ridetype?destination=28.5391%2C-81.4047" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16M7 16v2M17 16v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/></svg> Lyft to Tinker Field</a>
+<a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=287%20S%20Tampa%20Ave%2C%20Orlando%2C%20FL%2032805" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Google Maps to venue</a>
 </div>
 <p class="addr" style="margin-top:8px">Venue: 287 S Tampa Ave, Orlando, FL 32805</p>
-<div class="tip">💡 Leaving at midnight means surge pricing and big crowds. Drop a meetup pin a few blocks from the gates before you go in, or ride the Blue Line back.</div>
+<div class="tip"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.4.3.5.8.5 1.1v1h6v-1c0-.3.1-.8.5-1.1A6 6 0 0 0 12 3Z"/></svg> Leaving at midnight means surge pricing and big crowds. Drop a meetup pin a few blocks from the gates before you go in, or ride the Blue Line back.</div>
 <h3>Parking</h3>
 <div class="times">
 <div class="time"><b>Premier Lot 1: sold out</b>NE corner of W Church St &amp; Rio Grande Ave, entrance off W Central Blvd. Opens 10 AM.</div>
@@ -390,21 +393,21 @@ h1{font-size:clamp(26px,6.4vw,50px);margin:10px 0 6px}
 </section></div>
 
 <div class="view" id="v-map" hidden><section class="sec">
-<h2>🗺️ Grounds map</h2>
+<h2><svg class="ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16M15 5v16"/></svg> Grounds map</h2>
 <p>The 2026 map isn't out yet; it usually comes with set times. The drawing below follows last year's Tinker Field layout; tap the button for the original 2025 map.</p>
 <div class="btns" style="max-width:640px">
-<a class="btn" href="https://edmidentity.com/wp-content/uploads/2025/10/573605773_18365913373086386_7771633280838532760_n-819x1024.jpg" target="_blank" rel="noopener">🗺️ Open the 2025 grounds map</a>
-<a class="btn alt" href="https://maps.app.goo.gl/jfpz4iM5n8wNEw4v8" target="_blank" rel="noopener">📍 Tinker Field in Google Maps</a>
+<a class="btn" href="https://edmidentity.com/wp-content/uploads/2025/10/573605773_18365913373086386_7771633280838532760_n-819x1024.jpg" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16M15 5v16"/></svg> Open the 2025 grounds map</a>
+<a class="btn alt" href="https://maps.app.goo.gl/jfpz4iM5n8wNEw4v8" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg> Tinker Field in Google Maps</a>
 </div>
-<div class="gmap" id="gmap2"><h2>🗺️ Where the stages are</h2><p class="cap">Drawn from the 2025 Tinker Field map. The 2026 layout may shift a bit. Tap a stage.</p><div class="svgwrap"></div><div class="ginfo" aria-live="polite">Tap a stage dot to see what plays there.</div><div class="gkey"><span><i style="background:var(--pink)"></i>Stage</span><span>🚪 Entrance</span><span>🚌 Shuttle exit</span><span>🚗 Rideshare (Lyft)</span><span>🚻 Restrooms</span><span>💧 Water</span><span>➕ First aid</span></div></div>
+<div class="gmap" id="gmap2"><h2><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16M15 5v16"/></svg> Where the stages are</h2><p class="cap">Drawn from the 2025 Tinker Field map. The 2026 layout may shift a bit. Tap a stage.</p><div class="svgwrap"></div><div class="ginfo" aria-live="polite">Tap a stage dot to see what plays there.</div><div class="gkey"><span><i style="background:var(--pink)"></i>Stage</span><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4a1 1 0 0 1 1-1h7l4 4v14"/><path d="M6 21h14M14 3v18"/><circle cx="11" cy="13" r=".8" fill="currentColor" stroke="none"/></svg> Entrance</span><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/></svg> Shuttle exit</span><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16M7 16v2M17 16v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/></svg> Rideshare (Lyft)</span><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="6" r="3"/><path d="M7 21l2-9h6l2 9M9 12V9h6v3"/></svg> Restrooms</span><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 7-12 7-12Z"/></svg> Water</span><span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg> First aid</span></div></div>
   <div class="stages">
     <h2>The 5 stages</h2>
     <div class="sgrid">
       <div class="stage" style="--s:var(--pink)"><b>kineticFIELD</b><span>Main stage, the giant headliner sets</span></div>
       <div class="stage" style="--s:var(--violet)"><b>circuitGROUNDS</b><span>Big melodic and festival anthems</span></div>
-      <div class="stage" style="--s:var(--coral)"><b>neonGARDEN</b><span>Deep techno and house</span></div>
+      <div class="stage" style="--s:var(--peri)"><b>neonGARDEN</b><span>Deep techno and house</span></div>
       <div class="stage" style="--s:var(--cyan)"><b>stereoBLOOM</b><span>House, bass and trance (Insomniac Records &amp; Dreamstate)</span></div>
-      <div class="stage" style="--s:var(--amber)"><b>CASA BACARDÍ</b><span>Daily DJ sets with a cocktail bar</span></div>
+      <div class="stage" style="--s:var(--gold)"><b>CASA BACARDÍ</b><span>Daily DJ sets with a cocktail bar</span></div>
     </div>
   </div>
 </section></div>
@@ -420,7 +423,7 @@ const G = {
   house:{label:"House & Tech House", color:"var(--cyan)", hex:"#3fe0ff"},
   bass:{label:"Bass & Dubstep", color:"var(--pink)", hex:"#ff4fb4"},
   melodic:{label:"Melodic & Big Room", color:"var(--violet)", hex:"#a874ff"},
-  techno:{label:"Techno", color:"var(--coral)", hex:"#ff7a59"},
+  techno:{label:"Techno", color:"var(--orange)", hex:"#ff7a3d"},
   dnb:{label:"Drum & Bass", color:"var(--amber)", hex:"#ffb627"},
   tbc:{label:"TBC", color:"var(--lime)", hex:"#7dff9b"}
 };
@@ -547,6 +550,22 @@ let day="sat", A=SAT, tod="all";
 
 const ytIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#fff"/><path d="M10 8l6 4-6 4z" fill="#ff2d55"/></svg>';
 const spIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#06140b"/><path d="M7 9.5c3.5-1 7-.6 10 1M7.5 12.5c3-.8 5.8-.4 8.3.9M8 15.3c2.4-.6 4.6-.3 6.6.7" stroke="#1ed760" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
+// small custom line icons used in place of emoji throughout the app (all inherit color via currentColor)
+const ico_=(p)=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const CHECK_ICO=ico_('<path d="M5 13l4 4L19 7"/>');
+const MAYBE_ICO=ico_('<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.9-2.4 3.5"/><circle cx="12" cy="17" r=".6" fill="currentColor" stroke="none"/>');
+const X_ICO=ico_('<path d="M6 6l12 12M18 6L6 18"/>');
+const SUN_ICO=ico_('<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>');
+const MOON_ICO=ico_('<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/>');
+const PIN_ICO=ico_('<path d="M12 22s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/>');
+const GEM_ICO=ico_('<path d="M6 3h12l3 6-9 12L3 9Z"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12"/>');
+const SUNSET_ICO=ico_('<path d="M3 18h18M5 18a7 7 0 0 1 14 0"/><path d="M12 7v4M8 6l1.5 2M16 6l-1.5 2"/>');
+const TICKET_ICO=ico_('<path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 1 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 1 0 0-4Z"/>');
+const CLOCK_ICO=ico_('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>');
+const SYNC_ICO=ico_('<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>');
+const BUS_ICO=ico_('<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/>');
+const CAR_ICO=ico_('<path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16M7 16v2M17 16v2"/><circle cx="7.5" cy="14" r=".8" fill="currentColor" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="currentColor" stroke="none"/>');
+const SPARKLE_ICO=ico_('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>');
 const spUrl = t => "https://open.spotify.com/search/" + encodeURIComponent(t);
 const url = t => "https://music.youtube.com/search?q=" + encodeURIComponent(t);
 
@@ -571,8 +590,8 @@ const filters=document.getElementById("filters"), qEl=document.getElementById("q
 const mk=(id,label)=>{const b=document.createElement("button");b.className="chip";b.id="f-"+id;b.textContent=label;b.setAttribute("aria-pressed","false");filters.insertBefore(b,qEl);return b;};
 const genreSel=document.getElementById("genreSel");
 genreSel.innerHTML=`<option value="all">All genres</option>`+order.filter(k=>k!=="tbc").map(k=>`<option value="${k}" style="color:${G[k].hex}">${G[k].label}</option>`).join("");
-const gemB=mk("gems","💎 Discovery only");
-const pf={yes:mk("p-yes","✅ Going"),maybe:mk("p-maybe","🤔 Maybe"),no:mk("p-no","❌ Skip"),none:mk("p-none","Not rated yet")};
+const gemB=mk("gems","Discovery only");
+const pf={yes:mk("p-yes","Going"),maybe:mk("p-maybe","Maybe"),no:mk("p-no","Skip"),none:mk("p-none","Not rated yet")};
 Object.entries(pf).forEach(([k,b])=>b.onclick=()=>{pickF=pickF===k?"all":k;Object.entries(pf).forEach(([kk,bb])=>bb.setAttribute("aria-pressed",kk===pickF));render();track("edc_filter",{type:"pick",value:pickF});});
 function setGenre(k){genre=k;genreSel.value=k;render();track("edc_filter",{type:"genre",value:k});}
 genreSel.onchange=()=>setGenre(genreSel.value);
@@ -630,7 +649,7 @@ function when(a){
 let stageF="all";
 const fmt=t=>{let [h,m]=t.split(":").map(Number);const ap=h>=12&&h<24?"PM":"AM";h=h%12||12;return h+":"+String(m).padStart(2,"0")+" "+ap;};
 const STAGE_NAMES={kinetic:"kineticFIELD",circuit:"circuitGROUNDS",neon:"neonGARDEN",stereo:"stereoBLOOM",bacardi:"CASA BACARDÍ"};
-const STAGE_COL={kinetic:"#ff4fb4",circuit:"#a874ff",neon:"#ff7a59",stereo:"#3fe0ff",bacardi:"#ffb627"};
+const STAGE_COL={kinetic:"#ff4fb4",circuit:"#a874ff",neon:"#6677ff",stereo:"#3fe0ff",bacardi:"#ffcc66"};
 const stageRow=document.getElementById("stagerow");
 stageRow.innerHTML=`<button data-s="all" aria-pressed="true" style="--sc:#f6f1ff"><i></i>All stages</button>`+Object.keys(STAGE_NAMES).map(k=>`<button data-s="${k}" aria-pressed="false" style="--sc:${STAGE_COL[k]}"><i></i>${STAGE_NAMES[k]}</button>`).join("");
 function setStage(k){stageF=k;stageRow.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===k));render();track("edc_filter",{type:"stage",value:k});}
@@ -640,7 +659,7 @@ const grid=document.getElementById("grid"), count=document.getElementById("count
 function render(){
   const pm=tod==="party";
   document.getElementById("actfilters").hidden=pm;
-  if(pm){const t={yes:0,maybe:0,no:0}; A.forEach(a=>{const v=picks[slug(a[0])]; if(v) t[v]++;});document.getElementById("tally").innerHTML=`<span class="y">✅ Going ${t.yes}</span><span class="m">🤔 Maybe ${t.maybe}</span><span class="n">❌ Skip ${t.no}</span><span class="u">Not rated ${A.length-t.yes-t.maybe-t.no}</span>`;renderParties();return;}
+  if(pm){const t={yes:0,maybe:0,no:0}; A.forEach(a=>{const v=picks[slug(a[0])]; if(v) t[v]++;});document.getElementById("tally").innerHTML=`<span class="y">${CHECK_ICO} Going ${t.yes}</span><span class="m">${MAYBE_ICO} Maybe ${t.maybe}</span><span class="n">${X_ICO} Skip ${t.no}</span><span class="u">Not rated ${A.length-t.yes-t.maybe-t.no}</span>`;renderParties();return;}
   const real=hasReal();
   document.getElementById("estnote").hidden=real;
   let list=A.map((a,i)=>[a,i+1,when(a)]).filter(([a,,w])=>
@@ -648,17 +667,17 @@ function render(){
     &&(pickF==="all"||(pickF==="none"?!picks[slug(a[0])]:picks[slug(a[0])]===pickF)));
   if(tod!=="all"||stageF!=="all") list.sort((x,y)=>(x[2].st.start||"99").localeCompare(y[2].st.start||"99"));
   const t={yes:0,maybe:0,no:0}; A.forEach(a=>{const v=picks[slug(a[0])]; if(v) t[v]++;});
-  document.getElementById("tally").innerHTML=`<span class="y">✅ Going ${t.yes}</span><span class="m">🤔 Maybe ${t.maybe}</span><span class="n">❌ Skip ${t.no}</span><span class="u">Not rated ${A.length-t.yes-t.maybe-t.no}</span>`;
+  document.getElementById("tally").innerHTML=`<span class="y">${CHECK_ICO} Going ${t.yes}</span><span class="m">${MAYBE_ICO} Maybe ${t.maybe}</span><span class="n">${X_ICO} Skip ${t.no}</span><span class="u">Not rated ${A.length-t.yes-t.maybe-t.no}</span>`;
   count.textContent=`${DAYS[day].name}${stageF!=="all"?" · "+STAGE_NAMES[stageF]:""}: showing ${list.length} of ${A.length} acts`+(tod!=="all"||stageF!=="all"?", in time order":"");
   grid.innerHTML=list.length?list.map(([a,n,w])=>{
     const g=G[a[1]], f=a[5];
     const sc=STAGE_COL[w.st.stage]||"#c9b8ff", est=w.real?"":"Est. ";
-    const whenTag=`<span class="tag when${w.real?" real":""}">${w.k==="aft"?"☀️":"🌙"} ${est}${w.real?fmt(w.st.start)+(w.st.end?" to "+fmt(w.st.end):""):"~"+fmt(w.st.start)}</span>`+(w.st.stage?`<span class="tag where" style="--sc:${sc}">📍 ${est}${STAGE_NAMES[w.st.stage]||w.st.stage}</span>`:"");
-    const tags=`<span class="tag">${a[2]}</span>`+whenTag+(f.includes("sun")?'<span class="tag sun">🌅 Sunset set</span>':"")+(f.includes("gem")?'<span class="tag gem">💎 Discovery</span>':"")+(f.includes("guess")?'<span class="tag guess">Genre best guess</span>':"");
+    const whenTag=`<span class="tag when${w.real?" real":""}">${w.k==="aft"?SUN_ICO:MOON_ICO} ${est}${w.real?fmt(w.st.start)+(w.st.end?" to "+fmt(w.st.end):""):"~"+fmt(w.st.start)}</span>`+(w.st.stage?`<span class="tag where" style="--sc:${sc}">${PIN_ICO} ${est}${STAGE_NAMES[w.st.stage]||w.st.stage}</span>`:"");
+    const tags=`<span class="tag">${a[2]}</span>`+whenTag+(f.includes("sun")?`<span class="tag sun">${SUNSET_ICO} Sunset set</span>`:"")+(f.includes("gem")?`<span class="tag gem">${GEM_ICO} Discovery</span>`:"")+(f.includes("guess")?'<span class="tag guess">Genre best guess</span>':"");
     const parts=a[0].split(" B2B ");
     const links=a[4].map((t,i)=>{const who=a[4].length>1?(parts[i]||t)+" — ":"";return `<a class="yt" href="${url(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on YouTube">${ytIcon}</a><a class="sp" href="${spUrl(t)}" target="_blank" rel="noopener" aria-label="${who}Listen on Spotify">${spIcon}</a>`;}).join("");
     const id=slug(a[0]), v=picks[id]||"";
-    const vote=`<div class="vote" role="group" aria-label="Rate ${a[0]}">${[["yes","✅","Going"],["maybe","🤔","Maybe"],["no","❌","Skip"]].map(([k,e,l])=>`<button data-id="${id}" data-v="${k}" data-label="${a[0]}" aria-pressed="${v===k}"><span class="vk-i" aria-hidden="true">${e}</span><span class="vk-l">${l}</span></button>`).join("")}</div>`;
+    const vote=`<div class="vote" role="group" aria-label="Rate ${a[0]}">${[["yes",CHECK_ICO,"Going"],["maybe",MAYBE_ICO,"Maybe"],["no",X_ICO,"Skip"]].map(([k,e,l])=>`<button data-id="${id}" data-v="${k}" data-label="${a[0]}" aria-pressed="${v===k}"><span class="vk-i" aria-hidden="true">${e}</span><span class="vk-l">${l}</span></button>`).join("")}</div>`;
     return `<article class="card${v?" is-"+v:""}" style="--g:${g.hex}"><div class="top"><div class="name">${a[0]}</div><div class="rank">#${n}</div></div><div class="tags">${tags}</div><p class="vibe">${a[3]}</p><div class="actions">${vote}<div class="links">${links}</div></div></article>`;
   }).join(""):'<div class="empty">No acts match. Clear the search or pick another filter.</div>';
 }
@@ -692,13 +711,13 @@ const PARTIES={
 };
 function partyCard(pt){
   const v=picks[pt.id]||"";
-  const vote=`<div class="vote" role="group" aria-label="Rate ${pt.name}">${[["yes","✅ Going"],["maybe","🤔 Maybe"],["no","❌ Skip"]].map(([k,l])=>`<button data-id="${pt.id}" data-v="${k}" data-label="${pt.name}" aria-pressed="${v===k}">${l}</button>`).join("")}</div>`;
+  const vote=`<div class="vote" role="group" aria-label="Rate ${pt.name}">${[["yes",CHECK_ICO,"Going"],["maybe",MAYBE_ICO,"Maybe"],["no",X_ICO,"Skip"]].map(([k,e,l])=>`<button data-id="${pt.id}" data-v="${k}" data-label="${pt.name}" aria-pressed="${v===k}">${e} ${l}</button>`).join("")}</div>`;
   const onMain=n=>A.some(a=>a[0].toLowerCase().includes(n.toLowerCase()));
   const acts=pt.acts.map(n=>`<a class="${onMain(n)?"main":""}" href="${url(n)}" target="_blank" rel="noopener">${n}</a>`).join("")+(pt.more?'<a href="'+pt.tix+'" target="_blank" rel="noopener">+ more</a>':"");
   return `<article class="pcard${v?" is-"+v:""}" style="--pc:${pt.col}"><div class="pt"><h3>${pt.name}</h3><span class="badge${pt.official?"":" unoff"}">${pt.official?"Official":"Not official"}</span></div>
-  <div class="meta"><span>🕐 <b>${pt.time}</b></span><span>📍 <b>${pt.venue}</b></span><span class="addr">${pt.addr}</span><span>🎟️ ${pt.price} · ${pt.age}</span></div>
+  <div class="meta"><span>${CLOCK_ICO} <b>${pt.time}</b></span><span>${PIN_ICO} <b>${pt.venue}</b></span><span class="addr">${pt.addr}</span><span>${TICKET_ICO} ${pt.price} · ${pt.age}</span></div>
   <div class="lineup">${acts}</div>${vote}
-  <div class="btns"><a class="btn" href="${pt.tix}" target="_blank" rel="noopener">🎟️ Tickets</a><a class="btn alt" href="${PGM(pt.addr)}" target="_blank" rel="noopener">📍 Directions</a></div></article>`;
+  <div class="btns"><a class="btn" href="${pt.tix}" target="_blank" rel="noopener">${TICKET_ICO} Tickets</a><a class="btn alt" href="${PGM(pt.addr)}" target="_blank" rel="noopener">${PIN_ICO} Directions</a></div></article>`;
 }
 function renderParties(){
   const list=PARTIES[day]||[];
@@ -713,8 +732,10 @@ function renderParties(){
 // server here so it can't be a true push notification that wakes a closed app.
 const DAY_YMD={fri:[2026,10,6],sat:[2026,10,7],sun:[2026,10,8]};
 let notifyOn=false; try{notifyOn=localStorage.getItem("edc-notify")==="1"}catch(e){}
-const notifyBtn=document.getElementById("notifyBtn");
-function notifyLabel(){notifyBtn.textContent=notifyOn?"🔔 Reminders on":"🔔 Remind me before my picks";notifyBtn.setAttribute("aria-pressed",String(notifyOn));}
+const notifyBtn=document.getElementById("notifyBtn"), notifyTxt=document.getElementById("notifyTxt"), notifyIco=document.getElementById("notifyIco");
+const BELL_ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>';
+const BELL_OFF_ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/><path d="M10 19a2 2 0 0 0 4 0"/><path d="M3 3l18 18"/></svg>';
+function notifyLabel(){notifyIco.innerHTML=BELL_ICO;notifyTxt.textContent=notifyOn?"Reminders on":"Remind me before my picks";notifyBtn.setAttribute("aria-pressed",String(notifyOn));}
 notifyLabel();
 let remindTimers=[];
 function scheduleReminders(){
@@ -734,9 +755,9 @@ function scheduleReminders(){
   });
 }
 notifyBtn.onclick=async()=>{
-  if(!("Notification" in window)){notifyBtn.textContent="🔔 Not supported on this browser";return;}
+  if(!("Notification" in window)){notifyTxt.textContent="Not supported on this browser";return;}
   if(!notifyOn){
-    if(Notification.permission==="denied"){notifyBtn.textContent="🔕 Blocked — enable in Settings";return;}
+    if(Notification.permission==="denied"){notifyIco.innerHTML=BELL_OFF_ICO;notifyTxt.textContent="Blocked — enable in Settings";return;}
     if(Notification.permission!=="granted"){const p=await Notification.requestPermission(); if(p!=="granted") return;}
   }
   notifyOn=!notifyOn; try{localStorage.setItem("edc-notify",notifyOn?"1":"0")}catch(e){}
@@ -776,14 +797,20 @@ setDay(DAYS[saved]?saved:"sat");
 const STG=[
  {id:"kinetic",name:"kineticFIELD",color:"#ff4fb4",x:405,y:285,lx:355,ly:250,d:"Main stage, where each night's headliners play."},
  {id:"circuit",name:"circuitGROUNDS",color:"#a874ff",x:90,y:72,lx:92,ly:118,d:"Second-biggest stage, big melodic and festival anthems."},
- {id:"neon",name:"neonGARDEN",color:"#ff7a59",x:468,y:168,lx:452,ly:172,a:"end",d:"Deep techno and house."},
+ {id:"neon",name:"neonGARDEN",color:"#6677ff",x:468,y:168,lx:452,ly:172,a:"end",d:"Deep techno and house."},
  {id:"stereo",name:"stereoBLOOM",color:"#3fe0ff",x:80,y:262,lx:80,ly:298,d:"House, bass and trance from Insomniac Records & Dreamstate."},
- {id:"bacardi",name:"CASA BACARDÍ",color:"#ffb627",x:238,y:345,lx:238,ly:322,d:"Smaller stage with DJ sets all day and a cocktail bar. Great spot for discovery picks."}
+ {id:"bacardi",name:"CASA BACARDÍ",color:"#ffcc66",x:238,y:345,lx:238,ly:322,d:"Smaller stage with DJ sets all day and a cocktail bar. Great spot for discovery picks."}
 ];
 function mapSVG(uid){
   const st=STG.map(t=>`<g class="stg" data-s="${t.id}" tabindex="0" role="button" aria-label="${t.name}"><circle class="ring" cx="${t.x}" cy="${t.y}" r="17" fill="${t.color}" fill-opacity=".25" stroke="${t.color}" stroke-width="2"/><circle cx="${t.x}" cy="${t.y}" r="9" fill="${t.color}"/><text x="${t.lx}" y="${t.ly}" text-anchor="${t.a||"middle"}" font-family="Unbounded, Arial Black, sans-serif" font-weight="700" font-size="13" fill="#f6f1ff" stroke="#120a2e" stroke-width="3" paint-order="stroke">${t.name}</text></g>`).join("");
   const lbl=(x,y,t,o="")=>`<text x="${x}" y="${y}" font-family="Figtree, sans-serif" font-weight="700" font-size="11" fill="#c9b8ff" ${o}>${t}</text>`;
-  const ico=(x,y,e,t)=>`<g><circle cx="${x}" cy="${y}" r="11" fill="#120a2e" stroke="#c9b8ff" stroke-width="1.2"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="12">${e}</text>${t?`<text x="${x}" y="${y+24}" text-anchor="middle" font-family="Figtree, sans-serif" font-weight="700" font-size="10" fill="#f6f1ff">${t}</text>`:""}</g>`;
+  const ico=(x,y,p,t)=>`<g><circle cx="${x}" cy="${y}" r="11" fill="#120a2e" stroke="#c9b8ff" stroke-width="1.2"/><g transform="translate(${x-7},${y-7}) scale(.58)" fill="none" stroke="#f6f1ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${p}</g>${t?`<text x="${x}" y="${y+24}" text-anchor="middle" font-family="Figtree, sans-serif" font-weight="700" font-size="10" fill="#f6f1ff">${t}</text>`:""}</g>`;
+  const P_CAR='<path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16M7 16v2M17 16v2"/><circle cx="7.5" cy="14" r=".8" fill="#f6f1ff" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="#f6f1ff" stroke="none"/>';
+  const P_BUS='<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M3 11h18M7 17v2M17 17v2"/><circle cx="7.5" cy="14" r=".8" fill="#f6f1ff" stroke="none"/><circle cx="16.5" cy="14" r=".8" fill="#f6f1ff" stroke="none"/>';
+  const P_SPARKLE='<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>';
+  const P_DROP='<path d="M12 3s7 7.5 7 12a7 7 0 1 1-14 0c0-4.5 7-12 7-12Z"/>';
+  const P_REST='<circle cx="12" cy="6" r="3"/><path d="M7 21l2-9h6l2 9M9 12V9h6v3"/>';
+  const P_PLUS='<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>';
   return `<svg viewBox="0 0 545 420" role="img" aria-label="Schematic map of EDC Orlando grounds at Tinker Field">
   <defs><linearGradient id="gf${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a1d78"/><stop offset="1" stop-color="#1c3f73"/></linearGradient></defs>
   <polygon points="15,50 290,50 290,130 525,130 525,197 480,197 480,325 300,325 300,400 260,390 190,375 120,345 60,315 20,285" fill="url(#gf${uid})" stroke="#ff4fb4" stroke-width="3" stroke-linejoin="round"/>
@@ -805,16 +832,16 @@ function mapSVG(uid){
   ${lbl(498,265,"S Nashville Ave",'transform="rotate(-90 498 265)" text-anchor="middle"')}
   ${lbl(150,385,"State Road 408",'transform="rotate(24 150 385)" text-anchor="middle"')}
   <path d="M445 70 L445 122" stroke="#ffb627" stroke-width="10" stroke-linecap="round"/><path d="M432 108 L445 124 L458 108" stroke="#ffb627" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <text x="445" y="60" text-anchor="middle" font-family="Unbounded, Arial Black, sans-serif" font-weight="800" font-size="13" fill="#ffb627">🚪 ENTRANCE</text>
-  ${ico(272,345,"🚗","Lyft")}${ico(312,340,"🚌","Shuttle")}${ico(352,334,"✨","SkyDeck")}
-  ${ico(205,375,"💧","")}${["299,37","175,107","164,153","237,145","447,217","354,316"].map(c=>{const [x,y]=c.split(",").map(Number);return ico(x,y,"🚻","");}).join("")}${ico(60,175,"➕","")}${ico(500,145,"➕","")}${ico(140,90,"💧","")}
+  <text x="445" y="60" text-anchor="middle" font-family="Unbounded, Arial Black, sans-serif" font-weight="800" font-size="13" fill="#ffb627">ENTRANCE</text>
+  ${ico(272,345,P_CAR,"Lyft")}${ico(312,340,P_BUS,"Shuttle")}${ico(352,334,P_SPARKLE,"SkyDeck")}
+  ${ico(205,375,P_DROP,"")}${["299,37","175,107","164,153","237,145","447,217","354,316"].map(c=>{const [x,y]=c.split(",").map(Number);return ico(x,y,P_REST,"");}).join("")}${ico(60,175,P_PLUS,"")}${ico(500,145,P_PLUS,"")}${ico(140,90,P_DROP,"")}
   <g transform="translate(515 395)"><circle r="14" fill="#120a2e" stroke="#ff4fb4" stroke-width="2"/><text y="5" text-anchor="middle" font-family="Unbounded, sans-serif" font-weight="800" font-size="13" fill="#f6f1ff">N</text></g>
   ${st}</svg>`;
 }
 document.querySelectorAll(".gmap").forEach((box,i)=>{
   box.querySelector(".svgwrap").innerHTML=mapSVG(i);
   const info=box.querySelector(".ginfo");
-  const pick=id=>{const t=STG.find(x=>x.id===id);box.querySelectorAll(".stg").forEach(g=>g.classList.toggle("on",g.dataset.s===id));info.style.setProperty("--sc",t.color);const acts=A.map(a=>[a,when(a)]).filter(([,w])=>w.st.stage===id).sort((x,y)=>x[1].st.start.localeCompare(y[1].st.start));const real=acts.some(([,w])=>w.real);info.innerHTML=`<b>${t.name}</b><br>${t.d}<br><span style="color:var(--amber)">${DAYS[day].name}, ${real?"official":"best-guess"} lineup here:</span><br>`+acts.map(([a,w])=>`${w.k==="aft"?"☀️":"🌙"} ${fmt(w.st.start)} · ${a[0]}${({yes:" ✅",maybe:" 🤔",no:" ❌"})[picks[slug(a[0])]]||""}`).join("<br>");track("edc_map_stage_click",{stage:id});};
+  const pick=id=>{const t=STG.find(x=>x.id===id);box.querySelectorAll(".stg").forEach(g=>g.classList.toggle("on",g.dataset.s===id));info.style.setProperty("--sc",t.color);const acts=A.map(a=>[a,when(a)]).filter(([,w])=>w.st.stage===id).sort((x,y)=>x[1].st.start.localeCompare(y[1].st.start));const real=acts.some(([,w])=>w.real);info.innerHTML=`<b>${t.name}</b><br>${t.d}<br><span style="color:var(--amber)">${DAYS[day].name}, ${real?"official":"best-guess"} lineup here:</span><br>`+acts.map(([a,w])=>`${w.k==="aft"?SUN_ICO:MOON_ICO} ${fmt(w.st.start)} · ${a[0]}${({yes:" "+CHECK_ICO,maybe:" "+MAYBE_ICO,no:" "+X_ICO})[picks[slug(a[0])]]||""}`).join("<br>");track("edc_map_stage_click",{stage:id});};
   box.querySelectorAll(".stg").forEach(g=>{g.addEventListener("click",()=>pick(g.dataset.s));g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(g.dataset.s);}});});
 });
 
@@ -847,7 +874,7 @@ grid.addEventListener("click",async e=>{
   col.onSnapshot(snap=>{
     for(const k in picks) delete picks[k];
     snap.docs.forEach(d=>{const x=d.data(); if(x&&["yes","maybe","no"].includes(x.v)) picks[d.id]=x.v;});
-    syncEl.textContent="🔄 Shared picks: changes show up live on both your phones.";
+    syncEl.textContent="Shared picks: changes show up live on both your phones.";
     render(); scheduleReminders();
   },err=>{syncEl.textContent="Live sync paused. Reload the page to reconnect.";});
 })();
