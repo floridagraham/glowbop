@@ -1,0 +1,65 @@
+<!--
+{
+  "title": "Why are my lights behind the beat? How to fix music sync lag",
+  "description": "Lights flashing a beat late? Here are the real causes of music sync lag (Bluetooth speakers, busy Wi-Fi, mics) and the simple fixes you can try tonight at home.",
+  "date": "2026-10-27",
+  "order": 1,
+  "kicker": "Music sync",
+  "image": "/img/pool-party.jpg",
+  "image_alt": "People dancing at night on a pool deck in front of two LED curtains on a wooden pergola, showing pink and blue bars, with the colors reflected in the pool",
+  "image_note": "Concept photo · real GlowBop patterns",
+  "answer": "Most music sync lag comes from three places: a Bluetooth speaker that plays the sound late, busy or weak Wi-Fi between the lights and the router, and a microphone that has to hear the room first. Use a wired speaker or a sync delay setting, keep the lights on a clear 2.4 GHz signal, and use an app that listens to the music itself. <a href=\"/guide/music.html\">GlowBop</a> listens to your computer's own sound and has a Sync slider for late Bluetooth speakers.",
+  "tags": ["music sync", "light show lag", "Bluetooth speaker delay", "Twinkly", "Nanoleaf", "LIFX"],
+  "faq": [
+    {"q": "Why are my lights behind the music?", "a": "Usually the sound is late, not the lights. Bluetooth speakers play audio a little after the computer sends it, so the lights look early or out of step. Busy Wi-Fi can also slow the lights down."},
+    {"q": "Does a Bluetooth speaker cause light sync lag?", "a": "It can. Bluetooth speakers play the sound a moment late, and on many computers Bluetooth shares a radio with Wi-Fi. A wired speaker fixes both. If you keep Bluetooth, use a sync delay setting to line the lights up."},
+    {"q": "Do my smart lights need 2.4 GHz Wi-Fi?", "a": "Many smart lights only join 2.4 GHz Wi-Fi. Keep them on your main network, not a guest network, and give them a clear path to the router."},
+    {"q": "Do I need to keep my phone open for music sync with GlowBop?", "a": "No. GlowBop runs on your Windows computer and listens to the sound it plays. Your phone is only the remote, and the music plays on the computer."},
+    {"q": "Can I tap the beat in by hand?", "a": "Yes. In GlowBop's DJ mode you can tap tempo when the room is too loud, and the show picks the song back up when you let go."}
+  ]
+}
+-->
+<h2 id="why">Why are my lights behind the beat?</h2>
+<p>You hit play, the bass drops, and the lights flash a moment later. It feels small, but your eyes catch it every time. The good news: it is almost always one of three things, and most of them are free to fix.</p>
+<ul>
+<li><b>The speaker is late.</b> Bluetooth speakers play the sound a little after your device sends it. The lights react on time, the sound arrives late, and it looks like the lights are off.</li>
+<li><b>The Wi-Fi is busy.</b> Smart lights get their orders over Wi-Fi. A weak signal or a crowded network slows them down or makes them stutter.</li>
+<li><b>The mic is guessing.</b> Many light apps listen through a microphone. The mic has to hear the music across the room, and it hears everything else too.</li>
+</ul>
+
+<h2 id="speaker">Is my Bluetooth speaker causing the delay?</h2>
+<p>This is the most common one, and the easiest to test. Play a song with a hard, simple kick drum and watch one light. If the flash seems to land just before the kick, your speaker is running late.</p>
+<ul>
+<li><b>Try a cable.</b> Plug a speaker into the headphone jack or a USB sound card. Wired sound plays right away.</li>
+<li><b>Look for a delay setting.</b> Many light apps have a sync or offset slider. Slide it until the kick and the flash land together.</li>
+<li><b>Mind the radio.</b> On many laptops, Bluetooth and Wi-Fi share the same radio. Sending music over Bluetooth can make your Wi-Fi lights answer slower too. One more reason to try a cable.</li>
+</ul>
+
+<h2 id="wifi">How do I fix Wi-Fi lag on my lights?</h2>
+<p>Lights that freeze, skip or drift behind usually have a Wi-Fi problem, not a music problem.</p>
+<ol>
+<li><b>Use 2.4 GHz.</b> Many smart lights only join 2.4 GHz Wi-Fi. Keep them on your main network, not a guest network.</li>
+<li><b>Give them a clear path.</b> Walls, mirrors, metal and fish tanks all eat signal. If the curtain's controller box can see the router, or close to it, it will keep up better.</li>
+<li><b>Move the router or add an extender.</b> One light lagging alone usually means it is too far away.</li>
+<li><b>Pick a clean channel.</b> If several lights drop out at the same moment, look at the router. Setting the 2.4 GHz channel to 1, 6 or 11 often helps.</li>
+<li><b>Lighten the load.</b> A 4K stream, a game download and three video calls on the same Wi-Fi all compete with your lights. Pause the big stuff during the party.</li>
+</ol>
+<div class="tip pink"><b>Tip.</b> Test one thing at a time. Swap the speaker first, then move the router. If you change five things at once, you never learn which one fixed it.</div>
+
+<h2 id="mic">Why does the mic make my lights feel late or random?</h2>
+<p>A microphone hears the room, not the song. It has to wait for the sound to travel to it, and it picks up talking, clapping and the dog. That is why many brands tell you to keep the mic close to the speaker. If your lights live across the room, the show will always feel a little loose. We wrote a whole post on this: <a href="/blog/sound-reactive-lights-react-to-talking.html">why sound-reactive lights react to talking</a>.</p>
+
+<h2 id="glowbop">How GlowBop handles it</h2>
+<p>I built GlowBop because I wanted my own wall of Twinkly curtains to hit the drop like a real club rig. So here is what it does about lag.</p>
+<ul>
+<li><b>It listens to the computer's own sound.</b> No mic, no dongle. GlowBop hears the exact music your Windows computer plays, from Spotify, YouTube, Apple Music, DJ software or a video. Room noise and talking don't throw it off. More on that on the <a href="/music-detection.html">music detection</a> page.</li>
+<li><b>A Sync slider for Bluetooth speakers.</b> Slide it until a kick drum and its flash land together. GlowBop remembers the setting for each speaker. The <a href="/guide/music.html#sync">music show guide</a> walks you through it.</li>
+<li><b>It tells you when Bluetooth is the problem.</b> Light health spots when your computer plays its sound over a Bluetooth speaker, and says a cable fixes it.</li>
+<li><b>Check my lights.</b> One tap runs a quick checkup on every light's Wi-Fi and tells you in plain words what is wrong, like "move it closer" or "set your router's 2.4 GHz channel to 1, 6 or 11". See <a href="/guide/troubleshooting.html">troubleshooting</a>.</li>
+<li><b>Tap tempo.</b> In DJ mode you can tap the beat in when the room is too loud, and the show picks the song back up when you let go.</li>
+<li><b>Your phone is just the remote.</b> Scan a QR code and the console opens in your phone's browser. Nothing to keep open for the music. The music plays on the computer.</li>
+</ul>
+<p>It also follows the song, not just the volume: the beat, the build and the drop. So when the timing is right, the big moments land where you expect them.</p>
+
+<h2 id="try">Try it</h2>
+<p>Play your favorite song in the <a href="/try/?intro=1">live demo</a> and watch the drop land. When you are ready, GlowBop runs on Windows 10 and 11 with Twinkly, Nanoleaf and LIFX String lights (<a href="/lights.html">full list here</a>), and you can start with a 7-day free trial on the <a href="/pricing.html">pricing page</a>.</p>

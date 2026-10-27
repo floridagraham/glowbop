@@ -1,0 +1,55 @@
+<!--
+{
+  "title": "Why do my smart lights keep going offline? Wi-Fi fixes that work",
+  "description": "Smart lights dropping off Wi-Fi or failing setup? Simple fixes anyone can try: 2.4 GHz, mesh routers, guest networks, Bluetooth speakers and router spots.",
+  "date": "2026-10-27",
+  "order": 7,
+  "kicker": "Wi-Fi fixes",
+  "image": "/img/phone-remote.jpg",
+  "image_alt": "A hand holds a phone showing a light control screen in front of a living room wall of purple and blue curtain lights, with a sofa, a coffee table and a candle",
+  "image_note": "Concept photo · real GlowBop patterns",
+  "answer": "Most smart lights that keep going offline have a Wi-Fi problem, not a broken light: they only join 2.4 GHz, they sit far from the router, or the 2.4 GHz channel is crowded. Set each light up in its own app first, keep it on your main Wi-Fi (not the guest network), move the controller closer to the router, and cable your speaker instead of using Bluetooth. GlowBop adds a <a href=\"/guide/troubleshooting.html\">Check my lights</a> button that tells you in plain words what is wrong.",
+  "tags": ["lights offline", "smart lights Wi-Fi", "2.4 GHz", "Twinkly", "Nanoleaf", "LIFX", "troubleshooting"],
+  "faq": [
+    {"q": "Why won't my smart lights connect to my Wi-Fi at setup?", "a": "Many smart lights only join 2.4 GHz Wi-Fi, and some routers hide that band behind one combined network name. Check your light's help pages, use your main network instead of the guest network, and turn off any VPN on the phone you use for setup."},
+    {"q": "Why do my lights keep dropping off Wi-Fi?", "a": "Usually the light is too far from the router, a wall is in the way, or the 2.4 GHz channel is crowded by neighbours. If several lights drop at the same moment, the router is the likely cause, not the lights."},
+    {"q": "Can a Bluetooth speaker make my Wi-Fi lights worse?", "a": "Yes. Bluetooth and 2.4 GHz Wi-Fi share the same radio space, so a computer playing over Bluetooth can slow its Wi-Fi lights down. A cable to the speaker fixes it."},
+    {"q": "Do my phone and lights need to be on the same Wi-Fi as GlowBop?", "a": "Yes. The lights, the computer running GlowBop and your phone all join the same network. Away from home, connect the laptop to your phone's hotspot instead."},
+    {"q": "What does Your lights are taking a breather mean in GlowBop?", "a": "It means your phone cannot reach the GlowBop laptop right now. Check the same Wi-Fi, that the laptop is awake and that GlowBop is open; it reconnects by itself as soon as the laptop answers."},
+    {"q": "Should I set my lights up in their own app first?", "a": "Yes. Get each light working in its maker's app first, so you know it is on Wi-Fi and healthy. Then GlowBop can find it and take over."}
+  ]
+}
+-->
+<h2 id="why">Why do my smart lights keep going offline?</h2>
+<p>When a light drops off, it is easy to blame the light. Most of the time it is the Wi-Fi around it. Smart lights have small radios, they often live outside or behind a TV, and they talk on the busiest band in your house. Here are the fixes that help most, in the order I would try them. None of them need a special app.</p>
+<h2 id="setup">Why won't my lights connect at setup?</h2>
+<ul>
+<li><b>Use 2.4 GHz.</b> Many smart lights only join 2.4 GHz Wi-Fi. <a href="https://help.twinkly.com/hc/en-gb/articles/18277823033373-What-are-the-best-settings-for-my-router" rel="noopener">Twinkly's router tips</a> say so, for example. If your router mixes 2.4 and 5 GHz under one name, check its settings for a way to split them or turn on a 2.4 GHz network for smart devices.</li>
+<li><b>Mesh routers.</b> Mesh systems are great for phones but can confuse some lights during setup. Stand near the main unit when you set the light up, and check your mesh app for a smart home or 2.4 GHz option.</li>
+<li><b>No guest network.</b> Guest networks often block devices from seeing each other. Put the lights, your computer and your phone on your main Wi-Fi.</li>
+<li><b>Turn off the VPN on your phone.</b> A VPN can stop your phone from seeing devices on your home network.</li>
+<li><b>Set it up in its own app first.</b> Get the light working in the Twinkly, Nanoleaf or LIFX app before anything else. If it does not work there, nothing else will see it either.</li>
+</ul>
+<h2 id="drops">Why do my lights drop off after they were working?</h2>
+<ul>
+<li><b>Line of sight to the router.</b> The controller box is the part that talks to Wi-Fi, not the bulbs. Move the box (or the router) so there are fewer walls, doors and appliances between them. An extender near the lights helps a lot.</li>
+<li><b>Signal strength.</b> If your light's app or your router shows signal strength, look at it. A weak signal leads to missed commands and lights that freeze mid show.</li>
+<li><b>A crowded channel.</b> If several lights drop at the same moment, the router is the likely cause. In your router settings, try setting the 2.4 GHz channel by hand to 1, 6 or 11, with a 20 MHz channel width.</li>
+<li><b>Bluetooth speakers.</b> Bluetooth and 2.4 GHz Wi-Fi share the same air. If your computer plays music over a Bluetooth speaker, the lights on that same computer can slow down. Cable the speaker if you can.</li>
+<li><b>Restart in the right order.</b> Unplug the light for 10 seconds, plug it back in, then look for it again.</li>
+</ul>
+<div class="tip pink"><b>Tip.</b> One light dropping out alone usually means that light needs to be closer to the router. Lots of lights dropping out together usually means the router or channel.</div>
+<h2 id="glowbop">How GlowBop handles it</h2>
+<p>I learned most of the list above the hard way, on my own wall of Twinkly curtains with a Nanoleaf string and a LIFX string next to it. So GlowBop tries to do the detective work for you.</p>
+<h3 id="check-my-lights">Check my lights</h3>
+<p>On the LIGHTS page, tap <b>Check my lights</b>. In about five seconds GlowBop asks every light how its Wi-Fi is doing and tells you, in plain words, what is wrong and how to fix it. Most fixes are one more tap. It knows who to blame: lights dropping out together point at the router, one light alone means move it closer or add an extender. It names the light, the brand and the reason.</p>
+<h3 id="light-health">Light health</h3>
+<p>Every light gets a health score, shown as five little bars after its name on the live wall, plus a score for the whole setup. The Wi-Fi test and the neighbour scan show how well each light keeps up and which channels your neighbours crowd. If your computer is playing its sound over Bluetooth, GlowBop says so, so you know a cable will help. If one light struggles, GlowBop gives it a breather by itself so the rest of the wall keeps going.</p>
+<h3 id="runs-on-your-computer">It runs on your computer</h3>
+<p>GlowBop runs on your Windows PC at home, on the same Wi-Fi as your lights. Your phone is the remote: scan the QR code from the laptop and the full console opens in your phone's browser, nothing to install. Away from home, at a tailgate or a pool party, connect the laptop to your phone's hotspot. The setup steps are in <a href="/guide/getting-started.html">getting started</a>.</p>
+<p>If your phone cannot reach the laptop, you get a friendly screen that says <b>Your lights are taking a breather</b>, with the three things to check: the same Wi-Fi, the laptop awake, and GlowBop open. It reconnects by itself the moment the laptop answers.</p>
+<h3 id="weak-wifi">A light on weak Wi-Fi</h3>
+<p>Got one light that lives at the edge of your Wi-Fi? You can set any Twinkly, LIFX, Nanoleaf or WLED light to follow its own effects, which change with your song. And with Twinkly, tap <b>Save the last minute</b> and your Twinklys keep the show going with the laptop closed. More in the <a href="/features.html#lights-on-their-own">lights on their own</a> section.</p>
+<p>Still stuck? The <a href="/guide/troubleshooting.html">troubleshooting guide</a> covers phones that will not connect, lights GlowBop cannot find, Nanoleaf pairing and Bluetooth lights. Which brands work today is on <a href="/lights.html">supported lights</a>.</p>
+<h2 id="try-it">Try it</h2>
+<p>Run <b>Check my lights</b> on a pretend wall in the <a href="/try/?intro=1">live demo</a>, then start the 7-day free trial on the <a href="/pricing.html">pricing page</a>. Want your Wi-Fi lights at a game? See <a href="/blog/game-day-lights-team-scores.html">game day lights that react when your team scores</a>.</p>

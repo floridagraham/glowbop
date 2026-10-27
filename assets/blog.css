@@ -1,0 +1,28 @@
+/* GlowBop blog (Oct 27 2026). Uses the site tokens from style.css; solid pink accents, violet tints, no grey. */
+.post{max-width:780px;padding:36px 0 40px}
+.crumbs{font-size:15px;color:var(--dim);margin-bottom:18px}
+.crumbs a{color:var(--dim)}
+.crumbs a:hover{color:var(--pink)}
+.posthead h1{font-size:clamp(34px,6vw,54px);line-height:1.05;margin:8px 0 12px}
+.byline{color:var(--dim);font-size:15px;margin:0 0 22px}
+.byline b{color:var(--text)}
+.answer{background:#22174F;border:1px solid #2B1B6B;border-left:4px solid var(--pink);border-radius:14px;padding:16px 20px;margin:0 0 24px}
+.answer p{margin:0;color:var(--text);font-size:18px}
+.answer .anslabel{font:700 14px 'Saira Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);margin-bottom:6px}
+.postimg{margin:0 0 10px}
+.postimg img{width:100%;height:auto;border-radius:16px;display:block;border:1px solid var(--line)}
+.postimg figcaption{font-size:13px;color:var(--dim);margin-top:6px}
+.post .doc h2{font-size:30px}
+.post .doc a{color:var(--pink)}
+.post .faq details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0}
+.post .faq summary{font-weight:700;color:var(--text)}
+.post .faq p{margin:10px 0 0}
+.author{margin-top:36px;padding:16px 20px;border-radius:14px;background:#22174F;border:1px solid #2B1B6B;color:#cfcbe4;font-size:16px}
+.author b{color:var(--text)}
+.morehead{font-size:28px;margin:0 0 16px}
+.postcard img{width:100%;height:auto;border-radius:12px;margin-bottom:12px;display:block}
+.postcard h2{font-size:22px;line-height:1.2;margin:6px 0 8px}
+.bloggrid .card{display:flex;flex-direction:column}
+.bloggrid .card .more{margin-top:auto}
+@media(max-width:600px){.post{padding-top:24px}.answer p{font-size:17px}.post .doc h2{font-size:25px}}
+.author a{color:var(--pink)}

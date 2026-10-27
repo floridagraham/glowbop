@@ -1,0 +1,51 @@
+# GlowBop
+
+> GlowBop is a Windows 10 and 11 app that takes control of the LED lights people already own (Twinkly curtains and strings, Nanoleaf string lights, the LIFX String) and runs live, music-aware light shows on them, plus holiday displays, a sports scoreboard, live feeds, text, logos and screen mirroring. It is controlled from a phone, iPad or laptop browser by scanning a QR code. Tagline: "Set your lights free." GlowBop sells software only, not lights. Public beta opens October 31, 2026; it is on sale now with a 7-day free trial.
+
+Key facts:
+- Made by Marketing Savvy LLC in Fort Myers, Florida. Founder: Graham Lucht. Contact: hello@glowbop.com
+- Plans: GlowBop Home DJ ($5.99/month, $59/year, $379 lifetime) and GlowBop Pro DJ ($8.99/month, $89/year, $449 lifetime). Founder deal: Home DJ lifetime for $129 during launch week or for the first 100 buyers. Payments by Polar.
+- Music: listens to the sound the computer plays (Spotify, YouTube, Apple Music, DJ software, any app), no microphone or dongle. Follows the beat, builds, drops and song parts; a Sync slider lines lights up with Bluetooth speakers.
+- Supported lights today: Twinkly curtains (up to 8 as one wall) and strings, Nanoleaf string lights, LIFX String. Govee works as a one-color wash only. Built in and testing: TikTok-style Bluetooth pixel curtains, DayBetter strips, WLED. Planned, not working yet: Philips Hue, DMX stage lights. xLights house support is in the works for the 2026 holidays.
+- Not available: Mac version, DMX, Ableton Link, Pioneer Pro DJ Link, Denon StageLinQ.
+
+## Main pages
+- [Home](https://glowbop.com/): what GlowBop is, demo videos, the free trial
+- [Features](https://glowbop.com/features.html): every feature, grouped (music show, DJ, your lights, Pro Art, sports and live feeds, holidays)
+- [Music detection](https://glowbop.com/music-detection.html): how the show follows a song, sound-reactive vs music-aware
+- [Supported lights](https://glowbop.com/lights.html): exactly which lights work, which are testing and which are planned
+- [Pricing](https://glowbop.com/pricing.html): Home DJ and Pro DJ plans, Founder deal, free trial
+- [Pro DJ](https://glowbop.com/pro.html): tools for working DJs and venues
+- [Compare](https://glowbop.com/compare.html) and [DJ comparison](https://glowbop.com/compare-dj.html)
+- [FAQ](https://glowbop.com/faq.html)
+- [Live demo](https://glowbop.com/try/?intro=1): the real console running on a pretend light wall in the browser
+- [Download](https://glowbop.com/download.html)
+
+## Guide
+- [Guide overview](https://glowbop.com/guide/)
+- [Getting started](https://glowbop.com/guide/getting-started.html)
+- [Music show](https://glowbop.com/guide/music.html)
+- [DJ mode](https://glowbop.com/guide/dj.html) and [Pro DJ tools](https://glowbop.com/guide/pro-dj.html)
+- [Holidays](https://glowbop.com/guide/holidays.html)
+- [Scoreboard](https://glowbop.com/guide/scoreboard.html)
+- [Text and logos](https://glowbop.com/guide/text-logos.html)
+- [Troubleshooting](https://glowbop.com/guide/troubleshooting.html)
+
+## Blog
+- [Blog index](https://glowbop.com/blog/)
+- [Why I built GlowBop: my pool cage, my Christmas tree and the apps that couldn't keep up](https://glowbop.com/blog/why-i-built-glowbop.html): GlowBop's founder on why he built a light show app: the apps that came with his Twinkly lights couldn't turn his pool cage into a dance party, so he made one.
+- [How to make an easy Halloween light show to music (in one evening)](https://glowbop.com/blog/halloween-light-show-to-music.html): A simple beginner setup for a Halloween light show to music: where to hang the lights, where the speaker goes, the phone remote, and the show itself.
+- [Game day lights: team colors that celebrate when your team scores](https://glowbop.com/blog/game-day-lights-team-scores.html): Want your lights in team colors that go off when your team scores? How to set up game day lights at home or at a tailgate, plus a live scoreboard for your wall.
+- [Sound-active, DMX or an app? How to run an LED curtain DJ backdrop](https://glowbop.com/blog/led-curtain-dj-backdrop.html): DJs: should your lights be sound-active, DMX or app controlled? An honest look at each, and how to run an LED curtain backdrop from your phone or iPad at a gig.
+- [How to put text, a logo or your screen on LED curtain lights](https://glowbop.com/blog/put-text-pictures-on-led-curtain.html): Want names, scrolling messages, a logo or your laptop screen on your LED curtain? What curtains can show, how to make it look good, and the easy way to do it.
+- [Why do my smart lights keep going offline? Wi-Fi fixes that work](https://glowbop.com/blog/lights-keep-going-offline.html): Smart lights dropping off Wi-Fi or failing setup? Simple fixes anyone can try: 2.4 GHz, mesh routers, guest networks, Bluetooth speakers and router spots.
+- [How to make your Christmas lights dance to music (tree included)](https://glowbop.com/blog/christmas-lights-dance-to-music.html): Want Christmas lights that dance to music without sequencing every song? Here is what lights to pick, how to wrap the tree, and how to run one show for it all.
+- [Is there an easier way to make a music light show than xLights?](https://glowbop.com/blog/music-light-show-without-xlights.html): Love the look of a sequenced light show but not the hours of sequencing? Here is when xLights is worth it, and when a live music-aware show is the easier path.
+- [Can I run Twinkly, Nanoleaf and LIFX in one light show?](https://glowbop.com/blog/twinkly-nanoleaf-lifx-one-light-show.html): Every light brand has its own app. Here is how to get Twinkly, Nanoleaf and LIFX lights playing one show together, plus an honest list of what works today.
+- [Why do my sound-reactive lights react to talking? Sound-reactive vs music-aware](https://glowbop.com/blog/sound-reactive-lights-react-to-talking.html): Music mode flashing when people talk, or sitting dark on quiet songs? Here is why mic-based lights do that, and what music-aware lights do differently.
+- [Why are my lights behind the beat? How to fix music sync lag](https://glowbop.com/blog/why-are-my-lights-behind-the-beat.html): Lights flashing a beat late? Here are the real causes of music sync lag (Bluetooth speakers, busy Wi-Fi, mics) and the simple fixes you can try tonight at home.
+
+## Optional
+- [Blog RSS feed](https://glowbop.com/blog/feed.xml)
+- [Sitemap](https://glowbop.com/sitemap.xml)
+- [Terms](https://glowbop.com/terms.html), [Privacy](https://glowbop.com/privacy.html), [Refunds](https://glowbop.com/refunds.html)

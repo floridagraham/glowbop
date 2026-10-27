@@ -1,0 +1,40 @@
+# GlowBop
+
+> GlowBop is a Windows 10 and 11 app that takes control of the LED lights people already own (Twinkly curtains and strings, Nanoleaf string lights, the LIFX String) and runs live, music-aware light shows on them, plus holiday displays, a sports scoreboard, live feeds, text, logos and screen mirroring. It is controlled from a phone, iPad or laptop browser by scanning a QR code. Tagline: "Set your lights free." GlowBop sells software only, not lights. Public beta opens October 31, 2026; it is on sale now with a 7-day free trial.
+
+Key facts:
+- Made by Marketing Savvy LLC in Fort Myers, Florida. Founder: Graham Lucht. Contact: hello@glowbop.com
+- Plans: GlowBop Home DJ ($5.99/month, $59/year, $379 lifetime) and GlowBop Pro DJ ($8.99/month, $89/year, $449 lifetime). Founder deal: Home DJ lifetime for $129 during launch week or for the first 100 buyers. Payments by Polar.
+- Music: listens to the sound the computer plays (Spotify, YouTube, Apple Music, DJ software, any app), no microphone or dongle. Follows the beat, builds, drops and song parts; a Sync slider lines lights up with Bluetooth speakers.
+- Supported lights today: Twinkly curtains (up to 8 as one wall) and strings, Nanoleaf string lights, LIFX String. Govee works as a one-color wash only. Built in and testing: TikTok-style Bluetooth pixel curtains, DayBetter strips, WLED. Planned, not working yet: Philips Hue, DMX stage lights. xLights house support is in the works for the 2026 holidays.
+- Not available: Mac version, DMX, Ableton Link, Pioneer Pro DJ Link, Denon StageLinQ.
+
+## Main pages
+- [Home](https://glowbop.com/): what GlowBop is, demo videos, the free trial
+- [Features](https://glowbop.com/features.html): every feature, grouped (music show, DJ, your lights, Pro Art, sports and live feeds, holidays)
+- [Music detection](https://glowbop.com/music-detection.html): how the show follows a song, sound-reactive vs music-aware
+- [Supported lights](https://glowbop.com/lights.html): exactly which lights work, which are testing and which are planned
+- [Pricing](https://glowbop.com/pricing.html): Home DJ and Pro DJ plans, Founder deal, free trial
+- [Pro DJ](https://glowbop.com/pro.html): tools for working DJs and venues
+- [Compare](https://glowbop.com/compare.html) and [DJ comparison](https://glowbop.com/compare-dj.html)
+- [FAQ](https://glowbop.com/faq.html)
+- [Live demo](https://glowbop.com/try/?intro=1): the real console running on a pretend light wall in the browser
+- [Download](https://glowbop.com/download.html)
+
+## Guide
+- [Guide overview](https://glowbop.com/guide/)
+- [Getting started](https://glowbop.com/guide/getting-started.html)
+- [Music show](https://glowbop.com/guide/music.html)
+- [DJ mode](https://glowbop.com/guide/dj.html) and [Pro DJ tools](https://glowbop.com/guide/pro-dj.html)
+- [Holidays](https://glowbop.com/guide/holidays.html)
+- [Scoreboard](https://glowbop.com/guide/scoreboard.html)
+- [Text and logos](https://glowbop.com/guide/text-logos.html)
+- [Troubleshooting](https://glowbop.com/guide/troubleshooting.html)
+
+## Blog
+{BLOG}
+
+## Optional
+- [Blog RSS feed](https://glowbop.com/blog/feed.xml)
+- [Sitemap](https://glowbop.com/sitemap.xml)
+- [Terms](https://glowbop.com/terms.html), [Privacy](https://glowbop.com/privacy.html), [Refunds](https://glowbop.com/refunds.html)
