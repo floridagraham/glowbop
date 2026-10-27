@@ -176,8 +176,10 @@ a.app:hover .kbfloat img{animation:flWave 1.2s ease-in-out}
 .app>*:not(.ledsub):not(.status),.wide>*:not(.ledsub),.about>*:not(.ledsub),.contact>*:not(.ledsub){position:relative;z-index:1}
 .app>.status{z-index:2}
 .ledsub{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.32;pointer-events:none;-webkit-mask:linear-gradient(180deg,#000,transparent 85%);mask:linear-gradient(180deg,#000,transparent 85%)}
-.lgwrap{position:relative;flex:none;z-index:1}
-.free{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%) rotate(-6deg);z-index:3;height:24px;padding:0 10px;display:inline-flex;align-items:center;border-radius:8px;background:var(--amber);color:#1f1200;font:800 13px/1 var(--display);letter-spacing:1.4px;text-transform:uppercase;box-shadow:0 4px 12px rgba(6,4,24,.6)}
+.app>.statusrow{position:absolute!important;top:14px;right:14px;display:flex;gap:6px;z-index:2}
+.statusrow .status{position:static}
+.freechip{background:var(--amber);color:#1f1200}
+.app.top:has(.statusrow) .txt{padding-right:0;padding-top:22px}
 footer{text-align:center;font-size:13px;color:var(--soft)}
 footer a{color:var(--cyan)}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
@@ -203,7 +205,7 @@ footer a{color:var(--cyan)}
     <h2 id="h-apps">Apps I built <small>tap to open</small></h2>
     <div class="apps">
       <a class="app top" href="https://floridagraham.github.io/festival-plan/" target="_blank" rel="noopener">
-        <div class="lgwrap"><div class="lg rp-run" role="img" aria-label="My Festival logo"><svg viewBox="0 0 512 512" aria-hidden="true" focusable="false">
+        <div class="lg rp-run" role="img" aria-label="My Festival logo"><svg viewBox="0 0 512 512" aria-hidden="true" focusable="false">
   <defs>
     <clipPath id="rp-scr"><rect x="118" y="168" width="276" height="150"/></clipPath>
     <clipPath id="rp-sun"><circle cx="256" cy="318" r="112"/></clipPath>
@@ -254,9 +256,9 @@ footer a{color:var(--cyan)}
     <line x1="256" y1="352" x2="112" y2="512" stroke-width="4" opacity=".4"/><line x1="256" y1="352" x2="256" y2="512" stroke-width="4" opacity=".4"/><line x1="256" y1="352" x2="400" y2="512" stroke-width="4" opacity=".4"/>
     <line x1="256" y1="352" x2="0" y2="470" stroke-width="3" opacity=".3"/><line x1="256" y1="352" x2="512" y2="470" stroke-width="3" opacity=".3"/>
   </g>
-</svg></div><span class="free">Free</span></div>
+</svg></div>
         <div class="txt"><h3>My Festival</h3><p>Plan your sets, your crew and your whole festival weekend.</p></div>
-        <span class="status live">Live</span>
+        <span class="statusrow"><span class="status live">Live</span><span class="status freechip">Free</span></span>
       </a>
       <a class="app" href="https://glowbop.com" target="_blank" rel="noopener">
         <span class="status live">Live</span>
