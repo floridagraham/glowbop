@@ -60,7 +60,7 @@ def head(title, desc, url, image, kind, ld):
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css?v=9">
 <link rel="stylesheet" href="/assets/console.css?v=54">
-<link rel="stylesheet" href="/assets/blog.css?v=1">
+<link rel="stylesheet" href="/assets/blog.css?v=2">
 {blocks}</head>
 '''
 

@@ -1,5 +1,5 @@
 /* GlowBop blog (Oct 27 2026). Uses the site tokens from style.css; solid pink accents, violet tints, no grey. */
-.post{max-width:780px;padding:36px 0 40px}
+.post{max-width:780px;padding-top:36px;padding-bottom:40px}
 .crumbs{font-size:15px;color:var(--dim);margin-bottom:18px}
 .crumbs a{color:var(--dim)}
 .crumbs a:hover{color:var(--pink)}
@@ -26,3 +26,4 @@
 .bloggrid .card .more{margin-top:auto}
 @media(max-width:600px){.post{padding-top:24px}.answer p{font-size:17px}.post .doc h2{font-size:25px}}
 .author a{color:var(--pink)}
+.answer a{color:var(--pink)}
