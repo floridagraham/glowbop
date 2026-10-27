@@ -181,6 +181,8 @@ a.app:hover .kbfloat img{animation:flWave 1.2s ease-in-out}
 .freechip{background:var(--amber);color:#1f1200}
 .app.top:has(.statusrow) .txt{padding-right:0;padding-top:22px}
 .app .fine{font-size:11.5px;color:var(--soft);opacity:.75}
+.app.top:has(.feats){align-items:flex-start}
+.feats{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.feats span{font-size:12px;font-weight:700;height:26px;padding:0 10px;display:inline-flex;align-items:center;border-radius:999px;background:var(--tint3);color:var(--text)}
 footer{text-align:center;font-size:13px;color:var(--soft)}
 footer a{color:var(--cyan)}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
@@ -275,8 +277,8 @@ footer a{color:var(--cyan)}
       </a>
       <div class="app top" style="background:var(--tint1)">
         <canvas class="lg" id="edcv" width="192" height="192" role="img" aria-label="Edison logo"></canvas>
-        <div class="txt"><h3>Edison</h3><p>My AI chief of staff. Runs my agent team, my home and my day, by voice.</p></div>
-        <span class="status wip">Coming</span>
+        <div class="txt"><h3>Edison</h3><p>The AI butler from the movies, now on your desk. Talk to him and he talks back. He runs your house, your day and your AI team, and asks before he spends a cent.</p><div class="feats"><span>Talks back</span><span>Runs your AI team</span><span>Asks before spending</span></div></div>
+        <span class="status wip">Coming soon</span>
       </div>
     </div>
   </section>
