@@ -546,5 +546,34 @@ function f(now){const t=now/1000,a=t*6.283/24,b=.35*Math.sin(t*.31),ca=Math.cos(
  const shift=now/700;for(let i=0;i<7;i++){const pos=i-shift,k=Math.floor(pos),fr=pos-k,A=RB[((k%7)+7)%7],B=RB[(((k+1)%7)+7)%7];for(let j=0;j<3;j++)rings[i*3+j]=A[j]+(B[j]-A[j])*fr}
  gl.uniform3fv(uRing,rings);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);if(!still)requestAnimationFrame(f)}requestAnimationFrame(f);})();
 </script>
+
+<script>
+/* 👀 Visit counter (Nov 2, Graham: "has anyone visited my personal page?"). Anonymous, the same way as the home page test: a view, where
+   it came from (TikTok, Instagram, Google...), screen type, and which link gets tapped. Random number kept on the device; no name, no email,
+   no location. Off on localhost, in Claude's browsers, and on any device that opened this page with #notrack (#track turns it back on).
+   Every event also lands in window.gbEvents, so a test can check it without sending anything. */
+(function(){const KEY='phc_myUuNqFeyhyrqPepkxKEWLnc8trVeurMsgwC9sWGA876',HOST='https://us.i.posthog.com';
+const S={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+if(location.hash==='#notrack')S.set('gb_notrack','1');if(location.hash==='#track')S.set('gb_notrack',null);
+const ua=navigator.userAgent,off=!!S.get('gb_notrack')||/localhost|127\.0\.0\.1/.test(location.hostname)||/Claude\//.test(ua)||!!navigator.webdriver;
+const id=S.get('gb_sid')||(()=>{const r='web-'+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36));S.set('gb_sid',r);return r})();
+// TikTok's and Instagram's own browsers often send no referrer, so the app is read from the browser name
+const app=/musical_ly|TikTok|BytedanceWebview|trill_/i.test(ua)?'tiktok':/Instagram/.test(ua)?'instagram':/FBAN|FBAV|FB_IAB/.test(ua)?'facebook':/Snapchat/.test(ua)?'snapchat':'';
+const host=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return ''}},ref=host(document.referrer),qs=new URLSearchParams(location.search);
+const base={$lib:'glowbop-site',page:'/graham',from:qs.get('utm_source')||qs.get('ref')||app||ref||'direct',in_app:app||'none',referrer_host:ref||'none',
+  shape:innerWidth<700?'phone':innerWidth<1024?'tablet':'desktop',$process_person_profile:false,$geoip_disable:true,$ip:null};
+window.gbEvents=[];
+function send(event,props,beacon){const p=Object.assign({distinct_id:id},base,props||{});window.gbEvents.push({event,props:p,sent:!off});if(off)return;
+  const body=JSON.stringify({api_key:KEY,batch:[{event,timestamp:new Date().toISOString(),properties:p}]});
+  try{if(beacon&&navigator.sendBeacon)navigator.sendBeacon(HOST+'/batch/',new Blob([body],{type:'text/plain'}));
+      else fetch(HOST+'/batch/',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{})}catch(e){}}
+send('graham_page_view');
+// 👆 which card or link: its title, else where it goes (an email link counts only as "email", never the address)
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(!a)return;const h=a.getAttribute('href')||'';
+  if(h.charAt(0)==='#'||a.getAttribute('aria-disabled')==='true')return;
+  let to='email';if(!/^mailto:/i.test(h)){try{const u=new URL(a.href);to=u.hostname.replace(/^www\./,'')+u.pathname.replace(/\/$/,'')}catch(e){to='other'}}
+  const t=a.querySelector('h3');send('graham_link_tap',{link:(t?t.textContent:a.textContent).trim().replace(/\s+/g,' ').slice(0,40)||to,to},true)},true);
+const c=document.getElementById('copy');if(c)c.addEventListener('click',()=>send('graham_link_tap',{link:'Copy email',to:'email'}));})();
+</script>
 </body>
 </html>
